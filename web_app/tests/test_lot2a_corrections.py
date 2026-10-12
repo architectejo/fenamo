@@ -2,7 +2,7 @@
 import pytest
 from django.urls import reverse
 
-from compte.models import Compte
+from compte.models import Compte, JournalAction
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
 MDP = 'Bon-mot-de-passe-1x'
@@ -32,7 +32,7 @@ def test_F02_su_attribue_les_privileges_et_journalise(client, jeu, pirate):
     assert client.post(url, {'privilege': '1', 'privilege3': 'on'}).status_code == 200
     pirate.refresh_from_db()
     assert pirate.privilege3 and not pirate.privilege5
-    assert Notification.objects.filter(titre="Attribution des privilèges").exists()
+    assert JournalAction.objects.filter(action="attribution_privileges").exists()
 
 
 # ------------------------------------------------------------- M1 : mot de passe jamais en cookie

@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from compte.models import Compte
+from compte.models import Compte, JournalAction
+from compte.services.journal import journaliser
 
 
 @admin.register(Compte)
@@ -23,11 +24,36 @@ class CompteAdmin(UserAdmin):
             # Compte créé par l'administration : mot de passe saisi par un tiers, à changer à la première connexion.
             obj.doit_changer_mot_de_passe = True
         super().save_model(request, obj, form, change)
+        if not change:
+            journaliser(request.user, JournalAction.Action.CREATION_COMPTE, obj,
+                        apres={'username': obj.username, 'via': 'gestion-technique'})
 
     def user_change_password(self, request, id, form_url=''):
         """Mot de passe changé par un super-utilisateur : le titulaire doit le changer à sa prochaine connexion."""
         avant = Compte.objects.filter(pk=id).values_list('password', flat=True).first()
         reponse = super().user_change_password(request, id, form_url)
         if request.method == 'POST' and avant is not None:
-            Compte.objects.filter(pk=id).exclude(password=avant).update(doit_changer_mot_de_passe=True)
+            if Compte.objects.filter(pk=id).exclude(password=avant).update(doit_changer_mot_de_passe=True):
+                journaliser(request.user, JournalAction.Action.CHANGEMENT_MOT_DE_PASSE,
+                            Compte.objects.get(pk=id), apres={'changement_impose': True},
+                            motif='Mot de passe changé par un super-utilisateur (gestion technique).')
         return reponse
+
+
+@admin.register(JournalAction)
+class JournalActionAdmin(admin.ModelAdmin):
+    """Lecture seule : le journal ne se modifie ni ne se supprime."""
+
+    list_display = ('date', 'action', 'auteur', 'role', 'objet_libelle')
+    list_filter = ('action',)
+    search_fields = ('objet_libelle', 'auteur__username')
+    date_hierarchy = 'date'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -7,7 +7,8 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from coptapp.models import Notification
+from compte.models import JournalAction
+from compte.services.journal import journaliser
 
 # Sans caractères ambigus (0/O, 1/l/I) : le mot de passe est communiqué de vive voix ou par message.
 ALPHABET = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -39,10 +40,9 @@ def creer_compte(username, email='', membre=None, auteur=None):
         username=username, email=email or '', password=mdp,
         membreId=membre.id if membre else None, doit_changer_mot_de_passe=True,
     )
-    Notification.objects.create(
-        user=auteur, membre=membre, titre=_('Création de compte'),
-        description=_('Compte %(pseudo)s créé (mot de passe temporaire à changer).') % {'pseudo': compte.username},
-    )
+    journaliser(auteur, JournalAction.Action.CREATION_COMPTE, compte,
+                apres={'username': compte.username, 'membreId': compte.membreId, 'changement_impose': True},
+                motif=_('Compte créé avec un mot de passe temporaire à changer.'))
     return compte, mdp
 
 
@@ -69,10 +69,12 @@ def creer_compte_pour_membre(membre, auteur=None):
 @transaction.atomic
 def changer_mot_de_passe(compte, form):
     """Enregistre le nouveau mot de passe d'un formulaire valide et lève l'obligation de changement."""
+    avant = {'changement_impose': compte.doit_changer_mot_de_passe}
     form.save()
     if compte.doit_changer_mot_de_passe:
         compte.doit_changer_mot_de_passe = False
         compte.save(update_fields=['doit_changer_mot_de_passe'])
-    Notification.objects.create(user=compte, titre=_("Changement de mot de passe"),
-                                description=_("Mot de passe modifié par son titulaire."))
+    journaliser(compte, JournalAction.Action.CHANGEMENT_MOT_DE_PASSE, compte,
+                avant=avant, apres={'changement_impose': False},
+                motif=_("Mot de passe modifié par son titulaire."))
     return compte

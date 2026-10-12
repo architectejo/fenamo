@@ -2,7 +2,13 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import messages as contrib_messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
+from compte.models import JournalAction
+from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
+from coptapp.services.actions import (
+    changer_suppression, drapeaux_validation, journaliser_validation, rattacher,
+)
+from django.http import Http404
 from django.views.decorators.http import require_POST
 from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
@@ -30,12 +36,11 @@ def demandeSuppression(request, id):
     user = request.user
     membre = Membre.objects.get(id=id)
     if membre.is_delete:
-        membre.is_delete = False
         titre = "Annulation de la demande de suppression"
+        changer_suppression(user, membre, False)
     else:
-        membre.is_delete = True
         titre = "Demande de suppression"
-    membre.save()
+        changer_suppression(user, membre, True)
     notify(user=user, membre=membre, titre=titre)
     return redirect("membre-view", id=id)
 #---------------------------------------------------------------------------------------------------------------------------
@@ -79,6 +84,7 @@ def myNotify(request):
 def validate(request, id):
     user = request.user
     membre = Membre.objects.get(id=id)
+    avant_validation = drapeaux_validation(membre)
     
     if user.privilege2:
         if membre.is_validate2:
@@ -102,6 +108,7 @@ def validate(request, id):
             membre.is_validate3 = True
 
     membre.save()
+    journaliser_validation(user, membre, avant_validation)
     return redirect("home-session")
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -147,34 +154,30 @@ def ville_attr(request, id, sid):
     try:
         structure = AssociationMembre.objects.get(id=sid)
         ville = Ville.objects.get(id=id)
-        structure.ville = ville
-        structure.save()
-    except Exception as error:
-        pass
+        rattacher(request.user, structure, 'ville', ville)
+    except (AssociationMembre.DoesNotExist, Ville.DoesNotExist):
+        raise Http404
     return redirect('ville-select', id=structure.id)
 
 @require_POST
 def ville_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
     ville = Ville.objects.get(id=id)
-    membre.ville = ville
-    membre.save()
+    rattacher(request.user, membre, 'ville', ville)
     return redirect('membre-view', id=idM)
 
 @require_POST
 def antenne_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
     antenne = Antenne.objects.get(id=id)
-    membre.antenne = antenne
-    membre.save()
+    rattacher(request.user, membre, 'antenne', antenne)
     return redirect('membre-view', id=idM)
 
 @require_POST
 def structure_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
     asbl = AssociationMembre.objects.get(id=id)
-    membre.structure = asbl
-    membre.save()
+    rattacher(request.user, membre, 'structure', asbl)
     return redirect('membre-view', id=idM)
 
 
@@ -609,8 +612,11 @@ def attributMoto(request, id):
         contrib_messages.error(request, _("Plusieurs engins portent ce numéro : attribution impossible."))
     else:
         moto = motos[0]
-        moto.motard_id = membre.id
+        avant = {'motard_id': moto.motard_id}
+        moto.motard_id = str(membre.id)
         moto.save()
+        journaliser(request.user, JournalAction.Action.RATTACHEMENT, moto, avant=avant,
+                    apres={'motard_id': moto.motard_id}, libelle=f"Engin {moto.numero}")
         contrib_messages.success(request, _("Engin attribué."))
     return redirect("membre-view", id=id)
 
@@ -658,8 +664,7 @@ def deleteMoto(request,id):
     provinces = provinceSelector()
     
     moto = Moto.objects.get(id=id)
-    moto.is_delete = True
-    moto.save()
+    changer_suppression(request.user, moto, True)
     notify(user=moto.user, titre="Suppression d'une moto", description=f"Numero:{moto.numero}")
     return redirect('membre-view', id=moto.proprietaire.id)
 
