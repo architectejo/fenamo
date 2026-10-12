@@ -115,3 +115,44 @@ def test_F04_bouton_creer_le_compte_pour_les_su_seulement(client, jeu):
     p5 = Compte.objects.create_user('p5', password=MDP, privilege5=True, privilege3=True)
     client.force_login(p5)
     assert 'Créer le compte' not in client.get(url).content.decode()
+
+
+# ------------------------------------------------------------- attributMoto sans 500
+
+from django.test import Client  # noqa: E402
+from coptapp.models import Moto  # noqa: E402
+
+
+def _attribuer(jeu, **donnees):
+    c = Client(raise_request_exception=False)
+    c.force_login(jeu['compte'])
+    return c.post(reverse('moto-attribution', kwargs={'id': jeu['membre'].id}), donnees)
+
+
+def test_F02_attribut_moto_sans_numero_pas_de_500(jeu):
+    assert _attribuer(jeu).status_code == 302
+    assert _attribuer(jeu, numero='   ').status_code == 302
+
+
+def test_F02_attribut_moto_numero_inconnu_pas_de_500(jeu):
+    assert _attribuer(jeu, numero='ZZZ').status_code == 302
+
+
+def test_F02_attribut_moto_numero_en_double_pas_de_500(jeu):
+    Moto.objects.create(proprietaire=jeu['membre'], structure=jeu['association'], ville=jeu['ville'],
+                        province=jeu['province'], abonnement=jeu['moto'].abonnement, numero=jeu['moto'].numero)
+    assert _attribuer(jeu, numero=jeu['moto'].numero).status_code == 302
+    jeu['moto'].refresh_from_db()
+    assert not jeu['moto'].motard_id
+
+
+def test_F02_attribut_moto_membre_inexistant_404(jeu):
+    c = Client(raise_request_exception=False)
+    c.force_login(jeu['compte'])
+    assert c.post(reverse('moto-attribution', kwargs={'id': 99999}), {'numero': '001PF'}).status_code == 404
+
+
+def test_F02_attribut_moto_nominal(jeu):
+    assert _attribuer(jeu, numero=jeu['moto'].numero).status_code == 302
+    jeu['moto'].refresh_from_db()
+    assert jeu['moto'].motard_id == str(jeu['membre'].id)

@@ -1,5 +1,7 @@
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect, render
+from django.contrib import messages as contrib_messages
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext as _
 from compte.services.privileges import attribuer_privileges
 from django.views.decorators.http import require_POST
 from coptapp.models import *
@@ -595,13 +597,21 @@ def addVille(request, id):
 
 @require_POST
 def attributMoto(request, id):
-    membre = Membre.objects.get(id=id)
-    if request.method == 'POST':
-        motoVerify = Moto.objects.filter(numero=request.POST['numero'])
-        if len(motoVerify) != 0:
-            moto = Moto.objects.get(numero=request.POST['numero'])
-            moto.motard_id = id
-            moto.save()
+    membre = get_object_or_404(Membre, id=id)
+    numero = (request.POST.get('numero') or '').strip()
+    if not numero:
+        contrib_messages.error(request, _("Indiquez le numéro de l'engin."))
+        return redirect("membre-view", id=id)
+    motos = list(Moto.objects.filter(numero=numero)[:2])
+    if not motos:
+        contrib_messages.error(request, _("Aucun engin ne porte ce numéro."))
+    elif len(motos) > 1:
+        contrib_messages.error(request, _("Plusieurs engins portent ce numéro : attribution impossible."))
+    else:
+        moto = motos[0]
+        moto.motard_id = membre.id
+        moto.save()
+        contrib_messages.success(request, _("Engin attribué."))
     return redirect("membre-view", id=id)
 
 def contact(request):

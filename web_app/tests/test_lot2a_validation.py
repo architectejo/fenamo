@@ -96,7 +96,6 @@ def test_F01_route_post_seulement_fonctionne_avec_csrf(jeu, nom):
     assert r.status_code in (200, 302), (nom, r.status_code)
 
 
-@pytest.mark.xfail(reason="BUG attributMoto : POST sans 'numero' leve MultiValueDictKeyError (500) au lieu d'un refus propre", strict=True)
 def test_F01_moto_attribution_sans_numero_ne_plante_pas(jeu):
     c = Client(raise_request_exception=False)
     c.force_login(jeu['compte'])
