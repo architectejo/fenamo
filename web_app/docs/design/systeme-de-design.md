@@ -236,7 +236,7 @@ Durées : `--d-court` 120 ms (survol, appui), `--d-moyen` 200 ms (bulles, tiroir
    - supprimer les composants Alpine `coque`, `toasts` et `compteur` (remplacés par `design.js`) ; garder `onglets` ; adapter `graphique` (couleurs lues dans `--etat-*` et `--encre`) ; **retirer `listeFiltrable`** (filtrage côté navigateur : la recherche et la pagination passent par le serveur, F-28).
    - bandeau réseau : classes `.bandeau-reseau` + `.bouton`.
 4. **Supprimer le pont `--fn-*`** à la fin de `tokens.css` une fois les étapes 1 à 3 faites.
-5. Les maquettes contiennent quelques attributs `style="…"` qui n'utilisent que des jetons (`var(--e-6)`…) : ce sont des raccourcis de maquette. Dans les gabarits, les remplacer par les classes existantes (`.pile`, `.rangee`, `.meta`…) ou par une classe utilitaire ajoutée à `app.css` ; jamais de valeur en dur.
+5. Les maquettes contiennent quelques attributs `style="…"` qui n'utilisent que des jetons (`var(--e-6)`…) : ce sont des raccourcis de maquette. Dans les gabarits, les remplacer par les classes existantes (`.pile`, `.rangee`, `.meta`…) ou par une classe utilitaire ajoutée à `app.css` ; jamais de valeur en dur. Largeur des barres `.barres` : classes de palier `.part-0` à `.part-100` (pas de 5), avec le filtre `palier_5` de `balises.py` ; aucun `style="--part:…"`.
 6. `maquettes.js` et `maquettes-theme.js` simulent le serveur : **ne pas les intégrer**.
 
 ### 8.2 Écran par écran

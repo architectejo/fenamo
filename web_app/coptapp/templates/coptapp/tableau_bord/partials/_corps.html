@@ -1,19 +1,21 @@
 {% load i18n static design %}{% comment %}
-Corps du tableau de bord (maquette tableau-de-bord-president.html). Contexte : ind (indicateurs, coptapp/services/tableau_bord.py).
+Corps du tableau de bord (maquette tableau-de-bord-president.html). Contexte : ind (indicateurs, coptapp/services/tableau_bord.py), fn_perimetre.
+Les dossiers en attente sont comptés une seule fois (bloc « À traiter ») ; largeur des barres : classes de palier .part-N (app.css), sans style en ligne.
 Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces données n'existent pas encore (circuit de renvoi, F-23).
 {% endcomment %}
 <div class="page-tete">
   <div class="page-tete-texte">
     <h1 class="page-titre">{% translate "Tableau de bord" %}</h1>
-    <p class="page-contexte">{% icone "map-pin" %}{% blocktranslate with nom=user.get_username %}Bienvenue, {{ nom }}{% endblocktranslate %}</p>
+    <p class="page-contexte">{% icone "map-pin" %}{% if fn_perimetre %}{{ fn_perimetre }} · {% endif %}{% now "Y" as annee %}{% blocktranslate with annee=annee %}année {{ annee }}{% endblocktranslate %}</p>
+    <p class="page-contexte">{% blocktranslate with nom=user.get_username %}Bienvenue, {{ nom }}{% endblocktranslate %}</p>
   </div>
 </div>
 
 <section class="a-traiter" aria-labelledby="a-traiter-titre">
   <div>
     <span class="chiffre-valeur" data-compteur="{{ ind.en_attente_total }}">{{ ind.en_attente_total }}</span>
-    <h2 id="a-traiter-titre">{% translate "dossiers de membres attendent une validation" %}</h2>
-    <div class="a-traiter-detail"><span>{% blocktranslate with n=ind.saisis %}{{ n }} saisis{% endblocktranslate %}</span><span>{% blocktranslate with n=ind.valides_antenne %}{{ n }} validés antenne{% endblocktranslate %}</span></div>
+    <h2 id="a-traiter-titre">{% blocktranslate count n=ind.en_attente_total %}dossier de membre attend une validation{% plural %}dossiers de membres attendent une validation{% endblocktranslate %}</h2>
+    <div class="a-traiter-detail"><span>{% blocktranslate count n=ind.saisis %}{{ n }} saisi{% plural %}{{ n }} saisis{% endblocktranslate %}</span><span>{% blocktranslate count n=ind.valides_antenne %}{{ n }} validé antenne{% plural %}{{ n }} validés antenne{% endblocktranslate %}</span></div>
   </div>
   <a class="bouton" href="{% url 'liste-membre' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{% icone "users" %}<span>{% translate "Ouvrir la liste des membres" %}</span></a>
 </section>
@@ -23,7 +25,6 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
   {% translate "Membres actifs" as t_actifs %}{% include "components/_chiffre.html" with valeur=ind.actifs libelle=t_actifs %}
   {% translate "Engins" as t_engins %}{% include "components/_chiffre.html" with valeur=ind.engins libelle=t_engins %}
   {% translate "Associations membres" as t_assoc %}{% include "components/_chiffre.html" with valeur=ind.associations libelle=t_assoc %}
-  {% translate "Dossiers en attente" as t_attente %}{% include "components/_chiffre.html" with valeur=ind.en_attente_total libelle=t_attente %}
 </div>
 
 <div class="grille grille--principale u-mt-7">
@@ -33,7 +34,7 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
       {% if ind.graphique.valeurs.0 or ind.graphique.valeurs.1 or ind.graphique.valeurs.2 %}
       <ul class="barres">
         {% for ligne in ind.graphique.lignes %}
-        <li><span>{{ ligne.libelle }}</span><span class="chiffres">{{ ligne.valeur }}</span><span class="barre"><span style="--part:{{ ligne.valeur|part_du_max:ind.graphique.valeurs }}%"></span></span></li>
+        <li><span>{{ ligne.libelle }}</span><span class="chiffres">{{ ligne.valeur }}</span><span class="barre"><span class="part-{{ ligne.valeur|part_du_max:ind.graphique.valeurs|palier_5 }}"></span></span></li>
         {% endfor %}
       </ul>
       {% else %}

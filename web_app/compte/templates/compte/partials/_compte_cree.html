@@ -2,7 +2,7 @@
 <section class="panneau panneau--etroit" role="status" hx-history="false">
   <div class="panneau-corps pile">
     <h1 class="page-titre">{% icone "circle-check" "ic--grande" %} {% translate "Compte créé" %}</h1>
-    <div><p class="doux u-mb-2">{% translate "Pseudo :" %}</p><p class="u-mb-0"><strong class="ident">{{ compte.username }}</strong></p></div>
+    <div><p class="doux u-mb-2">{% translate "Identifiant :" %}</p><p class="u-mb-0"><strong class="ident">{{ compte.username }}</strong></p></div>
     <div><p class="doux u-mb-2">{% translate "Mot de passe temporaire :" %}</p><p class="u-mb-0"><strong class="secret">{{ mot_de_passe }}</strong></p></div>
     {% include "components/_erreur.html" with niveau="alerte" titre=_("À transmettre au membre.") texte=_("Il devra le changer à sa première connexion. Il ne sera plus jamais affiché : notez-le maintenant.") %}
     {% url 'membre-view' membre.id as url_fiche %}

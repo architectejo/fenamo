@@ -35,7 +35,7 @@
 
     <div class="relatif" x-data="{ ouvert: false }" @keydown.escape="ouvert = false" @click.outside="ouvert = false">
       <button type="button" class="profil" @click="ouvert = !ouvert" :aria-expanded="ouvert.toString()" aria-haspopup="true" aria-label="{% translate 'Mon compte' %}">
-        <span class="avatar" aria-hidden="true">{{ user.get_username|slice:":2"|upper }}</span>
+        {% avatar user.get_username "" 40 %}
         <span class="profil-texte"><strong>{{ user.get_username }}</strong><span class="meta bloc">{{ fn_role|default:"" }}</span></span>
       </button>
       <div class="flottant flottant--etroit" x-show="ouvert" x-cloak>

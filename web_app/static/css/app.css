@@ -313,6 +313,28 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .barres { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
 .barres li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-1) var(--e-3); align-items: baseline; }
 .barres .barre { grid-column: 1 / -1; height: 8px; border-radius: var(--r-plaque); background: var(--surface-creuse); overflow: hidden; }
+/* Largeur d'une barre par palier de 5 % (sans style en ligne) */
+.part-0 { --part: 0%; }
+.part-5 { --part: 5%; }
+.part-10 { --part: 10%; }
+.part-15 { --part: 15%; }
+.part-20 { --part: 20%; }
+.part-25 { --part: 25%; }
+.part-30 { --part: 30%; }
+.part-35 { --part: 35%; }
+.part-40 { --part: 40%; }
+.part-45 { --part: 45%; }
+.part-50 { --part: 50%; }
+.part-55 { --part: 55%; }
+.part-60 { --part: 60%; }
+.part-65 { --part: 65%; }
+.part-70 { --part: 70%; }
+.part-75 { --part: 75%; }
+.part-80 { --part: 80%; }
+.part-85 { --part: 85%; }
+.part-90 { --part: 90%; }
+.part-95 { --part: 95%; }
+.part-100 { --part: 100%; }
 .barres .barre span { display: block; height: 100%; width: var(--part, 0%); background: var(--encre); border-radius: inherit; transform-origin: left; animation: remplit var(--d-compteur) var(--courbe-sortie) both; }
 :root[data-theme="sombre"] .barres .barre span { background: var(--ciel); }
 
@@ -716,8 +738,7 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
   :root[data-theme="sombre"] .porte-visuel { background: var(--surface); color: var(--texte); border-right: 1px solid var(--trait); }
 }
 .porte-visuel .devise { font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); font-size: clamp(2.5rem, 1.5rem + 3vw, 4.5rem); line-height: .98; letter-spacing: .005em; max-width: 12ch; }
-.porte-visuel .devise span { display: block; }
-.porte-visuel .devise span:nth-child(2) { color: var(--jaune); }
+.porte-visuel .devise em { font-style: normal; color: var(--jaune); }
 .porte-logo { width: 96px; height: 96px; }
 .porte-cadre { width: 100%; max-width: 400px; margin: auto; }
 .porte-cadre .porte-entete { display: flex; align-items: center; gap: var(--e-3); margin-bottom: var(--e-7); }
