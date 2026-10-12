@@ -1,4 +1,4 @@
 import os
 import sys
 
-from coptam.wsgi import application
+from fenamo.wsgi import application

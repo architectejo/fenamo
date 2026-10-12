@@ -43,7 +43,7 @@
 * [ ] Intégration de progréssive webApp
 
 ### Environement virtuel:
-source /home/cp1711423p04/virtualenv/coptam/3.10/bin/activate && cd /home/cp1711423p04/coptam
+source /home/cp1711423p04/virtualenv/fenamo/3.10/bin/activate && cd /home/cp1711423p04/fenamo
 
 ### Models
 

@@ -53,5 +53,5 @@ urlpatterns = [
     path('delete-article/<int:id>', deleteArticle, name="delete-article"),
     path('contact-us-from-site/', contact, name='contact'),
     path('contact-us-from-site-view/<int:id>', contactView, name='contact-view'),
-    path('liste-des-membres-de-coptam/', membreListe, name='liste-membre')
+    path('liste-des-membres/', membreListe, name='liste-membre')
 ]
