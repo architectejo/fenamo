@@ -1061,7 +1061,6 @@ def site(request):
     #Add article
     if request.method == 'POST':
         titre = request.POST.get('titre')
-        code = request.POST.get('code')
         description = request.POST.get('description')
     
         if len(request.FILES) == 0:
@@ -1078,7 +1077,7 @@ def site(request):
 
             if verify == False:
                 galery = Galery.objects.create(image=image, principale=True)
-                article = Article.objects.create(titre=titre,integration_code=code,image=image,description=description)
+                article = Article.objects.create(titre=titre,image=image,description=description)
                 article.galery.add(galery)
                 article.save()
                 message = "Publication de l'article effectuée !"

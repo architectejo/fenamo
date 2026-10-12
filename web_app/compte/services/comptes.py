@@ -28,7 +28,7 @@ def _base_pseudo(nom, membre_id):
 
 
 @transaction.atomic
-def creer_compte(username, email='', membre=None, auteur=None, **extra):
+def creer_compte(username, email='', membre=None, auteur=None):
     """Crée un compte avec un mot de passe aléatoire et doit_changer_mot_de_passe=True.
 
     Retourne (compte, mot_de_passe_en_clair) : le mot de passe n'est connu qu'ici, à afficher une fois.
@@ -37,7 +37,7 @@ def creer_compte(username, email='', membre=None, auteur=None, **extra):
     mdp = generer_mot_de_passe()
     compte = Compte.objects.create_user(
         username=username, email=email or '', password=mdp,
-        membreId=membre.id if membre else None, doit_changer_mot_de_passe=True, **extra,
+        membreId=membre.id if membre else None, doit_changer_mot_de_passe=True,
     )
     Notification.objects.create(
         user=auteur, membre=membre, titre=_('Création de compte'),

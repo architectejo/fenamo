@@ -1,6 +1,7 @@
 // Gabarits hérités (base-app.html) : désactive les boutons d'envoi d'un formulaire dès qu'il part,
 // pour éviter les doubles envois (équivalent de hx-disabled-elt sur les écrans sans HTMX).
 document.addEventListener('submit', function (e) {
+  if (e.defaultPrevented) { return; }  // soumission annulée (validation, confirmation) : ne rien désactiver
   var boutons = e.target.querySelectorAll('button[type=submit], button:not([type])');
   // Différé : le navigateur doit d'abord construire la requête (un bouton désactivé n'est pas envoyé).
   setTimeout(function () {

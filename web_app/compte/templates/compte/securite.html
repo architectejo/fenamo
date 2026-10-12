@@ -12,6 +12,7 @@
     <label for="{{ champ.id_for_label }}" class="form-label">{{ champ.label }}</label>
     {{ champ }}
     {% for erreur in champ.errors %}<div class="text-danger small">{{ erreur }}</div>{% endfor %}
+    {% comment %}help_text|safe : texte fourni par les validateurs de mot de passe de Django (AUTH_PASSWORD_VALIDATORS, balisage <ul>), jamais une saisie utilisateur.{% endcomment %}
     {% if champ.help_text %}<div class="form-text">{{ champ.help_text|safe }}</div>{% endif %}
   </div>
   {% endfor %}

@@ -227,7 +227,8 @@ def test_F04_securite_d_un_autre_membre_ne_change_pas_son_mot_de_passe(jeu):
     simple = Compte.objects.create_user('simple', password=MDP)
     c = Client()
     c.force_login(simple)
-    url = reverse('security', kwargs={'id': jeu['membre'].id})
+    url = f"/mon-compte/securite/{jeu['membre'].id}/"  # ancienne adresse retirée
+    assert c.post(url).status_code == 404
     c.post(url, {'old_password': MDP, 'new_password1': 'Nouveau-mdp-9876', 'new_password2': 'Nouveau-mdp-9876'})
     jeu['compte'].refresh_from_db()
     assert jeu['compte'].check_password('mot-de-passe-test-123')

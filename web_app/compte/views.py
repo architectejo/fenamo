@@ -1,19 +1,15 @@
 from django.contrib.auth.decorators import login_not_required
 from django.contrib import messages
 from django.utils.translation import gettext as _
-from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from coptapp.models import Membre
-from compte.forms import *
+from compte.forms import AddUserForm, ChangementMotDePasseForm
 from compte.permissions import superuser_requis
 from compte.services.verrou import ip_bloquee
 from compte.services.comptes import changer_mot_de_passe, creer_compte, creer_compte_pour_membre
-
-User = get_user_model()
-
-# Create your views here.
 
 @superuser_requis
 @require_POST
@@ -74,7 +70,7 @@ def add_user(request):
     return render(request, 'app/add-user.html', locals())
 
 
-def securite(request, id=None):
+def securite(request):
     """Changement de son propre mot de passe : ancien mot de passe exigé, nouveau validé."""
     force_changement = request.user.doit_changer_mot_de_passe
     form = ChangementMotDePasseForm(request.user, request.POST or None)
