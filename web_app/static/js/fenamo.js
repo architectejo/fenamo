@@ -1,10 +1,17 @@
 /* FENAMO-RDC : comportements communs HTMX + Alpine (aucune autre dépendance).
    Chargé avant Alpine (les deux en defer) pour que alpine:init soit entendu.
-   Les textes viennent de window.FENAMO_TEXTES (défini dans base.html, traduit). */
+   Les textes traduits viennent de l'élément JSON #fenamo-textes (json_script, base.html). */
 (function () {
   'use strict';
 
-  var T = function () { return window.FENAMO_TEXTES || {}; };
+  var textes = null;
+  var T = function () {
+    if (textes === null) {
+      var noeud = document.getElementById('fenamo-textes');
+      textes = noeud ? JSON.parse(noeud.textContent) : {};
+    }
+    return textes;
+  };
 
   document.addEventListener('alpine:init', function () {
     var grand = window.matchMedia('(min-width: 992px)');
@@ -123,7 +130,8 @@
     });
     if (window.Alpine) {
       var coque = document.getElementById('app');
-      if (coque && coque._x_dataStack) { coque._x_dataStack[0].fermerTiroir(); }
+      var donnees = coque ? window.Alpine.$data(coque) : null;
+      if (donnees && donnees.fermerTiroir) { donnees.fermerTiroir(); }
     }
   }
   document.addEventListener('htmx:pushedIntoHistory', majMenu);

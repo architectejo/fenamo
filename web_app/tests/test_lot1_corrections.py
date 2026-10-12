@@ -90,3 +90,25 @@ def test_dev_media_et_static_par_defaut_si_env_vide(base_vide):
     r = manage('shell', '-c', code, '--settings=fenamo.settings.dev',
                env_extra={**base_vide, 'STATIC_ROOT': '', 'MEDIA_ROOT': ''})
     assert r.stdout.strip().splitlines()[-1] == 'staticfiles media', r.stdout + r.stderr
+
+
+# ------------------------------------------------------------- config HTMX
+
+def test_htmx_eval_desactive_et_textes_en_json_script(client, jeu):
+    import json
+    import re
+    client.force_login(jeu['compte'])
+    html = client.get('/').content.decode()
+    config = json.loads(re.search(r"name=\"htmx-config\" content='([^']+)'", html).group(1))
+    assert config['allowEval'] is False
+    brut = re.search(r'<script id="fenamo-textes" type="application/json">(.*?)</script>', html, re.S).group(1)
+    assert set(json.loads(brut)) == {'connexionPerdue', 'erreurServeur', 'refuse', 'introuvable'}
+    assert 'FENAMO_TEXTES' not in html
+
+
+def test_fenamo_js_sans_acces_interne_alpine():
+    from pathlib import Path
+    from django.conf import settings
+    js = (Path(settings.BASE_DIR) / 'static' / 'js' / 'fenamo.js').read_text(encoding='utf-8')
+    assert '_x_dataStack' not in js
+    assert 'Alpine.$data' in js

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="htmx-config" content='{"timeout": 30000, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "422", "swap": true, "error": false}, {"code": "[45]..", "swap": false, "error": true}, {"code": "...", "swap": false}]}'>
+  <meta name="htmx-config" content='{"allowEval": false, "timeout": 30000, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "422", "swap": true, "error": false}, {"code": "[45]..", "swap": false, "error": true}, {"code": "...", "swap": false}]}'>
   <title>{% block titre %}FENAMO-RDC{% endblock %}</title>
   <link rel="icon" href="{% static 'img/favicon.png' %}" type="image/png">
   <link rel="apple-touch-icon" href="{% static 'img/favicon.png' %}">
@@ -82,14 +82,7 @@
   </div>
   <noscript><p class="app-pied">{% translate "JavaScript est nécessaire pour utiliser cette application." %}</p></noscript>
 
-  <script>
-    window.FENAMO_TEXTES = {
-      connexionPerdue: "{% translate 'Connexion perdue, réessayez' %}",
-      erreurServeur: "{% translate 'Erreur du serveur, réessayez' %}",
-      refuse: "{% translate 'Accès refusé' %}",
-      introuvable: "{% translate 'Page ou élément introuvable' %}"
-    };
-  </script>
+  {{ textes_interface|json_script:"fenamo-textes" }}
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
   <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
   <script src="{% static 'js/fenamo.js' %}" defer></script>
