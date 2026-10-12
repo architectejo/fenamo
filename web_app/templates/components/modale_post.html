@@ -2,7 +2,7 @@
 Fragment de modale à envoi ordinaire (POST classique avec CSRF, rechargement de la page) : formulaires des écrans dont la vue répond par une
 redirection et ne sert pas encore de fragment HTMX. Même apparence que components/modale_base.html (.feuille).
 Le fragment hérite : {% extends "components/modale_post.html" %} et remplit titre, corps, pied (facultatif).
-Variables : action_url (URL du POST ; absent = simple fenêtre d'information), libelle_envoi (défaut « Enregistrer »), multipart (envoi de fichiers),
+Variables : action_url (URL du POST ; absent = simple fenêtre d'information), libelle_envoi (défaut « Enregistrer » : le bouton dit ce qu'il fait), nom_envoi (nom du bouton d'envoi quand la vue le teste, ex. « modifier »), multipart (envoi de fichiers),
 large=True (840 px). Le contenu est recopié depuis un <template> de la page par le bouton [data-modale-locale="#id"] (fenamo.js).
 Fermeture : tout élément portant data-ferme-modale, la touche Échap ou le voile.
 {% endcomment %}{% load i18n %}<{% if action_url %}form method="post" action="{{ action_url }}"{% if multipart %} enctype="multipart/form-data"{% endif %} hx-boost="false"{% else %}div{% endif %} class="feuille{% if large %} feuille--large{% endif %}">
@@ -15,7 +15,7 @@ Fermeture : tout élément portant data-ferme-modale, la touche Échap ou le voi
   <div class="feuille-pied">
     {% block pied %}
     <button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button>
-    {% if action_url %}<button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{{ libelle_envoi|default:_("Enregistrer") }}</span></button>{% endif %}
+    {% if action_url %}<button type="submit"{% if nom_envoi %} name="{{ nom_envoi }}" value="{{ nom_envoi }}"{% endif %} class="bouton bouton--{{ variante_envoi|default:'principal' }}"><span class="roue" aria-hidden="true"></span><span>{{ libelle_envoi|default:_("Enregistrer") }}</span></button>{% endif %}
     {% endblock %}
   </div>
 </{% if action_url %}form{% else %}div{% endif %}>

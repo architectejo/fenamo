@@ -26,35 +26,35 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
   <div class="champ">
     <label class="champ-libelle" for="mm-genre">{% translate "Genre" %}</label>
     <select name="genre" id="mm-genre">
-      <option value="HOMME"{% if membre.genre == 'HOMME' %} selected{% endif %}>HOMME</option>
-      <option value="FEMME"{% if membre.genre == 'FEMME' %} selected{% endif %}>FEMME</option>
+      <option value="HOMME"{% if membre.genre == 'HOMME' %} selected{% endif %}>{% translate "Homme" %}</option>
+      <option value="FEMME"{% if membre.genre == 'FEMME' %} selected{% endif %}>{% translate "Femme" %}</option>
     </select>
   </div>
   <div class="champ">
     <label class="champ-libelle" for="mm-titre">{% translate "Titre" %}</label>
     <select name="titre" id="mm-titre">
-      <option value="MR"{% if membre.titre == 'MR' %} selected{% endif %}>MR</option>
-      <option value="MME"{% if membre.titre == 'MME' %} selected{% endif %}>MME</option>
-      <option value="MLLE"{% if membre.titre == 'MLLE' %} selected{% endif %}>MLLE</option>
+      <option value="MR"{% if membre.titre == 'MR' %} selected{% endif %}>{% translate "Monsieur" %}</option>
+      <option value="MME"{% if membre.titre == 'MME' %} selected{% endif %}>{% translate "Madame" %}</option>
+      <option value="MLLE"{% if membre.titre == 'MLLE' %} selected{% endif %}>{% translate "Mademoiselle" %}</option>
     </select>
   </div>
   <div class="champ">
     <label class="champ-libelle" for="mm-fonction">{% translate "Fonction" %}</label>
     <select name="fonction" id="mm-fonction">
-      <option value="Membre simple"{% if membre.fonction == 'Membre simple' %} selected{% endif %}>Membre simple</option>
-      <option value="Membre du comité"{% if membre.fonction == 'Membre du comité' %} selected{% endif %}>Membre du comité</option>
-      <option value="Associe"{% if membre.fonction == 'Associe' %} selected{% endif %}>Associe</option>
+      <option value="Membre simple"{% if membre.fonction == 'Membre simple' %} selected{% endif %}>{% translate "Membre simple" %}</option>
+      <option value="Membre du comité"{% if membre.fonction == 'Membre du comité' %} selected{% endif %}>{% translate "Membre du comité" %}</option>
+      <option value="Associe"{% if membre.fonction == 'Associe' %} selected{% endif %}>{% translate "Associé" %}</option>
     </select>
   </div>
   <div class="champ">
     <label class="champ-libelle" for="mm-comite">{% translate "Type de comité" %}</label>
     <select name="comite" id="mm-comite">
-      <option value="SUPERVISION MOBILE"{% if membre.comite == 'SUPERVISION MOBILE' %} selected{% endif %}>SUPERVISION MOBILE</option>
-      <option value="SUPERVISION PARKING"{% if membre.comite == 'SUPERVISION PARKING' %} selected{% endif %}>SUPERVISION PARKING</option>
-      <option value="ANTENNE"{% if membre.comite == 'ANTENNE' %} selected{% endif %}>ANTENNE</option>
-      <option value="COORDINATION PROVINCIAL"{% if membre.comite == 'COORDINATION PROVINCIAL' %} selected{% endif %}>COORDINATION PROVINCIALE</option>
-      <option value="COMITE NATIONAL"{% if membre.comite == 'COMITE NATIONAL' %} selected{% endif %}>COMITE NATIONAL</option>
-      <option value="ZONE OPS"{% if membre.comite == 'ZONE OPS' %} selected{% endif %}>ZONE OPS</option>
+      <option value="SUPERVISION MOBILE"{% if membre.comite == 'SUPERVISION MOBILE' %} selected{% endif %}>{% translate "Supervision mobile" %}</option>
+      <option value="SUPERVISION PARKING"{% if membre.comite == 'SUPERVISION PARKING' %} selected{% endif %}>{% translate "Supervision parking" %}</option>
+      <option value="ANTENNE"{% if membre.comite == 'ANTENNE' %} selected{% endif %}>{% translate "Antenne" %}</option>
+      <option value="COORDINATION PROVINCIAL"{% if membre.comite == 'COORDINATION PROVINCIAL' %} selected{% endif %}>{% translate "Coordination provinciale" %}</option>
+      <option value="COMITE NATIONAL"{% if membre.comite == 'COMITE NATIONAL' %} selected{% endif %}>{% translate "Comité national" %}</option>
+      <option value="ZONE OPS"{% if membre.comite == 'ZONE OPS' %} selected{% endif %}>{% translate "Zone opérationnelle" %}</option>
     </select>
   </div>
   <div class="champ">
@@ -68,10 +68,10 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
   <div class="champ">
     <label class="champ-libelle" for="mm-etat-civil">{% translate "État civil" %}</label>
     <select name="etat_civil" id="mm-etat-civil">
-      <option value="Celibataire"{% if membre.etat_civil == 'Celibataire' %} selected{% endif %}>Celibataire</option>
-      <option value="Marié(e)"{% if membre.etat_civil == 'Marié(e)' %} selected{% endif %}>Marié(e)</option>
-      <option value="Divorcé"{% if membre.etat_civil == 'Divorcé' %} selected{% endif %}>Divorcé</option>
-      <option value="Veuf(Veuve)"{% if membre.etat_civil == 'Veuf(Veuve)' %} selected{% endif %}>Veuf(Veuve)</option>
+      <option value="Celibataire"{% if membre.etat_civil == 'Celibataire' %} selected{% endif %}>{% translate "Célibataire" %}</option>
+      <option value="Marié(e)"{% if membre.etat_civil == 'Marié(e)' %} selected{% endif %}>{% translate "Marié(e)" %}</option>
+      <option value="Divorcé"{% if membre.etat_civil == 'Divorcé' %} selected{% endif %}>{% translate "Divorcé(e)" %}</option>
+      <option value="Veuf(Veuve)"{% if membre.etat_civil == 'Veuf(Veuve)' %} selected{% endif %}>{% translate "Veuf / veuve" %}</option>
     </select>
   </div>
   <div class="champ">
@@ -93,9 +93,9 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
   <div class="champ">
     <label class="champ-libelle" for="mm-categorie">{% translate "Catégorie de permis" %}</label>
     <select name="categorie" id="mm-categorie">
-      <option value="H"{% if membre.categorie == 'H' %} selected{% endif %}>H</option>
-      <option value="F"{% if membre.categorie == 'F' %} selected{% endif %}>F</option>
-      <option value="S"{% if membre.categorie == 'S' %} selected{% endif %}>S</option>
+      <option value="H"{% if membre.categorie == 'H' %} selected{% endif %}>{% translate "H" %}</option>
+      <option value="F"{% if membre.categorie == 'F' %} selected{% endif %}>{% translate "F" %}</option>
+      <option value="S"{% if membre.categorie == 'S' %} selected{% endif %}>{% translate "S" %}</option>
     </select>
   </div>
   <div class="champ">
@@ -105,10 +105,10 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
   <div class="champ">
     <label class="champ-libelle" for="mm-qualite">{% translate "Qualité" %}</label>
     <select name="qualite" id="mm-qualite">
-      <option value="..."{% if membre.qualite == '...' %} selected{% endif %}>...</option>
-      <option value="PROPRIETAIRE"{% if membre.qualite == 'PROPRIETAIRE' %} selected{% endif %}>PROPRIETAIRE</option>
-      <option value="MOTARD"{% if membre.qualite == 'MOTARD' %} selected{% endif %}>MOTARD</option>
-      <option value="MOTARD ET PROPRIETAIRE"{% if membre.qualite == 'MOTARD ET PROPRIETAIRE' %} selected{% endif %}>MOTARD ET PROPRIETAIRE</option>
+      <option value="..."{% if membre.qualite == '...' %} selected{% endif %}>{% translate "Non précisée" %}</option>
+      <option value="PROPRIETAIRE"{% if membre.qualite == 'PROPRIETAIRE' %} selected{% endif %}>{% translate "Propriétaire" %}</option>
+      <option value="MOTARD"{% if membre.qualite == 'MOTARD' %} selected{% endif %}>{% translate "Motard" %}</option>
+      <option value="MOTARD ET PROPRIETAIRE"{% if membre.qualite == 'MOTARD ET PROPRIETAIRE' %} selected{% endif %}>{% translate "Motard et propriétaire" %}</option>
     </select>
   </div>
   <div class="champ">
@@ -148,8 +148,4 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
     <input name="province_origine" type="text" id="mm-province" value="{{ membre.province_origine|default_if_none:'' }}">
   </div>
 </div>
-{% endblock %}
-{% block pied %}
-<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button>
-<button type="submit" name="modifier" value="modifier" class="bouton bouton--principal">{% translate "Enregistrer" %}</button>
 {% endblock %}

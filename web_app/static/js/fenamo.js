@@ -43,43 +43,15 @@
           var liste = Array.prototype.slice.call(this.$root.querySelectorAll('[role=tab]'));
           var i = liste.indexOf(document.activeElement);
           if (i < 0) { return; }
-          var suivant = e.key === 'ArrowRight' ? i + 1 : (e.key === 'ArrowLeft' ? i - 1 : -1);
+          var suivant = -1;
+          if (e.key === 'ArrowRight') { suivant = i + 1; }
+          else if (e.key === 'ArrowLeft') { suivant = i - 1; }
+          else if (e.key === 'Home') { suivant = 0; }
+          else if (e.key === 'End') { suivant = liste.length - 1; }
           if (suivant < 0 || suivant >= liste.length) { return; }
           e.preventDefault();
           liste[suivant].focus();
           this.actif = liste[suivant].dataset.onglet;
-        }
-      };
-    });
-
-    // Graphique Chart.js (bibliothèque locale, chargée seulement ici : courbe dans le temps, F-51).
-    // Les couleurs sont lues dans les jetons (--etat-<code>-fg, --texte, --surface).
-    Alpine.data('graphique', function (idDonnees, urlChart) {
-      return {
-        chart: null,
-        init: function () {
-          var self = this;
-          var dessiner = function () { self.dessiner(idDonnees); };
-          document.addEventListener('themechange', dessiner);
-          if (window.Chart) { dessiner(); return; }
-          var s = document.createElement('script');
-          s.src = urlChart;
-          s.onload = dessiner;
-          document.head.appendChild(s);
-        },
-        dessiner: function (id) {
-          var noeud = document.getElementById(id), canvas = this.$refs.canvas;
-          if (!noeud || !canvas || !window.Chart) { return; }
-          var d = JSON.parse(noeud.textContent);
-          var style = getComputedStyle(document.documentElement);
-          var jeton = function (nom) { return style.getPropertyValue(nom).trim(); };
-          var couleurs = d.etats.map(function (e) { return jeton('--etat-' + e + '-fg') || jeton('--texte'); });
-          if (this.chart) { this.chart.destroy(); }
-          this.chart = new Chart(canvas, {
-            type: 'doughnut',
-            data: { labels: d.libelles, datasets: [{ data: d.valeurs, backgroundColor: couleurs, borderColor: jeton('--surface'), borderWidth: 3, hoverOffset: 6 }] },
-            options: { cutout: '66%', maintainAspectRatio: false, animation: reduit ? false : { duration: 700 }, plugins: { legend: { display: false } } }
-          });
         }
       };
     });
@@ -163,16 +135,8 @@
     if (e.persisted) { document.querySelectorAll('button[aria-busy=true]').forEach(function (b) { b.disabled = false; b.removeAttribute('aria-busy'); }); }
   });
 
-  /* ------------------------------------------------------------------ File de validation : retrait des dossiers traités */
-  // Le bouton porte hx-swap="outerHTML swap:900ms" et la réponse est vide : la ligne flashe puis disparaît.
-  document.addEventListener('htmx:beforeSwap', function (e) {
-    var cible = e.detail.target;
-    if (cible && cible.classList && cible.classList.contains('dossier') && !(e.detail.serverResponse || '').trim()) {
-      var declencheur = e.detail.requestConfig && e.detail.requestConfig.elt;
-      var renvoye = declencheur && declencheur.dataset && declencheur.dataset.sens === 'renvoye';
-      cible.classList.add(renvoye ? 'est-renvoye' : 'est-traite');
-    }
-  });
+  /* ------------------------------------------------------------------ File de validation : compteurs
+   Le retrait animé d'un dossier traité (FenamoDesign.retirerDossier) sera branché avec la file de validation (F-23). */
   // HX-Trigger {"fileMaj": {"compte": 37}} : compteurs du menu, de la barre basse et des onglets
   document.addEventListener('fileMaj', function (e) {
     var n = e.detail && e.detail.compte;

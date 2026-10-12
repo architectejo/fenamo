@@ -3,7 +3,6 @@ Onglet « Informations » de la fiche (maquette fiche-membre.html) : rattachemen
 Contexte : membre, user, villes, antennes, structures, age, nbrMoto.
 {% endcomment %}
 <div class="pile">
-{% if user.is_authenticated %}
 {% if not membre.ville %}
 <section class="alerte alerte--alerte" aria-labelledby="rat-ville">
   {% icone "map-pin" %}
@@ -25,24 +24,21 @@ Contexte : membre, user, villes, antennes, structures, age, nbrMoto.
   <div class="groupe-boutons">{% for structure in structures %}{% url 'structure-attribution' structure.id membre.id as url_attr %}{% include "partials/_bouton_post.html" with url=url_attr libelle=structure.nom classe="bouton bouton--petit" %}{% endfor %}</div></div>
 </section>
 {% endif %}
-{% endif %}
 
 <section class="panneau">
   <div class="panneau-tete"><h2>{% translate "Identité" %}</h2></div>
   <div class="panneau-corps">
     {% if membre.a_propos %}<p class="doux">{{ membre.a_propos }}</p>{% endif %}
     <dl class="definitions">
-      <div><dt>{% translate "Nom complet" %}</dt><dd>{{ membre.nom|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Âge" %}</dt><dd>{% if age %}{{ age }} {% translate "ans" %}{% endif %}</dd></div>
-      <div><dt>{% translate "Né(e) à" %}</dt><dd>{{ membre.lieux_naissance|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Genre" %}</dt><dd>{{ membre.genre|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Nationalité" %}</dt><dd>{{ membre.nation|default_if_none:"" }}</dd></div>
-      {% if user.is_authenticated %}
-      <div><dt>{% translate "État civil" %}</dt><dd>{{ membre.etat_civil|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.epouse }}</dd></div>
-      <div><dt>{% translate "Nom du père" %}</dt><dd>{{ membre.nom_pere|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Nom de la mère" %}</dt><dd>{{ membre.nom_mere|default_if_none:"" }}</dd></div>
-      {% endif %}
+      <div><dt>{% translate "Nom complet" %}</dt><dd>{{ membre.nom|default:"—" }}</dd></div>
+      <div><dt>{% translate "Âge" %}</dt><dd>{% if age %}{{ age }} {% translate "ans" %}{% else %}—{% endif %}</dd></div>
+      <div><dt>{% translate "Né(e) à" %}</dt><dd>{{ membre.lieux_naissance|default:"—" }}</dd></div>
+      <div><dt>{% translate "Genre" %}</dt><dd>{{ membre.genre|default:"—" }}</dd></div>
+      <div><dt>{% translate "Nationalité" %}</dt><dd>{{ membre.nation|default:"—" }}</dd></div>
+      <div><dt>{% translate "État civil" %}</dt><dd>{{ membre.etat_civil|default:"—" }}</dd></div>
+      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.epouse|default:"—" }}</dd></div>
+      <div><dt>{% translate "Nom du père" %}</dt><dd>{{ membre.nom_pere|default:"—" }}</dd></div>
+      <div><dt>{% translate "Nom de la mère" %}</dt><dd>{{ membre.nom_mere|default:"—" }}</dd></div>
     </dl>
   </div>
 </section>
@@ -51,41 +47,36 @@ Contexte : membre, user, villes, antennes, structures, age, nbrMoto.
   <div class="panneau-tete"><h2>{% translate "Rattachement" %}</h2></div>
   <div class="panneau-corps">
     <dl class="definitions">
-      <div><dt>{% translate "Coordination provinciale" %}</dt><dd>{{ membre.province.nom }}</dd></div>
-      <div><dt>{% translate "Association membre" %}</dt><dd>{{ membre.structure.sigle }}</dd></div>
-      <div><dt>{% translate "Antenne de résidence" %}</dt><dd>{{ membre.ville.nom }}</dd></div>
-      <div><dt>{% translate "Antenne d'enregistrement" %}</dt><dd>{{ membre.antenne.nom }}</dd></div>
-      <div><dt>{% translate "Numéro de carte de membre" %}</dt><dd class="ident">{{ membre.numero_carte_de_membre|default_if_none:"" }}</dd></div>
-      {% if user.is_authenticated %}
-      <div><dt>{% translate "Titre" %}</dt><dd>{{ membre.titre|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Fonction" %}</dt><dd>{{ membre.fonction|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Comité" %}</dt><dd>{{ membre.comite|default_if_none:"" }}</dd></div>
-      {% endif %}
-      <div><dt>{% translate "Qualité" %}</dt><dd>{{ membre.qualite|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Autre association" %}</dt><dd>{{ membre.autre_asbl }}</dd></div>
+      <div><dt>{% translate "Coordination provinciale" %}</dt><dd>{{ membre.province.nom|default:"—" }}</dd></div>
+      <div><dt>{% translate "Association membre" %}</dt><dd>{{ membre.structure.sigle|default:"—" }}</dd></div>
+      <div><dt>{% translate "Antenne d'enregistrement" %}</dt><dd>{{ membre.antenne.nom|default:"—" }}</dd></div>
+      <div><dt>{% translate "Numéro de carte de membre" %}</dt><dd class="ident">{{ membre.numero_carte_de_membre|default:"—" }}</dd></div>
+      <div><dt>{% translate "Titre" %}</dt><dd>{{ membre.titre|default:"—" }}</dd></div>
+      <div><dt>{% translate "Fonction" %}</dt><dd>{{ membre.fonction|default:"—" }}</dd></div>
+      <div><dt>{% translate "Comité" %}</dt><dd>{{ membre.comite|default:"—" }}</dd></div>
+      <div><dt>{% translate "Qualité" %}</dt><dd>{{ membre.qualite|libelle_qualite }}</dd></div>
+      <div><dt>{% translate "Autre association" %}</dt><dd>{{ membre.autre_asbl|default:"—" }}</dd></div>
     </dl>
   </div>
 </section>
 
-{% if user.is_authenticated %}
 <section class="panneau">
   <div class="panneau-tete"><h2>{% translate "Coordonnées et pièces" %}</h2></div>
   <div class="panneau-corps">
     <dl class="definitions">
-      <div><dt>{% translate "Téléphone" %}</dt><dd>{{ membre.telephone|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "E-mail" %}</dt><dd>{{ membre.mail|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Adresse" %}</dt><dd>{{ membre.adresse|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Village" %}</dt><dd>{{ membre.village|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Chefferie" %}</dt><dd>{{ membre.chefferie|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Territoire" %}</dt><dd>{{ membre.territoire|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Province d'origine" %}</dt><dd>{{ membre.province_origine|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Numéro de carte d'électeur" %}</dt><dd>{{ membre.numero_carte_d_electeur|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Numéro de brevet" %}</dt><dd>{{ membre.brevet|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Catégorie de permis" %}</dt><dd>{{ membre.categorie|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Numéro de permis" %}</dt><dd>{{ membre.permis|default_if_none:"" }}</dd></div>
+      <div><dt>{% translate "Téléphone" %}</dt><dd>{{ membre.telephone|default:"—" }}</dd></div>
+      <div><dt>{% translate "E-mail" %}</dt><dd>{{ membre.mail|default:"—" }}</dd></div>
+      <div><dt>{% translate "Adresse" %}</dt><dd>{{ membre.adresse|default:"—" }}</dd></div>
+      <div><dt>{% translate "Village" %}</dt><dd>{{ membre.village|default:"—" }}</dd></div>
+      <div><dt>{% translate "Chefferie" %}</dt><dd>{{ membre.chefferie|default:"—" }}</dd></div>
+      <div><dt>{% translate "Territoire" %}</dt><dd>{{ membre.territoire|default:"—" }}</dd></div>
+      <div><dt>{% translate "Province d'origine" %}</dt><dd>{{ membre.province_origine|default:"—" }}</dd></div>
+      <div><dt>{% translate "Numéro de carte d'électeur" %}</dt><dd>{{ membre.numero_carte_d_electeur|default:"—" }}</dd></div>
+      <div><dt>{% translate "Numéro de brevet" %}</dt><dd>{{ membre.brevet|default:"—" }}</dd></div>
+      <div><dt>{% translate "Catégorie de permis" %}</dt><dd>{{ membre.categorie|default:"—" }}</dd></div>
+      <div><dt>{% translate "Numéro de permis" %}</dt><dd>{{ membre.permis|default:"—" }}</dd></div>
       <div><dt>{% translate "Engins" %}</dt><dd>{{ nbrMoto }}</dd></div>
     </dl>
   </div>
 </section>
-{% endif %}
 </div>

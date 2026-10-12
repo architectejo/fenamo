@@ -9,13 +9,9 @@ Onglet « Famille » : composition familiale et bénéficiaires. Contexte : memb
   </div>
   <div class="panneau-corps pile">
     <dl class="definitions">
-      <div><dt>{% translate "Zone opérationnelle" %}</dt><dd>{{ membre.antenne.zone }}</dd></div>
-      <div><dt>{% translate "Coordination provinciale" %}</dt><dd>{{ membre.province.nom }}</dd></div>
-      {% if user.is_authenticated %}
-      <div><dt>{% translate "Adresse" %}</dt><dd>{{ membre.adresse|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Téléphone" %}</dt><dd>{{ membre.telephone|default_if_none:"" }}</dd></div>
-      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.epouse }}</dd></div>
-      {% endif %}
+      <div><dt>{% translate "Zone opérationnelle" %}</dt><dd>{{ membre.antenne.zone|default:"—" }}</dd></div>
+      <div><dt>{% translate "Coordination provinciale" %}</dt><dd>{{ membre.province.nom|default:"—" }}</dd></div>
+      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.epouse|default:"—" }}</dd></div>
     </dl>
     {% if familles %}
     <h3>{% translate "Bénéficiaires" %}</h3>

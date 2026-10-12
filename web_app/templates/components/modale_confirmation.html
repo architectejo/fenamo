@@ -1,10 +1,11 @@
 {% extends "components/modale_post.html" %}
 {% load i18n %}{% comment %}
-Confirmation avant toute suppression (modale, jamais un confirm() du navigateur). Contexte : titre, message, action_url (POST), libelle_envoi (« Supprimer »).
-L'action est en rouge plein : seul endroit où .bouton--danger-plein est permis.
+Confirmation avant toute suppression (modale, jamais un confirm() du navigateur). Contexte : titre, message, action_url (POST), libelle_envoi (« Supprimer »), variante_envoi (défaut « danger-plein », réservé à la suppression ;
+« principal » pour une demande ou une annulation de demande).
+L'action de suppression est en rouge plein : seul endroit où .bouton--danger-plein est permis.
 {% endcomment %}
 {% block corps %}<div class="alerte alerte--alerte">{% include "components/_icone.html" with nom="triangle-alert" classe="" %}<div>{{ message }}</div></div>{% endblock %}
 {% block pied %}
 <button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button>
-<button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><span>{{ libelle_envoi|default:_("Supprimer") }}</span></button>
+<button type="submit" class="bouton bouton--{{ variante_envoi|default:'danger-plein' }}"><span class="roue" aria-hidden="true"></span><span>{{ libelle_envoi|default:_("Supprimer") }}</span></button>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% extends "components/modale_post.html" %}
 {% load i18n %}{% comment %}
-Privilèges du compte du membre (champs privilege1 à privilege5 et bouton « privilege » traités par la vue membre_view, réservée aux super-utilisateurs).
+Privilèges du compte du membre (champs privilege1 à privilege5 et bouton « privilege » (nom_envoi) traités par la vue membre_view, réservée aux super-utilisateurs).
 Contexte : user, checked1 à checked5.
 {% endcomment %}
 {% block titre %}{% translate "Privilèges du compte" %}{% endblock %}
@@ -15,8 +15,4 @@ Contexte : user, checked1 à checked5.
   <label class="case" for="mp-5"><input name="privilege5" type="checkbox" id="mp-5" {{ checked5 }}>{% translate "Privilège ultra avancé" %}</label>
   {% endif %}
 </fieldset>
-{% endblock %}
-{% block pied %}
-<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button>
-<button type="submit" name="privilege" value="applique" class="bouton bouton--principal">{% translate "Appliquer" %}</button>
 {% endblock %}

@@ -47,9 +47,20 @@ def etat_membre(objet):
     return etat_de(objet).replace('_', '-')
 
 
+# Qualités enregistrées en majuscules par l'écran hérité : libellés affichés en casse de phrase.
+QUALITES = {
+    'PROPRIETAIRE': _('Propriétaire'),
+    'MOTARD': _('Motard'),
+    'MOTARD ET PROPRIETAIRE': _('Motard et propriétaire'),
+}
+
+
 @register.filter
-def libelle_etat(code):
-    return ETATS.get(code, code)
+def libelle_qualite(valeur):
+    """Libellé d'une qualité (« Motard et propriétaire ») ; « — » si elle est vide ou « ... » (non précisée)."""
+    if not valeur or valeur == '...':
+        return '—'
+    return QUALITES.get(valeur, valeur)
 
 
 @register.inclusion_tag('components/_badge_etat.html')
@@ -106,6 +117,16 @@ def part_du_max(valeur, valeurs):
         return round(100 * valeur / maximum) if maximum else 0
     except (TypeError, ValueError):
         return 0
+
+
+@register.filter
+def palier_5(valeur):
+    """Arrondit une part (0 à 100) au palier de 5 supérieur (une part non nulle reste visible) : classe ``part-N`` de app.css."""
+    try:
+        valeur = float(valeur)
+    except (TypeError, ValueError):
+        return 0
+    return min(100, -(-int(valeur * 100) // 500) * 5) if valeur > 0 else 0
 
 
 @register.simple_tag(takes_context=True)
