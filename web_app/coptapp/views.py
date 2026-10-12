@@ -63,8 +63,9 @@ def myNotify(request):
     else:
         data = Notification.objects.filter(user=user).order_by('-id')
         if user.membreId:
-            membre = Membre.objects.get(id=user.membreId)
-            data = Notification.objects.filter(user=user, membre=membre).order_by('-id')
+            membre = Membre.objects.filter(id=user.membreId).first()
+            if membre:
+                data = Notification.objects.filter(user=user, membre=membre).order_by('-id')
     return data
 
 #Securité
@@ -1055,21 +1056,21 @@ def notificationsView(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
+    userMembre = None
     if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+        userMembre = Membre.objects.filter(id=user.membreId).first()
+        if userMembre and userMembre.ville:
+            villeId = userMembre.ville.id
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
-    
-    user = request.user
-    membre = Membre.objects.get(id=user.membreId)
-    #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-    verify = len(User.objects.filter(membreId=user.membreId))
+
+    # Un compte sans membre (ou dont le membre a disparu) reste valide : membre = None.
+    membre = userMembre
+    verify = len(User.objects.filter(membreId=user.membreId)) if user.membreId else 0
     if verify != 0:
         membreUser = User.objects.get(membreId=user.membreId)
-    
-    notifications = myNotify(request)[0:3]
+
     notifys = myNotify(request)
     return render(request, 'app/notifications.html', locals())
 

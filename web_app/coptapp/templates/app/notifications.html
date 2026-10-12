@@ -44,15 +44,19 @@
                 <div class="post-item clearfix">
                     {% if note.membre %}
                         <a href="{% url 'membre-view' note.membre.id %}">
+                            {% if note.membre.photo %}
                             <img src="{{note.membre.photo.url}}" alt="">
+                            {% else %}
+                            <img src="{% static 'img/logo-48.webp' %}" alt="">
+                            {% endif %}
                         </a>
                     {% else %}
                         {% if note.user.membreId %}
                             <a href="{% url 'membre-view' note.user.membreId %}">
-                                <img src="{% static 'img/news-1.jpg' %}" alt="">
+                                <img src="{% static 'img/logo-48.webp' %}" alt="">
                             </a>
                         {% else %}
-                            <img src="{% static 'img/news-1.jpg' %}" alt="">
+                            <img src="{% static 'img/logo-48.webp' %}" alt="">
                         {% endif %}
                     {% endif %}
                   <h4><a href="#">{{note.titre}}</a></h4>

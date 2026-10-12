@@ -104,11 +104,36 @@ def test_lot1_pas_de_coptam_dans_l_interface(client, jeu):
 
 # --------------------------------------------------- écrans de l'annexe B
 
+# Écrans qui redirigent par conception (GET qui agit puis renvoie vers une fiche : lot 2 les passera en POST,
+# ou connexion déjà ouverte). Tout autre écran doit répondre 200.
+REDIRECTIONS_ATTENDUES = {
+    'application': '/',
+    'adminer': '/membres/',
+    'ville-select': '/associations/',
+    'validate': '/associations/mon-association/',
+    'delete-membre': '/membres/',
+    'view-user': '/membres/',
+    'delete-family': '/membres/',
+    'delete-moto': '/membres/',
+    'moto-attribution': '/membres/',
+    'delete-article': '/contenu-site/',
+    'structure-attribution': '/membres/',
+    'ville-attribution': '/membres/',
+    'antenne-attribution': '/membres/',
+    'ville-attr': '/villes/',
+}
+
+
 @pytest.mark.parametrize('nom', NOMS_ECRANS)
 def test_lot1_ecran_annexe_B_repond(client, jeu, nom):
     client.force_login(jeu['compte'])
     cible = next(c for n, _, c in table(jeu) if n == nom)
-    assert client.get(cible).status_code in (200, 302), cible
+    reponse = client.get(cible)
+    if nom in REDIRECTIONS_ATTENDUES:
+        assert reponse.status_code == 302, f"{nom} {cible} -> {reponse.status_code}"
+        assert reponse['Location'].startswith(REDIRECTIONS_ATTENDUES[nom]), (nom, reponse['Location'])
+    else:
+        assert reponse.status_code == 200, f"{nom} {cible} -> {reponse.status_code}"
 
 
 def test_lot1_toutes_les_urls_de_l_annexe_B_sont_resolues(jeu):
