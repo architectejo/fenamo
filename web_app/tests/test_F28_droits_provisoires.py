@@ -41,13 +41,15 @@ def test_F28_droits_visiteur_lecture_seule_meme_cumule(jeu):
 def test_F28_droits_agent_privilege1(jeu):
     agent = _compte('agent', privilege1=True)
     droits = droits_membre(agent, jeu['membre'])
-    assert _vrais(droits) == {'peut_demander_suppression', 'peut_gerer_engins'}
+    assert _vrais(droits) == {'peut_demander_suppression'}  # pas sa saisie : ni engins ni famille
+    assert droits_membre(agent, Membre(user=agent, structure=None))['peut_gerer_engins']
+    assert droits_membre(agent, Membre(user=agent))['peut_gerer_famille']
     assert droits['peut_demander_modification'] and not droits['peut_modifier']
 
 
 def test_F28_droits_privilege2_valide_et_voit_l_historique(jeu):
     droits = droits_membre(_compte('p2', privilege2=True), jeu['membre'])
-    assert _vrais(droits) == {'peut_valider', 'peut_demander_suppression', 'peut_gerer_engins', 'peut_voir_historique'}
+    assert _vrais(droits) == {'peut_valider', 'peut_demander_suppression', 'peut_voir_historique'}
 
 
 def test_F28_droits_privilege3_modifie_seulement_dans_son_association(jeu):

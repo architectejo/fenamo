@@ -16,9 +16,15 @@ from django.contrib.auth import authenticate, get_user_model, logout
 from virtrine.models import Article, Contact, Galery
 from coptapp.forms import *
 from coptapp.validators import erreur_image
-from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
+from compte.permissions import editeur_requis, referentiel_ecriture_requis
+from coptapp.services.droits_provisoires import (
+    antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
+    etapes_a_valider, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
+)
 from coptapp.services.historique import historique_objet
-from coptapp.services.membres import choix_filtres, lister_membres, membres_filtres
+from coptapp.services.membres import Q_LONGUEUR_MAX, choix_filtres, lister_membres, membres_filtres
+
+RESULTATS_MAX = 50
 from fenamo.htmx import veut_fragment
 from urllib.parse import urlencode
 from datetime import datetime
@@ -122,6 +128,7 @@ def validate(request, id):
 
 # Add structure
 
+@referentiel_ecriture_requis
 def add_structure(request):
     button = 'Ajouter'
     activeAdd = 'show active'
@@ -138,6 +145,7 @@ def add_structure(request):
     return render(request, 'app/structure.html', locals())
 
 
+@referentiel_ecriture_requis
 def ville_select(request, id):
     try:
         structure = AssociationMembre.objects.get(id=id)
@@ -154,6 +162,7 @@ def ville_select(request, id):
     return render(request, 'app/ville-select.html', locals())
 
 
+@referentiel_ecriture_requis
 @require_POST
 def ville_attr(request, id, sid):
     try:
@@ -164,28 +173,28 @@ def ville_attr(request, id, sid):
         raise Http404
     return redirect('ville-select', id=structure.id)
 
+def _rattacher_membre(request, idM, champ, cible):
+    """Rattache le membre `idM` à `cible` : membre visible (404), droit de modifier (403) et cible gérable (403)."""
+    membre = membre_pour(request.user, idM, 'peut_modifier')
+    if not cible_rattachable(request.user, champ, cible):
+        raise PermissionDenied
+    rattacher(request.user, membre, champ, cible)
+    return redirect('membre-view', id=idM)
+
+
 @require_POST
 def ville_attr_membre(request, id, idM):
-    membre = Membre.objects.get(id=idM)
-    ville = Ville.objects.get(id=id)
-    rattacher(request.user, membre, 'ville', ville)
-    return redirect('membre-view', id=idM)
+    return _rattacher_membre(request, idM, 'ville', get_object_or_404(Ville, id=id))
 
 @require_POST
 def antenne_attr_membre(request, id, idM):
-    membre = Membre.objects.get(id=idM)
-    antenne = Antenne.objects.get(id=id)
-    rattacher(request.user, membre, 'antenne', antenne)
-    return redirect('membre-view', id=idM)
+    return _rattacher_membre(request, idM, 'antenne', get_object_or_404(Antenne, id=id))
 
 @require_POST
 def structure_attr_membre(request, id, idM):
-    membre = Membre.objects.get(id=idM)
-    asbl = AssociationMembre.objects.get(id=id)
-    rattacher(request.user, membre, 'structure', asbl)
-    return redirect('membre-view', id=idM)
+    return _rattacher_membre(request, idM, 'structure', get_object_or_404(AssociationMembre, id=id))
 
-
+@referentiel_ecriture_requis
 def edit_structure(request, id):
     button = 'Modifier'
     activeEdit = 'show active'
@@ -205,9 +214,10 @@ def edit_structure(request, id):
     return render(request, 'app/structure.html', locals())
 
 def structures_liste(request):
-    structures = AssociationMembre.objects.order_by('nom')
+    """Associations membres du compte (toutes pour SU / privilege5)."""
+    structures = list(associations_du_compte(request.user).order_by('nom'))
     for struct in structures:
-        struct.membres = len(Membre.objects.filter(structure=struct, is_delete=False))
+        struct.membres = membres_du_perimetre(request.user).filter(structure=struct).count()
     return render(request, 'app/structures.html', locals())
 
 #Home session
@@ -228,7 +238,7 @@ def session(request):
 
         notifications = myNotify(request)[0:3]
         antennes = Antenne.objects.filter(structure=structure).order_by('nom')
-        membres = Membre.objects.filter(structure=structure, is_delete=False)
+        membres = membres_du_perimetre(user).filter(structure=structure)
         
         #Traitement de la fonction
         today = datetime.today()
@@ -279,7 +289,7 @@ def session(request):
 def sessionById(request, id):
     #Session of user
     user = request.user
-    structure = AssociationMembre.objects.get(id=id)
+    structure = get_object_or_404(associations_du_compte(user), id=id)
 
     if structure:
         #Configuration
@@ -293,7 +303,7 @@ def sessionById(request, id):
 
         notifications = myNotify(request)[0:3]
         antennes = Antenne.objects.filter(structure=structure).order_by('nom')
-        membres = Membre.objects.filter(structure=structure, is_delete=False)
+        membres = membres_du_perimetre(user).filter(structure=structure)
         
         #Traitement de la fonction
         today = datetime.today()
@@ -341,29 +351,19 @@ def sessionById(request, id):
     return render(request, 'app/index.html', locals())
 
 def antenneView(request, id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    
-    antenne = Antenne.objects.get(id=id)
-    membres = Membre.objects.filter(antenne=antenne, is_validate3=True)
+    antenne = get_object_or_404(antennes_du_perimetre(user), id=id)
+    membres = membres_du_perimetre(user).filter(antenne=antenne, is_validate3=True)
     return render(request, 'app/antenne-view.html', locals())
 
 #Ajout d'antenne
+@referentiel_ecriture_requis
 def addAntenne(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -389,6 +389,7 @@ def addAntenne(request, id):
     except Exception as error: print(f"\n\n\n{error}\n\n\n")
     return render(request, 'app/add-antenne.html', locals())
 
+@referentiel_ecriture_requis
 def editAntenne(request,id):
     antenne = Antenne.objects.get(id=id)
     structure = antenne.structure
@@ -399,6 +400,7 @@ def editAntenne(request,id):
             form.save()
     return render(request, 'app/add-antenne.html', locals())
 
+@editeur_requis
 def addCommunique(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
@@ -429,17 +431,8 @@ def addCommunique(request):
     return render(request, 'app/add-communique.html', locals())
 
 def addFamily(request,id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    membre = Membre.objects.get(id=id)
+    membre = membre_pour(user, id, 'peut_gerer_famille')
     if request.method == 'POST':
         getter, setter = Famille.objects.get_or_create(
             user=user
@@ -450,63 +443,51 @@ def addFamily(request,id):
             ,annee=request.POST['annee']
         )
         if setter:
-            message = 'Ajout d\'un membre de la famille'
+            message = "Ajout d'un membre de la famille"
             classe = 'alert alert-success text-center'
         elif getter:
             message = 'Ce membre est déjà ajouté'
             classe = 'alert alert-danger text-center'
-    
     return render(request, 'app/add-family.html', locals())
 
 def addMembre(request, id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
+    """Ajout d'un membre à l'association `id` : association du compte (404 sinon), droit de créer (403 sinon)."""
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        try:
-            villeId = userMembre.ville.id
-        except Exception as error:
-            print(f"\n\n\n{error}\n\n\n")
-    notifications = myNotify(request)[0:3]
-    provinces = provinceSelector()
-    
-    try:
-        structure = AssociationMembre.objects.get(id=id)
-        ville = structure.ville
-        user = request.user
-        antennes = Antenne.objects.filter(structure=structure)
-        if request.method == 'POST':
-            form = MembreForm(request.POST, request.FILES)
-            if form.is_valid():
-                membre = form.save(commit=False)
-                membre.structure = membre.structure
-                try:
-                    membre.province = membre.structure.province
-                except: pass
-                membre.user = request.user
-                membre.save()
-                classe = 'alert alert-info text-center'
-                message = f"Ajout du membre"
-                notify(user=user, titre="Ajout d'un membre")
-                return redirect('membre-view', id=membre.id)
-            else:
-                classe = 'alert alert-danger text-center'
-                message = f"Le membre est déjà ajouter"
-        else:
-            antennes = Antenne.objects.filter(structure=structure)
-            form = MembreForm(structure=structure)
-    except Exception as error: print(f"\n\n\n{error}\n\n\n")
+    structure = get_object_or_404(associations_du_compte(user), id=id)
+    if not droits_membre(user)['peut_creer_membre']:
+        raise PermissionDenied
+    ville = structure.ville
+    antennes = Antenne.objects.filter(structure=structure)
+    if request.method == 'POST':
+        form = MembreForm(request.POST, request.FILES, structure=structure)
+        if form.is_valid():
+            membre = form.save(commit=False)
+            membre.structure = structure
+            membre.province = structure.province
+            membre.user = user
+            membre.save()
+            classe = 'alert alert-info text-center'
+            message = "Ajout du membre"
+            notify(user=user, titre="Ajout d'un membre")
+            return redirect('membre-view', id=membre.id)
+        classe = 'alert alert-danger text-center'
+        message = "Le membre est déjà ajouter"
+    else:
+        form = MembreForm(structure=structure)
     return render(request, 'app/add-membre.html', locals())
 
 def add_membre_from_fenamo(request):
+    """Ajout d'un membre hors association : réservé à qui voit tout (SU, privilege5), jamais en lecture seule."""
+    user = request.user
+    if not (voit_tout(user) and droits_membre(user)['peut_creer_membre']):
+        raise PermissionDenied
     if request.method == 'POST':
         form = MembreFenamoForm(request.POST, request.FILES)
         if form.is_valid():
             membre = form.save(commit=False)
-            try:
+            if membre.ville:
                 membre.province = membre.ville.province
-            except: pass
+            membre.user = user
             membre.save()
             return redirect('membre-view', id=membre.id)
     else:
@@ -529,9 +510,8 @@ def addMoto(request, id):
     provinces = provinceSelector()
     
     user = request.user
-    membre = Membre.objects.get(id=id)
+    membre = membre_pour(user, id, 'peut_gerer_engins')
     structure = membre.structure
-    print(f"\n\n\n{structure}\n\n\n")
     if request.method == 'POST':
         photo = request.FILES.get('photo')
         erreur_photo = erreur_image(photo) if photo else None
@@ -564,13 +544,13 @@ def addMoto(request, id):
     return render(request, 'app/add-moto.html', locals())
 
 #Ajout d'une province
+@referentiel_ecriture_requis
 def addProvince(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -583,13 +563,13 @@ def addProvince(request):
     return render(request, 'app/add-province.html', locals())
 
 #Ajout d'une ville
+@referentiel_ecriture_requis
 def addVille(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -608,12 +588,12 @@ def addVille(request, id):
 
 @require_POST
 def attributMoto(request, id):
-    membre = get_object_or_404(Membre, id=id)
+    membre = membre_pour(request.user, id, 'peut_gerer_engins')
     numero = (request.POST.get('numero') or '').strip()
     if not numero:
         contrib_messages.error(request, _("Indiquez le numéro de l'engin."))
         return redirect("membre-view", id=id)
-    motos = list(Moto.objects.filter(numero=numero)[:2])
+    motos = list(engins_visibles(request.user).filter(numero=numero)[:2])
     if not motos:
         contrib_messages.error(request, _("Aucun engin ne porte ce numéro."))
     elif len(motos) > 1:
@@ -628,13 +608,13 @@ def attributMoto(request, id):
         contrib_messages.success(request, _("Engin attribué."))
     return redirect("membre-view", id=id)
 
+@editeur_requis
 def contact(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -642,13 +622,13 @@ def contact(request):
     contacts = Contact.objects.order_by('-id')
     return render(request, 'app/contact.html', locals())
 
+@editeur_requis
 def contactView(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -661,42 +641,23 @@ def contactView(request, id):
 
 @require_POST
 def deleteMoto(request,id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
-    user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    moto = Moto.objects.get(id=id)
+    moto = engin_pour(request.user, id, 'peut_gerer_engins')
     changer_suppression(request.user, moto, True)
     notify(user=moto.user, titre="Suppression d'une moto", description=f"Numero:{moto.numero}")
     return redirect('membre-view', id=moto.proprietaire.id)
 
-
 @require_POST
 def deleteFamily(request, id):
-    famille = Famille.objects.get(id=id)
-    idMbr = famille.membre.id
+    famille = get_object_or_404(Famille, id=id)
+    membre_pour(request.user, famille.membre_id, 'peut_gerer_famille')
+    idMbr = famille.membre_id
     famille.delete()
     return redirect("membre-view", id=idMbr)
 
-
 def editFamily(request,id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    famille = Famille.objects.get(id=id)
-    membre = Membre.objects.get(id=famille.membre.id)
+    famille = get_object_or_404(Famille, id=id)
+    membre = membre_pour(user, famille.membre_id, 'peut_gerer_famille')
     if request.method == 'POST':
         famille.user = user
         famille.membre=membre
@@ -707,23 +668,20 @@ def editFamily(request,id):
         famille.save()
         message = 'Mise à jour !'
         classe = 'alert alert-success text-center'
-    
     return render(request, 'app/add-family.html', locals())
-
 
 def editMoto(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
     
-    moto = Moto.objects.get(id=id)
-    membre = Membre.objects.get(id=moto.proprietaire.id)
+    moto = engin_pour(user, id, 'peut_gerer_engins')
+    membre = moto.proprietaire
     if request.method == 'POST':
         photo = request.FILES.get('photo')
         erreur_photo = erreur_image(photo) if photo else None
@@ -853,123 +811,54 @@ def membre_view(request, id):
 
 #Vue de la moto
 def moto_view(request, id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
+    """Fiche d'un engin : visible si son propriétaire est dans le périmètre du compte (404 sinon)."""
     user = request.user
-    moto = Moto.objects.get(id=id)
-    if user.is_authenticated:
-        if user.membreId:
-            userMembre = Membre.objects.get(id=user.membreId)
-            villeId = userMembre.ville.id
-        notifications = myNotify(request)[0:3]
-        antennes = Antenne.objects.order_by('nom')
-        provinces = provinceSelector()
-    
+    moto = engin_pour(user, id)
     membre = moto.proprietaire
-    membreUser = compte_du_membre(id)
+    membreUser = compte_du_membre(moto.proprietaire_id)
     verify = 1 if membreUser else 0
-    
-    if moto.motard_id:
-        motard = Membre.objects.get(id=moto.motard_id)
+    motard = membres_du_perimetre(user).filter(id=moto.motard_id).first() if moto.motard_id else None
     return render(request, 'app/moto-view.html', locals())
 
 #Vue de la liste des villes dans la province
 def province_view(request, id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
+    """Coordination provinciale et ses villes : lecture dans le périmètre du compte (404 sinon)."""
     user = request.user
-    if user.membreId != None:
-        uMbr = Membre.objects.filter(id=user.membreId)[0:1]
-        for mbr in uMbr:
-            userMembre = mbr
-        #userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    user = request.user
-    membre = Membre.objects.filter(id=id)
-    for mbr in membre:
-        membre = mbr
-    #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-    membreUser = compte_du_membre(id)
-    verify = 1 if membreUser else 0
-    
-    province = Province.objects.get(id=id)
-    villes = Ville.objects.filter(province=province).order_by('nom')
+    province = get_object_or_404(provinces_du_perimetre(user), id=id)
+    villes = villes_du_perimetre(user).filter(province=province).order_by('nom')
     return render(request, 'app/province-view.html', locals())
 
 #Recherche des membres ou de la moto
+#Recherche des membres ou de la moto
 def recherche(request):
-    if request.user.is_authenticated:
-        #Configuration
-        messages = Communique.objects.order_by('-id')[0:3]
-        user = request.user
-        if user.membreId:
-            userMembre = Membre.objects.get(id=user.membreId)
-            villeId = userMembre.ville.id
-        notifications = myNotify(request)[0:3]
-        antennes = Antenne.objects.order_by('nom')
-        provinces = provinceSelector()
-        
-        try:
-            membre = Membre.objects.get(id=user.membreId)
-            #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-            membreUser = compte_du_membre(membre.id)
-            verify = 1 if membreUser else 0
-        except:
-            pass
-    
-    if request.method == 'POST':
-        if request.POST['search']:
-            champ = request.POST['champ']
-            if len(champ) != 0:
-                membres = Membre.objects.filter(nom__icontains=champ).order_by('nom','-mise_a_jour')
-                motos = Moto.objects.filter(numero__icontains=str(champ))
-                print(f"\n\n\n{motos}\n\n\n")
-                if len(membres) == 0 and len(motos) == 0:
-                    membres = {}
-                    message = f'Aucun resultat !'
-                    classe = 'alert alert-danger text-center'
-            else:
-                membres = {}
-                message = 'Aucun resultat !'
-                classe = 'alert alert-danger text-center'
+    """Recherche de la barre du haut (POST) : membres et engins du PÉRIMÈTRE du compte, sans les supprimés.
+
+    Les membres passent par le service de liste (nom, identifiant, téléphone) ; un engin est trouvé par son numéro
+    si son propriétaire est visible du compte. Aucun résultat hors périmètre, même pour un visiteur.
+    """
+    user = request.user
+    membres, motos = [], []
+    if request.method == 'POST' and request.POST.get('search'):
+        champ = (request.POST.get('champ') or '').strip()
+        if champ:
+            membres = list(membres_filtres(user, {'q': champ[:Q_LONGUEUR_MAX]})[:RESULTATS_MAX])
+            motos = list(engins_visibles(user).filter(numero__icontains=champ[:Q_LONGUEUR_MAX]).select_related('proprietaire')[:RESULTATS_MAX])
+        if not membres and not motos:
+            membres = {}
+            message = 'Aucun resultat !'
+            classe = 'alert alert-danger text-center'
     return render(request, 'app/resultats.html', locals())
 
 #Afficher la liste des antennes dans une ville
 def ville_view(request, id):
-    
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
+    """Une ville (niveau hérité) et ses membres : lecture dans le périmètre du compte (404 sinon)."""
     user = request.user
     structure = AssociationMembre.objects.filter(users=user).first()
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     antennes = Antenne.objects.filter(structure=structure).order_by('nom')
-    provinces = provinceSelector()
-    
-    user = request.user
-    membre = Membre.objects.filter(id=id)
-    if membre:
-        membre = membre[0]
-    #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-    membreUser = compte_du_membre(id)
-    verify = 1 if membreUser else 0
-    
-    ville = Ville.objects.get(id=id)
-    if user.is_superuser or user.privilege5:
-        membres = Membre.objects.filter(ville=ville, is_delete=False).order_by('nom','antenne')
-    else:
-        if user.privilege1 or user.privilege2 or user.privilege3:
-            membres = Membre.objects.filter(ville=ville, is_delete=False, is_validate1=True).order_by('nom','antenne')
-        elif user.privilege4:
-            membres = Membre.objects.filter(ville=ville, is_delete=False, is_validate3=True).order_by('nom','antenne')
+    ville = get_object_or_404(villes_du_perimetre(user), id=id)
+    membres = membres_du_perimetre(user).filter(ville=ville).order_by('nom', 'antenne')
     return render(request, 'app/ville-view.html', locals())
-
 
 #Afficher la liste des membres
 def membreListe(request):
@@ -1040,9 +929,8 @@ def listMessage(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -1056,9 +944,8 @@ def messageView(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -1068,13 +955,13 @@ def messageView(request, id):
     reactions = Reaction.objects.filter(communique=message)
     return render(request, 'app/message-view.html', locals())
 
+@editeur_requis
 def site(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -1124,13 +1011,13 @@ def site(request):
     articles = Article.objects.order_by('-id')
     return render(request, 'app/site.html', locals())
 
+@editeur_requis
 def article(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -1164,6 +1051,7 @@ def article(request, id):
     articles = Article.objects.order_by('-id')
     return render(request, 'app/site.html', locals())
 
+@editeur_requis
 @require_POST
 def deleteArticle(request, id):
     article = Article.objects.get(id=id)

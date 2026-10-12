@@ -5,6 +5,8 @@ from coptapp.forms import AssociationMembreIdentifyForm
 
 from datetime import date
 
+from compte.permissions import editeur_requis
+
 # Create your views here.
 
 def actualy(request):
@@ -63,6 +65,7 @@ def home(request):
 
 #______________Configuration
 
+@editeur_requis
 def config(request):
     nbr = len(Config.objects.all())
     if nbr != 0:
