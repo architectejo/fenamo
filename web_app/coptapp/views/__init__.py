@@ -29,7 +29,6 @@ from fenamo.htmx import veut_fragment
 from urllib.parse import urlencode
 from datetime import datetime
 from calendar import monthrange
-import os
 # Create your views here.
 User = get_user_model()
 
@@ -51,7 +50,9 @@ def demandeSuppression(request, id):
     Périmètre : 404 si le membre est hors du périmètre du compte ; 403 si le compte ne peut pas demander de suppression.
     """
     user = request.user
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=True), id=id)
+    # Un membre déjà supprimé n'est visible (donc annulable) que de qui peut demander la suppression : 404 sinon.
+    voit_supprimes = droits_membre(user)['peut_demander_suppression']
+    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=voit_supprimes), id=id)
     if not droits_membre(user, membre)['peut_demander_suppression']:
         raise PermissionDenied
     if membre.is_delete:
@@ -1038,11 +1039,8 @@ def article(request, id):
             return render(request, 'app/site.html', locals(), status=400)
         article.titre = request.POST.get('titre')
         article.description = request.POST.get('description')
-        if len(request.FILES) != 0:
-            if article.image: 
-                try: os.remove(article.image.path)
-                except: pass
-            article.image = request.FILES.get('image')
+        if image:  # un nouveau fichier valide seulement ; l'ancien est supprimé après validation de la transaction (signal)
+            article.image = image
         message = "Mise à jour de l'article !"
         classe = 'alert alert-info text-center'
         article.save()
@@ -1054,8 +1052,6 @@ def article(request, id):
 @editeur_requis
 @require_POST
 def deleteArticle(request, id):
-    article = Article.objects.get(id=id)
-    try: os.remove(article.image.path)
-    except: pass
-    article.delete()
+    article = get_object_or_404(Article, id=id)
+    article.delete()  # les fichiers sont supprimés par le signal post_delete, après validation de la transaction
     return redirect("site")

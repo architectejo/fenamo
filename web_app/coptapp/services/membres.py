@@ -15,6 +15,7 @@ from coptapp.services.etats import ETATS, filtrer_membres_par_etat
 PAR_PAGE = 25
 QUALITES = ('MOTARD', 'PROPRIETAIRE', 'MOTARD ET PROPRIETAIRE')
 Q_LONGUEUR_MAX = 100
+ENTIER_MAX = 2**63 - 1
 
 
 @dataclass
@@ -26,10 +27,12 @@ class ResultatListe:
 
 
 def _entier(valeur):
+    """Entier strictement positif et assez petit pour la base (sinon None : le filtre est ignoré)."""
     try:
-        return int(valeur)
+        nombre = int(valeur)
     except (TypeError, ValueError):
         return None
+    return nombre if 0 < nombre <= ENTIER_MAX else None
 
 
 def normaliser_filtres(params):

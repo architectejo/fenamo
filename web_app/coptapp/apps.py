@@ -9,9 +9,11 @@ class CoptappConfig(AppConfig):
         """Traite toute image téléversée (type réel, nom aléatoire, taille, vignette) avant l'enregistrement."""
         from django.apps import apps
         from django.db import models
-        from django.db.models.signals import pre_save
+        from django.db.models.signals import post_delete, pre_save
 
-        from coptapp.validators import traiter_images_avant_enregistrement, traiter_pieces_avant_enregistrement
+        from coptapp.validators import (
+            supprimer_fichiers_apres_suppression, traiter_images_avant_enregistrement, traiter_pieces_avant_enregistrement,
+        )
         for modele in apps.get_models():
             if modele._meta.app_label in ('coptapp', 'virtrine') and any(
                 isinstance(champ, models.ImageField) for champ in modele._meta.concrete_fields
@@ -24,3 +26,8 @@ class CoptappConfig(AppConfig):
             ):
                 pre_save.connect(traiter_pieces_avant_enregistrement, sender=modele,
                                  dispatch_uid=f'pieces-{modele._meta.label_lower}')
+            if modele._meta.app_label in ('coptapp', 'virtrine') and any(
+                isinstance(champ, models.FileField) for champ in modele._meta.concrete_fields
+            ):
+                post_delete.connect(supprimer_fichiers_apres_suppression, sender=modele,
+                                    dispatch_uid=f'suppression-fichiers-{modele._meta.label_lower}')
