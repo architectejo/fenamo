@@ -1,4 +1,4 @@
-"""E1 : fiche, modification, validation et demande de suppression d'un membre sous contrôle de périmètre et de droit.
+"""F-21, F-23, F-25 : fiche, modification, validation et demande de suppression d'un membre sous contrôle de périmètre et de droit.
 
 Règle provisoire (privilèges hérités, voir coptapp/services/droits_provisoires.py) : 404 hors périmètre, 403 si
 l'action est interdite.
@@ -43,23 +43,23 @@ def url_valider(m):
 
 # ------------------------------------------------------------------ lecture (GET)
 
-def test_E1_anonyme_redirige(client, jeu):
+def test_F23_anonyme_redirige(client, jeu):
     assert client.get(url_fiche(jeu['membre'])).status_code == 302
 
 
-def test_E1_connecte_sans_privilege_ne_voit_pas_une_fiche_quelconque(client, jeu):
+def test_F23_connecte_sans_privilege_ne_voit_pas_une_fiche_quelconque(client, jeu):
     client.force_login(_compte('nu'))
     assert client.get(url_fiche(jeu['membre'])).status_code == 404
 
 
-def test_E1_connecte_sans_privilege_voit_sa_propre_fiche(client, jeu):
+def test_F23_connecte_sans_privilege_voit_sa_propre_fiche(client, jeu):
     moi = _compte('moi', membreId=jeu['membre'].id)
     client.force_login(moi)
     r = client.get(url_fiche(jeu['membre']))
     assert r.status_code == 200 and not r.context['peut_modifier'] and not r.context['peut_valider']
 
 
-def test_E1_agent_ne_voit_que_ses_saisies(client, jeu):
+def test_F23_agent_ne_voit_que_ses_saisies(client, jeu):
     agent = _compte('agent', privilege1=True)
     sien = _membre(jeu, 'Saisi par agent', user=agent)
     client.force_login(agent)
@@ -67,26 +67,26 @@ def test_E1_agent_ne_voit_que_ses_saisies(client, jeu):
     assert client.get(url_fiche(jeu['membre'])).status_code == 404
 
 
-def test_E1_visiteur_ne_voit_que_les_actifs(client, jeu):
+def test_F23_visiteur_ne_voit_que_les_actifs(client, jeu):
     actif = _membre(jeu, 'Actif', is_validate2=True, is_validate3=True)
     client.force_login(_compte('vis', privilege4=True))
     assert client.get(url_fiche(actif)).status_code == 200
     assert client.get(url_fiche(jeu['membre'])).status_code == 404
 
 
-def test_E1_privilege3_voit_les_membres_valides_aux_deux_premieres_etapes(client, jeu):
+def test_F23_privilege3_voit_les_membres_valides_aux_deux_premieres_etapes(client, jeu):
     avance = _membre(jeu, 'Avancé', is_validate2=True)
     client.force_login(_compte('p3', privilege3=True))
     assert client.get(url_fiche(avance)).status_code == 200
     assert client.get(url_fiche(jeu['membre'])).status_code == 404
 
 
-def test_E1_membre_inexistant_404(client, jeu):
+def test_F23_membre_inexistant_404(client, jeu):
     client.force_login(jeu['compte'])
     assert client.get(reverse('membre-view', kwargs={'id': 99999})).status_code == 404
 
 
-def test_E1_membre_supprime_visible_des_seuls_roles_qui_peuvent_annuler(client, jeu):
+def test_F23_membre_supprime_visible_des_seuls_roles_qui_peuvent_annuler(client, jeu):
     supprime = _membre(jeu, 'Supprimé', is_delete=True, is_validate2=True, is_validate3=True)
     client.force_login(jeu['compte'])
     assert client.get(url_fiche(supprime)).status_code == 200
@@ -94,7 +94,7 @@ def test_E1_membre_supprime_visible_des_seuls_roles_qui_peuvent_annuler(client, 
     assert client.get(url_fiche(supprime)).status_code == 404
 
 
-def test_E1_contexte_de_la_fiche_porte_les_droits(client, jeu):
+def test_F23_contexte_de_la_fiche_porte_les_droits(client, jeu):
     client.force_login(jeu['compte'])
     c = client.get(url_fiche(jeu['membre'])).context
     assert c['peut_modifier'] and c['peut_valider'] and c['peut_attribuer_privileges'] and c['peut_voir_historique']
@@ -105,7 +105,7 @@ def test_E1_contexte_de_la_fiche_porte_les_droits(client, jeu):
 
 @pytest.mark.parametrize('privileges', [{}, {'privilege1': True}, {'privilege2': True}, {'privilege4': True},
                                         {'privilege4': True, 'privilege3': True}])
-def test_E1_modifier_refuse_403(client, jeu, privileges):
+def test_F21_modifier_refuse_403(client, jeu, privileges):
     compte = _compte('refuse', membreId=jeu['membre'].id, **privileges)  # voit au moins sa fiche
     jeu['association'].users.add(compte)
     client.force_login(compte)
@@ -115,14 +115,14 @@ def test_E1_modifier_refuse_403(client, jeu, privileges):
     assert jeu['membre'].nom == 'Membre Fictif'
 
 
-def test_E1_modifier_hors_perimetre_404(client, jeu):
+def test_F21_modifier_hors_perimetre_404(client, jeu):
     client.force_login(_compte('nu2'))
     assert client.post(url_fiche(jeu['membre']), _donnees_modifier()).status_code == 404
     jeu['membre'].refresh_from_db()
     assert jeu['membre'].nom == 'Membre Fictif'
 
 
-def test_E1_modifier_privilege3_hors_de_son_association_403(client, jeu):
+def test_F21_modifier_privilege3_hors_de_son_association_403(client, jeu):
     autre = AssociationMembre.objects.create(nom='Autre', num_justice='F-77')
     p3 = _compte('p3x', privilege3=True)
     autre.users.add(p3)
@@ -131,7 +131,7 @@ def test_E1_modifier_privilege3_hors_de_son_association_403(client, jeu):
     assert client.post(url_fiche(etranger), _donnees_modifier()).status_code == 403
 
 
-def test_E1_modifier_privilege3_dans_son_association_autorise(client, jeu):
+def test_F21_modifier_privilege3_dans_son_association_autorise(client, jeu):
     p3 = _compte('p3y', privilege3=True)
     jeu['association'].users.add(p3)
     cible = _membre(jeu, 'À modifier', is_validate2=True)
@@ -142,14 +142,14 @@ def test_E1_modifier_privilege3_dans_son_association_autorise(client, jeu):
     assert cible.nom == 'Modifié par p3'
 
 
-def test_E1_modifier_super_utilisateur_autorise(client, jeu):
+def test_F21_modifier_super_utilisateur_autorise(client, jeu):
     client.force_login(jeu['compte'])
     assert client.post(url_fiche(jeu['membre']), _donnees_modifier('Par le SU')).status_code == 200
     jeu['membre'].refresh_from_db()
     assert jeu['membre'].nom == 'Par le SU'
 
 
-def test_E1_demande_de_modification_reservee_aux_agents_et_su(client, jeu):
+def test_F21_demande_de_modification_reservee_aux_agents_et_su(client, jeu):
     agent = _compte('agent3', privilege1=True)
     cible = _membre(jeu, 'Cible', user=agent)
     client.force_login(agent)
@@ -159,7 +159,7 @@ def test_E1_demande_de_modification_reservee_aux_agents_et_su(client, jeu):
     assert client.post(url_fiche(cible), {'envoyer': '1', 'demande': 'Corriger'}).status_code == 403
 
 
-def test_E1_attribution_de_privileges_reservee_aux_su(client, jeu):
+def test_F21_attribution_de_privileges_reservee_aux_su(client, jeu):
     p5 = _compte('p5z', privilege5=True)
     cible = jeu['membre']
     _compte('cible-compte', membreId=cible.id)
@@ -169,19 +169,19 @@ def test_E1_attribution_de_privileges_reservee_aux_su(client, jeu):
 
 # ------------------------------------------------------------------ validation (POST valider)
 
-def test_E1_valider_get_interdit(client, jeu):
+def test_F23_valider_get_interdit(client, jeu):
     client.force_login(jeu['compte'])
     assert client.get(url_valider(jeu['membre'])).status_code == 405
 
 
-def test_E1_valider_hors_perimetre_404(client, jeu):
+def test_F23_valider_hors_perimetre_404(client, jeu):
     client.force_login(_compte('nu3'))
     assert client.post(url_valider(jeu['membre'])).status_code == 404
     jeu['membre'].refresh_from_db()
     assert not jeu['membre'].is_validate2
 
 
-def test_E1_valider_refuse_sans_droit_403(client, jeu):
+def test_F23_valider_refuse_sans_droit_403(client, jeu):
     actif = _membre(jeu, 'Actif', is_validate2=True, is_validate3=True)
     for nom, kw in (('vis3', {'privilege4': True}), ('vis4', {'privilege4': True, 'privilege2': True})):
         client.force_login(_compte(nom, **kw))
@@ -193,7 +193,7 @@ def test_E1_valider_refuse_sans_droit_403(client, jeu):
     assert not jeu['membre'].is_validate2
 
 
-def test_E1_valider_privilege2_puis_privilege3_et_journal(client, jeu):
+def test_F23_valider_privilege2_puis_privilege3_et_journal(client, jeu):
     cible = jeu['membre']
     client.force_login(_compte('p2v', privilege2=True))
     client.post(url_valider(cible))
@@ -207,7 +207,7 @@ def test_E1_valider_privilege2_puis_privilege3_et_journal(client, jeu):
     assert lignes.count() == 2 and not JournalAction.objects.filter(action=JournalAction.Action.RENVOI).exists()
 
 
-def test_E1_valider_est_idempotente_ne_devalide_jamais(client, jeu):
+def test_F23_valider_est_idempotente_ne_devalide_jamais(client, jeu):
     cible = jeu['membre']
     client.force_login(jeu['compte'])
     for _ in range(3):
@@ -222,26 +222,93 @@ def test_E1_valider_est_idempotente_ne_devalide_jamais(client, jeu):
     assert cible.is_validate2 and cible.is_validate3
 
 
-def test_E1_privilege3_ne_valide_pas_un_membre_non_visible(client, jeu):
+def test_F23_privilege3_ne_valide_pas_un_membre_non_visible(client, jeu):
     client.force_login(_compte('p3w', privilege3=True))
     assert client.post(url_valider(jeu['membre'])).status_code == 404
 
 
 # ------------------------------------------------------------------ suppression logique
 
-def test_E1_demande_de_suppression(client, jeu):
+def test_F25_suppression_motif_obligatoire_et_droits(client, jeu):
     url = reverse('delete-membre', kwargs={'id': jeu['membre'].id})
     client.force_login(_compte('nu4'))
-    assert client.post(url).status_code == 404
-    moi = _compte('moi3', membreId=jeu['membre'].id)
-    client.force_login(moi)
-    assert client.post(url).status_code == 403  # voit sa fiche, mais ne peut pas demander de suppression
+    assert client.post(url, {'motif': 'x'}).status_code == 404
+    client.force_login(_compte('moi3', membreId=jeu['membre'].id))
+    assert client.post(url, {'motif': 'x'}).status_code == 403  # voit sa fiche, ne peut pas demander
     client.force_login(_compte('vis5', privilege4=True, privilege1=True))
-    assert client.post(url).status_code == 404
+    assert client.post(url, {'motif': 'x'}).status_code == 404
+
+
+def test_F25_agent_demande_sans_supprimer(client, jeu):
     agent = _compte('agent4', privilege1=True)
     sien = _membre(jeu, 'À supprimer', user=agent)
+    url = reverse('delete-membre', kwargs={'id': sien.id})
     client.force_login(agent)
-    assert client.post(reverse('delete-membre', kwargs={'id': sien.id})).status_code == 302
+    client.post(url, {})  # sans motif : rien ne change
     sien.refresh_from_db()
-    assert sien.is_delete
-    assert JournalAction.objects.filter(action=JournalAction.Action.SUPPRESSION, objet_id=sien.id).count() == 1
+    assert not sien.suppression_demandee and not JournalAction.objects.filter(action=JournalAction.Action.DEMANDE_SUPPRESSION).exists()
+    assert client.post(url, {'motif': 'Doublon'}).status_code == 302
+    sien.refresh_from_db()
+    assert sien.suppression_demandee and not sien.is_delete and sien.motif_suppression == 'Doublon'
+    ligne = JournalAction.objects.get(action=JournalAction.Action.DEMANDE_SUPPRESSION)
+    assert ligne.motif == 'Doublon' and ligne.objet_id == sien.id
+    client.post(url, {})  # demande en cours : le même bouton l'annule
+    sien.refresh_from_db()
+    assert not sien.suppression_demandee and not sien.is_delete
+
+
+def test_F25_execution_reservee_a_su_et_privilege5(client, jeu):
+    agent = _compte('agent5', privilege1=True)
+    sien = _membre(jeu, 'Cible', user=agent)
+    url = reverse('delete-membre', kwargs={'id': sien.id})
+    client.force_login(agent)
+    client.post(url, {'motif': 'Doublon'})
+    for compte in (jeu['compte'], _compte('p5x', privilege5=True)):
+        sien.refresh_from_db()
+        Membre.objects.filter(pk=sien.pk).update(is_delete=False, suppression_demandee=True)
+        client.force_login(compte)
+        client.post(url, {})  # sans motif : rien
+        sien.refresh_from_db()
+        assert not sien.is_delete
+        client.post(url, {'motif': 'Confirmé'})
+        sien.refresh_from_db()
+        assert sien.is_delete and not sien.suppression_demandee
+    assert JournalAction.objects.filter(action=JournalAction.Action.SUPPRESSION, motif='Confirmé').count() == 2
+    # l'agent ne peut pas annuler une suppression exécutée
+    client.force_login(agent)
+    assert client.post(url, {'motif': 'x'}).status_code == 403
+    client.force_login(jeu['compte'])
+    client.post(url, {})
+    sien.refresh_from_db()
+    assert not sien.is_delete
+
+
+def test_F23_valider_exige_l_etape_precedente_et_pas_sa_propre_fiche(client, jeu):
+    suivant = _membre(jeu, 'Suivant')
+    p3 = _compte('p3s', privilege3=True)
+    client.force_login(p3)
+    # privilege3 ne voit que les membres déjà validés à l'étape 2 : l'étape précédente est donc exigée
+    assert client.post(url_valider(suivant)).status_code == 404
+    p23 = _compte('p23', privilege2=True, privilege3=True)
+    client.force_login(p23)
+    client.post(url_valider(suivant))
+    suivant.refresh_from_db()
+    assert suivant.is_validate2 and not suivant.is_validate3  # une seule étape par action
+    client.post(url_valider(suivant))
+    suivant.refresh_from_db()
+    assert suivant.is_validate3
+    # propre fiche et propres saisies
+    propre = _membre(jeu, 'Ma fiche')
+    saisie = _membre(jeu, 'Ma saisie', user=p23)
+    p23.membreId = propre.id
+    p23.save()
+    client.force_login(p23)
+    for membre in (propre, saisie):
+        client.post(url_valider(membre))
+        membre.refresh_from_db()
+        assert not membre.is_validate2
+    p5 = _compte('p5s', privilege5=True, membreId=propre.id)
+    client.force_login(p5)
+    client.post(url_valider(propre))
+    propre.refresh_from_db()
+    assert not propre.is_validate2

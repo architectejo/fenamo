@@ -109,6 +109,9 @@ class Membre(models.Model):
     a_propos = models.TextField(blank=True, null=True)
     is_user = models.BooleanField(default=False, null=True, blank=True)
     is_delete = models.BooleanField(default=False)
+    # Demande de suppression (F-25) : un agent ou un validateur demande, SU / privilege5 exécute (is_delete).
+    suppression_demandee = models.BooleanField(default=False)
+    motif_suppression = models.TextField(blank=True, default='')
     is_validate1 = models.BooleanField(default=True)
     is_validate2 = models.BooleanField(default=False)
     is_validate3 = models.BooleanField(default=False)

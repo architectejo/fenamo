@@ -16,7 +16,21 @@ Correspondance héritière retenue, d'après coptapp.views.validate et les liste
 """
 from datetime import date
 
+from django.utils.translation import gettext_lazy as _
+
 ETATS = ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye', 'a_renouveler', 'supprime')
+
+
+# Table UNIQUE des libellés d'état (codes en snake_case) : les gabarits, les balises et le tableau de bord la lisent.
+LIBELLES = {
+    'saisi': _('Saisi'),
+    'valide_antenne': _('Validé antenne'),
+    'valide_province': _('Validé province'),
+    'actif': _('Actif'),
+    'renvoye': _('Renvoyé'),
+    'a_renouveler': _('À renouveler'),
+    'supprime': _('Supprimé'),
+}
 
 
 def etat_de(objet, aujourdhui=None):

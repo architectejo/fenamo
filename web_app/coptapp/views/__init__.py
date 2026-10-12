@@ -7,7 +7,7 @@ from compte.services.comptes import compte_du_membre
 from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
 from coptapp.services.actions import (
-    changer_suppression, drapeaux_validation, journaliser_validation, rattacher,
+    changer_suppression, drapeaux_validation, journaliser_validation, rattacher, traiter_suppression_membre,
 )
 from django.http import Http404
 from django.views.decorators.http import require_POST
@@ -22,11 +22,13 @@ from coptapp.services.droits_provisoires import (
     etapes_a_valider, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
 from coptapp.services.historique import historique_objet
-from coptapp.services.membres import Q_LONGUEUR_MAX, choix_filtres, lister_membres, membres_filtres
+from coptapp.services.membres import (
+    Q_LONGUEUR_MAX, choix_filtres, demander_modification, lister_membres, membres_filtres, modifier_membre,
+)
 
 RESULTATS_MAX = 50
 from fenamo.htmx import veut_fragment
-from urllib.parse import urlencode
+from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime
 from calendar import monthrange
 # Create your views here.
@@ -45,24 +47,33 @@ def provinceSelector():
 
 @require_POST
 def demandeSuppression(request, id):
-    """Demande de suppression logique d'un membre, ou annulation de la demande (F-25).
+    """Demande de suppression logique d'un membre, exécution ou annulation (F-25). Motif obligatoire (champ ``motif``).
 
-    Périmètre : 404 si le membre est hors du périmètre du compte ; 403 si le compte ne peut pas demander de suppression.
+    SU et privilege5 exécutent la suppression (ou la restaurent) ; les autres (agent, validateurs) déposent une
+    demande, ou l'annulent. 404 hors périmètre (un membre déjà supprimé n'est visible que de qui peut demander la
+    suppression), 403 sans droit. Sans motif : rien ne change, un message l'indique.
     """
     user = request.user
-    # Un membre déjà supprimé n'est visible (donc annulable) que de qui peut demander la suppression : 404 sinon.
-    voit_supprimes = droits_membre(user)['peut_demander_suppression']
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=voit_supprimes), id=id)
-    if not droits_membre(user, membre)['peut_demander_suppression']:
+    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=True), id=id)
+    droits = droits_membre(user, membre)
+    if membre.is_delete and not droits['peut_demander_suppression']:
+        raise Http404  # supprimé : hors périmètre pour qui ne peut pas l'annuler
+    if not droits['peut_demander_suppression']:
         raise PermissionDenied
-    if membre.is_delete:
-        titre = "Annulation de la demande de suppression"
-        changer_suppression(user, membre, False)
-    else:
-        titre = "Demande de suppression"
-        changer_suppression(user, membre, True)
-    notify(user=user, membre=membre, titre=titre)
+    resultat = traiter_suppression_membre(user, membre, request.POST.get('motif'))
+    messages_resultat = {
+        'motif_requis': (contrib_messages.error, _("Indiquez le motif de la suppression.")),
+        'supprime': (contrib_messages.success, _("Membre supprimé.")),
+        'restaure': (contrib_messages.success, _("Suppression annulée.")),
+        'demande': (contrib_messages.success, _("Demande de suppression envoyée.")),
+        'demande_annulee': (contrib_messages.success, _("Demande de suppression annulée.")),
+    }
+    ajouter, texte = messages_resultat[resultat]
+    ajouter(request, texte)
+    if resultat != 'motif_requis':
+        notify(user=user, membre=membre, titre=str(texte))
     return redirect("membre-view", id=id)
+
 #---------------------------------------------------------------------------------------------------------------------------
 
 #Statistique:
@@ -100,13 +111,22 @@ def myNotify(request):
     return data
 
 #Validation des membres
+def _retour(request, defaut):
+    """Redirige vers la page d'où vient la demande (champ ``next`` ou en-tête Referer), si elle est du même site."""
+    cible = request.POST.get('next') or request.META.get('HTTP_REFERER', '')
+    if cible and url_has_allowed_host_and_scheme(cible, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(cible)
+    return redirect(defaut)
+
+
 @require_POST
 def validate(request, id):
     """Valide un membre (F-23). Idempotente : elle ne fait que VALIDER, jamais dévalider.
 
-    404 hors périmètre, 403 si le compte ne valide à aucun niveau. Si le compte n'a plus rien à valider sur ce membre
-    (déjà validé à son niveau), rien ne change et rien n'est journalisé. Le renvoi au niveau inférieur, avec motif
-    obligatoire, est une action distincte (à venir) : l'ancienne bascule valider/dévalider n'existe plus.
+    404 hors périmètre, 403 si le compte ne valide à aucun niveau. Règles de `etapes_a_valider` : étape précédente
+    exigée, jamais sa propre fiche ni ses propres saisies. Si rien n'est à valider pour ce compte, rien ne change et
+    rien n'est journalisé. Le renvoi au niveau inférieur, avec motif obligatoire, est une action distincte (à venir).
+    Retour à la page d'origine.
     """
     user = request.user
     membre = get_object_or_404(membres_du_perimetre(user), id=id)
@@ -120,8 +140,8 @@ def validate(request, id):
         membre.save(update_fields=etapes)
         journaliser_validation(user, membre, avant_validation)
     else:
-        contrib_messages.info(request, _("Ce membre est déjà validé à votre niveau."))
-    return redirect("home-session")
+        contrib_messages.info(request, _("Rien à valider pour vous sur ce membre."))
+    return _retour(request, 'liste-membre')
 
 #---------------------------------------------------------------------------------------------------------------------------
 
@@ -713,18 +733,19 @@ def membre_view(request, id):
     """Fiche d'un membre : lecture et actions « modifier », « envoyer » (demande de modification), « privilege ».
 
     404 si le membre est hors du périmètre du compte (voir coptapp.services.droits_provisoires) ; 403 si l'action
-    POST demandée est interdite. Contexte : membre, historique (lignes du journal, vide sans le droit), droits (dictionnaire) et chaque ``peut_*`` à plat
-    (peut_modifier, peut_valider, peut_demander_suppression, peut_attribuer_privileges, peut_gerer_famille,
-    peut_gerer_engins, peut_voir_historique, peut_demander_modification).
+    POST demandée est interdite ; 400 si le formulaire « modifier » est invalide (la fiche est réaffichée avec
+    ``erreurs_modifier``). Contexte : membre, historique (lignes du journal, vide sans le droit), droits
+    (dictionnaire) et chaque ``peut_*`` à plat (peut_modifier, peut_valider, peut_demander_suppression,
+    peut_attribuer_privileges, peut_gerer_famille, peut_gerer_engins, peut_voir_historique,
+    peut_demander_modification).
     """
     user = request.user
-    # Un membre supprimé logiquement reste visible de ceux qui peuvent demander (ou annuler) la suppression.
-    voit_supprimes = droits_membre(user)['peut_demander_suppression']
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=voit_supprimes), id=id)
+    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=True), id=id)
     droits = droits_membre(user, membre)
+    if membre.is_delete and not droits['peut_demander_suppression']:
+        raise Http404  # un membre supprimé n'est visible que de qui peut annuler la suppression
 
     structure = AssociationMembre.objects.filter(users=user).first()
-    antennes = Antenne.objects.order_by('nom')
     verify = User.objects.filter(membreId=id)
     if verify:
         membreUser = verify[0]
@@ -732,72 +753,39 @@ def membre_view(request, id):
     structures = AssociationMembre.objects.filter(province=membre.province)
     if membre.ville:
         antennes = Antenne.objects.filter(structure__ville=membre.ville).exclude(nom=None)
+    else:
+        antennes = Antenne.objects.order_by('nom')
     familles = Famille.objects.filter(membre=membre)
 
     verifyMoto = Moto.objects.filter(motard_id=membre.id)
     if len(verifyMoto) != 0:
         motoAttr = verifyMoto.first()
 
-    naissance = membre.date_naissance
-    age = datetime.today().year - naissance.year if naissance else None
+    erreurs_modifier = None
+    statut = 200
     if request.method == 'POST':
         if 'modifier' in request.POST:
-            if not droits['peut_modifier']:
-                raise PermissionDenied
-            photo = request.FILES.get('photo')
-            erreur_photo = erreur_image(photo) if photo else None
-            if erreur_photo:
-                message = erreur_photo
-                motos = Moto.objects.filter(proprietaire=membre, is_delete=False)
-                nbrMoto = len(motos)
-                return render(request, 'app/membre.html', {**locals(), **droits, 'droits': droits}, status=400)
-            membre.nom = request.POST['nom']
-            membre.a_propos = request.POST['about']
-            membre.date_naissance = datetime.strptime(request.POST['date'],'%d-%m-%Y')
-            membre.genre = request.POST['genre']
-            membre.titre = request.POST['titre']
-            membre.fonction = request.POST['fonction']
-            membre.comite = request.POST['comite']
-            membre.nation = request.POST['nation']
-            membre.brevet = request.POST['brevet']
-            membre.etat_civil = request.POST['etat_civil']
-            membre.epouse = request.POST['epouse']
-            membre.adresse = request.POST['adresse']
-            membre.telephone = request.POST['telephone']
-            membre.mail = request.POST['mail']
-            membre.categorie = request.POST['categorie']
-            membre.permis = request.POST['permis']
-            membre.qualite = request.POST['qualite']
-            membre.autre_asbl = request.POST['autre_asbl']
-            membre.numero_carte_d_electeur = request.POST['numero_carte_d_electeur']
-            membre.numero_carte_de_membre = request.POST['numero_carte_de_membre']
-            membre.nom_pere = request.POST['nom_pere']
-            membre.nom_mere = request.POST['nom_mere']
-            membre.village = request.POST['village']
-            membre.chefferie = request.POST['chefferie']
-            membre.territoire = request.POST['territoire']
-            membre.province_origine = request.POST['province_origine']
-            if photo:
-                membre.photo = photo
-            membre.save()
-            notify(user=membre.user, membre=membre, titre="Motification d'un membre")
+            formulaire, _modifie = modifier_membre(user, membre, request.POST, request.FILES)  # 403 sans droit
+            if formulaire.errors:
+                erreurs_modifier = formulaire.errors
+                message = ' '.join(f'{champ} : {" ".join(e)}' for champ, e in formulaire.errors.items())
+                statut = 400
+                membre = Membre.objects.get(pk=membre.pk)  # l'instance du formulaire porte des valeurs refusées
+            elif _modifie:
+                notify(user=membre.user, membre=membre, titre="Motification d'un membre")
         elif 'envoyer' in request.POST:
-            if not droits['peut_demander_modification']:
-                raise PermissionDenied
-            demande = request.POST['demande']
-            getter, setter = Notification.objects.get_or_create(user=user, membre=membre, titre='Demande de modification', description=demande)
-            if setter:
-                message = 'Votre demande a été envoyer'
-                classMessage = 'alert alert-info'
-            elif getter:
-                message = 'Votre demande a déjà été envoyer'
-                classMessage = 'alert alert-info'
+            resultat = demander_modification(user, membre, request.POST.get('demande'))  # 403 sans droit
+            message = {'creee': 'Votre demande a été envoyer', 'existante': 'Votre demande a déjà été envoyer',
+                       'vide': 'Indiquez votre demande.'}[resultat]
+            classMessage = 'alert alert-info'
         elif 'privilege' in request.POST:
             # Réservé aux super-utilisateurs (403 sinon) : correctif minimal avant les rôles (sous-lot 2e).
             if not droits['peut_attribuer_privileges']:
                 raise PermissionDenied
             if verify:
                 attribuer_privileges(request.user, membreUser, membre, request.POST)
+    naissance = membre.date_naissance
+    age = datetime.today().year - naissance.year if naissance else None
     if verify:
         if membreUser.privilege1: checked1 = 'checked'
         if membreUser.privilege2: checked2 = 'checked'
@@ -808,7 +796,8 @@ def membre_view(request, id):
     nbrMoto = len(motos)
     # Dernières lignes du journal (action, auteur, date, motif ; jamais avant/après) : seulement pour qui voit l'onglet.
     historique = historique_objet(membre) if droits['peut_voir_historique'] else []
-    return render(request, 'app/membre.html', {**locals(), **droits, 'droits': droits})
+    return render(request, 'app/membre.html', {**locals(), **droits, 'droits': droits}, status=statut)
+
 
 #Vue de la moto
 def moto_view(request, id):
@@ -875,12 +864,9 @@ def membreListe(request):
     - ``page_obj`` : page courante (Page Django : itérable de Membre, ``paginator.count``, ``number``,
       ``start_index``, ``end_index``, ``has_previous`` / ``has_next``) ; une page illisible ou hors bornes ramène
       à la première ou à la dernière page ;
-    - ``membres`` : queryset filtré COMPLET (transitoire : la balise ``paginer`` du gabarit actuel le repagine ;
-      à retirer quand le gabarit n'itère plus que ``page_obj``) ;
     - ``filtres`` : valeurs normalisées ``q``, ``etat``, ``qualite``, ``antenne``, ``association`` (chaînes ou
       entiers, vide si absent) pour préremplir le formulaire ;
     - ``filtres_actifs`` : vrai si une recherche ou un filtre est posé (message « aucun résultat » ou vide) ;
-    - ``filtres_url`` : chaîne de requête des filtres SANS ``page``, à placer dans les liens de pagination ;
     - ``choix`` : ``antennes``, ``associations`` (du périmètre), ``qualites``, ``etats`` (codes) pour les listes
       déroulantes ;
     - ``peut_modifier``, ``peut_valider``, ``peut_demander_suppression``, ``peut_attribuer_privileges``,
@@ -893,10 +879,8 @@ def membreListe(request):
     contexte = {
         'user': user,
         'page_obj': resultat.page_obj,
-        'membres': membres_filtres(user, resultat.filtres),
         'filtres': resultat.filtres,
         'filtres_actifs': resultat.filtres_actifs,
-        'filtres_url': urlencode({k: v for k, v in resultat.filtres.items() if v}),
         'choix': choix_filtres(user),
         'droits': droits,
         **droits,

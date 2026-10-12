@@ -127,10 +127,12 @@ def test_E1_matrice_valider(client, jeu, role):
 def test_E1_matrice_demander_suppression(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
-    r = client.post(reverse('delete-membre', args=[cible.id]))
+    r = client.post(reverse('delete-membre', args=[cible.id]), {'motif': 'Doublon'})
     assert r.status_code == ATTENDU[role]['supprimer']
     cible.refresh_from_db()
-    assert cible.is_delete == (ATTENDU[role]['supprimer'] == 302)
+    # F-25 : SU et privilege5 exécutent ; les autres déposent seulement une demande
+    assert cible.is_delete == (ATTENDU[role]['supprimer'] == 302 and role in ('su', 'p5'))
+    assert cible.suppression_demandee == (ATTENDU[role]['supprimer'] == 302 and role not in ('su', 'p5'))
 
 
 @pytest.mark.parametrize('role', ROLES)
@@ -255,7 +257,7 @@ def test_F23_validation_journalisee_une_fois(client, jeu):
 def test_F25_demande_puis_annulation_de_suppression(client, jeu):
     client.force_login(jeu['compte'])
     cible = _membre(jeu, 'Cible', is_validate2=True)
-    client.post(reverse('delete-membre', args=[cible.id]))
+    client.post(reverse('delete-membre', args=[cible.id]), {'motif': 'Doublon'})
     cible.refresh_from_db()
     assert cible.is_delete
     client.post(reverse('delete-membre', args=[cible.id]))  # supprimé mais toujours atteignable pour annuler

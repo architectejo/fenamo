@@ -114,7 +114,7 @@ def test_F28_vue_page_complete_et_contexte(client, liste):
     c = r.context
     assert [m.nom for m in c['page_obj']] == ['Kabila Jean']
     assert c['filtres']['q'] == 'kabila' and c['filtres']['etat'] == 'valide_antenne' and c['filtres_actifs']
-    assert c['filtres_url'] == 'q=kabila&etat=valide_antenne'
+    assert 'membres' not in c and 'filtres_url' not in c
     assert {'antennes', 'associations', 'qualites', 'etats'} <= set(c['choix'])
     for cle in ('peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
                 'peut_gerer_famille', 'peut_gerer_engins', 'peut_voir_historique'):

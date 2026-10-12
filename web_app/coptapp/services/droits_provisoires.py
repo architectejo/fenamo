@@ -94,17 +94,10 @@ def droits_membre(user, membre=None):
 
     peut_modifier = not lecture_seule and (maitre or (bool(user.privilege3) and (membre is None or chez_lui)))
 
-    if lecture_seule:
-        peut_valider = False
+    if membre is None:
+        peut_valider = not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3))
     else:
-        if membre is None:
-            peut_valider = maitre or bool(user.privilege2) or bool(user.privilege3)
-        else:
-            peut_valider = bool(
-                (maitre and not membre.is_validate3)
-                or (user.privilege2 and not membre.is_validate2)
-                or (user.privilege3 and not membre.is_validate3)
-            )
+        peut_valider = bool(_etapes(user, membre))
 
     return {
         'peut_creer_membre': ecriture,
@@ -121,21 +114,38 @@ def droits_membre(user, membre=None):
     }
 
 
+def _etapes(user, membre):
+    """Drapeaux que `user` peut poser sur `membre` maintenant (voir `etapes_a_valider`)."""
+    if not _actif(user) or est_visiteur(user):
+        return []
+    if not user.is_superuser and (membre.pk == user.membreId or membre.user_id == user.pk):
+        return []  # jamais sa propre fiche ni ses propres saisies (séparation des tâches)
+    manquantes = [c for c in ('is_validate1', 'is_validate2', 'is_validate3') if not getattr(membre, c)]
+    if voit_tout(user):
+        return manquantes  # SU et privilege5 : plusieurs niveaux d'un coup, chacun reste tracé
+    if not manquantes:
+        return []
+    suivante = manquantes[0]  # une seule étape à la fois, dans l'ordre : l'étape précédente est exigée
+    if suivante == 'is_validate2' and user.privilege2:
+        return [suivante]
+    if suivante == 'is_validate3' and user.privilege3:
+        return [suivante]
+    return []
+
+
 def etapes_a_valider(user, membre):
     """Drapeaux de validation que `user` pose sur `membre` (idempotent : jamais de retrait).
 
-    Retourne la liste des noms de champs à mettre à True, vide si rien à faire ou si `user` ne peut pas valider.
+    Règles (M2) : l'étape précédente est exigée (privilege2 pose is_validate2 si is_validate1 ; privilege3 pose
+    is_validate3 si is_validate2) et une seule étape par action ; SU et privilege5 posent toutes les étapes
+    manquantes ; personne ne valide sa propre fiche (membreId) ni ses propres saisies (Membre.user), sauf le
+    super-utilisateur (compte technique du prestataire) ; privilege4 (lecture seule) ne valide jamais.
+
+    Correspondance héritée à confirmer : privilege2 -> is_validate2 est affiché « validé antenne »
+    (etats.etat_de) ; privilege3 -> is_validate3 est l'état « actif ». Le circuit cible a une étape de plus
+    (validé province) que les deux drapeaux hérités ne représentent pas : il viendra avec le champ d'état unique.
     """
-    if not droits_membre(user, membre)['peut_valider']:
-        return []
-    if voit_tout(user):
-        return [c for c in ('is_validate1', 'is_validate2', 'is_validate3') if not getattr(membre, c)]
-    etapes = []
-    if user.privilege2 and not membre.is_validate2:
-        etapes.append('is_validate2')
-    if user.privilege3 and not membre.is_validate3:
-        etapes.append('is_validate3')
-    return etapes
+    return _etapes(user, membre)
 
 
 # ---------------------------------------------------------------- accès par identifiant (404 hors périmètre, 403 sans droit)

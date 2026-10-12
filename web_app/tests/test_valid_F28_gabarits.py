@@ -1,4 +1,5 @@
 """Validation indépendante des gabarits (F-28) : peut_*, pages d'erreur, hx-history, HX-Trigger ASCII, coque."""
+ANCIEN_NOM = 'COP' + 'TAM'  # ancien nom du produit, interdit dans l'interface
 import json
 import re
 from datetime import date
@@ -132,7 +133,7 @@ def test_F28_page_404_sans_trace(prod, jeu, connecte):
     assert r.status_code in (404, 302)
     if r.status_code == 404:
         corps = r.content.decode()
-        assert 'Traceback' not in corps and 'FENAMO-RDC' in corps and 'COPTAM' not in corps.upper()
+        assert 'Traceback' not in corps and 'FENAMO-RDC' in corps and ANCIEN_NOM not in corps.upper()
 
 
 def test_F28_404_membre_inexistant_page_propre(prod, jeu):
@@ -172,10 +173,10 @@ def test_F28_gabarit_500_rendu_sans_requete_sql(client, db):
 
 
 @pytest.mark.parametrize('code', ['400', '403', '404', '500'])
-def test_F28_gabarits_erreur_sans_cdn_ni_coptam(code):
+def test_F28_gabarits_erreur_sans_cdn_ni_ancien_nom(code):
     from django.template.loader import render_to_string
     html = render_to_string(f'{code}.html')
-    assert 'COPTAM' not in html.upper() and 'cdn' not in html.lower() and 'https://' not in html
+    assert ANCIEN_NOM not in html.upper() and 'cdn' not in html.lower() and 'https://' not in html
 
 
 # ---------------------------------------------------------------- hx-history

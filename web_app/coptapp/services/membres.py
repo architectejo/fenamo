@@ -5,11 +5,15 @@ membres sans nom (fiches vides héritées) sont exclus ici, au niveau du queryse
 """
 from dataclasses import dataclass
 
+from django import forms
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from coptapp.models import Antenne, AssociationMembre
-from coptapp.services.droits_provisoires import membres_du_perimetre
+from compte.models import JournalAction
+from compte.services.journal import instantane, journaliser
+from coptapp.models import Antenne, AssociationMembre, Membre, Notification
+from coptapp.services.droits_provisoires import droits_membre, membres_du_perimetre
 from coptapp.services.etats import ETATS, filtrer_membres_par_etat
 
 PAR_PAGE = 25
@@ -91,3 +95,76 @@ def choix_filtres(user):
         'qualites': QUALITES,
         'etats': tuple(e for e in ETATS if e in ('saisi', 'valide_antenne', 'actif')),
     }
+
+
+# ---------------------------------------------------------------- modification d'un membre (F-21)
+
+CHAMPS_MODIFIABLES = (
+    'nom', 'a_propos', 'date_naissance', 'genre', 'titre', 'fonction', 'comite', 'nation', 'brevet', 'etat_civil',
+    'adresse', 'telephone', 'mail', 'categorie', 'permis', 'qualite', 'autre_asb', 'numero_carte_d_electeur',
+    'numero_carte_de_membre', 'nom_pere', 'nom_mere', 'village', 'chefferie', 'territoire', 'province_origine',
+)
+# Noms envoyés par la modale de la fiche -> champs du modèle.
+ALIAS_POST = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb'}
+OBLIGATOIRES = ('nom', 'date_naissance')
+# Le journal garde l'existence du changement mais pas la valeur de ces champs d'identité.
+MASQUES_AU_JOURNAL = ('numero_carte_d_electeur', 'permis', 'brevet')
+
+
+class MembreModificationForm(forms.ModelForm):
+    """Formulaire de modification : `nom` et la date de naissance sont obligatoires (erreur de formulaire s'ils
+    manquent) ; un autre champ absent du POST garde sa valeur actuelle. Date au format JJ-MM-AAAA (ou AAAA-MM-JJ)."""
+
+    date_naissance = forms.DateField(input_formats=['%d-%m-%Y', '%Y-%m-%d'], required=True)
+
+    class Meta:
+        model = Membre
+        fields = CHAMPS_MODIFIABLES + ('photo',)
+
+    def __init__(self, data=None, files=None, instance=None, **kwargs):
+        if data is not None:
+            data = data.copy()
+            for alias, champ in ALIAS_POST.items():
+                if alias in data and champ not in data:
+                    data[champ] = data[alias]
+            for champ in CHAMPS_MODIFIABLES:
+                if champ not in data and champ not in OBLIGATOIRES and instance is not None:
+                    valeur = getattr(instance, champ)
+                    data[champ] = '' if valeur is None else str(valeur)
+        super().__init__(data, files, instance=instance, **kwargs)
+        self.fields['nom'].required = True
+
+
+def modifier_membre(auteur, membre, donnees, fichiers=None):
+    """Modifie `membre` (F-21). Retourne (formulaire, modifie). 403 si `auteur` ne peut pas modifier ce membre.
+
+    Formulaire invalide : rien n'est enregistré. Une modification réelle est journalisée (avant / après, valeurs
+    d'identité masquées) ; aucun changement : rien n'est écrit.
+    """
+    if not droits_membre(auteur, membre)['peut_modifier']:
+        raise PermissionDenied
+    avant = instantane(membre, CHAMPS_MODIFIABLES)
+    formulaire = MembreModificationForm(donnees, fichiers, instance=membre)
+    if not formulaire.is_valid():
+        return formulaire, False
+    if not formulaire.changed_data:
+        return formulaire, False
+    formulaire.save()
+    apres = instantane(membre, CHAMPS_MODIFIABLES)
+    changes = [c for c in formulaire.changed_data if c in CHAMPS_MODIFIABLES]
+    masque = lambda dic: {c: ('***' if c in MASQUES_AU_JOURNAL else dic[c]) for c in changes}  # noqa: E731
+    journaliser(auteur, JournalAction.Action.MODIFICATION, membre, avant=masque(avant), apres=masque(apres),
+                motif='photo remplacée' if 'photo' in formulaire.changed_data else '')
+    return formulaire, True
+
+
+def demander_modification(auteur, membre, texte):
+    """Enregistre une demande de modification (notification) ; 403 sans droit. Retourne 'creee', 'existante' ou 'vide'."""
+    if not droits_membre(auteur, membre)['peut_demander_modification']:
+        raise PermissionDenied
+    texte = (texte or '').strip()
+    if not texte:
+        return 'vide'
+    _, creee = Notification.objects.get_or_create(
+        user=auteur, membre=membre, titre='Demande de modification', description=texte)
+    return 'creee' if creee else 'existante'

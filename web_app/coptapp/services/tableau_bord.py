@@ -7,17 +7,9 @@ PROVISOIRE : membres, engins et associations membres sont comptés dans le MÊME
 - associations membres : celles des membres du périmètre et celles du compte (tous pour SU / privilege5).
 TODO : remplacé par le périmètre des rôles (F-16, F-51) au sous-lot 2e.
 """
-from django.utils.translation import gettext_lazy as _
-
 from coptapp.models import AssociationMembre, Moto
+from coptapp.services.etats import LIBELLES
 from coptapp.services.droits_provisoires import membres_du_perimetre, voit_tout  # noqa: F401 (membres_du_perimetre réexporté)
-
-LIBELLES = {
-    'saisi': _('Saisi'),
-    'valide-antenne': _('Validé antenne'),
-    'actif': _('Actif'),
-}
-
 
 def engins_du_perimetre(user):
     """Engins non supprimés dont le propriétaire est visible par `user`."""
@@ -57,8 +49,8 @@ def indicateurs_tableau_bord(user):
         'en_attente': en_attente,
         'graphique': {
             'etats': list(valeurs),
-            'libelles': [str(LIBELLES[e]) for e in valeurs],
+            'libelles': [str(LIBELLES[e.replace('-', '_')]) for e in valeurs],
             'valeurs': list(valeurs.values()),
-            'lignes': [{'etat': e, 'libelle': str(LIBELLES[e]), 'valeur': v} for e, v in valeurs.items()],
+            'lignes': [{'etat': e, 'libelle': str(LIBELLES[e.replace('-', '_')]), 'valeur': v} for e, v in valeurs.items()],
         },
     }

@@ -57,7 +57,7 @@ def test_F28_droits_privilege3_modifie_seulement_dans_son_association(jeu):
     assert not droits_membre(p3, jeu['membre'])['peut_modifier']
     jeu['association'].users.add(p3)
     droits = droits_membre(p3, jeu['membre'])
-    assert droits['peut_modifier'] and droits['peut_gerer_famille'] and droits['peut_valider']
+    assert droits['peut_modifier'] and droits['peut_gerer_famille'] and not droits['peut_valider']  # étape 2 pas encore validée
     autre = AssociationMembre.objects.create(nom='Autre', num_justice='F-9')
     etranger = Membre.objects.create(nom='Etranger', structure=autre, is_validate2=True)
     assert not droits_membre(p3, etranger)['peut_modifier']
@@ -88,7 +88,11 @@ def test_F28_etapes_a_valider(jeu):
     membre = jeu['membre']
     assert etapes_a_valider(jeu['compte'], membre) == ['is_validate2', 'is_validate3']
     assert etapes_a_valider(_compte('p2c', privilege2=True), membre) == ['is_validate2']
-    assert etapes_a_valider(_compte('p3c', privilege3=True), membre) == ['is_validate3']
+    assert etapes_a_valider(_compte('p3c', privilege3=True), membre) == []  # étape 2 exigée avant l'étape 3
+    Membre.objects.filter(pk=membre.pk).update(is_validate2=True)
+    membre.refresh_from_db()
+    assert etapes_a_valider(_compte('p3d', privilege3=True), membre) == ['is_validate3']
+    assert etapes_a_valider(_compte('p2d', privilege2=True), membre) == []
     assert etapes_a_valider(_compte('p1c', privilege1=True), membre) == []
     assert etapes_a_valider(_compte('p4c', privilege4=True, privilege2=True), membre) == []
 
@@ -99,6 +103,7 @@ def test_F28_perimetre_agent_ses_saisies_et_sa_fiche(jeu):
     Membre.objects.create(nom='Saisi par un autre', user=jeu['compte'])
     assert [m.nom for m in membres_du_perimetre(agent)] == ['Saisi par agent']
     agent.membreId = jeu['membre'].id
+    agent.save()
     assert {m.nom for m in membres_du_perimetre(agent)} == {'Saisi par agent', 'Membre Fictif'}
     assert sien.pk
 

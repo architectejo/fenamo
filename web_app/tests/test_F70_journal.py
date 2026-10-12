@@ -139,7 +139,7 @@ def test_F70_validation_d_un_membre_journalisee_une_seule_fois(client, jeu):
 def test_F70_suppression_logique_et_annulation_membre(client, jeu):
     client.force_login(jeu['compte'])
     url = reverse('delete-membre', kwargs={'id': jeu['membre'].id})
-    client.post(url)
+    client.post(url, {'motif': 'Doublon'})
     client.post(url)
     assert lignes(A.SUPPRESSION).get().apres == {'is_delete': True}
     assert lignes(A.RESTAURATION).get().apres == {'is_delete': False}
