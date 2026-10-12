@@ -322,7 +322,7 @@
       {% if structure.ville %}
       <a class="nav-link collapsed" href="{% url 'ville-view' structure.ville.id %}">
         <i class="ri-map-pin-2-fill"></i>
-        <span>Ma ville</span>
+        <span>Mon antenne</span>
       </a>
       {% endif %}
     </li><!-- End Contact Page Nav -->
@@ -414,7 +414,7 @@
 
   <div class="d-flex align-items-center justify-content-between">
     <a href="{% url 'home' %}" class="logo d-flex align-items-center">
-      <img src="{% static 'img/logo.png' %}" alt="">
+      <img src="{% static 'logo.png' %}" alt="">
       <span class="d-none d-lg-block" style="color:#071542;">FENAMO-RDC</span>
     </a>
     <i class="bi bi-list toggle-sidebar-btn"></i>

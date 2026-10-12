@@ -102,7 +102,7 @@
                             {% if structure %}
                             <li class="nav-item">
                                 <button class="nav-link active {{activeEdit}}" data-bs-toggle="tab"
-                                    data-bs-target="#profile-overview">Selection de la ville</button>
+                                    data-bs-target="#profile-overview">Sélection de l'antenne</button>
                             </li>
                             {% endif %}
 
@@ -126,10 +126,10 @@
                                 {% csrf_token %}
 
                                 <h5>
-                                    Renseigner votre ville si elle n'est pas repectorié
+                                    Renseigner votre antenne si elle n'est pas répertoriée
                                 </h5>
                                 <input type="text" name="ville" id="ville" class="form-control"
-                                    placeholder="Votre ville">
+                                    placeholder="Votre antenne">
 
                                 <div class="text-center">
                                     <button type="submit" class="btn btn-primary mt-1">RECHERCHE</button>

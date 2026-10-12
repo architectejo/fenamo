@@ -50,7 +50,7 @@
                         <th scope="col">Dénomination</th>
                         <th scope="col">Membres</th>
                         <th scope="col">Province</th>
-                        <th scope="col">Ville</th>
+                        <th scope="col">Antenne</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -59,7 +59,7 @@
                         {% if str.logo %}
                           <th scope="row"><a href="#"><img src="{{str.logo.url}}" alt="Association membre FENAMO {{str.nom}}"></a></th>
                         {% else %}
-                          <th scope="row"><a href="#"><img src="{% static 'img/province.png' %}" alt=""></a></th>
+                          <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
                         {% endif %}
                         <td>
                           <a href="{% url 'edit-structure' str.id %}">{{str.nom}}</a>

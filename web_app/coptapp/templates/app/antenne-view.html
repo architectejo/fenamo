@@ -57,7 +57,7 @@
                             {% if membre.photo %}
                                 <th scope="row"><a href="#"><img src="{{membre.photo.url}}" alt=""></a></th>
                             {% else %}
-                                <th scope="row"><a href="#"><img src="{% static 'img/ville.png' %}" alt=""></a></th>
+                                <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
                             {% endif %}
                             <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>
                             <td><span class="badge bg-success">valide</span></td>

@@ -112,3 +112,43 @@ def test_fenamo_js_sans_acces_interne_alpine():
     js = (Path(settings.BASE_DIR) / 'static' / 'js' / 'fenamo.js').read_text(encoding='utf-8')
     assert '_x_dataStack' not in js
     assert 'Alpine.$data' in js
+
+
+# ------------------------------------------------------------------ libellés
+
+def test_mot_ville_absent_du_texte_visible(client, jeu):
+    import re
+    from tests.test_lot1_socle import get_isole, texte_visible
+    client.force_login(jeu['compte'])
+    noms = ('liste-membre', 'membre-view', 'province-view', 'structure-admin', 'str-list', 'ville-view',
+            'ville-select', 'add-ville', 'view-moto', 'tableau-bord', 'edit-structure')
+    from tests.test_plan_url import table
+    fautifs = []
+    for nom, _, cible in table(jeu):
+        if nom not in noms:
+            continue
+        reponse = get_isole(client, cible)
+        if reponse.status_code == 200 and re.search(r'(?i)\bvilles?\b', texte_visible(reponse.contenu)):
+            fautifs.append(cible)
+    assert fautifs == [], f"« ville » visible sur : {fautifs}"
+
+
+# Lien connu mort, signalé au rapport : le fichier APK n'est pas dans le dépôt (site transitoire virtrine/).
+FICHIERS_STATIQUES_ABSENTS_CONNUS = {'app/fenamo-app.apk'}
+
+
+def test_images_et_fichiers_statiques_des_gabarits_existent():
+    import re
+    from pathlib import Path
+    from django.conf import settings
+    from django.contrib.staticfiles import finders
+    absents = []
+    for gabarit in Path(settings.BASE_DIR).rglob('*.html'):
+        if {'vendor', '__pycache__'} & set(gabarit.parts):
+            continue
+        texte = gabarit.read_text(encoding='utf-8', errors='ignore')
+        texte = re.sub(r'(?s)<!--.*?-->', '', texte)
+        for chemin in re.findall(r"""\{%\s*static\s+['"]([^'"]+)['"]\s*%\}""", texte):
+            if chemin not in FICHIERS_STATIQUES_ABSENTS_CONNUS and not finders.find(chemin):
+                absents.append(f"{gabarit.relative_to(settings.BASE_DIR)} : {chemin}")
+    assert absents == [], absents

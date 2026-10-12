@@ -14,7 +14,7 @@
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
           <li class="breadcrumb-item">Formulair</li>
-          <li class="breadcrumb-item active">Ajout d'une ville</li>
+          <li class="breadcrumb-item active">Ajout d'une antenne</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -25,14 +25,14 @@
 
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Ajouter une ville dans {{province.nom}} </h5>
+              <h5 class="card-title">Ajouter une antenne dans {{province.nom}} </h5>
               <p class="{{classe}}">{{message}}</p>
 
               <!-- General Form Elements -->
               <form method="post">
                 {% csrf_token %}
                 <div class="row mb-3">
-                  <label for="inputText" class="col-sm-2 col-form-label">Ville:</label>
+                  <label for="inputText" class="col-sm-2 col-form-label">Antenne :</label>
                   <div class="col-sm-10">
                     <input type="text" name="nom" class="form-control">
                   </div>

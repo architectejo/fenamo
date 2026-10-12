@@ -22,7 +22,7 @@
       </div>
       {% if user.is_superuser or user.privilege5 %}
         <div class="col-6">
-          <a href="{% url 'add-ville' province.id %}"><button class="btn btn-primary">Ajouter une ville</button></a>
+          <a href="{% url 'add-ville' province.id %}"><button class="btn btn-primary">Ajouter une antenne</button></a>
         </div>
       {% endif %}
   </div>
@@ -48,20 +48,20 @@
                 </div>
 
                 <div class="card-body pb-0">
-                  <h5 class="card-title">Liste des villes <span>| en numerisation</span></h5>
+                  <h5 class="card-title">Liste des antennes <span>| en numerisation</span></h5>
 
                   <table class="table table-borderless datatable">
                     <thead>
                       <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Ville</th>
+                        <th scope="col">Antenne</th>
                         <th scope="col">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {% for ville in villes %}
                         <tr>
-                            <th scope="row"><a href="#"><img src="{% static 'img/ville.png' %}" alt=""></a></th>
+                            <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
                             <td><a href="{% url 'ville-view' ville.id %}">{{ville.nom}}</a></td>
                             <td><span class="badge bg-success">En cours</span></td>
                         </tr>
