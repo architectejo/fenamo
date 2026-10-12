@@ -1,48 +1,59 @@
 {% load i18n design %}{% comment %}
-Liste des membres (maquette liste-membres.html) : tableau devenu cartes sous 576 px, pagination de 25 lignes.
-Contexte : membres, user. Recherche pendant la frappe, puces d'état et filtres : à venir avec la pagination serveur de la vue (F-28),
-la vue héritée ne filtre pas ; la recherche globale de la barre du haut reste disponible.
+Zone des résultats de la liste des membres (maquette liste-membres.html) : puces d'état, résumé, tableau devenu cartes sous 576 px, pagination de 25 lignes.
+Servie seule par la vue (membreListe) pour une requête HTMX, et incluse dans la page complète : une seule source de HTML.
+Contexte : page_obj, filtres (q, etat, qualite, antenne, association), filtres_actifs, filtres_url, choix, peut_valider.
+Les puces gardent la recherche et les filtres ({% querystring %}) ; la pagination aussi.
 {% endcomment %}
-{% paginer membres 25 as page_obj %}
-<p class="resume-liste"><span></span><span>{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}</span></p>
-<div id="resultats">
-  {% if page_obj.paginator.count %}
-  <div class="liste-enveloppe">
-    <table class="liste">
-      <caption class="lecteur">{% translate "Liste des membres" %}</caption>
-      <thead>
-        <tr>
-          <th scope="col">{% translate "Membre" %}</th>
-          <th scope="col">{% translate "Antenne" %}</th>
-          <th scope="col">{% translate "État" %}</th>
-          {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}<th scope="col">{% translate "Identifiant" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th>{% endif %}
-        </tr>
-      </thead>
-      <tbody id="resultats-lignes">
-        {% for membre in page_obj %}
-        <tr>
-          <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a>{% if membre.numero_carte_de_membre %}<span class="meta ident">{{ membre.numero_carte_de_membre }}</span>{% endif %}</div></div></td>
-          <td data-libelle="{% translate 'Antenne' %}">{{ membre.antenne.nom|default:"—" }}</td>
-          {% with code=membre|etat_membre %}
-          <td data-libelle="{% translate 'État' %}">{% badge_etat code %}</td>
-          {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
-          <td data-libelle="{% translate 'Identifiant' %}">{{ membre.user.username|default:"—" }}</td>
-          <td data-role="actions">
-            {% if code != "actif" and not user.privilege4 or code != "actif" and not user.privilege1 %}
-            {% url 'validate' membre.id as url_valider %}{% translate "Valider le membre" as t_valider %}
-            {% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--petit bouton--valider" %}
-            {% endif %}
-          </td>
-          {% endif %}
-          {% endwith %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% include "components/_pagination.html" with page_obj=page_obj %}
-  {% else %}
-  {% translate "Aucun membre trouvé" as t_vide %}{% translate "Aucun membre n'est visible dans votre périmètre." as t_msg %}
-  {% include "components/_etat_vide.html" with icone="search" titre=t_vide texte=t_msg %}
-  {% endif %}
+<div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
+  <button type="button" class="puce" aria-pressed="{% if not filtres.etat %}true{% else %}false{% endif %}" hx-get="{% querystring etat=None page=None %}" hx-target="#liste-zone" hx-push-url="true" hx-indicator="#liste-zone" hx-disabled-elt="this">{% translate "Tous" %}</button>
+  {% for e in choix.etats %}
+  <button type="button" class="puce" aria-pressed="{% if filtres.etat == e %}true{% else %}false{% endif %}" hx-get="{% querystring etat=e page=None %}" hx-target="#liste-zone" hx-push-url="true" hx-indicator="#liste-zone" hx-disabled-elt="this">{{ e|libelle_code_etat }}</button>
+  {% endfor %}
 </div>
+
+{% if page_obj.paginator.count %}
+<p class="resume-liste" role="status"><span>{% if filtres_actifs %}{% translate "Résultats filtrés" %}{% endif %}</span><span>{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}</span></p>
+<div class="liste-enveloppe">
+  <table class="liste">
+    <caption class="lecteur">{% translate "Liste des membres" %}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{% translate "Membre" %}</th>
+        <th scope="col">{% translate "Antenne" %}</th>
+        <th scope="col">{% translate "État" %}</th>
+        {% if peut_valider %}<th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th>{% endif %}
+      </tr>
+    </thead>
+    <tbody id="resultats-lignes">
+      {% for membre in page_obj %}
+      {% with code=membre|etat_membre %}
+      <tr>
+        <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a>{% if membre.numero_carte_de_membre %}<span class="meta ident">{{ membre.numero_carte_de_membre }}</span>{% endif %}</div></div></td>
+        <td data-libelle="{% translate 'Antenne' %}">{{ membre.antenne.nom|default:"—" }}</td>
+        <td data-libelle="{% translate 'État' %}">{% badge_etat code %}</td>
+        {% if peut_valider %}
+        <td data-role="actions">
+          {% if code != "actif" %}
+          {% url 'validate' membre.id as url_valider %}{% translate "Valider le membre" as t_valider %}
+          {% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--petit bouton--valider" %}
+          {% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/_pagination.html" with page_obj=page_obj cible="#liste-zone" %}
+{% else %}
+{% if filtres_actifs %}
+{% translate "Aucun membre ne correspond" as t_vide %}{% translate "Modifiez la recherche ou retirez un filtre pour voir d'autres membres." as t_msg %}{% translate "Effacer la recherche et les filtres" as t_action %}
+{% url 'liste-membre' as url_liste %}
+{% include "components/_etat_vide.html" with icone="search" titre=t_vide texte=t_msg %}
+<div class="groupe-boutons groupe-boutons--centre"><a class="bouton" href="{{ url_liste }}" hx-get="{{ url_liste }}" hx-target="#liste-zone" hx-push-url="true" hx-disabled-elt="this">{% icone "x" %}<span>{{ t_action }}</span></a></div>
+{% else %}
+{% translate "Aucun membre" as t_vide %}{% translate "Aucun membre n'est visible dans votre périmètre." as t_msg %}
+{% include "components/_etat_vide.html" with icone="users" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endif %}

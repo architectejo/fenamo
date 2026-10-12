@@ -1,14 +1,13 @@
 {% load i18n design %}{% comment %}
 Onglet « Historique » : dernières actions du journal d'activités (F-70) sur ce membre, sans les valeurs avant/après.
-Contexte : membre. Balise historique_objet (service coptapp/services/historique.py).
+Contexte : historique (lignes du journal fournies par la vue, vide sans le droit).
 {% endcomment %}
-{% historique_objet membre as lignes %}
 <section class="panneau">
   <div class="panneau-tete"><h2>{% translate "Historique du dossier" %}</h2></div>
   <div class="panneau-corps">
-  {% if lignes %}
+  {% if historique %}
     <ol class="historique">
-      {% for l in lignes %}
+      {% for l in historique %}
       <li><span class="point">{% icone "history" %}</span><div>
         <p><strong>{{ l.get_action_display }}</strong>{% if l.auteur %} {% translate "par" %} {{ l.auteur.get_username }}{% endif %}</p>
         {% if l.motif %}<p>{{ l.motif }}</p>{% endif %}

@@ -14,17 +14,17 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
   <div class="onglets" role="tablist" aria-label="{% translate 'Sections de la fiche' %}">
     <button type="button" role="tab" class="onglet" id="onglet-informations" data-onglet="informations" aria-controls="panneau-informations"
             :aria-selected="(actif === 'informations').toString()" :tabindex="actif === 'informations' ? 0 : -1" @click="choisir('informations')">{% translate "Identité" %}</button>
-    {% if membre.qualite == 'PROPRIETAIRE' or membre.qualite == 'MOTARD ET PROPRIETAIRE' or not user.privilege4 and membre.qualite == 'MOTARD' %}
+    {% if membre.qualite == 'PROPRIETAIRE' or membre.qualite == 'MOTARD ET PROPRIETAIRE' or peut_gerer_engins and membre.qualite == 'MOTARD' %}
     <button type="button" role="tab" class="onglet" id="onglet-engins" data-onglet="engins" aria-controls="panneau-engins"
             :aria-selected="(actif === 'engins').toString()" :tabindex="actif === 'engins' ? 0 : -1" @click="choisir('engins')">{% translate "Engins" %}{% if nbrMoto %} <span class="nombre">{{ nbrMoto }}</span>{% endif %}</button>
     {% endif %}
     <button type="button" role="tab" class="onglet" id="onglet-famille" data-onglet="famille" aria-controls="panneau-famille"
             :aria-selected="(actif === 'famille').toString()" :tabindex="actif === 'famille' ? 0 : -1" @click="choisir('famille')">{% translate "Famille" %}{% if familles %} <span class="nombre">{{ familles|length }}</span>{% endif %}</button>
-    {% if user.is_superuser or user.privilege5 or user.privilege3 %}{% if membre.is_user %}
+    {% if peut_attribuer_privileges %}{% if membre.is_user %}
     <button type="button" role="tab" class="onglet" id="onglet-roles" data-onglet="roles" aria-controls="panneau-roles"
             :aria-selected="(actif === 'roles').toString()" :tabindex="actif === 'roles' ? 0 : -1" @click="choisir('roles')">{% translate "Rôles" %}</button>
     {% endif %}{% endif %}
-    {% if user.is_superuser or user.privilege5 or user.privilege3 or user.privilege2 %}
+    {% if peut_voir_historique %}
     <button type="button" role="tab" class="onglet" id="onglet-historique" data-onglet="historique" aria-controls="panneau-historique"
             :aria-selected="(actif === 'historique').toString()" :tabindex="actif === 'historique' ? 0 : -1" @click="choisir('historique')">{% translate "Historique" %}</button>
     {% endif %}
@@ -43,12 +43,12 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
   <div role="tabpanel" id="panneau-famille" aria-labelledby="onglet-famille" x-show="actif === 'famille'" x-cloak>
     {% include "coptapp/membres/partials/_fiche_famille.html" %}
   </div>
-  {% if user.is_superuser or user.privilege5 or user.privilege3 %}{% if membre.is_user %}
+  {% if peut_attribuer_privileges %}{% if membre.is_user %}
   <div role="tabpanel" id="panneau-roles" aria-labelledby="onglet-roles" x-show="actif === 'roles'" x-cloak>
     {% include "coptapp/membres/partials/_fiche_roles.html" %}
   </div>
   {% endif %}{% endif %}
-  {% if user.is_superuser or user.privilege5 or user.privilege3 or user.privilege2 %}
+  {% if peut_voir_historique %}
   <div role="tabpanel" id="panneau-historique" aria-labelledby="onglet-historique" x-show="actif === 'historique'" x-cloak>
     {% include "coptapp/membres/partials/_fiche_historique.html" %}
   </div>
@@ -68,16 +68,16 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
 </div>
 
 {# Contenus des modales (recopiés dans la modale commune au clic, voir static/js/fenamo.js) #}
-{% if user.is_superuser or user.privilege5 or membre.structure == structure and user.privilege3 %}
+{% if peut_modifier %}
 <template id="modale-modifier">{% include "coptapp/membres/partials/_modale_modifier.html" with action_url=request.path multipart=True large=True libelle_envoi=_("Enregistrer le membre") nom_envoi="modifier" %}</template>
 {% endif %}
-{% if user.is_superuser or user.privilege1 %}
+{% if peut_demander_modification %}
 <template id="modale-demande">{% include "coptapp/membres/partials/_modale_demande.html" with action_url=request.path libelle_envoi=_("Envoyer la demande") nom_envoi="envoyer" %}</template>
 {% endif %}
-{% if user.is_superuser or user.privilege5 or user.privilege3 %}{% if membre.is_user %}
+{% if peut_attribuer_privileges %}{% if membre.is_user %}
 <template id="modale-privileges">{% include "coptapp/membres/partials/_modale_privileges.html" with action_url=request.path libelle_envoi=_("Enregistrer les privilèges") nom_envoi="privilege" %}</template>
 {% endif %}{% endif %}
-{% if not user.privilege4 %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
+{% if peut_gerer_engins %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
 {% url 'moto-attribution' membre.id as url_attribution %}
 <template id="modale-attribuer">{% include "coptapp/membres/partials/_modale_attribuer.html" with action_url=url_attribution libelle_envoi=_("Attribuer l'engin") nom_envoi="moto" %}</template>
 {% endif %}{% endif %}

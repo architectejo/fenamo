@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load i18n design %}{% comment %}
-Liste des membres (maquette liste-membres.html). La vue héritée (membreListe) fournit `membres` ; fragment : coptapp/membres/partials/_liste.html.
+Liste des membres (maquette liste-membres.html). La vue membreListe fournit page_obj, filtres, choix et les droits peut_* ;
+la zone #liste-zone (coptapp/membres/partials/_liste.html) est la seule servie en fragment HTMX (recherche, puces, pagination).
+Filtres avancés (qualité, antenne, association membre) : modale commune, formulaire GET ; la recherche reste en tête de page.
 {% endcomment %}
 {% block titre %}{% translate "Membres" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
@@ -10,5 +12,51 @@ Liste des membres (maquette liste-membres.html). La vue héritée (membreListe) 
     <p class="page-contexte">{% icone "users" %}{% translate "Consulter et valider les membres de votre périmètre." %}</p>
   </div>
 </div>
-{% include "coptapp/membres/partials/_liste.html" %}
+
+<form class="filtres" id="filtres-liste" method="get" action="{% url 'liste-membre' %}" role="search"
+      hx-get="{% url 'liste-membre' %}" hx-trigger="input changed delay:300ms from:#q, submit" hx-target="#liste-zone" hx-push-url="true" hx-indicator="#liste-zone" hx-boost="false">
+  {% if filtres.etat %}<input type="hidden" name="etat" value="{{ filtres.etat }}">{% endif %}
+  {% if filtres.qualite %}<input type="hidden" name="qualite" value="{{ filtres.qualite }}">{% endif %}
+  {% if filtres.antenne %}<input type="hidden" name="antenne" value="{{ filtres.antenne }}">{% endif %}
+  {% if filtres.association %}<input type="hidden" name="association" value="{{ filtres.association }}">{% endif %}
+  <div class="recherche">
+    {% icone "search" %}
+    <label class="lecteur" for="q">{% translate "Rechercher un membre" %}</label>
+    <input id="q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Nom, identifiant, téléphone' %}" autocomplete="off">
+  </div>
+  <button class="bouton" type="button" data-modale-locale="#modale-filtres">{% icone "sliders-horizontal" %}<span>{% translate "Filtres" %}</span></button>
+</form>
+
+<div id="liste-zone" class="zone-rafraichie" aria-live="polite">
+  {% include "coptapp/membres/partials/_liste.html" %}
+</div>
+
+<template id="modale-filtres">
+  <form class="feuille" method="get" action="{% url 'liste-membre' %}" hx-boost="false">
+    <div class="feuille-tete">
+      <h2 id="modale-titre">{% translate "Filtrer les membres" %}</h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="{% translate 'Fermer' %}">{% icone "x" %}</button>
+    </div>
+    <div class="feuille-corps"><div class="formulaire">
+      {% if filtres.q %}<input type="hidden" name="q" value="{{ filtres.q }}">{% endif %}
+      {% if filtres.etat %}<input type="hidden" name="etat" value="{{ filtres.etat }}">{% endif %}
+      <div class="champ">
+        <label class="champ-libelle" for="f-qualite">{% translate "Qualité" %}</label>
+        <select id="f-qualite" name="qualite"><option value="">{% translate "Toutes" %}</option>{% for q in choix.qualites %}<option value="{{ q }}"{% if filtres.qualite == q %} selected{% endif %}>{{ q }}</option>{% endfor %}</select>
+      </div>
+      <div class="champ">
+        <label class="champ-libelle" for="f-antenne">{% translate "Antenne" %}</label>
+        <select id="f-antenne" name="antenne"><option value="">{% translate "Toutes" %}</option>{% for a in choix.antennes %}<option value="{{ a.id }}"{% if filtres.antenne == a.id %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select>
+      </div>
+      <div class="champ">
+        <label class="champ-libelle" for="f-association">{% translate "Association membre" %}</label>
+        <select id="f-association" name="association"><option value="">{% translate "Toutes" %}</option>{% for s in choix.associations %}<option value="{{ s.id }}"{% if filtres.association == s.id %} selected{% endif %}>{{ s.sigle|default:s.nom }}</option>{% endfor %}</select>
+      </div>
+    </div></div>
+    <div class="feuille-pied">
+      <a class="bouton" href="{% url 'liste-membre' %}">{% translate "Effacer" %}</a>
+      <button type="submit" class="bouton bouton--principal"><span>{% translate "Appliquer les filtres" %}</span></button>
+    </div>
+  </form>
+</template>
 {% endblock %}

@@ -13,13 +13,11 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     <p class="u-mt-2">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</p>
   </div>
   <div class="page-actions">
-    {% if user.is_superuser or user.privilege5 %}
-    <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
-    {% elif membre.structure == structure and user.privilege3 %}
+    {% if peut_modifier %}
     <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
     {% endif %}
 
-    {% if user.is_superuser or user.privilege1 %}
+    {% if peut_demander_modification %}
     <button type="button" class="bouton" data-modale-locale="#modale-demande">{% icone "send" %}<span>{% translate "Demander une modification" %}</span></button>
     {% endif %}
 
@@ -28,7 +26,7 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     {% include "partials/_bouton_post.html" with url=url_adminer libelle=t_libelle classe="bouton" %}
     {% endif %}
 
-    {% if user.privilege4 == False %}
+    {% if peut_demander_suppression %}
     {% url 'delete-membre' membre.id as url_suppr %}
     {% if membre.is_delete %}
     {% translate "Annuler la demande de suppression" as t_libelle %}{% translate "Demande de suppression du membre" as t_titre %}{% translate "Annuler la demande de suppression de ce membre ?" as t_message %}{% translate "Annuler la demande" as t_envoi %}

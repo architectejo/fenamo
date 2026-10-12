@@ -10,7 +10,7 @@ Contexte : user, checked1 à checked5.
   <label class="case" for="mp-1"><input name="privilege1" type="checkbox" id="mp-1" {{ checked1 }}>{% translate "Privilèges bas niveau" %}</label>
   <label class="case" for="mp-2"><input name="privilege2" type="checkbox" id="mp-2" {{ checked2 }}>{% translate "Privilège niveau moyen" %}</label>
   <label class="case" for="mp-3"><input name="privilege3" type="checkbox" id="mp-3" {{ checked3 }}>{% translate "Privilège niveau avancé" %}</label>
-  {% if user.is_superuser or user.privilege5 %}
+  {% if peut_attribuer_privileges %}
   <label class="case" for="mp-4"><input name="privilege4" type="checkbox" id="mp-4" {{ checked4 }}>{% translate "Visiteur privilégié" %}</label>
   <label class="case" for="mp-5"><input name="privilege5" type="checkbox" id="mp-5" {{ checked5 }}>{% translate "Privilège ultra avancé" %}</label>
   {% endif %}
