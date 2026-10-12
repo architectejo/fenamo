@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from virtrine.models import Article, Config, Contact
 from virtrine.forms import ConfigForm
-from coptapp.forms import StructureIdentifyForm
+from coptapp.forms import AssociationMembreIdentifyForm
 
 from datetime import date
 
@@ -96,7 +96,7 @@ def portail(request):
         conf = Config.objects.create()
 
     if request.method == 'POST':
-        form = StructureIdentifyForm(request.POST,request.FILES)
+        form = AssociationMembreIdentifyForm(request.POST,request.FILES)
         if form.is_valid():
             assoc = form.save(commit=False)
             assoc.save()
@@ -104,7 +104,7 @@ def portail(request):
             classe = 'alert alert-success text-center'
             return redirect('edit-structure', id=assoc.id)
     else:
-        form = StructureIdentifyForm()
+        form = AssociationMembreIdentifyForm()
     return render(request, 'site/portail.html', locals())
 
 

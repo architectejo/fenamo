@@ -3,11 +3,11 @@ from coptapp.models import *
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-# Form of structure
-class StructureForm(forms.ModelForm):
+# Formulaires de l association membre
+class AssociationMembreForm(forms.ModelForm):
     ville = forms.ModelChoiceField(queryset=Ville.objects.order_by('nom').exclude(nom=None), label='Antenne', empty_label='Selectionnez une antenne')
     class Meta:
-        model = Structure
+        model = AssociationMembre
         exclude = ['users','province']
         labels = {
             'nom':'Dénomination',
@@ -17,11 +17,11 @@ class StructureForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(StructureForm, self).__init__(*args, **kwargs)
+        super(AssociationMembreForm, self).__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
 
-class StructureIdentifyForm(forms.ModelForm):
+class AssociationMembreIdentifyForm(forms.ModelForm):
     province = forms.ModelChoiceField(queryset=Province.objects.order_by('nom').exclude(nom=None), label='Province', required=True)
     types = [
         ('NATIONALE','NATIONALE'),
@@ -30,7 +30,7 @@ class StructureIdentifyForm(forms.ModelForm):
     ]
     type_de_structure = forms.ChoiceField(choices=types, label="Type d'association")
     class Meta:
-        model = Structure
+        model = AssociationMembre
         exclude = ['users','ville']
         labels = {
             'nom':'Dénomination',
@@ -41,7 +41,7 @@ class StructureIdentifyForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(StructureIdentifyForm, self).__init__(*args, **kwargs)
+        super(AssociationMembreIdentifyForm, self).__init__(*args, **kwargs)
         self.fields['capture_justice'].required = True
         self.fields['preuve_de_paiement'].required = True
         for field_name, field in self.fields.items():

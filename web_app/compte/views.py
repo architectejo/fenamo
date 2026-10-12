@@ -41,7 +41,7 @@ def deconnexion(request):
     return redirect('application')
 
 
-# User of structure
+# Utilisateurs d une association membre
 
 def add_user(request):
     if request.method == 'POST':

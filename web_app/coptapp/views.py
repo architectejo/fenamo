@@ -154,7 +154,7 @@ def home(request):
     else:
         provinces = Province.objects.order_by('nom').exclude(nom=None)
         for prov in provinces:
-            structures = Structure.objects.filter(province=prov).order_by('nom')
+            structures = AssociationMembre.objects.filter(province=prov).order_by('nom')
             for strct in structures:
                 membres = len(Membre.objects.filter(structure=strct, is_delete=False, is_validate3=True))
                 strct.membres = membres
@@ -168,21 +168,21 @@ def add_structure(request):
     button = 'Ajouter'
     activeAdd = 'show active'
     if request.method == 'POST':
-        form = StructureIdentifyForm(request.POST, request.FILES)
+        form = AssociationMembreIdentifyForm(request.POST, request.FILES)
         if form.is_valid():
             structure = form.save(commit=False)
             structure.save()
-            msg = "Nouvelle structure ajouté !"
+            msg = "Nouvelle association membre ajoutée !"
             classMsg = 'alert alert-info'
             return redirect('edit-structure', id=structure.id)
     else:
-        form = StructureIdentifyForm()
+        form = AssociationMembreIdentifyForm()
     return render(request, 'app/structure.html', locals())
 
 
 def ville_select(request, id):
     try:
-        structure = Structure.objects.get(id=id)
+        structure = AssociationMembre.objects.get(id=id)
         if structure.ville: return redirect('edit-structure', id=structure.id)
         provinces = Ville.objects.filter(province=structure.province).exclude(nom=None)
         if request.method == 'POST':
@@ -198,7 +198,7 @@ def ville_select(request, id):
 
 def ville_attr(request, id, sid):
     try:
-        structure = Structure.objects.get(id=sid)
+        structure = AssociationMembre.objects.get(id=sid)
         ville = Ville.objects.get(id=id)
         structure.ville = ville
         structure.save()
@@ -222,7 +222,7 @@ def antenne_attr_membre(request, id, idM):
 
 def structure_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
-    asbl = Structure.objects.get(id=id)
+    asbl = AssociationMembre.objects.get(id=id)
     membre.structure = asbl
     membre.save()
     return redirect('membre-view', id=idM)
@@ -232,13 +232,13 @@ def edit_structure(request, id):
     button = 'Modifier'
     activeEdit = 'show active'
     try:
-        structure = Structure.objects.get(id=id)
+        structure = AssociationMembre.objects.get(id=id)
         if not structure.ville:
             return redirect('ville-select', id=structure.id)
         if request.method == 'POST':
-            form = StructureForm(request.POST, request.FILES, instance=structure)
+            form = AssociationMembreForm(request.POST, request.FILES, instance=structure)
             if form.is_valid(): form.save()
-        else: form = StructureForm(instance=structure)
+        else: form = AssociationMembreForm(instance=structure)
 
         structure.membres = len(Membre.objects.filter(structure=structure, is_delete=False))
         structure.proprietaires = len(Membre.objects.filter(structure=structure, titre='PROPRIETAIRE', is_delete=False))
@@ -247,7 +247,7 @@ def edit_structure(request, id):
     return render(request, 'app/structure.html', locals())
 
 def structures_liste(request):
-    structures = Structure.objects.order_by('nom')
+    structures = AssociationMembre.objects.order_by('nom')
     for struct in structures:
         struct.membres = len(Membre.objects.filter(structure=struct, is_delete=False))
     return render(request, 'app/structures.html', locals())
@@ -256,7 +256,7 @@ def structures_liste(request):
 def session(request):
     #Session of user
     user = request.user
-    structure = Structure.objects.filter(users=user).first()
+    structure = AssociationMembre.objects.filter(users=user).first()
 
     if structure:
         #Configuration
@@ -321,7 +321,7 @@ def session(request):
 def sessionById(request, id):
     #Session of user
     user = request.user
-    structure = Structure.objects.get(id=id)
+    structure = AssociationMembre.objects.get(id=id)
 
     if structure:
         #Configuration
@@ -413,7 +413,7 @@ def addAntenne(request, id):
     user = request.user
     try:
         hello = "Hello !"
-        structure = Structure.objects.get(id=id)
+        structure = AssociationMembre.objects.get(id=id)
         if request.method == 'POST':
             form = AntenneForm(request.POST)
             if form.is_valid():
@@ -518,7 +518,7 @@ def addMembre(request, id):
     provinces = provinceSelector()
     
     try:
-        structure = Structure.objects.get(id=id)
+        structure = AssociationMembre.objects.get(id=id)
         ville = structure.ville
         user = request.user
         antennes = Antenne.objects.filter(structure=structure)
@@ -778,7 +778,7 @@ def viewUser(request, id):
 #Vue de membreerrorPage
 def membre_view(request, id):
     if request.user.is_authenticated:
-        try: structure = Structure.objects.filter(users=request.user).first()
+        try: structure = AssociationMembre.objects.filter(users=request.user).first()
         except: pass
         #Configuration
         messages = Communique.objects.order_by('-id')[0:3]
@@ -798,7 +798,7 @@ def membre_view(request, id):
         
     membre = Membre.objects.get(id=id)
     villes = Ville.objects.filter(province=membre.province).exclude(nom=None)
-    structures = Structure.objects.filter(province=membre.province)
+    structures = AssociationMembre.objects.filter(province=membre.province)
     if not membre.ville or not membre.structure or not membre.antenne: 
         if request.user.is_authenticated: variante = 6
         else: variante = 12
@@ -991,7 +991,7 @@ def ville_view(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    structure = Structure.objects.filter(users=user).first()
+    structure = AssociationMembre.objects.filter(users=user).first()
     if user.membreId:
         userMembre = Membre.objects.get(id=user.membreId)
         villeId = userMembre.ville.id

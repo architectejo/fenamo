@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from coptapp.models import Membre, Moto
+from coptapp.models import AssociationMembre, Membre, Moto
 from mobapp.forms import *
 from datetime import date
 # Create your views here.
@@ -87,13 +87,13 @@ def session(request, id):
 def data_membre(request, id):
     try:
         membre = Membre.objects.get(id=id)
-        structures = Structure.objects.filter(province=membre.province).exclude(ville=None)
+        structures = AssociationMembre.objects.filter(province=membre.province).exclude(ville=None)
         villes = Ville.objects.filter(province=membre.province).exclude(nom=None)
         if membre.ville:
             return redirect('session', id=membre.id)
         if request.method == 'POST':
             if request.POST.get('structure'):
-                structure = Structure.objects.get(id=int(request.POST.get('structure')))
+                structure = AssociationMembre.objects.get(id=int(request.POST.get('structure')))
                 membre.structure = structure
                 membre.ville = structure.ville
             if request.POST.get('ville'):
@@ -117,7 +117,7 @@ def attribut_ville(request, id, id_ville):
 
 def attribut_str(request, id, id_str):
     try:
-        structure = Structure.objects.get(id=id_str)
+        structure = AssociationMembre.objects.get(id=id_str)
         membre = Membre.objects.get(id=id)
         membre.structure = structure
         membre.save()

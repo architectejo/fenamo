@@ -4,7 +4,7 @@ from coptapp.views import *
 
 urlpatterns = [
     path('', home, name="home-app"),
-    # Structure
+    # AssociationMembre
     path('add-structure/', add_structure, name="add-structure"),
     path('edit-structure/<int:id>', edit_structure, name="edit-structure"),
     path('ville-attr/<int:id>/<int:sid>', ville_attr, name="ville-attr"),

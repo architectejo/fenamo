@@ -13,7 +13,7 @@
     <nav>
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home-app' %}">Accueil</a></li>
-        <li class="breadcrumb-item">Structure</li>
+        <li class="breadcrumb-item">Association membre</li>
         <li class="breadcrumb-item active">{{structure.sigle}}</li>
       </ol>
     </nav>
@@ -34,7 +34,7 @@
                 <img src="{{structure.logo.url}}" alt="FENAMO LOGO DE {{structure.sigle|upper}}" class="rounded-circle">
                 {% endif %}
                 <h2>{{structure.sigle|upper}}</h2>
-                <!--<h3>structure</h3 -->
+                <!--<h3>association membre</h3 -->
                 <div class="social-links mt-2">
                   {% if structure.twitter %}
                   <a href="{{structure.twitter}}" target="_blank" class="twitter"><i class="bi bi-twitter"></i></a>

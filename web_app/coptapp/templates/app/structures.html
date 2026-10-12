@@ -9,11 +9,11 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Liste des structures</h1>
+      <h1>Liste des associations membres</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-          <li class="breadcrumb-item active">Liste des structures</li>
+          <li class="breadcrumb-item active">Liste des associations membres</li>
         </ol>
       </nav>
     </div><!-- End Page Title -->
@@ -36,12 +36,12 @@
                       <h6></h6>
                     </li>
 
-                    <li><a class="dropdown-item" href="#">Liste des structures</a></li>
+                    <li><a class="dropdown-item" href="#">Liste des associations membres</a></li>
                   </ul>
                 </div>
 
                 <div class="card-body pb-0">
-                  <h5 class="card-title">Structures <span>| Enregistrées</span></h5>
+                  <h5 class="card-title">Associations membres <span>| Enregistrées</span></h5>
 
                   <table class="table table-borderless datatable">
                     <thead>
@@ -57,7 +57,7 @@
                       {% for str in structures %}
                       <tr>
                         {% if str.logo %}
-                          <th scope="row"><a href="#"><img src="{{str.logo.url}}" alt="Structure FENAMO {{str.nom}}"></a></th>
+                          <th scope="row"><a href="#"><img src="{{str.logo.url}}" alt="Association membre FENAMO {{str.nom}}"></a></th>
                         {% else %}
                           <th scope="row"><a href="#"><img src="{% static 'img/province.png' %}" alt=""></a></th>
                         {% endif %}
