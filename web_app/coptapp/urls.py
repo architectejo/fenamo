@@ -1,57 +1,81 @@
+"""Plan d'URL de l'application web (cahier des charges § 7.3 et annexe B).
+
+Les noms de routes sont conservés : les gabarits, les redirections et `mobapp`
+les utilisent. Les adresses sont celles de la cible (racine du domaine).
+
+Les routes marquées « TODO lot 2 : POST + CSRF » modifient encore des données
+en GET ; elles gardent leur méthode actuelle jusqu'au lot 2.
+"""
 from django.urls import path
+
 from coptapp.views import *
 
-
 urlpatterns = [
-    path('', home, name="home-app"),
-    # AssociationMembre
-    path('add-structure/', add_structure, name="add-structure"),
-    path('edit-structure/<int:id>', edit_structure, name="edit-structure"),
-    path('ville-attr/<int:id>/<int:sid>', ville_attr, name="ville-attr"),
-    path('structure-attribution/<int:id>/<int:idM>', structure_attr_membre, name="structure-attribution"),
-    #Session
-    path('session', session, name="home-session"),
-    path('province-views-datails/<int:id>',province_view,name="province-view"),
-    path('add-ville-in-province/<int:id>',addVille,name="add-ville"),
-    path('ville-view-details/<int:id>',ville_view,name="ville-view"),
-    path('structures-liste/', structures_liste, name="str-list"),
-    #Session by ID
-    path('my-structure-admin/<int:id>',sessionById,name="structure-admin"),
-    #Antenne
-    path('add-antenne-in-ville/<int:id>', addAntenne, name="add-antenne"),
-    path('edit-antenne/<int:id>', editAntenne, name="edit-antenne"),
-    path('antenne-attribution/<int:id>/<int:idM>', antenne_attr_membre, name="antenne-attribution"),
-    #Ville
-    path('ville-select/<int:id>', ville_select, name="ville-select"),
-    path('ville-attribution/<int:id>/<int:idM>/', ville_attr_membre, name="ville-attribution"),
-    #Membres
-    path('add-membre-from-fenamo/', add_membre_from_fenamo, name="add-fenamo-membre"),
-    path('add-membre-in-ville-by-antenne-no-selected/<int:id>', addMembre, name="add-membre"),
-    path('view-of-membre-from-city-by-selection/<int:id>', membre_view, name="membre-view"),
-    path('add-moto-for-membre-selected/<int:id>', addMoto, name="add-moto"),
-    path('delete-moto-for-membre-selected/<int:id>', deleteMoto, name="delete-moto"),
-    path('edit-moto-for-membre-selected/<int:id>', editMoto, name="edit-moto"),
-    path('sked-to-delete-membre-from-user/<int:id>', demandeSuppression, name="delete-membre"),
-    path('view-user-from-membre-by-id/<int:id>', viewUser, name="view-user"),
-    path('view-all-notifications-for-user/', notificationsView, name="notifys"),
-    path('results-of-seach-on-table/', recherche, name="recherche"),
-    path('view-moto-selected-by-meny-to-one/<int:id>', moto_view, name="view-moto"),
-    path('add-province-in-app-served-by-admin/', addProvince, name="add-province"),
-    path('moto-attribution-for-membre/<int:id>', attributMoto, name="moto-attribution"),
-    path('validate-membre-for-any-user/<int:id>', validate, name="validate"),
-    path('security-of-user-updated/<int:id>', security, name="security"),
-    path('antenne-list-of-membre-by-group-antenne/<int:id>', antenneView, name="antenne-view"),
-    path('error-404-generator/', errorPage, name="error"),
-    path('add-member-of-family/<int:id>', addFamily, name="add-family"),
-    path('edit-family-list/<int:id>', editFamily, name="edit-family"),
-    path('delete-family-member/<int:id>', deleteFamily, name="delete-family"),
-    path('post-communique-for-user/', addCommunique, name="message"),
-    path('list-of-communiques/', listMessage, name="list-message"),
-    path('view-of-communique-and-reactions-in-page/<int:id>', messageView, name="communique"),
-    path('site-administration/', site, name="site"),
-    path('article-edit/<int:id>', article, name="article"),
-    path('delete-article/<int:id>', deleteArticle, name="delete-article"),
-    path('contact-us-from-site/', contact, name='contact'),
-    path('contact-us-from-site-view/<int:id>', contactView, name='contact-view'),
-    path('liste-des-membres/', membreListe, name='liste-membre')
+    # Tableau de bord
+    path('', home, name="home-app"),  # TODO lot 2 : POST + CSRF (crée des objets en GET pour un super-utilisateur sans membre)
+
+    # Associations membres
+    path('associations/', structures_liste, name="str-list"),
+    path('associations/mon-association/', session, name="home-session"),
+    path('associations/ajouter/', add_structure, name="add-structure"),
+    path('associations/<int:id>/', sessionById, name="structure-admin"),
+    path('associations/<int:id>/modifier/', edit_structure, name="edit-structure"),
+    # TODO lot 2 : POST + CSRF (modifie la ville de l'association en GET)
+    path('associations/<int:sid>/ville/<int:id>/', ville_attr, name="ville-attr"),
+    path('associations/<int:id>/antennes/ajouter/', addAntenne, name="add-antenne"),
+
+    # Coordinations provinciales
+    path('provinces/ajouter/', addProvince, name="add-province"),
+    path('provinces/<int:id>/', province_view, name="province-view"),
+    path('provinces/<int:id>/villes/ajouter/', addVille, name="add-ville"),
+
+    # Villes (niveau hérité, remplacé par l'antenne)
+    path('villes/<int:id>/', ville_view, name="ville-view"),
+    path('villes/<int:id>/selectionner/', ville_select, name="ville-select"),  # <id> = association
+
+    # Antennes
+    path('antennes/<int:id>/', antenneView, name="antenne-view"),
+    path('antennes/<int:id>/modifier/', editAntenne, name="edit-antenne"),
+
+    # Membres
+    path('membres/', membreListe, name="liste-membre"),
+    path('membres/ajouter/', add_membre_from_fenamo, name="add-fenamo-membre"),
+    path('membres/ajouter/association/<int:id>/', addMembre, name="add-membre"),
+    path('membres/<int:id>/', membre_view, name="membre-view"),
+    path('membres/<int:id>/valider/', validate, name="validate"),  # TODO lot 2 : POST + CSRF
+    path('membres/<int:id>/supprimer/', demandeSuppression, name="delete-membre"),  # TODO lot 2 : POST + CSRF
+    # TODO lot 2 : POST + CSRF (les trois rattachements modifient le membre en GET)
+    path('membres/<int:idM>/rattachement/association/<int:id>/', structure_attr_membre, name="structure-attribution"),
+    path('membres/<int:idM>/rattachement/ville/<int:id>/', ville_attr_membre, name="ville-attribution"),
+    path('membres/<int:idM>/rattachement/antenne/<int:id>/', antenne_attr_membre, name="antenne-attribution"),
+    path('membres/<int:id>/compte/', viewUser, name="view-user"),
+    path('membres/<int:id>/famille/ajouter/', addFamily, name="add-family"),
+    path('membres/<int:id>/motos/ajouter/', addMoto, name="add-moto"),
+
+    # Famille
+    path('famille/<int:id>/modifier/', editFamily, name="edit-family"),
+    path('famille/<int:id>/supprimer/', deleteFamily, name="delete-family"),  # TODO lot 2 : POST + CSRF
+
+    # Engins (motos et tricycles)
+    path('motos/<int:id>/', moto_view, name="view-moto"),
+    path('motos/<int:id>/modifier/', editMoto, name="edit-moto"),
+    path('motos/<int:id>/supprimer/', deleteMoto, name="delete-moto"),  # TODO lot 2 : POST + CSRF
+    path('motos/<int:id>/attribuer/', attributMoto, name="moto-attribution"),  # <id> = membre (POST seulement)
+
+    # Compte, recherche, notifications
+    path('mon-compte/securite/<int:id>/', security, name="security"),
+    path('recherche/', recherche, name="recherche"),
+    path('notifications/', notificationsView, name="notifys"),
+
+    # Communiqués
+    path('communiques/', listMessage, name="list-message"),
+    path('communiques/ajouter/', addCommunique, name="message"),
+    path('communiques/<int:id>/', messageView, name="communique"),
+
+    # Contenu du site public
+    path('contenu-site/', site, name="site"),
+    path('contenu-site/articles/<int:id>/modifier/', article, name="article"),
+    path('contenu-site/articles/<int:id>/supprimer/', deleteArticle, name="delete-article"),  # TODO lot 2 : POST + CSRF
+    path('contenu-site/messages/', contact, name='contact'),
+    path('contenu-site/messages/<int:id>/', contactView, name='contact-view'),
 ]

@@ -768,9 +768,6 @@ def editMoto(request, id):
     return render(request, 'app/add-moto.html', locals())
 
 
-def errorPage(request):
-    return render(request, 'app/pages-error-404.html', locals())
-
 #Redirection to membre-view
 def viewUser(request, id):
     return redirect('membre-view', id=id)

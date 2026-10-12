@@ -1,28 +1,18 @@
-"""fenamo URL Configuration
+"""Plan d'URL principal (cahier des charges web § 7.3 et annexe B).
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+L'application est servie à la racine de son domaine.
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from django.conf import settings
-from django.conf.urls.static import static
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include("virtrine.urls")),
-    path('app/', include("compte.urls")),
-    path('auth/', include("coptapp.urls")),
-    path('mob/', include("mobapp.urls")),
+    path('gestion-technique/', admin.site.urls),
+    path('api/v1/', include('api.urls')),
+    path('mob/', include('mobapp.urls')),  # inchangé (§ 2.3)
+    path('contenu-site/configuration/', include('virtrine.urls_gestion')),
+    path('ancien-site/', include('virtrine.urls')),  # transitoire, voir virtrine/urls.py
+    path('', include('compte.urls')),
+    path('', include('coptapp.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
