@@ -15,6 +15,7 @@ from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
 from virtrine.models import Article, Contact, Galery
 from coptapp.forms import *
+from coptapp.validators import erreur_image
 from datetime import datetime
 from calendar import monthrange
 import os
@@ -529,9 +530,12 @@ def addMoto(request, id):
     structure = membre.structure
     print(f"\n\n\n{structure}\n\n\n")
     if request.method == 'POST':
-        photo = None
-        if len(request.FILES) != 0:
-            photo = request.FILES['photo']
+        photo = request.FILES.get('photo')
+        erreur_photo = erreur_image(photo) if photo else None
+        if erreur_photo:
+            message = erreur_photo
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-moto.html', locals(), status=400)
         debut = datetime.today()
         finAbonnement = debut.replace(year=debut.year+1)
         motosCity = Moto.objects.filter(ville=membre.ville)
@@ -718,13 +722,19 @@ def editMoto(request, id):
     moto = Moto.objects.get(id=id)
     membre = Membre.objects.get(id=moto.proprietaire.id)
     if request.method == 'POST':
+        photo = request.FILES.get('photo')
+        erreur_photo = erreur_image(photo) if photo else None
+        if erreur_photo:
+            message = erreur_photo
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-moto.html', locals(), status=400)
         moto.num_plaque = request.POST['plaque']
         moto.num_chassie = request.POST['chassie']
         moto.num_moteur = request.POST['moteur']
         moto.marque = request.POST['marque']
         moto.couleur = request.POST['couleur']
-        if len(request.FILES) != 0:
-            moto.photo = request.FILES['photo']
+        if photo:
+            moto.photo = photo
         moto.save()
         message = "Mise à jour !"
         classe = 'alert alert-primary text-center'
@@ -1068,6 +1078,13 @@ def site(request):
             classe = 'alert alert-danger text-center'
         else:
             image = request.FILES.get('image')
+            erreur_photo = erreur_image(image) if image else None
+            if erreur_photo:
+                image = None
+                message = erreur_photo
+                classe = 'alert alert-danger text-center'
+                articles = Article.objects.order_by('-id')
+                return render(request, 'app/site.html', locals(), status=400)
             try:
                 verify = Article.objects.get(titre=titre)
                 verify = True
@@ -1108,6 +1125,13 @@ def article(request, id):
     #Article edit
     article = Article.objects.get(id=id)
     if request.method == 'POST':
+        image = request.FILES.get('image')
+        erreur_photo = erreur_image(image) if image else None
+        if erreur_photo:
+            message = erreur_photo
+            classe = 'alert alert-danger text-center'
+            articles = Article.objects.order_by('-id')
+            return render(request, 'app/site.html', locals(), status=400)
         article.titre = request.POST.get('titre')
         article.description = request.POST.get('description')
         if len(request.FILES) != 0:

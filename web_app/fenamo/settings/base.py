@@ -160,6 +160,8 @@ STATICFILES_DIRS = [d for d in (BASE_DIR / 'static',) if d.is_dir()]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = Path(env('MEDIA_ROOT', default='') or BASE_DIR / 'media')
+# Taille maximale d'une image téléversée, en Mo (coptapp.validators, § 9.2).
+UPLOAD_IMAGE_MAX_MO = env.float('UPLOAD_IMAGE_MAX_MO', default=3)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
