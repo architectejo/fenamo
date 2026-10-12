@@ -33,7 +33,7 @@ def test_F28_perimetre_des_indicateurs_suit_les_privileges(jeu):
     p3 = Compte.objects.create_user('p3', password='x', privilege3=True)
     assert {m.nom for m in membres_du_perimetre(p3)} == {'Valide A', 'Actif'}
     sans = Compte.objects.create_user('sans', password='x')
-    assert membres_du_perimetre(sans).count() == 3  # comportement hérité conservé : aucun filtre sans privilège
+    assert membres_du_perimetre(sans).count() == 0  # sans privilège : rien (jamais « tout »), comme la liste héritée
 
 
 def test_F28_historique_objet(jeu):

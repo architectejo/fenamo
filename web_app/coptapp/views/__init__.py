@@ -16,6 +16,10 @@ from django.contrib.auth import authenticate, get_user_model, logout
 from virtrine.models import Article, Contact, Galery
 from coptapp.forms import *
 from coptapp.validators import erreur_image
+from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
+from coptapp.services.membres import choix_filtres, lister_membres, membres_filtres
+from fenamo.htmx import veut_fragment
+from urllib.parse import urlencode
 from datetime import datetime
 from calendar import monthrange
 import os
@@ -967,35 +971,46 @@ def ville_view(request, id):
 
 #Afficher la liste des membres
 def membreListe(request):
-    
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
+    """Liste des membres (F-28) : recherche, filtres et pagination serveur (25 par page).
+
+    Paramètres GET : ``q`` (nom, identifiant, téléphone), ``etat`` (saisi, valide_antenne, actif),
+    ``qualite`` (MOTARD, PROPRIETAIRE, MOTARD ET PROPRIETAIRE), ``antenne`` (id), ``association`` (id), ``page``.
+
+    Réponse : fragment ``coptapp/membres/partials/_liste.html`` pour une requête HTMX (hors navigation boostée),
+    page complète ``app/membre-list.html`` sinon.
+
+    Contexte fourni au gabarit :
+    - ``page_obj`` : page courante (Page Django : itérable de Membre, ``paginator.count``, ``number``,
+      ``start_index``, ``end_index``, ``has_previous`` / ``has_next``) ; une page illisible ou hors bornes ramène
+      à la première ou à la dernière page ;
+    - ``membres`` : queryset filtré COMPLET (transitoire : la balise ``paginer`` du gabarit actuel le repagine ;
+      à retirer quand le gabarit n'itère plus que ``page_obj``) ;
+    - ``filtres`` : valeurs normalisées ``q``, ``etat``, ``qualite``, ``antenne``, ``association`` (chaînes ou
+      entiers, vide si absent) pour préremplir le formulaire ;
+    - ``filtres_actifs`` : vrai si une recherche ou un filtre est posé (message « aucun résultat » ou vide) ;
+    - ``filtres_url`` : chaîne de requête des filtres SANS ``page``, à placer dans les liens de pagination ;
+    - ``choix`` : ``antennes``, ``associations`` (du périmètre), ``qualites``, ``etats`` (codes) pour les listes
+      déroulantes ;
+    - ``peut_modifier``, ``peut_valider``, ``peut_demander_suppression``, ``peut_attribuer_privileges``,
+      ``peut_gerer_famille``, ``peut_gerer_engins``, ``peut_voir_historique`` (droits « en général », voir
+      ``coptapp.services.droits_provisoires``), ``droits`` (le même dictionnaire) et ``user``.
+    """
     user = request.user
-    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
-    if userMembre and userMembre.ville:
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    user = request.user
-    membre = userMembre
-    membreUser = compte_du_membre(user.membreId)
-    
-    try:
-        ville = membre.ville
-    except: pass
-    membres = Membre.objects.none()
-    if user.is_superuser or user.privilege5:
-        membres = Membre.objects.filter(is_delete=False).order_by('user__username','antenne', 'nom')
-    else:
-        if user.privilege1 or user.privilege2:
-            membres = Membre.objects.filter(is_delete=False, is_validate1=True).order_by('user__username','antenne', 'nom')
-        elif user.privilege3:
-            membres = Membre.objects.filter(is_delete=False, is_validate1=True, is_validate2=True).order_by('user__username','antenne', 'nom')
-        elif user.privilege4:
-            membres = Membre.objects.filter(is_delete=False, is_validate3=True).order_by('user__username','antenne', 'nom')
-    return render(request, 'app/membre-list.html', locals())
+    resultat = lister_membres(user, request.GET, request.GET.get('page'))
+    droits = droits_membre(user)
+    contexte = {
+        'user': user,
+        'page_obj': resultat.page_obj,
+        'membres': membres_filtres(user, resultat.filtres),
+        'filtres': resultat.filtres,
+        'filtres_actifs': resultat.filtres_actifs,
+        'filtres_url': urlencode({k: v for k, v in resultat.filtres.items() if v}),
+        'choix': choix_filtres(user),
+        'droits': droits,
+        **droits,
+    }
+    modele = 'coptapp/membres/partials/_liste.html' if veut_fragment(request) else 'app/membre-list.html'
+    return render(request, modele, contexte)
 
 
 def notificationsView(request):

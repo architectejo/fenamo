@@ -36,3 +36,22 @@ def etat_de(objet, aujourdhui=None):
     if getattr(objet, 'is_validate2', False):
         return 'valide_antenne'
     return 'saisi'
+
+
+def filtrer_membres_par_etat(membres, etat):
+    """Restreint un queryset de Membre à un état du circuit (même lecture des booléens hérités que `etat_de`).
+
+    `etat` : un code de ETATS. Les états qu'aucun booléen hérité ne produit ('valide_province', 'renvoye',
+    'a_renouveler') et 'supprime' (les listes excluent les membres supprimés) donnent une liste vide.
+    Un code inconnu ou vide ne filtre pas.
+    """
+    etat = (etat or '').replace('-', '_')  # les classes CSS utilisent des tirets
+    if etat not in ETATS:
+        return membres
+    if etat == 'actif':
+        return membres.filter(is_validate3=True, is_delete=False)
+    if etat == 'valide_antenne':
+        return membres.filter(is_validate2=True, is_validate3=False, is_delete=False)
+    if etat == 'saisi':
+        return membres.filter(is_validate2=False, is_validate3=False, is_delete=False)
+    return membres.none()

@@ -21,6 +21,16 @@ from django.utils.cache import patch_vary_headers
 NIVEAUX = {'debug': 'info', 'info': 'info', 'success': 'success', 'warning': 'warning', 'error': 'danger'}
 
 
+def veut_fragment(request):
+    """Vrai si la requête vient de HTMX ET attend un fragment (zone, modale…).
+
+    Une navigation « boostée » (``hx-boost``) attend la page complète : le serveur rend la coque et le client
+    ne garde que ``#contenu`` (``hx-select``).
+    """
+    htmx = getattr(request, 'htmx', None)
+    return bool(htmx) and not getattr(htmx, 'boosted', False)
+
+
 def ajouter_declencheurs(response, declencheurs):
     """Ajoute des événements à l'en-tête ``HX-Trigger`` sans écraser ceux déjà présents."""
     if not declencheurs:
