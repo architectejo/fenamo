@@ -1,0 +1,36 @@
+{% load static i18n %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} - FENAMO-RDC</title>
+  <meta name="description" content="{{ page_description }}">
+  {% if noindex or site_noindex %}<meta name="robots" content="noindex, nofollow">{% endif %}
+  <link rel="canonical" href="{{ canonical_url }}">
+  {% for code, url in hreflang_alternates %}<link rel="alternate" hreflang="{{ code }}" href="{{ url }}">
+  {% endfor %}<link rel="alternate" hreflang="x-default" href="{{ hreflang_default }}">
+  <meta property="og:site_name" content="FENAMO-RDC">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ page_title }} - FENAMO-RDC">
+  <meta property="og:description" content="{{ page_description }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:locale" content="{{ LANGUAGE_CODE }}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="entete">
+    <strong>FENAMO-RDC</strong>
+    {% if show_language_switcher %}
+    <nav aria-label="{% translate 'Langue' %}">
+      {% for code, name, url in language_links %}
+      <a href="{{ url }}" hreflang="{{ code }}" lang="{{ code }}">{{ name }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="pied">{% translate "Unité, Discipline et Progrès" %}</footer>
+</body>
+</html>

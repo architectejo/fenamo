@@ -1,0 +1,51 @@
+# Traductions FENAMO-RDC - Lingala.
+# Textes sources en français : une chaîne sans traduction s'affiche en français.
+msgid ""
+msgstr ""
+"Project-Id-Version: site-fenamo\n"
+"Language: ln\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: pages/views.py:6
+msgid "Accueil"
+msgstr ""
+
+#: pages/views.py:6
+msgid "Fédération Nationale des Associations des Motocyclistes Taximen de la RDC."
+msgstr ""
+
+#: templates/base.html
+msgid "Langue"
+msgstr ""
+
+#: templates/base.html
+msgid "Unité, Discipline et Progrès"
+msgstr ""
+
+#: templates/pages/accueil.html
+msgid "FENAMO-RDC"
+msgstr ""
+
+#: site_fenamo/settings/base.py
+msgid "Français"
+msgstr ""
+
+#: site_fenamo/settings/base.py
+msgid "Lingala"
+msgstr ""
+
+#: site_fenamo/settings/base.py
+msgid "Kiswahili"
+msgstr ""
+
+#: site_fenamo/settings/base.py
+msgid "Tshiluba"
+msgstr ""
+
+#: site_fenamo/settings/base.py
+msgid "Kikongo"
+msgstr ""
+

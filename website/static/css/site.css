@@ -1,0 +1,4 @@
+body{margin:0;font-family:system-ui,sans-serif;line-height:1.5;color:#222}
+.entete,.pied{display:flex;justify-content:space-between;gap:1rem;padding:.75rem 1rem;background:#0b3d2e;color:#fff}
+.entete a{color:#fff;margin-left:.75rem}
+main{padding:1rem;max-width:60rem;margin:0 auto}
