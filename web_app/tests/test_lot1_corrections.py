@@ -128,7 +128,7 @@ def test_mot_ville_absent_du_texte_visible(client, jeu):
         if nom not in noms:
             continue
         reponse = get_isole(client, cible)
-        if reponse.status_code == 200 and re.search(r'(?i)\bvilles?\b', texte_visible(reponse.contenu)):
+        if reponse.status_code == 200 and re.search(r'(?i)\bvilles?\b', texte_visible(re.sub(r'(?s)<!--.*?-->', '', reponse.contenu))):
             fautifs.append(cible)
     assert fautifs == [], f"« ville » visible sur : {fautifs}"
 
