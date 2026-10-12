@@ -131,3 +131,59 @@ def erreur_image(fichier):
     except ValidationError as erreur:
         return ' '.join(erreur.messages)
     return None
+
+
+# ---------------------------------------------------------------- pièces jointes (PDF, JPEG, PNG)
+
+EXTENSIONS_PIECES = {'pdf': 'pdf', 'JPEG': 'jpg', 'PNG': 'png'}
+
+
+def taille_max_piece_octets():
+    return int(float(getattr(settings, 'UPLOAD_PIECE_MAX_MO', 3)) * 1024 * 1024)
+
+
+def type_reel_piece(fichier):
+    """Extension imposée ('pdf', 'jpg' ou 'png') d'après le CONTENU du fichier ; ValidationError sinon."""
+    fichier.seek(0)
+    debut = fichier.read(1024)
+    fichier.seek(0)
+    if debut.lstrip(b'\x00\t\r\n ').startswith(b'%PDF-'):
+        return 'pdf'
+    format_reel = _ouvrir(fichier)[1]
+    if format_reel in ('JPEG', 'PNG'):
+        return EXTENSIONS_PIECES[format_reel]
+    raise ValidationError(_("Format refusé : utilisez un PDF, une image JPEG ou PNG."), code='piece_format')
+
+
+def valider_piece(fichier):
+    """Validateur d'une pièce jointe (fiche d'identité…) : taille <= UPLOAD_PIECE_MAX_MO, type réel PDF / JPEG / PNG."""
+    if not fichier or getattr(fichier, '_committed', False):
+        return
+    if fichier.size > taille_max_piece_octets():
+        raise ValidationError(
+            _("Fichier trop lourd : %(max)s Mo au maximum."), code='piece_trop_lourde',
+            params={'max': ('%g' % float(getattr(settings, 'UPLOAD_PIECE_MAX_MO', 3))).replace('.', ',')},
+        )
+    type_reel_piece(fichier)
+
+
+def erreur_piece(fichier):
+    """Comme `erreur_image`, pour une pièce jointe."""
+    try:
+        valider_piece(fichier)
+    except ValidationError as erreur:
+        return ' '.join(erreur.messages)
+    return None
+
+
+def traiter_pieces_avant_enregistrement(sender, instance, **kwargs):
+    """Récepteur pre_save des FileField qui ne sont pas des images : valide, impose l'extension, nom aléatoire."""
+    for champ in instance._meta.concrete_fields:
+        if not isinstance(champ, models.FileField) or isinstance(champ, models.ImageField):
+            continue
+        fichier = getattr(instance, champ.attname)
+        if not fichier or getattr(fichier, '_committed', True):
+            continue
+        valider_piece(fichier)
+        extension = type_reel_piece(fichier)
+        fichier.save(f'{uuid.uuid4().hex}.{extension}', fichier.file, save=False)

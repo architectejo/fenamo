@@ -66,7 +66,7 @@ class MembreForm(forms.ModelForm):
     date_naissance = forms.DateField(widget=forms.DateInput)
     class Meta:
         model = Membre
-        exclude = ['user','structure','province','antenne','is_delete','is_validate1','is_validate2','is_validate3','is_membre','is_user','a_propos','autre_asb']
+        exclude = ['user','structure','province','antenne','idf','password','is_delete','is_validate1','is_validate2','is_validate3','is_membre','is_user','a_propos','autre_asb']
         labels = {
             'nom':"Nom complet",
             'date_naissance':"Date de naissance",
