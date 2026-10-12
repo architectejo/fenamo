@@ -58,7 +58,7 @@ def test_delete_user_retire(client, jeu):
 
 def test_changement_impose_a_la_premiere_connexion(client, jeu):
     Compte.objects.create_user('premier', password='Temporaire-123x', doit_changer_mot_de_passe=True)
-    assert client.login(username='premier', password='Temporaire-123x')
+    client.force_login(Compte.objects.get(username='premier'))
     r = client.get('/membres/')
     assert r.status_code == 302 and r['Location'] == reverse('securite')
     r = client.get('/membres/', HTTP_HX_REQUEST='true')
@@ -108,3 +108,31 @@ def test_admin_compte_mot_de_passe_hache_et_membre_sans_password(client, jeu):
 
 def test_page_connexion_admin_accessible_a_l_anonyme(client, db):
     assert client.get('/gestion-technique/login/').status_code == 200
+
+
+# ------------------------------------------------------------------ a5 : axes, sessions, CSP
+
+def test_verrou_apres_cinq_echecs(client, db, settings):
+    Compte.objects.create_user('cible', password='Bon-mot-de-passe-1x')
+    for _ in range(4):
+        assert client.post('/connexion/', {'username': 'cible', 'password': 'faux'}).status_code == 200
+    # le 5e échec déclenche le verrou
+    assert client.post('/connexion/', {'username': 'cible', 'password': 'faux'}).status_code == 429
+    r = client.post('/connexion/', {'username': 'cible', 'password': 'Bon-mot-de-passe-1x'})
+    assert r.status_code == 429
+    # un autre nom d'utilisateur (même IP) n'est pas bloqué
+    Compte.objects.create_user('autre', password='Bon-mot-de-passe-1x')
+    assert client.post('/connexion/', {'username': 'autre', 'password': 'Bon-mot-de-passe-1x'}).status_code == 302
+
+
+def test_connexion_normale_et_reglages(client, db, settings):
+    Compte.objects.create_user('ok', password='Bon-mot-de-passe-1x')
+    assert client.post('/connexion/', {'username': 'ok', 'password': 'Bon-mot-de-passe-1x'}).status_code == 302
+    assert settings.SESSION_COOKIE_AGE == 1800 and settings.SESSION_SAVE_EVERY_REQUEST is True
+    assert settings.AXES_FAILURE_LIMIT == 5 and settings.AXES_COOLOFF_TIME.total_seconds() == 1800
+
+
+def test_csp_en_rapport_seulement(client, db):
+    r = client.get('/connexion/')
+    assert 'Content-Security-Policy-Report-Only' in r.headers
+    assert 'Content-Security-Policy' not in r.headers

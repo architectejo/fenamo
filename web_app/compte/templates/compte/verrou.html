@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block titre %}{% translate "Connexion bloquée" %} - FENAMO-RDC{% endblock %}
+{% block coque %}
+<main class="page-connexion" id="contenu">
+  <div class="card shadow"><div class="card-body p-4 text-center">
+    <h1 class="h5">{% translate "Connexion temporairement bloquée" %}</h1>
+    <p>{% translate "Trop de tentatives échouées. Réessayez plus tard ou contactez un administrateur de la FENAMO-RDC." %}</p>
+    <a class="btn btn-primary" href="{% url 'application' %}">{% translate "Retour à la connexion" %}</a>
+  </div></div>
+</main>
+{% endblock coque %}

@@ -5,6 +5,7 @@ Les valeurs sensibles ou propres à un environnement viennent du fichier `.env`
 Les réglages `dev.py` et `prod.py` complètent ce module.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -33,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_htmx',
+    'axes',
     'mobapp',
     'compte',
     'coptapp',
@@ -54,6 +56,8 @@ MIDDLEWARE = [
     # Toute vue exige la connexion, sauf celles marquées @login_not_required (connexion, santé, /mob/, /ancien-site/).
     'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'compte.middleware.ChangementMotDePasseMiddleware',
+    'fenamo.csp.CspReportOnlyMiddleware',
+    'axes.middleware.AxesMiddleware',  # en dernier (documentation django-axes)
 ]
 
 ROOT_URLCONF = 'fenamo.urls'
@@ -88,6 +92,31 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
 
 
 # Mots de passe
+
+# Verrou anti force brute (django-axes) : 5 échecs consécutifs sur le couple nom d'utilisateur + adresse IP.
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+AXES_FAILURE_LIMIT = env.int('AXES_FAILURE_LIMIT', default=5)
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_COOLOFF_TIME = timedelta(minutes=env.int('AXES_COOLOFF_MINUTES', default=30))
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = 'compte/verrou.html'
+
+# Sessions : expiration après inactivité (secondes), prolongée à chaque requête.
+SESSION_COOKIE_AGE = env.int('SESSION_COOKIE_AGE', default=1800)
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Politique de sécurité du contenu, en mode rapport seulement (aucun blocage) le temps de la mettre au point.
+# Alpine.js (version standard) exige 'unsafe-eval' ; les styles en ligne sont encore présents dans les gabarits hérités.
+CSP_REPORT_ONLY_POLICY = env('CSP_REPORT_ONLY_POLICY', default=(
+    "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; "
+    "base-uri 'self'; form-action 'self'"
+))
 
 AUTH_USER_MODEL = 'compte.Compte'
 LOGIN_URL = 'application'
