@@ -56,7 +56,7 @@ def test_F28_etat_suit_les_actions_de_la_vue_validate(client, jeu):
     assert etat_de(m) == 'actif'  # un SU valide tous les niveaux d'un coup
     client.post(reverse('validate', kwargs={'id': m.id}))
     m.refresh_from_db()
-    assert etat_de(m) == 'saisi'  # puis les renvoie
+    assert etat_de(m) == 'actif'  # la validation est idempotente : un second clic ne dévalide jamais
 
 
 @pytest.mark.parametrize('etat', ETATS)

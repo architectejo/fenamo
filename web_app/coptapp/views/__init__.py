@@ -17,6 +17,7 @@ from virtrine.models import Article, Contact, Galery
 from coptapp.forms import *
 from coptapp.validators import erreur_image
 from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
+from coptapp.services.historique import historique_objet
 from coptapp.services.membres import choix_filtres, lister_membres, membres_filtres
 from fenamo.htmx import veut_fragment
 from urllib.parse import urlencode
@@ -39,8 +40,14 @@ def provinceSelector():
 
 @require_POST
 def demandeSuppression(request, id):
+    """Demande de suppression logique d'un membre, ou annulation de la demande (F-25).
+
+    Périmètre : 404 si le membre est hors du périmètre du compte ; 403 si le compte ne peut pas demander de suppression.
+    """
     user = request.user
-    membre = Membre.objects.get(id=id)
+    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=True), id=id)
+    if not droits_membre(user, membre)['peut_demander_suppression']:
+        raise PermissionDenied
     if membre.is_delete:
         titre = "Annulation de la demande de suppression"
         changer_suppression(user, membre, False)
@@ -88,33 +95,25 @@ def myNotify(request):
 #Validation des membres
 @require_POST
 def validate(request, id):
+    """Valide un membre (F-23). Idempotente : elle ne fait que VALIDER, jamais dévalider.
+
+    404 hors périmètre, 403 si le compte ne valide à aucun niveau. Si le compte n'a plus rien à valider sur ce membre
+    (déjà validé à son niveau), rien ne change et rien n'est journalisé. Le renvoi au niveau inférieur, avec motif
+    obligatoire, est une action distincte (à venir) : l'ancienne bascule valider/dévalider n'existe plus.
+    """
     user = request.user
-    membre = Membre.objects.get(id=id)
-    avant_validation = drapeaux_validation(membre)
-    
-    if user.privilege2:
-        if membre.is_validate2:
-            membre.is_validate2 = False
-        else:
-            membre.is_validate2 = True
-
-    if user.privilege3:
-        if membre.is_validate3:
-            membre.is_validate3 = False
-        else:
-            membre.is_validate3 = True
-
-    if user.privilege5 or user.is_superuser:
-        if membre.is_validate3:
-            membre.is_validate2 = False
-            membre.is_validate3 = False
-        else:
-            membre.is_validate1 = True
-            membre.is_validate2 = True
-            membre.is_validate3 = True
-
-    membre.save()
-    journaliser_validation(user, membre, avant_validation)
+    membre = get_object_or_404(membres_du_perimetre(user), id=id)
+    if not droits_membre(user)['peut_valider']:
+        raise PermissionDenied
+    etapes = etapes_a_valider(user, membre)
+    if etapes:
+        avant_validation = drapeaux_validation(membre)
+        for etape in etapes:
+            setattr(membre, etape, True)
+        membre.save(update_fields=etapes)
+        journaliser_validation(user, membre, avant_validation)
+    else:
+        contrib_messages.info(request, _("Ce membre est déjà validé à votre niveau."))
     return redirect("home-session")
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -752,47 +751,47 @@ def viewUser(request, id):
 
 #Vue de membreerrorPage
 def membre_view(request, id):
-    if request.user.is_authenticated:
-        try: structure = AssociationMembre.objects.filter(users=request.user).first()
-        except: pass
-        #Configuration
-        messages = Communique.objects.order_by('-id')[0:3]
-        user = request.user
-        if user.membreId:
-            userMembre = Membre.objects.get(id=user.membreId)
-            if userMembre.ville:
-                villeId = userMembre.ville.id
-        notifications = myNotify(request)[0:3]
-        antennes = Antenne.objects.order_by('nom')
-        provinces = provinceSelector()
-    
-        user = request.user
-        verify = User.objects.filter(membreId=id)
-        if verify:
-            membreUser = verify[0]
-        
-    membre = Membre.objects.get(id=id)
+    """Fiche d'un membre : lecture et actions « modifier », « envoyer » (demande de modification), « privilege ».
+
+    404 si le membre est hors du périmètre du compte (voir coptapp.services.droits_provisoires) ; 403 si l'action
+    POST demandée est interdite. Contexte : membre, historique (lignes du journal, vide sans le droit), droits (dictionnaire) et chaque ``peut_*`` à plat
+    (peut_modifier, peut_valider, peut_demander_suppression, peut_attribuer_privileges, peut_gerer_famille,
+    peut_gerer_engins, peut_voir_historique, peut_demander_modification).
+    """
+    user = request.user
+    # Un membre supprimé logiquement reste visible de ceux qui peuvent demander (ou annuler) la suppression.
+    voit_supprimes = droits_membre(user)['peut_demander_suppression']
+    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=voit_supprimes), id=id)
+    droits = droits_membre(user, membre)
+
+    structure = AssociationMembre.objects.filter(users=user).first()
+    antennes = Antenne.objects.order_by('nom')
+    verify = User.objects.filter(membreId=id)
+    if verify:
+        membreUser = verify[0]
     villes = Ville.objects.filter(province=membre.province).exclude(nom=None)
     structures = AssociationMembre.objects.filter(province=membre.province)
-    if not membre.ville or not membre.structure or not membre.antenne: 
-        if request.user.is_authenticated: variante = 6
-        else: variante = 12
-    else: variante = 12
-
     if membre.ville:
         antennes = Antenne.objects.filter(structure__ville=membre.ville).exclude(nom=None)
     familles = Famille.objects.filter(membre=membre)
-    #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-        
+
     verifyMoto = Moto.objects.filter(motard_id=membre.id)
     if len(verifyMoto) != 0:
-        motoAttr = Moto.objects.get(motard_id=membre.id)
-    
+        motoAttr = verifyMoto.first()
+
     naissance = membre.date_naissance
-    today = datetime.today()
-    age = today.year - naissance.year
+    age = datetime.today().year - naissance.year if naissance else None
     if request.method == 'POST':
         if 'modifier' in request.POST:
+            if not droits['peut_modifier']:
+                raise PermissionDenied
+            photo = request.FILES.get('photo')
+            erreur_photo = erreur_image(photo) if photo else None
+            if erreur_photo:
+                message = erreur_photo
+                motos = Moto.objects.filter(proprietaire=membre, is_delete=False)
+                nbrMoto = len(motos)
+                return render(request, 'app/membre.html', {**locals(), **droits, 'droits': droits}, status=400)
             membre.nom = request.POST['nom']
             membre.a_propos = request.POST['about']
             membre.date_naissance = datetime.strptime(request.POST['date'],'%d-%m-%Y')
@@ -819,11 +818,13 @@ def membre_view(request, id):
             membre.chefferie = request.POST['chefferie']
             membre.territoire = request.POST['territoire']
             membre.province_origine = request.POST['province_origine']
-            if len(request.FILES) != 0:
-                membre.photo = request.FILES['photo']
+            if photo:
+                membre.photo = photo
             membre.save()
             notify(user=membre.user, membre=membre, titre="Motification d'un membre")
         elif 'envoyer' in request.POST:
+            if not droits['peut_demander_modification']:
+                raise PermissionDenied
             demande = request.POST['demande']
             getter, setter = Notification.objects.get_or_create(user=user, membre=membre, titre='Demande de modification', description=demande)
             if setter:
@@ -834,20 +835,21 @@ def membre_view(request, id):
                 classMessage = 'alert alert-info'
         elif 'privilege' in request.POST:
             # Réservé aux super-utilisateurs (403 sinon) : correctif minimal avant les rôles (sous-lot 2e).
-            if not request.user.is_superuser:
+            if not droits['peut_attribuer_privileges']:
                 raise PermissionDenied
             if verify:
                 attribuer_privileges(request.user, membreUser, membre, request.POST)
-    if request.user.is_authenticated:
-        if verify:
-            if membreUser.privilege1: checked1 = 'checked'
-            if membreUser.privilege2: checked2 = 'checked'
-            if membreUser.privilege3: checked3 = 'checked'
-            if membreUser.privilege4: checked4 = 'checked'
-            if membreUser.privilege5: checked5 = 'checked'
-        motos = Moto.objects.filter(proprietaire=membre, is_delete=False)
-        nbrMoto = len(motos)
-    return render(request, 'app/membre.html', locals())
+    if verify:
+        if membreUser.privilege1: checked1 = 'checked'
+        if membreUser.privilege2: checked2 = 'checked'
+        if membreUser.privilege3: checked3 = 'checked'
+        if membreUser.privilege4: checked4 = 'checked'
+        if membreUser.privilege5: checked5 = 'checked'
+    motos = Moto.objects.filter(proprietaire=membre, is_delete=False)
+    nbrMoto = len(motos)
+    # Dernières lignes du journal (action, auteur, date, motif ; jamais avant/après) : seulement pour qui voit l'onglet.
+    historique = historique_objet(membre) if droits['peut_voir_historique'] else []
+    return render(request, 'app/membre.html', {**locals(), **droits, 'droits': droits})
 
 #Vue de la moto
 def moto_view(request, id):

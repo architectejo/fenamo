@@ -125,14 +125,14 @@ def test_F70_mot_de_passe_change_et_compte_cree_via_l_admin(client, jeu):
 
 # ---------------------------------------------------------------- membres et engins
 
-def test_F70_validation_puis_renvoi_d_un_membre(client, jeu):
+def test_F70_validation_d_un_membre_journalisee_une_seule_fois(client, jeu):
     client.force_login(jeu['compte'])
     url = reverse('validate', kwargs={'id': jeu['membre'].id})
     client.post(url)
-    client.post(url)
-    v, r = lignes(A.VALIDATION).get(), lignes(A.RENVOI).get()
+    client.post(url)  # idempotent : pas de dévalidation, pas de seconde ligne
+    v = lignes(A.VALIDATION).get()
+    assert not lignes(A.RENVOI).exists()
     assert v.avant['is_validate3'] is False and v.apres['is_validate3'] is True
-    assert r.avant['is_validate3'] is True and r.apres['is_validate3'] is False
     assert v.objet_id == jeu['membre'].id and v.antenne == jeu['antenne']
 
 
