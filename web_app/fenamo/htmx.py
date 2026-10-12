@@ -41,7 +41,7 @@ def ajouter_declencheurs(response, declencheurs):
             evenements['toast'] = liste + (detail if isinstance(detail, list) else [detail])
         else:
             evenements[nom] = detail
-    response.headers['HX-Trigger'] = json.dumps(evenements, ensure_ascii=False)
+    response.headers['HX-Trigger'] = json.dumps(evenements, ensure_ascii=True)  # en-tête HTTP : ASCII seulement (apostrophe typographique, accents)
     return response
 
 
