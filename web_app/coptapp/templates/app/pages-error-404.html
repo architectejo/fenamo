@@ -1,0 +1,21 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+<main>
+  <div class="container">
+
+    <section class="section error-404 min-vh-100 d-flex flex-column align-items-center justify-content-center">
+      <h1>500</h1>
+      <img src="https://www.shutterstock.com/image-vector/caution-exclamation-mark-white-red-260nw-1055269061.jpg" class="img-fluid py-5" alt="Passerelle interdite">
+      <h2>Si vous voyez cette page, actualiser votre navigateur.</h2><!--{% static 'img/not-found.svg' %}-->
+      <a class="btn btn-secondary" href="https://twitter.com/Jonathan777t">Fournisseur</a>
+      <div class="credits">
+        Si l'erreur persiste contacter<a href="https://twitter.com/Jonathan777t"> le fournisseur</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+{% endblock body %}

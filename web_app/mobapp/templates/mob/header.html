@@ -1,0 +1,47 @@
+<header>
+
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+        <div class="container">
+            <div class="row">
+                <div class="col-10">
+                    <a class="navbar-brand" href="#">
+                        <span class="text-primary">FENAMO APP</span>
+                    </a>
+
+                    <div class="collapse navbar-collapse" id="navbarSupport">
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item {{classHome}} mb-3">
+                                <a class="nav-link btn btn-primary text-light"
+                                    href="{% url 'application' %}">Administration</a>
+                            </li>
+                            {% if membre %}
+                            {% if membre.password %}
+                            <li class="nav-item {{classAbout}}  mb-3">
+                                <a class="nav-link btn btn-danger" href="">Modifier le mot de passe</a>
+                            </li>
+                            {% else%}
+                            <li class="nav-item {{classAbout}}">
+                                <a class="nav-link btn btn-danger text-light" href="">Definir un mot de passe</a>
+                            </li>
+                            {% endif %}
+                            {% endif %}
+
+                        </ul>
+                    </div> <!-- .navbar-collapse -->
+                </div>
+                <div class="col-2">
+                    <div class="row justify-content-end">
+                        <div class="col-10"></div>
+                        <div class="col-2">
+                            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                                data-target="#navbarSupport" aria-controls="navbarSupport" aria-expanded="false"
+                                aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- .container -->
+    </nav>
+</header>

@@ -1,0 +1,57 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1><a href="{% url 'home-app' %}">{{structure.nom}}</a></h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home-app' %}">Accueil</a></li>
+          <li class="breadcrumb-item">Formulair</li>
+          <li class="breadcrumb-item active">Ajout d'antenne</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Ajouter d'antenne dans {{structure.sigle}}/{{structure.ville.nom}} </h5>
+              <p class="{{classe}}">{{message}}</p>
+
+              <!-- General Form Elements -->
+              <form method="post">
+                {% csrf_token %}
+
+                {{form.as_p}}
+
+                <div class="row mb-3">
+                  <label class="col-sm-4 col-form-label"></label>
+                  <div class="col-sm-8">
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                  </div>
+                </div>
+
+              </form><!-- End General Form Elements -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

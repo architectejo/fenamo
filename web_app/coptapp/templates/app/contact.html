@@ -1,0 +1,100 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+  <div class="row">
+    <div class="col-4">
+      <div class="pagetitle">
+        <h1><a href="">Site web contact</a></h1>
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
+            <li class="breadcrumb-item active">Site</li>
+          </ol>
+        </nav>
+      </div><!-- End Page Title -->
+    </div>
+  </div>
+
+
+  <section class="section dashboard">
+    <div class="row">
+
+      <!-- Recent Sales -->
+      <div class="col-12">
+        <div class="card recent-sales top-selling overflow-auto">
+
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Liste des contacts</h6>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card-body pb-0">
+            <h5 class="card-title"><a href="{% url 'site' %}">Contacts</a> <span>| recents</span></h5>
+
+            <table class="table table-borderless datatable">
+              <thead>
+                <tr>
+                  <th scope="col">Nom</th>
+                  <th scope="col">Raison</th>
+                  <th scope="col">Mise à jour</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                {% for contact in contacts %}
+                    <tr>
+                        <th scope="row">
+                            <a href="{% url 'contact-view' contact.id %}">{{contact.nom}}</a>
+                        </th>
+                        <td>
+                            <a href="{% url 'contact-view' contact.id %}">
+                                {{contact.raison}}
+                            </a>
+                        </td>
+                        <td>{{contact.mise_a_jour}}</td>
+                        <td>
+                            <a href="{% url 'contact-view' contact.id %}">
+                                <span class="badge bg-info">Voir</span>
+                            </a>
+                            {% if contact.traiter == True %}
+                              <span class="badge bg-success">Déjà vu</span>
+                            {% else %}
+                            <a href="{% url 'contact-view' contact.id %}">
+                                <span class="badge bg-warning">Pas vu</span>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+
+          </div>
+
+        </div>
+      </div><!-- End Recent Sales -->
+
+    </div>
+    </div><!-- End Left side columns -->
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

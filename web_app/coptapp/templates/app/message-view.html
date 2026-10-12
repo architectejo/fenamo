@@ -1,0 +1,66 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>Cards</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item">Components</li>
+        <li class="breadcrumb-item active">Cards</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section">
+    <div class="row align-items-top">
+      <div class="col-lg-12">
+        <!-- Card with an image on left -->
+        <div class="card mb-3">
+          <div class="row g-0">
+            <div class="col-md-4">
+              {% if message.membre.photo %}
+              <img src="{{message.membre.photo.url}}" class="img-fluid rounded-start" alt="...">
+              {% endif %}
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">{{message.membre.nom}}</h5>
+                <p class="card-text">{{message.message}}</p>
+                <p class="card-text">{{message.mise_a_jour}}</p>
+              </div>
+            </div>
+          </div>
+        </div><!-- End Card with an image on left -->
+
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Réactions</h5>
+            {% comment %}{%for react in reactions%}
+            <div class="alert alert-dark  alert-dismissible fade show" role="alert">
+              <h4 class="alert-heading">{{react.membre.nom}}</h4>
+              <p>{{react.reaction}}</p>
+              <hr>
+              <p class="mb-0">{{react.mise_a_jour}}</p>
+            </div>
+            {% endfor %} {% endcomment %}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

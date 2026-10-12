@@ -1,0 +1,40 @@
+{% extends 'base-site.html' %}
+{% load static %}
+
+{% block 'title' %}Accueil{% endblock 'title' %}
+
+{% block bodysite %}
+
+{% include './header.html' %}
+
+
+<div class="page-section">
+    <div class="container">
+        <h1 class="text-center wow fadeInUp" id="contact">{{title}}</h1>
+        <p class="{{classe}}">{{message}}</p>
+
+        <form class="main-form" method="post">
+            {% csrf_token %}
+            <div class="row mt-5 ">
+                <div class="col-12 py-2 wow fadeInLeft">
+                    <input type="text" class="form-control text-center" name="idf"
+                        placeholder="Votre numéro identifiant (IDF)">
+                </div>
+                <div class="col-12 py-2 wow fadeInRight">
+                    <input type="password" class="form-control text-center" name="pass"
+                        placeholder="Mot de passe (Laissez vide si non definit)">
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button name="envoyer" value="envoyer"
+                    class="btn btn-primary mt-3 wow zoomIn w-50">S'Authentifier</button><br>
+                <a href="{% url 'register' %}" class="btn btn-info mt-3 wow zoomIn w-50">S'Identifier</a>
+            </div>
+        </form>
+    </div>
+</div> <!-- .page-section -->
+{% comment %}
+{% include './footer.html' %}
+{% endcomment %}
+{% endblock bodysite %}

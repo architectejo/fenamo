@@ -1,0 +1,153 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+        <h1>{{structure.nom}}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home-app' %}">Accueil</a></li>
+                <li class="breadcrumb-item">Structure</li>
+                <li class="breadcrumb-item active">{{structure.sigle}}</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+        <div class="row">
+
+            {% if structure %}
+            <div class="col-xl-12 col-lg-12">
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+
+                                {% if structure.logo %}
+                                <img src="{{structure.logo.url}}" alt="FENAMO LOGO DE {{structure.sigle|upper}}"
+                                    class="rounded-circle">
+                                {% endif %}
+                                <h2>{{structure.sigle|upper}}</h2>
+                                <!--<h3>structure</h3 -->
+                                <div class="social-links mt-2">
+                                    {% if structure.twitter %}
+                                    <a href="{{structure.twitter}}" target="_blank" class="twitter"><i
+                                            class="bi bi-twitter"></i></a>
+                                    {% endif %}
+                                    {% if structure.facebook %}
+                                    <a href="{{structure.facebook}}" target="_blank" class="facebook"><i
+                                            class="bi bi-facebook"></i></a>
+                                    {% endif %}
+                                    {% if structure.instagram %}
+                                    <a href="{{structure.instagram}}" target="_blank" class="instagram"><i
+                                            class="bi bi-instagram"></i></a>
+                                    {% endif %}
+                                    {% if structure.linkedin %}
+                                    <a href="{{structure.linkedin}}" target="_blank" class="linkedin"><i
+                                            class="bi bi-linkedin"></i></a>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!--Partie deux -->
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+
+                                <h2>Total membre: {{structure.membres}}</h2>
+                                <h3>Propriètaire: {{structure.proprietaires}}</h3>
+                                <h3>Motocycliste: {{structure.motocyclistes}}</h3>
+                                {% if user.is_authenticated %}
+                                {% if user.is_superuser %}
+                                <a href="" class="btn btn-primary">Nommer un administrateur</a>
+                                <a href="{% url 'structure-admin' structure.id %}"
+                                    class="btn btn-primary mt-2">Administration</a>
+                                {% else %}
+                                <a href="" class="btn btn-primary">Liste des membres</a>
+                                {% endif %}
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            {% endif %}
+
+            <div class="col-xl-12 col-lg-12">
+
+                <div class="card">
+                    <div class="card-body pt-3">
+                        <!-- Bordered Tabs -->
+                        <ul class="nav nav-tabs nav-tabs-bordered">
+
+                            {% if user.is_superuser %}
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab"
+                                    data-bs-target="#profile-edit">{{button}}</button>
+                            </li>
+                            {% endif %}
+
+                            {% if structure %}
+                            <li class="nav-item">
+                                <button class="nav-link active {{activeEdit}}" data-bs-toggle="tab"
+                                    data-bs-target="#profile-overview">Selection de la ville</button>
+                            </li>
+                            {% endif %}
+
+                        </ul>
+                        <div class="tab-content pt-2">
+
+                            <!-- Profile Edit Form -->
+                            <div class="row">
+                                {% for ville in provinces %}
+                                <div class="col-6">
+                                    <h5 class="fst-italic">
+                                        <a class="border border-danger text-danger"
+                                            href="{% url 'ville-attr' ville.id structure.id %}">
+                                            {{ville.nom}}
+                                        </a>
+                                    </h5>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                <h5>
+                                    Renseigner votre ville si elle n'est pas repectorié
+                                </h5>
+                                <input type="text" name="ville" id="ville" class="form-control"
+                                    placeholder="Votre ville">
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary mt-1">RECHERCHE</button>
+                                </div>
+                            </form><!-- End Profile Edit Form -->
+
+                        </div><!-- End Bordered Tabs -->
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</main><!-- End #main -->
+
+<!-- ======= Footer ======= -->
+{% include './footer.html' %}
+
+{% endblock body %}

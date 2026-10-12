@@ -1,0 +1,153 @@
+{% extends 'base-site.html' %}
+{% load static %}
+
+{% block 'title' %}Accueil{% endblock 'title' %}
+
+{% block bodysite %}
+
+{% include './header.html' %}
+
+<div class="page-hero bg-image overlay-dark" style="background-image: url({{affiche.image_background.url}});">
+  <div class="hero-section">
+    <div class="container text-center wow zoomIn">
+      <span class="subhead" style="font-weight: bold;">{{affiche.slogant|safe}}</span>
+      <h1 class="display-4" style="font-weight: bold;">
+        </strong>{{affiche.nom|safe}}</strong>
+      </h1>
+      <a href="{% url 'about' %}" class="btn btn-primary">En savoir plus</a>
+      <!--a style="background-color: #2fac2f;" class="btn m-1 text-light" href="{% static 'app/fenamo-app.apk' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download"
+          viewBox="0 0 16 16">
+          <path
+            d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+          <path
+            d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+        </svg>
+        Télécharger l'application
+      </a-->
+    </div>
+  </div>
+</div>
+
+
+<div class="bg-light">
+
+  <div class="page-section pb-0">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6 py-3 wow fadeInUp">
+          <h1>{{affiche.welcome_text|safe}}</h1>
+          <p class="text-grey mb-4">{{affiche.description|safe|slice:"500"}}...</p>
+          <a href="{% url 'about' %}" class="btn btn-primary">En savoir plus</a>
+          <!--a style="background-color: #2fac2f;" class="btn m-1 text-light" href="{% static 'app/fenamo-app.apk' %}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download"
+              viewBox="0 0 16 16">
+              <path
+                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+              <path
+                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+            </svg>
+            Télécharger l'application
+          </a-->
+        </div>
+        <div class="col-lg-6 wow fadeInRight" data-wow-delay="700ms">
+          <div class="img-place custom-img-1">
+            {% if affiche.logo %}
+            <img src="{{affiche.logo.url}}" alt="Logo de {{affiche.nom}}">
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!-- .bg-light -->
+</div> <!-- .bg-light -->
+
+<div class="page-section bg-light">
+  <div class="container">
+    <h1 class="text-center wow fadeInUp">Actualités</h1>
+    <div class="row mt-5">
+
+      {% for article in articles %}
+      {% if article.integration_code %}
+      <div class="col-lg-4 py-2 wow zoomIn">
+        <div class="card-blog">
+          <div class="header">
+            <div class="post-category">
+              <a href="{% url 'vue-article' article.id %}">{{article.mise_a_jour}}</a>
+            </div>
+            {{article.integration_code|safe}}
+          </div>
+          <div class="body">
+            <h5 class="post-title"><a href="{% url 'vue-article' article.id %}">{{article.titre}}</a></h5>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-lg-4 py-2 wow zoomIn">
+        <div class="card-blog">
+          <div class="header">
+            <div class="post-category">
+              <a href="{% url 'vue-article' article.id %}">{{article.mise_a_jour}}</a>
+            </div>
+            <a href="{% url 'vue-article' article.id %}" class="post-thumb">
+              {% if article.image %}
+              <img src="{{article.image.url}}" alt="{{article.titre}}">
+              {% endif %}
+            </a>
+          </div>
+          <div class="body">
+            <h5 class="post-title"><a href="{% url 'vue-article' article.id %}">{{article.titre}}</a></h5>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      <div class="col-12 text-center mt-4 wow zoomIn">
+        <a href="{% url 'news' %}" class="btn btn-primary">Voir plus</a>
+      </div>
+
+    </div>
+  </div>
+</div> <!-- .page-section -->
+
+<div class="page-section">
+  <div class="container">
+    <h1 class="text-center wow fadeInUp" id="contact">Contact</h1>
+    <p class="{{classe}}">{{message}}</p>
+
+    <form class="main-form" method="post">
+      {% csrf_token %}
+      <div class="row mt-5 ">
+        <div class="col-12 col-sm-6 py-2 wow fadeInLeft">
+          <input type="text" class="form-control" name="nom" placeholder="Nom complet">
+        </div>
+        <div class="col-12 col-sm-6 py-2 wow fadeInRight">
+          <input type="text" class="form-control" name="mail" placeholder="Adresse e-mail">
+        </div>
+        <div class="col-12 col-sm-6 py-2 wow fadeInLeft" data-wow-delay="300ms">
+          <input type="date" name="date" class="form-control">
+        </div>
+        <div class="col-12 col-sm-6 py-2 wow fadeInRight" data-wow-delay="300ms">
+          <select name="raison" id="departement" class="custom-select">
+            <option value="Réclamation">Pour raison de réclamation</option>
+            <option value="Renseignement">Pour raison de renseignement</option>
+            <option value="Autre">Pour autre raison</option>
+          </select>
+        </div>
+        <div class="col-12 py-2 wow fadeInUp" data-wow-delay="300ms">
+          <input type="tel" class="form-control" name="phone" placeholder="Numéro de telephone">
+        </div>
+        <div class="col-12 py-2 wow fadeInUp" data-wow-delay="300ms">
+          <textarea name="description" id="message" class="form-control" rows="6"
+            placeholder="Description.."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" name="envoyer" value="envoyer" class="btn btn-primary mt-3 wow zoomIn">Envoyer</button>
+    </form>
+  </div>
+</div> <!-- .page-section -->
+{% include './footer.html' %}
+
+{% endblock bodysite %}

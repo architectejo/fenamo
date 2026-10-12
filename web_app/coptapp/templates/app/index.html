@@ -1,0 +1,318 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+  <div class="pagetitle">
+    <h1>{{structure.sigle}}</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
+        <li class="breadcrumb-item active">{{structure.nom}}</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section dashboard">
+    <div class="row">
+
+      <!-- Left side columns -->
+      <div class="col-lg-12">
+        <div class="row">
+
+          <!-- Sales Card -->
+          <div class="col-xxl-3 col-xl-3 col-lg-3">
+            <div class="card info-card sales-card">
+
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Nombre des motos en activité</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Motos <span>| Active</span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                    <i class="ri-motorbike-fill"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6>{{nbr_moto}}</h6>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div><!-- End Sales Card -->
+
+          <!-- Customers Card -->
+          <div class="col-xxl-3 col-xl-3 col-lg-3">
+
+            <div class="card info-card customers-card">
+
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Nombre total des membres</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Membre <span>| Total</span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div style="background-color:#fbff00;"
+                    class="card-icon text-primary rounded-circle d-flex align-items-center justify-content-center">
+                    <a href="{% url 'liste-membre' %}">
+                      <i class="bi bi-people"></i>
+                    </a>
+                  </div>
+                  <div class="ps-3">
+                    <a href="{% url 'liste-membre' %}">
+                      <h6>{{nbr_membre}}</h6>
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div><!-- End Customers Card -->
+
+          <!-- Customers Card -->
+          <div class="col-xxl-3 col-xl-3 col-lg-3">
+
+            <div class="card info-card customers-card">
+
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Nombre total des motards</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Motard <span>| actif</span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div style="background-color:#040b6d;"
+                    class="card-icon text-primary rounded-circle d-flex align-items-center justify-content-center">
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6>{{nbr_motard}}</h6>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div><!-- End Customers Card -->
+
+          <!-- Customers Card -->
+          <div class="col-xxl-3 col-xl-3 col-lg-3">
+
+            <div class="card info-card customers-card">
+
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Nombre total des proprietaires</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Proprietaire <span>| actif</span></h5>
+
+                <div class="d-flex align-items-center">
+                  <div style="background-color:#181a3f;"
+                    class="card-icon text-primary rounded-circle d-flex align-items-center justify-content-center">
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6>{{nbr_proprietaire}}</h6>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div><!-- End Customers Card -->
+
+          <!-- Reports -->
+          <div class="col-12">
+            <div class="card">
+
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Evolution de l'effectif</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Evolution <span>/{{an}}</span></h5>
+                <div id="reportsChart"></div>
+
+                <script>
+                  document.addEventListener("DOMContentLoaded", () => {
+                    new ApexCharts(document.querySelector("#reportsChart"), {
+                      series: [{
+                        name: 'Motos',
+                        data: [{{ motoDuMois.janvier }}, {{ motoDuMois.fevrier }}, {{ motoDuMois.mars }}, {{ motoDuMois.avril }}, {{ motoDuMois.mai }}, {{ motoDuMois.juin }}, {{ motoDuMois.juillet }}, {{ motoDuMois.aout }}, {{ motoDuMois.septembre }}, {{ motoDuMois.octobre }}, {{ motoDuMois.novembre }}, {{ motoDuMois.decembre }}],
+                        }, {
+                      name: 'Membres',
+                      data: [{{ membreDuMois.janvier }}, {{ membreDuMois.fevrier }}, {{ membreDuMois.mars }}, {{ membreDuMois.avril }}, {{ membreDuMois.mai }}, {{ membreDuMois.juin }}, {{ membreDuMois.juillet }}, {{ membreDuMois.aout }}, {{ membreDuMois.septembre }}, {{ membreDuMois.octobre }}, {{ membreDuMois.novembre }}, {{ membreDuMois.decembre }}]
+                        }],
+                    chart: {
+                    height: 350,
+                    type: 'area',
+                    toolbar: {
+                      show: false
+                    },
+                  },
+                    markers: {
+                    size: 4
+                  },
+                    colors: ['#4154f1', '#fbff00'],
+                    fill: {
+                    type: "gradient",
+                    gradient: {
+                      shadeIntensity: 1,
+                      opacityFrom: 0.3,
+                      opacityTo: 0.4,
+                      stops: [0, 90, 100]
+                    }
+                  },
+                    dataLabels: {
+                    enabled: false
+                  },
+                    stroke: {
+                    curve: 'smooth',
+                    width: 2
+                  },
+                    xaxis: {
+                    type: 'date',
+                    categories: ["Janvier", "Fevrier", "Mars", "avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Decembre"]
+                  },
+                    tooltip: {
+                    x: {
+                      format: 'MM/yy'
+                    },
+                  }
+                      }).render();
+                    });
+                </script>
+                <!-- End Line Chart -->
+
+              </div>
+
+            </div>
+          </div><!-- End Reports -->
+
+          <!-- Recent Sales -->
+          <div class="col-12">
+            <div class="card recent-sales top-selling overflow-auto">
+
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                    <h6></h6>
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Liste des membre</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body pb-0">
+                <h5 class="card-title">Membres <span>| Enregistré</span></h5>
+
+                <table class="table table-borderless datatable">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Nom</th>
+                      <th scope="col">Genre</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for membre in membres %}
+                    <tr>
+                      {% if membre.photo %}
+                      <th scope="row"><a href="#"><img src="{{membre.photo.url}}"
+                            alt="Membre FENAMO {{membre.nom}}"></a></th>
+                      {% else %}
+                      <th scope="row"><a href="#"><img src="{% static 'img/province.png' %}" alt=""></a></th>
+                      {% endif %}
+                      <td>
+                        <a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a>
+                      </td>
+                      <td>
+                        <a href="{% url 'membre-view' membre.id %}">{{membre.genre}}</a>
+                      </td>
+                      {% if membre.is_validate3 %}
+                      <td><span class="badge bg-success">Validé</span></td>
+                      {% elif membre.is_validate2 %}
+                      <td><span class="badge bg-warning">En cours</span></td>
+                      {% else %}
+                      <td><span class="badge bg-danger">Effectif</span></td>
+                      {% endif %}
+                      {% if membre.is_validate3 %}
+                      <td>
+                        <a href="{% url 'validate' membre.id %}">
+                          <span class="badge bg-danger">Invalité</span>
+                        </a>
+                      </td>
+                      {% else %}
+                      <td>
+                        <a href="{% url 'validate' membre.id %}">
+                          <span class="badge bg-success">Validé</span>
+                        </a>
+                      </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+              </div>
+
+            </div>
+          </div><!-- End Recent Sales -->
+
+        </div>
+      </div><!-- End Left side columns -->
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

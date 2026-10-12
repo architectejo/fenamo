@@ -1,0 +1,126 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+  <div class="row">
+    <div class="col-4">
+      <div class="pagetitle">
+        <h1><a href="{% url 'ville-view' ville.id %}">{{ville.nom}}</a></h1>
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
+            <li class="breadcrumb-item active">Ville</li>
+          </ol>
+        </nav>
+      </div><!-- End Page Title -->
+    </div>
+    <div class="col-8">
+      {% if user.is_superuser or user.privilege5 %}
+      <a href="{% url 'add-antenne' ville.id %}"><button class="btn btn-primary">Ajout antenne</button></a>
+      {% endif %}
+      {% if user.is_superuser or user.privilege5 %}
+        <a href="{% url 'add-membre' ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
+      {% elif user.privilege1 and userMembre.ville.id == ville.id %}
+        <a href="{% url 'add-membre' ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="section dashboard">
+    <div class="row">
+      <!-- Recent Sales -->
+      <div class="col-12">
+        <div class="card recent-sales top-selling overflow-auto">
+
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Liste des membres de la ville</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body pb-0">
+            <h5 class="card-title">Liste des membres <span>| actif</span></h5>
+
+            <table class="table table-borderless datatable">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Nom</th>
+                  {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
+                    <th scope="col">Structure</th>
+                  {% endif %}
+                  <th scope="col">Antenne</th>
+                  <th scope="col">Status</th>
+                  {% if user.privilege3 or user.privilege5 or user.is_superuser %}
+                    <th scope="col">Utilisateur</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for membre in membres %}
+                  {% if membre.nom %}
+                      <tr>
+                        <th scope="row"><a href="#">
+                          {% if membre.photo %}
+                            <img src="{{membre.photo.url}}" alt=""></a>
+                          {% endif %}
+                        </th>
+                        <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>
+                        {% if not user.privilege4 or not user.privilege1 %}
+
+                          {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
+                            <td scope="col">
+                                {{membre.structure.nom}}
+                            </td>
+                          {% endif %}
+
+                        {% endif %}
+                        <td>{{membre.antenne.nom}}</td>
+                        {% if membre.is_validate3 %}
+                          <td><span class="badge bg-success">Validé</span></td>
+                        {% elif membre.is_validate2 %}
+                          <td><span class="badge bg-warning">En cours</span></td>
+                        {% else %}
+                          <td><span class="badge bg-danger">Non validé</span></td>
+                        {% endif %}
+
+                        {% if user.privilege3 or user.privilege5 or user.is_superuser %}
+                          <td scope="col">
+                            <p class="alert alert-warning text-secondary">
+                              {{membre.user.username}}
+                            </p>
+                          </td>
+                      {% endif %}
+                      </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+
+          </div>
+
+        </div>
+      </div><!-- End Recent Sales -->
+
+    </div>
+    </div><!-- End Left side columns -->
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

@@ -1,0 +1,52 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+  <div class="row">
+    <div class="col-4">
+      <div class="pagetitle">
+        <h1><a href="">{{contact.nom}}</a> <a href="{% url 'contact' %}"><i class="ri-contacts-book-2-fill"></i></a></h1>
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active">{{contact.raison}}</li>
+          </ol>
+        </nav>
+      </div><!-- End Page Title -->
+    </div>
+  </div>
+
+
+  <section class="section dashboard">
+    <div class="row">
+
+      <!-- Recent Sales -->
+      <div class="col-12">
+        <div class="card">
+            <p>{{contact.description}}</p>
+            <p>{{contact.date}}</p>
+            <p>Télephone: {{contact.phone}}</p>
+            <p>E-mail: {{contact.mail}}</p>
+            <p>Mise à jour: {{contact.mise_a_jour}}</p>
+        </div>
+      </div><!-- End Recent Sales -->
+      {% if contact.traiter %}
+      <div class="col-12 alert alert-success text-center">Vu</div>
+      {% endif %}
+
+    </div>
+    </div><!-- End Left side columns -->
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

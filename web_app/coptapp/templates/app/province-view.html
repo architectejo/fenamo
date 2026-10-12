@@ -1,0 +1,87 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+  <main id="main" class="main">
+
+    <div class="row">
+      <div class="col-6">
+        <div class="pagetitle">
+          <h1><a href="{% url 'province-view' province.id %}">{{province.nom}}</a></h1>
+          <nav>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
+              <li class="breadcrumb-item active">Province</li>
+            </ol>
+          </nav>
+        </div><!-- End Page Title -->
+      </div>
+      {% if user.is_superuser or user.privilege5 %}
+        <div class="col-6">
+          <a href="{% url 'add-ville' province.id %}"><button class="btn btn-primary">Ajouter une ville</button></a>
+        </div>
+      {% endif %}
+  </div>
+
+    <section class="section dashboard">
+      <div class="row">
+
+            <!-- Recent Sales -->
+            <div class="col-12">
+              <div class="card recent-sales top-selling overflow-auto">
+
+                <div class="filter">
+                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <li class="dropdown-header text-start">
+                      <h6>Filter</h6>
+                    </li>
+
+                    <li><a class="dropdown-item" href="#">Today</a></li>
+                    <li><a class="dropdown-item" href="#">This Month</a></li>
+                    <li><a class="dropdown-item" href="#">This Year</a></li>
+                  </ul>
+                </div>
+
+                <div class="card-body pb-0">
+                  <h5 class="card-title">Liste des villes <span>| en numerisation</span></h5>
+
+                  <table class="table table-borderless datatable">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Ville</th>
+                        <th scope="col">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for ville in villes %}
+                        <tr>
+                            <th scope="row"><a href="#"><img src="{% static 'img/ville.png' %}" alt=""></a></th>
+                            <td><a href="{% url 'ville-view' ville.id %}">{{ville.nom}}</a></td>
+                            <td><span class="badge bg-success">En cours</span></td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+
+                </div>
+
+              </div>
+            </div><!-- End Recent Sales -->
+            
+          </div>
+        </div><!-- End Left side columns -->
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

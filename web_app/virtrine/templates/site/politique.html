@@ -1,0 +1,114 @@
+{% extends 'base-site.html' %}
+{% load static %}
+
+{% block 'title' %}A propos de nous {% endblock 'title' %}
+{% block bodysite %}
+
+{% include './header.html' %}
+
+<div class="page-banner overlay-dark bg-image" style="background-image: url({{affiche.image_background.url}});">
+    <div class="banner-section">
+        <div class="container text-center wow fadeInUp">
+            <nav aria-label="Breadcrumb">
+                <ol class="breadcrumb breadcrumb-dark bg-transparent justify-content-center py-0 mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Politique et confidentialité</li>
+                </ol>
+            </nav>
+            <h1 class="font-weight-normal">{{affiche.nom|safe}}</h1>
+        </div> <!-- .container -->
+    </div> <!-- .banner-section -->
+</div> <!-- .page-banner -->
+
+<div class="page-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 wow fadeInUp">
+                <h1 class="text-center mb-3">Politique et confidentialité</h1>
+                <div class="text-lg">
+                    <strong>Politique de Confidentialité de FENAMO-RDC asbl</strong> <br>
+
+                    <strong>Dernière mise à jour : {{today|date:'d M Y'}}</strong> <br>
+
+                    Chez FENAMO-RDC, nous accordons une grande importance à la protection de vos données personnelles.
+                    Cette politique de confidentialité vous explique quelles informations nous collectons, comment nous
+                    les utilisons et les mesures que nous prenons pour garantir leur sécurité. <br>
+
+                    <strong>1. Collecte des informations</strong> <br>
+
+                    Nous pouvons collecter plusieurs types d'informations lorsque vous utilisez notre site web ou nos
+                    services, notamment : <br>
+
+                    <strong>- Informations personnelles</strong> : nom, adresse e-mail, numéro de téléphone, adresse
+                    postale, etc. Ces informations sont collectées lorsque vous créez un compte, remplissez un
+                    formulaire ou contactez notre service client. <br>
+                    <strong>- Données de navigation</strong> : adresse IP, type de navigateur, pages visitées, durée des
+                    visites, etc. Ces données sont collectées à l'aide de cookies ou autres technologies similaires pour
+                    améliorer l'expérience utilisateur. <br>
+
+                    <strong>2. Utilisation des informations</strong><br>
+
+                    Les informations collectées peuvent être utilisées pour : <br>
+                    - Fournir et améliorer nos services et notre site web ;<br>
+                    - Vous contacter en réponse à vos demandes ou pour des informations importantes sur nos services
+                    ;<br>
+                    - Gérer vos inscriptions, adhésions ou transactions ;<br>
+                    - Améliorer nos communications en analysant vos préférences ;<br>
+                    - Garantir la sécurité de notre site et prévenir la fraude. <br>
+
+                    <strong>3. Partage des informations</strong><br>
+
+                    FENAMO-RDC s'engage à ne pas vendre ou partager vos informations personnelles avec des tiers, sauf
+                    dans les situations suivantes : <br>
+                    - Avec votre consentement explicite ;<br>
+                    - Lorsque cela est nécessaire pour fournir nos services (par exemple, partenaires techniques) ;<br>
+                    - Pour répondre à des obligations légales ou protéger nos droits en cas de litige. <br>
+
+                    <strong>4. Sécurité des données</strong><br>
+
+                    Nous prenons des mesures de sécurité techniques et organisationnelles pour protéger vos informations
+                    contre toute perte, accès non autorisé ou divulgation. Cependant, aucune transmission de données sur
+                    Internet n'est totalement sécurisée. Nous ne pouvons donc pas garantir la sécurité absolue des
+                    informations transmises via notre site. <br>
+
+                    <strong>5. Vos droits</strong><br>
+
+                    Conformément aux lois en vigueur, vous disposez des droits suivants concernant vos données
+                    personnelles : <br>
+                    <strong>- Accès</strong> : Vous avez le droit de demander une copie des informations que nous
+                    détenons sur vous. <br>
+                    <strong>- Rectification</strong> : Vous pouvez demander à corriger ou mettre à jour vos informations
+                    si elles sont inexactes. <br>
+                    <strong>- Suppression</strong> : Vous pouvez demander la suppression de vos données personnelles,
+                    sauf si celles-ci sont nécessaires pour des obligations légales ou contractuelles. <br>
+                    <strong>- Opposition</strong> : Vous pouvez vous opposer à l'utilisation de vos données à certaines
+                    fins, notamment le marketing. <br>
+
+                    <strong>6. Cookies</strong><br>
+
+                    Nous utilisons des cookies pour améliorer votre expérience sur notre site web. Un cookie est un
+                    petit fichier texte stocké sur votre appareil. Vous pouvez choisir de désactiver les cookies via les
+                    paramètres de votre navigateur, mais cela peut affecter votre expérience sur le site. <br>
+
+                    <strong>7. Modifications de la politique</strong><br>
+
+                    FENAMO-RDC se réserve le droit de modifier cette politique de confidentialité à tout moment. Toute
+                    modification sera publiée sur cette page avec une date de mise à jour. Nous vous encourageons à
+                    consulter régulièrement cette page pour rester informé(e) de la manière dont nous protégeons vos
+                    informations. <br>
+
+                    <strong>8. Contact</strong><br>
+
+                    Si vous avez des questions concernant cette politique de confidentialité ou si vous souhaitez
+                    exercer vos droits relatifs à vos données personnelles, vous pouvez nous contacter à l'adresse
+                    suivante : <br>
+                    <a href="mailto:info@fenamo.cd">info@fenamo.cd</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include './footer.html' %}
+
+{% endblock bodysite %}

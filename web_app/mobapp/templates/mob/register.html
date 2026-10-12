@@ -1,0 +1,30 @@
+{% extends 'base-site.html' %}
+{% load static %}
+
+{% block 'title' %}Accueil{% endblock 'title' %}
+
+{% block bodysite %}
+
+{% include './header.html' %}
+
+
+<div class="page-section">
+    <div class="container">
+        <h1 class="text-center wow fadeInUp" id="contact">{{title}}</h1>
+        <p class="{{classe}}">{{message}}</p>
+
+        <form class="main-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form.as_p}}
+            <div class="text-center">
+                <button name="envoyer" value="envoyer"
+                    class="btn btn-primary mt-3 wow zoomIn w-50">Inscription</button><br>
+                <a href="" class="btn btn-info mt-3 wow zoomIn w-50">S'Authentifier</a>
+            </div>
+        </form>
+    </div>
+</div> <!-- .page-section -->
+{% comment %}
+{% include './footer.html' %}
+{% endcomment %}
+{% endblock bodysite %}

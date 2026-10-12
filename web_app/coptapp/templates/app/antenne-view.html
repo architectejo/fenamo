@@ -1,0 +1,84 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+  <main id="main" class="main">
+
+    <div class="row">
+      <div class="col-10">
+        <div class="pagetitle">
+          <h1><a href="{% url 'antenne-view' antenne.id %}">{{antenne.nom}}</a></h1>
+          <nav>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
+              <li class="breadcrumb-item active">Antenne</li>
+            </ol>
+          </nav>
+        </div><!-- End Page Title -->
+      </div>
+  </div>
+
+    <section class="section dashboard">
+      <div class="row">
+
+            <!-- Recent Sales -->
+            <div class="col-12">
+              <div class="card recent-sales top-selling overflow-auto">
+
+                <div class="filter">
+                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <li class="dropdown-header text-start">
+                      <h6></h6>
+                    </li>
+
+                    <li><a class="dropdown-item" href="#">Liste des membres de l'antenne</a></li>
+                  </ul>
+                </div>
+
+                <div class="card-body pb-0">
+                  <h5 class="card-title">Liste des membres <span>| validés</span></h5>
+
+                  <table class="table table-borderless datatable">
+                    <thead>
+                      <tr>
+                        <th scope="col">Photo</th>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for membre in membres %}
+                        <tr>
+                            {% if membre.photo %}
+                                <th scope="row"><a href="#"><img src="{{membre.photo.url}}" alt=""></a></th>
+                            {% else %}
+                                <th scope="row"><a href="#"><img src="{% static 'img/ville.png' %}" alt=""></a></th>
+                            {% endif %}
+                            <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>
+                            <td><span class="badge bg-success">valide</span></td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+
+                </div>
+
+              </div>
+            </div><!-- End Recent Sales -->
+            
+          </div>
+        </div><!-- End Left side columns -->
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

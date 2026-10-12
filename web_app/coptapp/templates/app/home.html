@@ -1,0 +1,75 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+  <main id="main" class="main">
+
+    {% for prov in provinces %}
+        <div class="pagetitle">
+            <h1>
+                {{prov.nom}} 
+                {% if user.is_superuser %}
+                    <a href="{% url 'add-structure' %}" class="btn btn-primary">Ajouter une structure</a>
+                {% endif %}
+            </h1>
+        </div><!-- End Page Title -->
+
+        <section class="section dashboard">
+            <div class="row">
+
+                <!-- Left side columns -->
+                <div class="col-lg-12">
+                    <div class="row">
+
+                        {% for str in prov.structures %}
+                        <!-- Sales Card -->
+                        <div class="col-xxl-3 col-xl-3 col-lg-3">
+                            <div class="card info-card sales-card">
+                                
+                                <div class="filter">
+                                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                        <li class="dropdown-header text-start">
+                                        </li>
+
+                                        <li><a class="dropdown-item" href="#">{{str.nom}}</a></li>
+                                    </ul>
+                                </div>
+
+                                <div class="card-body">
+                                    <a href="{% url 'edit-structure' str.id %}">
+
+                                        <h5 class="card-title">{{str.sigle}} <span></span></h5>
+    
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-motorbike-fill"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{str.membres}}</h6>
+                                                <p class="badge text-primary">{{str.ville.nom}}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div><!-- End Sales Card -->
+                        {% endfor %}
+                        
+                    </div>
+                </div><!-- End Left side columns -->
+
+            </div>
+        </section>
+    {% endfor %}
+
+  </main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

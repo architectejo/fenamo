@@ -1,0 +1,103 @@
+{% extends 'base-site.html' %}
+{% load static %}
+
+{% block 'title' %}Accueil{% endblock 'title' %}
+
+{% block bodysite %}
+
+{% include './header.html' %}
+
+<!-- Back to top button -->
+<div class="back-to-top"></div>
+
+<div class="page-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <div class="row">
+
+                    <div class="col-12 py-3 wow zoomIn m-0">
+                        <div class="card-doctor">
+                            <div class="header">
+                                {% if membre.photo %}
+                                <img src="{{membre.photo.url}}" alt="">
+                                {% else %}
+                                <img src="../assets/img/doctors/doctor_2.jpg" alt="">
+                                {% endif %}
+                                <div class="meta">
+                                    <a href="tel:{{membre.telephone}}"><span class="mai-call"></span></a>
+                                    <a href="#"><span class="mai-logo-whatsapp"></span></a>
+                                </div>
+                            </div>
+                            <div class="body">
+                                <p class="text-xl mb-0">{{membre.nom}}</p>
+                                <span class="text-sm text-grey">[{{membre.qualite}}]</span><br>
+                                <span class="text-sm text-grey">IDF: {{membre.idf}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 py-3 wow zoomIn m-0">
+                        <div class="card">
+                            <div class="body">
+                                {% if message %}
+                                <p class="text-xl mb-0 {{classe}}">
+                                    <strong>{{message}}</strong>
+                                </p>
+                                {% else %}
+                                <p class="text-xl mb-0 text-center">
+                                    <strong>AJOUTER UNE MOTO</strong>
+                                </p>
+                                {% endif %}
+                            </div>
+                            <div class="body text-center">
+                                <form action="" method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{form.as_p}}
+                                    <button class="m-1 btn btn-primary">Ajouter</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12 py-3 wow zoomIn m-0">
+                        <div class="card">
+                            <div class="body">
+                                <p class="text-xl mb-0 text-center">
+                                    <strong>MES MOTOS</strong>
+                                </p>
+                            </div>
+                            {% for moto in motos %}
+                            <div class="body">
+                                <div class="row">
+                                    <div class="col-4">
+                                        {% if moto.photo %}
+                                        <img style="width: 80px;" src="{{moto.photo.url}}" alt="">
+                                        {% else %}
+                                        <img src="https://placehold.it/80x80" alt="">
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-8">
+                                        <h3>Numéro: {{moto.numero}}</h3>
+                                        <p class="text-xl mb-0">Plaque: {{moto.num_plaque}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div> <!-- .container -->
+</div> <!-- .page-section -->
+
+
+{% comment %}
+{% include './footer.html' %}
+{% endcomment %}
+{% endblock bodysite %}

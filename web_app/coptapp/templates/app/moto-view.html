@@ -1,0 +1,153 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+  <div class="pagetitle text-center">
+    <nav>
+      <ol class="breadcrumb">
+        {% if user.is_authenticated %}
+        <!--li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li-->
+        {% endif %}
+        <!--li class="breadcrumb-item active">Moto</li-->
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section dashboard">
+    <div class="row">
+      <!-- Right side columns -->
+      <div class="col-lg-12">
+        <!-- News & Updates Traffic -->
+        <div class="card">
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6></h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Moto</a></li>
+            </ul>
+          </div>
+        </div><!-- End News & Updates -->
+        <div class="col-lg-12">
+
+
+          <!-- Card with an image on left -->
+          <div class="card mb-3">
+            <div class="row g-0">
+              <div class="col-12">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-6">
+                      <h5 class="card-title">
+                        Sigle ASBL:......................................................
+                      </h5>
+                    </div>
+
+                    <div class="col-6">
+                      <h5 class="card-title">
+                        N° ID:............................................................
+                      </h5>
+                    </div>
+                    <div class="col-12 text-center" style="background-color: #071542;">
+                      <h3 class="text-warning">
+                        FICHE D'IDENTIFICATION INDIVIDUELLE ET ENREGISTREMENT DES MOTOS TAXI N° {{moto.numero}}
+                      </h3>
+                    </div>
+
+                    <div class="col-12" style="background-image: url('');">
+                      <h5 class="card-title text-center">
+                        PROVINCE DE:.................................................. <br><br>
+                        VILLE/TERRITOIRE:.......................... ANTENNE:....................... CODE
+                        PARKING:......................
+                      </h5>
+                      <div class="row">
+                        <div class="col-9">
+                          <h5 class="card-title bg-primary-light">IDENTIFICATION/PROPRIETAIRE </h5>
+                          <h5 class="card-title">Qualité: {{membre.qualite}} </h5>
+                          <h5 class="card-title">Nom complet: {{membre.nom}} </h5>
+                          <h5 class="card-title">Date et Lieux de naissance: {{membre.date_naissance|date:'d M Y'}} à
+                            {{membre.lieux_naissance}} </h5>
+                          <h5 class="card-title">Nom du père: {{membre.nom_pere}} </h5>
+                          <h5 class="card-title">Nom de la mère: {{membre.nom_mere}} </h5>
+                          <h5 class="card-title">Etat Civil: {{membre.etat_civil}}</h5>
+                          <h5 class="card-title">Notionalité: {{membre.nation}}</h5>
+                          <h5 class="card-title">N°Carte d'identité: {{membre.numero_carte_d_electeur}}</h5>
+                          <h5 class="card-title">Nom/ASBL: {{membre.structure.nom}}</h5>
+                          <h5 class="card-title">Village d'origine: {{membre.village}}</h5>
+                          <h5 class="card-title">Chefferie d'origine: {{membre.chefferie}}</h5>
+                          <h5 class="card-title">Territoire d'origine: {{membre.territoire}}</h5>
+                          <h5 class="card-title">Province d'origine: {{membre.province_origine}}</h5>
+                          <h5 class="card-title">N°Telephone: {{membre.telephone}}</h5>
+                          <h5 class="card-title">Adresse: {{membre.adresse}}</h5>
+                          <h5 class="card-title">Permis de conduire:
+                            {% if membre.permis %}
+                            OUI
+                            {% else %}
+                            NON
+                            {% endif %}
+                          </h5>
+                        </div>
+                        <div class="col-3">
+                          {% if membre.photo %}
+                          <img src="{{membre.photo.url}}" class="img-fluid rounded-start" alt="...">
+                          {% else %}
+                          <i style="font-size: 200px; color: rgb(1, 1, 88);" class="ri-motorbike-fill"></i>
+                          {% endif %}
+                        </div>
+                      </div>
+                      <div class="row">
+
+                        <div class="col-12">
+                          <h5 class="card-title bg-primary-light">ENREGISTREMENT DE MOTO</h5>
+                        </div>
+                        <div class="col-9">
+                          <div class="card-body">
+                            <h5 class="card-title">Plaque: {{moto.num_plaque}} </h5>
+                            <h5 class="card-title">N° Moteur: {{moto.num_moteur}} </h5>
+                            <h5 class="card-title">N° Chassie: {{moto.num_chassie}} </h5>
+                            <h5 class="card-title">Marque moto: {{moto.marque}} Couleur: {{moto.couleur}} </h5>
+                            <h5 class="card-title">N° Telephone du déléguée: </h5>
+                            <!--h5 class="card-title">Antenne: {{moto.antenne.nom}} | Ville: {{moto.antenne.ville.nom}} |
+                              Province:
+                              {{moto.antenne.ville.province.nom}}</h5>
+                            <h5 class="card-title">Fin d'abonnement: {{moto.abonnement}} </h5-->
+                          </div>
+                        </div>
+
+                        <div class="col-3">
+                          {% if moto.photo %}
+                          <img src="{{moto.photo.url}}" class="img-fluid rounded-start" alt="...">
+                          {% else %}
+                          <i style="font-size: 200px; color: rgb(1, 1, 88);" class="ri-motorbike-fill"></i>
+                          {% endif %}
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><br>
+          </div>
+        </div><!-- End Card with an image on left -->
+
+      </div>
+
+    </div><!-- End Right side columns -->
+
+    </div>
+  </section>
+
+</main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

@@ -1,0 +1,80 @@
+{% extends 'base-app.html' %}
+
+{% load static %}
+
+{% block body %}
+
+{% include './header.html' %}
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Activités</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
+          <li class="breadcrumb-item active">Activités</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section dashboard">
+      <div class="row">
+        <!-- Right side columns -->
+        <div class="col-lg-12">
+          <!-- News & Updates Traffic -->
+          <div class="card">
+            <div class="filter">
+              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <li class="dropdown-header text-start">
+                  <h6></h6>
+                </li>
+
+                <li><a class="dropdown-item" href="#">Activités recentes des utilisateurs</a></li>
+              </ul>
+            </div>
+
+            <div class="card-body pb-0">
+              <h5 class="card-title">Activités <span>/recentes</span></h5>
+
+              <div class="news">
+
+                {% for note in notifys %}
+                <div class="post-item clearfix">
+                    {% if note.membre %}
+                        <a href="{% url 'membre-view' note.membre.id %}">
+                            <img src="{{note.membre.photo.url}}" alt="">
+                        </a>
+                    {% else %}
+                        {% if note.user.membreId %}
+                            <a href="{% url 'membre-view' note.user.membreId %}">
+                                <img src="{% static 'img/news-1.jpg' %}" alt="">
+                            </a>
+                        {% else %}
+                            <img src="{% static 'img/news-1.jpg' %}" alt="">
+                        {% endif %}
+                    {% endif %}
+                  <h4><a href="#">{{note.titre}}</a></h4>
+                  {% if note.description %}
+                    <p>{{note.description}}</p>
+                  {% endif %}
+                  <p>{{note.mise_a_jour}}</p>
+                </div>
+                {% endfor %}
+
+              </div><!-- End sidebar recent posts-->
+
+            </div>
+          </div><!-- End News & Updates -->
+
+        </div><!-- End Right side columns -->
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+{% include './footer.html' %}
+
+{% endblock body %}

@@ -1,0 +1,90 @@
+{% extends 'base-site.html' %}
+{% load static %}
+
+  {% block 'title' %}{{art.titre}}{% endblock 'title' %}
+  {% block bodysite %}
+  
+    {% include './header.html' %}
+
+
+  <div class="page-section pt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8">
+          <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb bg-transparent py-0 mb-5">
+              <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'vue-article' art.id %}">Details</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Article: {{art.titre}}</li>
+            </ol>
+          </nav>
+        </div>
+      </div> <!-- .row -->
+
+      <div class="row">
+        <div class="col-lg-8">
+          <article class="blog-details">
+            <div class="post-thumb">
+              <img src="{{art.image.url}}" alt="">
+            </div>
+            <div class="post-meta">
+              <div class="post-author">
+                <span class="text-grey">Mise à jour: le</span> <a href="#">{{art.mise_a_jour}}</a>  
+              </div>
+            </div>
+            <h2 class="post-title h1">{{art.titre}}</h2>
+            <div class="post-content">
+              {{art.description|safe}}
+            </div>
+            <div class="post-tags">
+              <!--<a href="#" class="tag-link">LifeStyle</a>
+              <a href="#" class="tag-link">Food</a>
+              <a href="#" class="tag-link">Coronavirus</a>-->
+            </div>
+          </article> <!-- .blog-details -->
+
+        </div>
+        <div class="col-lg-4">
+          <div class="sidebar">
+
+            <div class="sidebar-block">
+              <h3 class="sidebar-title">Actualités</h3>
+
+              {% for article in articles %}
+                {% if art.id != article.id %}
+                  <div class="blog-item">
+                    <a class="post-thumb" href="{% url 'vue-article' article.id %}">
+                      <img src="{{article.image.url}}" alt="{{article.titre}}">
+                    </a>
+                    <div class="content">
+                      <h5 class="post-title"><a href="{% url 'vue-article' article.id %}">{{article.titre}}</a></h5>
+                      <div class="meta">
+                        <a href="{% url 'vue-article' article.id %}"><span class="mai-calendar"></span> {{article.mise_a_jour}}</a>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+
+            </div>
+            <div class="sidebar-block">
+              <h3 class="sidebar-title">Recherche</h3>
+              <form action="{% url 'recherche' %}" method="post" class="search-form">
+                {% csrf_token %}
+                <div class="form-group">
+                  <input type="text" name="champ" class="form-control" placeholder="Numéro ou nom complet">
+                  <button type="submit" name="search" value="recherche" class="btn"><span class="icon mai-search"></span></button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div> 
+      </div> <!-- .row -->
+    </div> <!-- .container -->
+  </div> <!-- .page-section -->
+
+
+  {% include './footer.html' %}
+
+  {% endblock bodysite %}
