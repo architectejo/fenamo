@@ -25,6 +25,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "pages.middleware.LangueInactiveMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -106,7 +107,10 @@ USE_I18N = True
 USE_TZ = True
 TIME_ZONE = "Africa/Kinshasa"
 
-# Django ne connaît pas ln, lua ni kg : on les déclare (fr et sw existent déjà).
+# Django ne connaît pas ln, lua ni kg : sans cette déclaration, get_supported_language_variant()
+# les rejette et LocaleMiddleware ne les active pas. update() modifie le dictionnaire global
+# de Django au chargement des réglages : acceptable ici, le projet n'en dépend que pour ces trois codes
+# (fr et sw existent déjà).
 LANG_INFO.update(
     {
         "ln": {"bidi": False, "code": "ln", "name": "Lingala", "name_local": "Lingála"},

@@ -21,7 +21,8 @@ def test_lot1_accueil_francais_sans_prefixe(client):
 
 
 @pytest.mark.parametrize("code", ["ln", "sw", "lua", "kg"])
-def test_lot1_prefixe_langue_repond_avec_repli_francais(client, code):
+def test_lot1_prefixe_langue_repond_avec_repli_francais(client, code, settings):
+    settings.ACTIVE_LANGUAGES = ["fr", code]
     rep = client.get(f"/{code}/")
     assert rep.status_code == 200
     html = rep.content.decode()
@@ -37,7 +38,8 @@ def test_lot1_francais_n_a_pas_de_prefixe():
         assert reverse("pages:accueil") == "/ln/"
 
 
-def test_lot1_hreflang_et_pas_de_noindex_par_defaut(client):
+def test_lot1_hreflang_et_pas_de_noindex_par_defaut(client, settings):
+    settings.ACTIVE_LANGUAGES = ["fr", "ln", "sw", "lua", "kg"]
     html = client.get("/").content.decode()
     for code in ("fr", "ln", "sw", "lua", "kg", "x-default"):
         assert f'hreflang="{code}"' in html
@@ -156,3 +158,20 @@ def test_lot1_api_client_refuse_les_redirections(monkeypatch):
     with pytest.raises(api_client.ApiIndisponible):
         api_client.get("config/")
     assert vus["allow_redirects"] is False
+
+
+def test_lot1_hreflang_limite_aux_langues_actives(client, settings):
+    settings.ACTIVE_LANGUAGES = ["fr", "ln"]
+    html = client.get("/").content.decode()
+    assert 'hreflang="fr"' in html and 'hreflang="ln"' in html and 'hreflang="x-default"' in html
+    for code in ("sw", "lua", "kg"):
+        assert f'hreflang="{code}"' not in html
+
+
+@pytest.mark.parametrize("code", ["ln", "sw", "lua", "kg"])
+def test_lot1_langue_inactive_redirige_vers_le_francais(client, code, settings):
+    settings.ACTIVE_LANGUAGES = ["fr"]
+    rep = client.get(f"/{code}/")
+    assert rep.status_code == 302 and rep["Location"] == "/"
+    settings.ACTIVE_LANGUAGES = ["fr", code]
+    assert client.get(f"/{code}/").status_code == 200
