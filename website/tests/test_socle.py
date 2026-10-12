@@ -9,11 +9,11 @@ from django.utils import translation
 from services import api_client
 
 
-def test_W1_le_projet_demarre():
+def test_lot1_le_projet_demarre():
     call_command("check")
 
 
-def test_W1_accueil_francais_sans_prefixe(client):
+def test_lot1_accueil_francais_sans_prefixe(client):
     rep = client.get("/")
     assert rep.status_code == 200
     assert "Unité, Discipline et Progrès" in rep.content.decode()
@@ -21,7 +21,7 @@ def test_W1_accueil_francais_sans_prefixe(client):
 
 
 @pytest.mark.parametrize("code", ["ln", "sw", "lua", "kg"])
-def test_W2_prefixe_langue_repond_avec_repli_francais(client, code):
+def test_lot1_prefixe_langue_repond_avec_repli_francais(client, code):
     rep = client.get(f"/{code}/")
     assert rep.status_code == 200
     html = rep.content.decode()
@@ -30,26 +30,26 @@ def test_W2_prefixe_langue_repond_avec_repli_francais(client, code):
     assert "Unité, Discipline et Progrès" in html
 
 
-def test_W2_francais_n_a_pas_de_prefixe():
+def test_lot1_francais_n_a_pas_de_prefixe():
     with translation.override("fr"):
         assert reverse("pages:accueil") == "/"
     with translation.override("ln"):
         assert reverse("pages:accueil") == "/ln/"
 
 
-def test_W2_hreflang_et_pas_de_noindex_par_defaut(client):
+def test_lot1_hreflang_et_pas_de_noindex_par_defaut(client):
     html = client.get("/").content.decode()
     for code in ("fr", "ln", "sw", "lua", "kg", "x-default"):
         assert f'hreflang="{code}"' in html
     assert "noindex" not in html
 
 
-def test_W2_noindex_parametrable(client, settings):
+def test_lot1_noindex_parametrable(client, settings):
     settings.SITE_NOINDEX = True
     assert 'content="noindex, nofollow"' in client.get("/").content.decode()
 
 
-def test_W2_selecteur_visible_seulement_si_plusieurs_langues(client, settings):
+def test_lot1_selecteur_visible_seulement_si_plusieurs_langues(client, settings):
     settings.ACTIVE_LANGUAGES = ["fr"]
     assert "<nav" not in client.get("/").content.decode()
     settings.ACTIVE_LANGUAGES = ["fr", "ln"]
@@ -57,14 +57,14 @@ def test_W2_selecteur_visible_seulement_si_plusieurs_langues(client, settings):
     assert "<nav" in html and 'href="/ln/"' in html
 
 
-def test_W2_bibliotheques_locales_sans_cdn(client):
+def test_lot1_bibliotheques_locales_sans_cdn(client):
     html = client.get("/").content.decode()
     assert "vendor/htmx.min.js" in html and "vendor/alpine.min.js" in html
     assert "http://" not in html.replace("http://localhost", "")
     assert "https://" not in html
 
 
-def test_W1_aucun_appel_reseau_reel(client, aucun_reseau):
+def test_lot1_aucun_appel_reseau_reel(client, aucun_reseau):
     client.get("/")
     client.get("/ln/")
     assert aucun_reseau == []
@@ -72,7 +72,7 @@ def test_W1_aucun_appel_reseau_reel(client, aucun_reseau):
         socket.socket().connect(("127.0.0.1", 9))
 
 
-def test_W1_api_client_mode_degrade(monkeypatch, settings):
+def test_lot1_api_client_mode_degrade(monkeypatch, settings):
     """L'API coupée : copie en cache servie en mode dégradé, sinon ApiIndisponible."""
     appels = {"n": 0}
 
@@ -98,8 +98,61 @@ def test_W1_api_client_mode_degrade(monkeypatch, settings):
     monkeypatch.setattr(requests, "request", coupee)
     from django.core.cache import cache
 
-    cache.delete_many([k for k in ("api:fresh:" + api_client._cle("config/", None, None),)])
+    cache.delete(api_client._cle_fraiche(api_client._cle("config/", None, None), api_client._version()))
     rep = api_client.get("config/", ttl="config")
     assert rep.degrade and rep.donnees == {"ok": 1}
     with pytest.raises(api_client.ApiIndisponible):
         api_client.get("articles/", ttl="articles")
+
+
+def test_lot1_purge_garde_les_copies_de_secours(monkeypatch):
+    """Purge puis API en panne : le mode dégradé sert encore la copie de secours."""
+    from django.core.cache import cache
+
+    class Faux:
+        status_code = 200
+
+        def json(self):
+            return {"ok": 2}
+
+    appels = {"n": 0}
+
+    def ok(*a, **k):
+        appels["n"] += 1
+        return Faux()
+
+    monkeypatch.setattr(requests, "request", ok)
+    cache.set("compteur:ip:1", 7, 3600)
+    api_client.get("config/", ttl="config")
+    api_client.purger_cache()
+    assert cache.get("compteur:ip:1") == 7
+    api_client.get("config/", ttl="config")
+    assert appels["n"] == 2  # la copie fraîche a été invalidée
+
+    api_client.purger_cache()
+
+    def coupee(*a, **k):
+        raise requests.ConnectionError("coupée")
+
+    monkeypatch.setattr(requests, "request", coupee)
+    rep = api_client.get("config/", ttl="config")
+    assert rep.degrade and rep.donnees == {"ok": 2}
+
+
+def test_lot1_api_client_refuse_les_redirections(monkeypatch):
+    vus = {}
+
+    class Redir:
+        status_code = 302
+
+        def json(self):
+            return {}
+
+    def fake(*a, **k):
+        vus.update(k)
+        return Redir()
+
+    monkeypatch.setattr(requests, "request", fake)
+    with pytest.raises(api_client.ApiIndisponible):
+        api_client.get("config/")
+    assert vus["allow_redirects"] is False

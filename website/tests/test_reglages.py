@@ -16,18 +16,18 @@ def lancer(module, env_extra, *args):
     )
 
 
-def test_W1_prod_exige_secret_key():
+def test_lot1_prod_exige_secret_key():
     r = lancer("prod", {"ALLOWED_HOSTS": "site.example.invalid"}, "check")
     assert r.returncode != 0
     assert "SECRET_KEY" in r.stderr
 
 
-def test_W1_dev_demarre_sans_secret_key():
+def test_lot1_dev_demarre_sans_secret_key():
     r = lancer("dev", {}, "check")
     assert r.returncode == 0, r.stderr
 
 
-def test_W1_prod_cookies_secure_hsts_debug_faux():
+def test_lot1_prod_cookies_secure_hsts_debug_faux():
     code = ("from django.conf import settings as s;"
             "print(s.DEBUG, s.SESSION_COOKIE_SECURE, s.CSRF_COOKIE_SECURE, s.SECURE_HSTS_SECONDS)")
     r = lancer("prod", {"SECRET_KEY": "cle-de-test-" + "x" * 60, "DEBUG": "True",
