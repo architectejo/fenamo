@@ -10,9 +10,9 @@
 <div class="page-hero bg-image overlay-dark" style="background-image: url({{affiche.image_background.url}});">
   <div class="hero-section">
     <div class="container text-center wow zoomIn">
-      <span class="subhead" style="font-weight: bold;">{{affiche.slogant|safe}}</span>
+      <span class="subhead" style="font-weight: bold;">{{affiche.slogant}}</span>
       <h1 class="display-4" style="font-weight: bold;">
-        </strong>{{affiche.nom|safe}}</strong>
+        {{affiche.nom}}
       </h1>
       <a href="{% url 'about' %}" class="btn btn-primary">En savoir plus</a>
       <!--a style="background-color: #2fac2f;" class="btn m-1 text-light" href="{% static 'app/fenamo-app.apk' %}">
@@ -36,8 +36,8 @@
     <div class="container">
       <div class="row align-items-center">
         <div class="col-lg-6 py-3 wow fadeInUp">
-          <h1>{{affiche.welcome_text|safe}}</h1>
-          <p class="text-grey mb-4">{{affiche.description|safe|slice:"500"}}...</p>
+          <h1>{{affiche.welcome_text}}</h1>
+          <p class="text-grey mb-4">{{affiche.description|slice:"500"}}...</p>
           <a href="{% url 'about' %}" class="btn btn-primary">En savoir plus</a>
           <!--a style="background-color: #2fac2f;" class="btn m-1 text-light" href="{% static 'app/fenamo-app.apk' %}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download"
@@ -68,21 +68,6 @@
     <div class="row mt-5">
 
       {% for article in articles %}
-      {% if article.integration_code %}
-      <div class="col-lg-4 py-2 wow zoomIn">
-        <div class="card-blog">
-          <div class="header">
-            <div class="post-category">
-              <a href="{% url 'vue-article' article.id %}">{{article.mise_a_jour}}</a>
-            </div>
-            {{article.integration_code|safe}}
-          </div>
-          <div class="body">
-            <h5 class="post-title"><a href="{% url 'vue-article' article.id %}">{{article.titre}}</a></h5>
-          </div>
-        </div>
-      </div>
-      {% else %}
       <div class="col-lg-4 py-2 wow zoomIn">
         <div class="card-blog">
           <div class="header">
@@ -100,7 +85,6 @@
           </div>
         </div>
       </div>
-      {% endif %}
       {% endfor %}
 
       <div class="col-12 text-center mt-4 wow zoomIn">

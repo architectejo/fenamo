@@ -28,7 +28,7 @@
     <div class="container">
       <div class="row">
         <div class="col-8">
-          <a class="navbar-brand" href="#"><span class="text-primary">{{affiche.nom|safe}}</span><!--Health--></a>
+          <a class="navbar-brand" href="#"><span class="text-primary">{{affiche.nom}}</span><!--Health--></a>
 
           <form action="{% url 'recherche' %}" method="post">
             {% csrf_token %}
