@@ -81,3 +81,30 @@ def test_securite_exige_ancien_mot_de_passe_et_validation(client, db):
     c.refresh_from_db()
     assert not c.doit_changer_mot_de_passe and c.check_password('Nouveau-mdp-9876')
     assert client.get('/membres/').status_code == 200  # session conservée, plus de blocage
+
+
+# ------------------------------------------------------------------ a4 : admin
+
+def test_admin_reserve_aux_superutilisateurs(client, jeu, simple):
+    assert client.get('/gestion-technique/').status_code == 302
+    staff = Compte.objects.create_user('staff', password='mot-de-passe-test-123', is_staff=True)
+    client.force_login(staff)
+    r = client.get('/gestion-technique/')
+    assert r.status_code == 302 and '/gestion-technique/login/' in r['Location']
+    client.force_login(jeu['compte'])
+    assert client.get('/gestion-technique/').status_code == 200
+
+
+def test_admin_compte_mot_de_passe_hache_et_membre_sans_password(client, jeu):
+    client.force_login(jeu['compte'])
+    r = client.post('/gestion-technique/compte/compte/add/', {
+        'username': 'cree-admin', 'password1': 'Mdp-admin-test-7391', 'password2': 'Mdp-admin-test-7391'})
+    assert r.status_code == 302
+    c = Compte.objects.get(username='cree-admin')
+    assert c.password.startswith(('pbkdf2_', 'md5$')) and 'Mdp-admin' not in c.password
+    html = client.get(f"/gestion-technique/coptapp/membre/{jeu['membre'].id}/change/").content.decode()
+    assert 'name="password"' not in html
+
+
+def test_page_connexion_admin_accessible_a_l_anonyme(client, db):
+    assert client.get('/gestion-technique/login/').status_code == 200

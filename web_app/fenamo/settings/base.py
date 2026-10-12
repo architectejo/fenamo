@@ -26,7 +26,7 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 # Applications
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'fenamo.apps.FenamoAdminConfig',  # remplace django.contrib.admin : accès réservé aux SU
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

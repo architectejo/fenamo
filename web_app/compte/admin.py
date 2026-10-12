@@ -1,6 +1,19 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
 from compte.models import Compte
 
-# Register your models here.
 
-admin.site.register(Compte)
+@admin.register(Compte)
+class CompteAdmin(UserAdmin):
+    """Basé sur UserAdmin : le mot de passe est saisi/affiché haché (jamais en clair)."""
+
+    list_display = ('username', 'email', 'membreId', 'is_active', 'is_superuser', 'doit_changer_mot_de_passe')
+    list_filter = ('is_active', 'is_superuser', 'doit_changer_mot_de_passe')
+    fieldsets = UserAdmin.fieldsets + (
+        ('FENAMO-RDC', {'fields': ('membreId', 'doit_changer_mot_de_passe', 'privilege1', 'privilege2',
+                                   'privilege3', 'privilege4', 'privilege5', 'privilege', 'editor')}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('FENAMO-RDC', {'fields': ('email', 'membreId', 'doit_changer_mot_de_passe')}),
+    )
