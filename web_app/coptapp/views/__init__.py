@@ -244,7 +244,7 @@ def edit_structure(request, id):
         structure.membres = len(Membre.objects.filter(structure=structure, is_delete=False))
         structure.proprietaires = len(Membre.objects.filter(structure=structure, titre='PROPRIETAIRE', is_delete=False))
         structure.motocyclistes = len(Membre.objects.filter(structure=structure, is_delete=False).exclude(titre='PROPRIETAIRE'))
-    except: return redirect('home-app')
+    except: return redirect('tableau-bord')
     return render(request, 'app/structure.html', locals())
 
 def structures_liste(request):

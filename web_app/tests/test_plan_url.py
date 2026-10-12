@@ -54,7 +54,8 @@ def table(j):
         ('adminer', {'id': m}, f'/membres/{m}/creer-compte/'),
         ('add-user', {}, '/comptes/ajouter/'),
         ('delete-user', {}, '/comptes/desactiver/'),
-        ('home-app', {}, '/'),
+        ('tableau-bord', {}, '/'),
+        ('accueil-ancien', {}, '/accueil-ancien/'),
         ('home-session', {}, '/associations/mon-association/'),
         ('structure-admin', {'id': a}, f'/associations/{a}/'),
         ('add-structure', {}, '/associations/ajouter/'),
@@ -109,7 +110,7 @@ def test_adresses_cibles(jeu):
 
 
 NOMS_ECRANS = [
-    'application', 'adminer', 'add-user', 'home-app', 'home-session', 'structure-admin',
+    'application', 'adminer', 'add-user', 'tableau-bord', 'accueil-ancien', 'home-session', 'structure-admin',
     'add-structure', 'edit-structure', 'str-list', 'add-province', 'province-view', 'add-ville',
     'ville-view', 'ville-select', 'add-antenne', 'edit-antenne', 'antenne-view', 'liste-membre',
     'add-fenamo-membre', 'add-membre', 'membre-view', 'validate', 'delete-membre', 'view-user',

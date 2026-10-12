@@ -9,12 +9,14 @@ en GET ; elles gardent leur méthode actuelle jusqu'au lot 2.
 from django.urls import path
 
 from coptapp.views import *
-from coptapp.views_tableau_bord import tableau_bord
+from coptapp.views.tableau_bord import tableau_bord
 
 urlpatterns = [
     # Tableau de bord
-    path('tableau-de-bord/', tableau_bord, name="tableau-bord"),
-    path('', home, name="home-app"),  # TODO lot 2 : POST + CSRF (crée des objets en GET pour un super-utilisateur sans membre)
+    path('', tableau_bord, name="tableau-bord"),  # § 7.3 : « / » est le tableau de bord
+    # Ancienne page d'accueil (liste des provinces) : adresse non conflictuelle, à retirer ou refondre au lot 4.
+    # TODO lot 2 : POST + CSRF (crée province, ville et membre en GET pour un super-utilisateur sans membre)
+    path('accueil-ancien/', home, name="accueil-ancien"),
 
     # Associations membres
     path('associations/', structures_liste, name="str-list"),

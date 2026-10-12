@@ -29,3 +29,23 @@ def test_notifications_membre_disparu_pas_de_500(client, jeu):
     jeu['compte'].save()
     client.force_login(jeu['compte'])
     assert client.get(reverse('notifys')).status_code == 200
+
+
+def test_racine_est_le_tableau_de_bord(client, jeu):
+    assert reverse('tableau-bord') == '/'
+    client.force_login(jeu['compte'])
+    reponse = client.get('/')
+    assert reponse.status_code == 200
+    assert 'coptapp/tableau_bord/tableau_bord.html' in [t.name for t in reponse.templates]
+    assert client.get('/tableau-de-bord/').status_code == 404
+
+
+def test_racine_anonyme_redirige_vers_la_connexion(client, db):
+    reponse = client.get('/')
+    assert reponse.status_code == 302
+    assert reponse['Location'].startswith(reverse('application'))
+
+
+def test_connexion_redirige_vers_la_racine(client, jeu):
+    client.force_login(jeu['compte'])
+    assert client.get(reverse('application'))['Location'] == '/'

@@ -96,7 +96,7 @@ def test_lot1_aucun_fichier_ou_dossier_nomme_coptam():
 
 def test_lot1_pas_de_coptam_dans_l_interface(client, jeu):
     client.force_login(jeu['compte'])
-    for nom in ('home-app', 'liste-membre', 'str-list'):
+    for nom in ('tableau-bord', 'liste-membre', 'str-list'):
         cible = next(c for n, _, c in table(jeu) if n == nom)
         assert 'coptam' not in client.get(cible, follow=True).content.decode().lower(), cible
     assert 'coptam' not in client.get('/connexion/').content.decode().lower()
