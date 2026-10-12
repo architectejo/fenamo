@@ -79,6 +79,9 @@ def droits_membre(user, membre=None):
         'peut_creer_membre': False, 'peut_modifier': False, 'peut_valider': False, 'peut_demander_suppression': False,
         'peut_attribuer_privileges': False, 'peut_gerer_famille': False, 'peut_gerer_engins': False,
         'peut_voir_historique': False, 'peut_demander_modification': False,
+        'peut_modifier_engin': False, 'peut_supprimer_engin': False, 'peut_modifier_famille': False,
+        'peut_supprimer_famille': False, 'peut_executer_suppression': False, 'peut_restaurer': False,
+        'peut_annuler_demande_suppression': False,
     }
     if not _actif(user):
         return nul
@@ -99,7 +102,24 @@ def droits_membre(user, membre=None):
     else:
         peut_valider = bool(_etapes(user, membre))
 
+    gerer = ecriture and (maitre or membre is None or chez_lui or saisie_perso)
+    # F-35 / F-26 « AT avant V1, ensuite rôles supérieurs » : un agent seul (privilege1 sans privilege2, 3 ni 5) modifie
+    # et supprime engins et famille tant que le propriétaire n'a pas passé la 1re validation (is_validate2). L'engin n'a
+    # pas de drapeau de validation : l'état du propriétaire en tient lieu (limite à lever avec le champ d'état unique).
+    agent_seul = bool(user.privilege1) and not (maitre or user.privilege2 or user.privilege3)
+    avant_v1 = membre is None or not membre.is_validate2
+    gerer_apres_saisie = gerer and (not agent_seul or avant_v1)
+    executer = maitre and ecriture
     return {
+        'peut_modifier_engin': gerer_apres_saisie,
+        'peut_supprimer_engin': gerer_apres_saisie,
+        'peut_modifier_famille': gerer_apres_saisie,
+        'peut_supprimer_famille': gerer_apres_saisie,
+        'peut_executer_suppression': executer,
+        'peut_restaurer': bool(executer and membre is not None and membre.is_delete),
+        'peut_annuler_demande_suppression': bool(
+            ecriture and membre is not None and membre.suppression_demandee and not membre.is_delete
+            and (executer or membre.suppression_demandee_par_id == user.pk)),
         'peut_creer_membre': ecriture,
         'peut_modifier': peut_modifier,
         'peut_valider': peut_valider,
@@ -107,8 +127,8 @@ def droits_membre(user, membre=None):
         # Réservé aux SU (correctif C1) : le privilege5 hérité ne suffit pas.
         'peut_attribuer_privileges': su,
         # F-26 : l'agent gère la famille de ses saisies comme leurs engins ; privilege2 et 3 dans leur association.
-        'peut_gerer_famille': ecriture and (maitre or membre is None or chez_lui or saisie_perso),
-        'peut_gerer_engins': ecriture and (maitre or membre is None or chez_lui or saisie_perso),
+        'peut_gerer_famille': gerer,
+        'peut_gerer_engins': gerer,
         'peut_voir_historique': not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3)),
         'peut_demander_modification': su or bool(user.privilege1 and not lecture_seule),
     }

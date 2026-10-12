@@ -13,7 +13,7 @@ from django.db.models import Q
 from compte.models import JournalAction
 from compte.services.journal import instantane, journaliser
 from coptapp.models import Antenne, AssociationMembre, Membre, Notification
-from coptapp.services.droits_provisoires import droits_membre, membres_du_perimetre
+from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
 from coptapp.services.etats import ETATS, filtrer_membres_par_etat
 
 PAR_PAGE = 25
@@ -83,6 +83,10 @@ def lister_membres(user, params, numero_page=None, par_page=PAR_PAGE):
     """
     filtres = normaliser_filtres(params)
     page_obj = Paginator(membres_filtres(user, filtres), par_page).get_page(numero_page)
+    # Droit de valider PAR MEMBRE (étape précédente exigée, jamais sa propre fiche) : calcul en mémoire, sans requête.
+    page_obj.object_list = list(page_obj.object_list)
+    for membre in page_obj.object_list:
+        membre.peut_valider = bool(etapes_a_valider(user, membre))
     return ResultatListe(page_obj=page_obj, filtres=filtres, filtres_actifs=any(filtres.values()))
 
 

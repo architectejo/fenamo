@@ -112,6 +112,8 @@ class Membre(models.Model):
     # Demande de suppression (F-25) : un agent ou un validateur demande, SU / privilege5 exécute (is_delete).
     suppression_demandee = models.BooleanField(default=False)
     motif_suppression = models.TextField(blank=True, default='')
+    # Auteur de la demande en cours : lui (ou qui exécute) peut l'annuler.
+    suppression_demandee_par = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     is_validate1 = models.BooleanField(default=True)
     is_validate2 = models.BooleanField(default=False)
     is_validate3 = models.BooleanField(default=False)

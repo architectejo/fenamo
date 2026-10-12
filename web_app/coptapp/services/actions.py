@@ -27,6 +27,7 @@ def changer_suppression(auteur, objet, supprime, motif=''):
     objet.is_delete = supprime
     if hasattr(objet, 'suppression_demandee'):
         objet.suppression_demandee = False  # la demande est exécutée ou annulée
+        objet.suppression_demandee_par = None
     objet.save()
     action = JournalAction.Action.SUPPRESSION if supprime else JournalAction.Action.RESTAURATION
     journaliser(auteur, action, objet, avant=avant, apres={'is_delete': bool(supprime)}, motif=motif)
@@ -69,9 +70,12 @@ def traiter_suppression_membre(auteur, membre, motif=''):
     if membre.is_delete:
         raise PermissionDenied
     if membre.suppression_demandee:
+        if membre.suppression_demandee_par_id != auteur.pk:
+            raise PermissionDenied  # seul l'auteur de la demande (ou qui exécute) l'annule
         avant = {'suppression_demandee': True}
         membre.suppression_demandee = False
-        membre.save(update_fields=['suppression_demandee'])
+        membre.suppression_demandee_par = None
+        membre.save(update_fields=['suppression_demandee', 'suppression_demandee_par'])
         journaliser(auteur, JournalAction.Action.RESTAURATION, membre, avant=avant,
                     apres={'suppression_demandee': False}, motif=motif)
         return 'demande_annulee'
@@ -79,7 +83,8 @@ def traiter_suppression_membre(auteur, membre, motif=''):
         return 'motif_requis'
     membre.suppression_demandee = True
     membre.motif_suppression = motif
-    membre.save(update_fields=['suppression_demandee', 'motif_suppression'])
+    membre.suppression_demandee_par = auteur
+    membre.save(update_fields=['suppression_demandee', 'motif_suppression', 'suppression_demandee_par'])
     journaliser(auteur, JournalAction.Action.DEMANDE_SUPPRESSION, membre, avant={'suppression_demandee': False},
                 apres={'suppression_demandee': True}, motif=motif)
     return 'demande'

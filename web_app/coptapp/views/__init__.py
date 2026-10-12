@@ -662,7 +662,7 @@ def contactView(request, id):
 
 @require_POST
 def deleteMoto(request,id):
-    moto = engin_pour(request.user, id, 'peut_gerer_engins')
+    moto = engin_pour(request.user, id, 'peut_supprimer_engin')
     changer_suppression(request.user, moto, True)
     notify(user=moto.user, titre="Suppression d'une moto", description=f"Numero:{moto.numero}")
     return redirect('membre-view', id=moto.proprietaire.id)
@@ -670,7 +670,7 @@ def deleteMoto(request,id):
 @require_POST
 def deleteFamily(request, id):
     famille = get_object_or_404(Famille, id=id)
-    membre_pour(request.user, famille.membre_id, 'peut_gerer_famille')
+    membre_pour(request.user, famille.membre_id, 'peut_supprimer_famille')
     idMbr = famille.membre_id
     famille.delete()
     return redirect("membre-view", id=idMbr)
@@ -678,7 +678,7 @@ def deleteFamily(request, id):
 def editFamily(request,id):
     user = request.user
     famille = get_object_or_404(Famille, id=id)
-    membre = membre_pour(user, famille.membre_id, 'peut_gerer_famille')
+    membre = membre_pour(user, famille.membre_id, 'peut_modifier_famille')
     if request.method == 'POST':
         famille.user = user
         famille.membre=membre
@@ -701,7 +701,7 @@ def editMoto(request, id):
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
     
-    moto = engin_pour(user, id, 'peut_gerer_engins')
+    moto = engin_pour(user, id, 'peut_modifier_engin')
     membre = moto.proprietaire
     if request.method == 'POST':
         photo = request.FILES.get('photo')
