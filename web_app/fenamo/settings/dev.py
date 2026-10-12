@@ -6,7 +6,8 @@ from .base import env
 DEBUG = env.bool('DEBUG', default=True)
 
 # Valeur de développement uniquement : ne sert jamais en production (prod.py exige SECRET_KEY).
-SECRET_KEY = env('SECRET_KEY', default='dev-uniquement-ne-pas-utiliser-en-production')
+# Une variable SECRET_KEY vide dans .env (copie brute de .env.example) retombe aussi sur cette valeur.
+SECRET_KEY = env('SECRET_KEY', default='') or 'dev-uniquement-ne-pas-utiliser-en-production'
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '[::1]'])
 

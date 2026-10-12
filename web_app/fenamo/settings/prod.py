@@ -1,7 +1,10 @@
 """Réglages de production (cPanel mutualisé, Passenger, MySQL).
 
 Variables obligatoires dans `.env` : SECRET_KEY, ALLOWED_HOSTS, DATABASE_URL.
+Facultatives mais attendues : EMAIL_* (envoi des courriels), STATIC_ROOT, MEDIA_ROOT.
 """
+
+from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F401,F403
 from .base import MIDDLEWARE, env
@@ -9,6 +12,11 @@ from .base import MIDDLEWARE, env
 DEBUG = False
 
 SECRET_KEY = env('SECRET_KEY')
+if len(SECRET_KEY) < 50 or SECRET_KEY.lower().startswith(('changer', 'dev', 'django-insecure')):
+    raise ImproperlyConfigured(
+        "SECRET_KEY de production invalide : au moins 50 caractères et jamais une valeur "
+        "d'exemple (changer…, dev…, django-insecure…). Voir .env.example pour la générer."
+    )
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # WhiteNoise sert les fichiers statiques depuis Passenger, juste après SecurityMiddleware.
@@ -31,7 +39,19 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = env.int('SECURE_HSTS_SECONDS', default=31536000)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = 'same-origin'
 X_FRAME_OPTIONS = 'DENY'
+
+# Courriels (SMTP du compte cPanel), lus dans .env
+EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='FENAMO-RDC <noreply@fenamordc.cd>')
+SERVER_EMAIL = env('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
+
+# Pas de HSTS « preload » : engagement difficile à annuler, à décider explicitement par la FENAMO-RDC.
+SILENCED_SYSTEM_CHECKS = ['security.W021']

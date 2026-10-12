@@ -49,3 +49,44 @@ def test_racine_anonyme_redirige_vers_la_connexion(client, db):
 def test_connexion_redirige_vers_la_racine(client, jeu):
     client.force_login(jeu['compte'])
     assert client.get(reverse('application'))['Location'] == '/'
+
+
+# ------------------------------------------------------------------ réglages
+
+from tests.test_lot1_socle import ENV_PROD, base_vide, manage  # noqa: E402,F401
+
+
+@pytest.fixture
+def env_prod(base_vide):
+    return {**ENV_PROD, **base_vide}
+
+
+def test_dev_accepte_secret_key_vide(base_vide):
+    r = manage('check', '--settings=fenamo.settings.dev', env_extra={**base_vide, 'SECRET_KEY': ''})
+    assert r.returncode == 0, r.stderr
+
+
+@pytest.mark.parametrize('cle', ['trop-courte', 'x' * 49, 'changer-cette-valeur-' + 'x' * 60,
+                                 'dev-' + 'x' * 60, 'django-insecure-' + 'x' * 60])
+def test_prod_refuse_secret_key_faible(env_prod, cle):
+    r = manage('check', '--settings=fenamo.settings.prod', env_extra={**env_prod, 'SECRET_KEY': cle})
+    assert r.returncode != 0
+    assert 'SECRET_KEY' in r.stderr
+
+
+def test_prod_sans_preload_et_reglages_lus_dans_env(env_prod, tmp_path):
+    code = ("from django.conf import settings as s;"
+            "print(hasattr(s, 'SECURE_HSTS_PRELOAD') and s.SECURE_HSTS_PRELOAD, s.STATIC_ROOT, s.MEDIA_ROOT,"
+            " s.EMAIL_HOST, s.EMAIL_PORT, s.EMAIL_HOST_USER, s.EMAIL_USE_TLS)")
+    extra = {**env_prod, 'STATIC_ROOT': str(tmp_path / 's'), 'MEDIA_ROOT': str(tmp_path / 'm'),
+             'EMAIL_HOST': 'smtp.example.invalid', 'EMAIL_PORT': '2525', 'EMAIL_HOST_USER': 'u'}
+    r = manage('shell', '-c', code, '--settings=fenamo.settings.prod', env_extra=extra)
+    sortie = r.stdout.strip().splitlines()[-1]
+    assert sortie == f"False {tmp_path / 's'} {tmp_path / 'm'} smtp.example.invalid 2525 u True", r.stdout + r.stderr
+
+
+def test_dev_media_et_static_par_defaut_si_env_vide(base_vide):
+    code = "from django.conf import settings as s; print(s.STATIC_ROOT.name, s.MEDIA_ROOT.name)"
+    r = manage('shell', '-c', code, '--settings=fenamo.settings.dev',
+               env_extra={**base_vide, 'STATIC_ROOT': '', 'MEDIA_ROOT': ''})
+    assert r.stdout.strip().splitlines()[-1] == 'staticfiles media', r.stdout + r.stderr

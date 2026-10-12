@@ -107,11 +107,13 @@ USE_TZ = True
 # Fichiers statiques et médias (bibliothèques front servies en local, sans CDN)
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATIC_ROOT et MEDIA_ROOT : chemins absolus lus dans .env (§ 7.2) ; en production, mettre les médias
+# hors du dossier de l'application pour qu'un déploiement ne les écrase pas.
+STATIC_ROOT = Path(env('STATIC_ROOT', default='') or BASE_DIR / 'staticfiles')
 STATICFILES_DIRS = [d for d in (BASE_DIR / 'static',) if d.is_dir()]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = Path(env('MEDIA_ROOT', default='') or BASE_DIR / 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
