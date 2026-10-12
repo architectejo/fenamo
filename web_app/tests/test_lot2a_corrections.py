@@ -37,7 +37,7 @@ def test_F02_su_attribue_les_privileges_et_journalise(client, jeu, pirate):
 
 # ------------------------------------------------------------- M1 : mot de passe jamais en cookie
 
-def test_F04_adminer_mot_de_passe_dans_le_corps_pas_dans_les_cookies(client, jeu):
+def test_F02_adminer_mot_de_passe_dans_le_corps_pas_dans_les_cookies(client, jeu):
     Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
     client.force_login(jeu['compte'])
     r = client.post(reverse('adminer', kwargs={'id': jeu['membre'].id}))
@@ -52,33 +52,33 @@ def test_F04_adminer_mot_de_passe_dans_le_corps_pas_dans_les_cookies(client, jeu
     assert mdp not in client.get('/membres/').content.decode()  # affiché une seule fois
 
 
-def test_F04_adminer_htmx_renvoie_le_fragment(client, jeu):
+def test_F02_adminer_htmx_renvoie_le_fragment(client, jeu):
     Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
     client.force_login(jeu['compte'])
     r = client.post(reverse('adminer', kwargs={'id': jeu['membre'].id}), HTTP_HX_REQUEST='true')
     assert r.status_code == 200 and '<html' not in r.content.decode()
 
 
-def test_F04_add_user_no_store(client, jeu):
+def test_F02_add_user_no_store(client, jeu):
     client.force_login(jeu['compte'])
     r = client.post(reverse('add-user'), {'username': 'nstore', 'email': 'n@example.invalid'})
     assert 'no-store' in r['Cache-Control']
 
 
-def test_messages_stockes_en_session(settings):
+def test_F04_messages_stockes_en_session(settings):
     assert settings.MESSAGE_STORAGE.endswith('session.SessionStorage')
 
 
 # ------------------------------------------------------------- M2 : verrou normalisé et par IP
 
-def test_F04_verrou_insensible_a_la_casse_et_aux_espaces(client, db):
+def test_F01_verrou_insensible_a_la_casse_et_aux_espaces(client, db):
     Compte.objects.create_user('cible', password=MDP)
     for variante in ('cible', 'CIBLE', ' Cible ', 'cible', 'CiBle'):
         client.post('/connexion/', {'username': variante, 'password': 'faux'})
     assert client.post('/connexion/', {'username': 'cible', 'password': MDP}).status_code == 429
 
 
-def test_F04_verrou_par_adresse_ip_seule(client, db, settings):
+def test_F01_verrou_par_adresse_ip_seule(client, db, settings):
     settings.IP_ECHECS_MAX = 8
     Compte.objects.create_user('bon', password=MDP)
     for i in range(8):
@@ -96,7 +96,7 @@ def test_F04_nouveau_mot_de_passe_identique_refuse(client, db):
     assert r.status_code == 200 and 'différent de l' in r.content.decode()
 
 
-def test_F04_compte_cree_par_l_admin_doit_changer_son_mot_de_passe(client, jeu):
+def test_F02_compte_cree_par_l_admin_doit_changer_son_mot_de_passe(client, jeu):
     client.force_login(jeu['compte'])
     r = client.post('/gestion-technique/compte/compte/add/', {
         'username': 'par-admin', 'password1': 'Mdp-admin-test-7391', 'password2': 'Mdp-admin-test-7391'})
@@ -106,7 +106,7 @@ def test_F04_compte_cree_par_l_admin_doit_changer_son_mot_de_passe(client, jeu):
 
 # ------------------------------------------------------------- bouton « Créer le compte »
 
-def test_F04_bouton_creer_le_compte_pour_les_su_seulement(client, jeu):
+def test_F02_bouton_creer_le_compte_pour_les_su_seulement(client, jeu):
     Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
     url = reverse('membre-view', kwargs={'id': jeu['membre'].id})
     client.force_login(jeu['compte'])
@@ -129,16 +129,16 @@ def _attribuer(jeu, **donnees):
     return c.post(reverse('moto-attribution', kwargs={'id': jeu['membre'].id}), donnees)
 
 
-def test_F02_attribut_moto_sans_numero_pas_de_500(jeu):
+def test_F01_attribut_moto_sans_numero_pas_de_500(jeu):
     assert _attribuer(jeu).status_code == 302
     assert _attribuer(jeu, numero='   ').status_code == 302
 
 
-def test_F02_attribut_moto_numero_inconnu_pas_de_500(jeu):
+def test_F01_attribut_moto_numero_inconnu_pas_de_500(jeu):
     assert _attribuer(jeu, numero='ZZZ').status_code == 302
 
 
-def test_F02_attribut_moto_numero_en_double_pas_de_500(jeu):
+def test_F01_attribut_moto_numero_en_double_pas_de_500(jeu):
     Moto.objects.create(proprietaire=jeu['membre'], structure=jeu['association'], ville=jeu['ville'],
                         province=jeu['province'], abonnement=jeu['moto'].abonnement, numero=jeu['moto'].numero)
     assert _attribuer(jeu, numero=jeu['moto'].numero).status_code == 302
@@ -146,13 +146,13 @@ def test_F02_attribut_moto_numero_en_double_pas_de_500(jeu):
     assert not jeu['moto'].motard_id
 
 
-def test_F02_attribut_moto_membre_inexistant_404(jeu):
+def test_F01_attribut_moto_membre_inexistant_404(jeu):
     c = Client(raise_request_exception=False)
     c.force_login(jeu['compte'])
     assert c.post(reverse('moto-attribution', kwargs={'id': 99999}), {'numero': '001PF'}).status_code == 404
 
 
-def test_F02_attribut_moto_nominal(jeu):
+def test_F01_attribut_moto_nominal(jeu):
     assert _attribuer(jeu, numero=jeu['moto'].numero).status_code == 302
     jeu['moto'].refresh_from_db()
     assert jeu['moto'].motard_id == str(jeu['membre'].id)

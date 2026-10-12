@@ -6,5 +6,6 @@ from api import views
 app_name = 'api'
 
 urlpatterns = [
-    path('', views.sante, name='sante'),
+    path('sante/', views.sante, name='sante'),  # adresse du contrat
+    path('', views.sante, name='racine'),  # conservée : sondes de supervision déjà configurées
 ]

@@ -148,9 +148,12 @@ def test_connexion_anonyme(client, db):
 
 
 def test_sante_api(client, db):
-    reponse = client.get('/api/v1/')
+    for adresse in ('/api/v1/sante/', '/api/v1/'):
+        assert client.get(adresse).json() == {'statut': 'ok', 'version': 'v1'}
+    reponse = client.get('/api/v1/sante/')
     assert reponse.status_code == 200
     assert reponse.json() == {'statut': 'ok', 'version': 'v1'}
+    assert client.post('/api/v1/sante/').status_code == 405
     assert client.post('/api/v1/').status_code == 405
 
 
