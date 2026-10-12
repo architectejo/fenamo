@@ -250,15 +250,13 @@
                       {% endif %}
                       {% if membre.is_validate3 %}
                       <td>
-                        <a href="{% url 'validate' membre.id %}">
-                          <span class="badge bg-danger">Invalité</span>
-                        </a>
+                        {% url 'validate' membre.id as url_valider %}
+                        {% include "partials/_bouton_post.html" with url=url_valider libelle="Invalider" classe="btn btn-sm btn-danger" %}
                       </td>
                       {% else %}
                       <td>
-                        <a href="{% url 'validate' membre.id %}">
-                          <span class="badge bg-success">Validé</span>
-                        </a>
+                        {% url 'validate' membre.id as url_valider %}
+                        {% include "partials/_bouton_post.html" with url=url_valider libelle="Valider" classe="btn btn-sm btn-success" %}
                       </td>
                       {% endif %}
                     </tr>

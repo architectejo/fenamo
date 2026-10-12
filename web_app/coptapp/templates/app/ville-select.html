@@ -114,10 +114,8 @@
                                 {% for ville in provinces %}
                                 <div class="col-6">
                                     <h5 class="fst-italic">
-                                        <a class="border border-danger text-danger"
-                                            href="{% url 'ville-attr' ville.id structure.id %}">
-                                            {{ville.nom}}
-                                        </a>
+                                        {% url 'ville-attr' ville.id structure.id as url_attr %}
+                                        {% include "partials/_bouton_post.html" with url=url_attr libelle=ville.nom classe="btn btn-outline-danger" %}
                                     </h5>
                                 </div>
                                 {% endfor %}

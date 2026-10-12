@@ -111,9 +111,9 @@
                         <h2>{{membre.nom}}</h2>
                         {% if not membre.is_user %}
                         {% if user.is_superuser or user.privilege5 %}
-                        <a href="{% url 'adminer' membre.id %}" class="btn btn-light">Attribuer un rôle</a>
+                        {% url 'adminer' membre.id as url_adminer %}{% include "partials/_bouton_post.html" with url=url_adminer libelle="Attribuer un rôle" classe="btn btn-light" %}
                         {% elif membre.structure == structure and user.privilege3 %}
-                        <a href="{% url 'adminer' membre.id %}" class="btn btn-light">Attribuer un rôle</a>
+                        {% url 'adminer' membre.id as url_adminer %}{% include "partials/_bouton_post.html" with url=url_adminer libelle="Attribuer un rôle" classe="btn btn-light" %}
                         {% endif %}
                         {% endif %}
                         {% if membre.is_user and user.is_authenticated %}
@@ -291,10 +291,11 @@
                       <div class="col-lg-3 col-md-4 label"></div>
                       <div class="col-lg-9 col-md-8">
                         {% if membre.is_delete %}
-                        <a href="{% url 'delete-membre' membre.id %}" class="btn btn-danger">Désactivé le processus de
-                          suppression</a>
+                        {% url 'delete-membre' membre.id as url_suppr %}
+                        {% include "partials/_bouton_confirmer.html" with prefixe="membre" ident=membre.id url=url_suppr libelle="Désactiver le processus de suppression" titre="Suppression du membre" message="Désactiver le processus de suppression de ce membre ?" libelle_envoi="Confirmer" %}
                         {% else %}
-                        <a href="{% url 'delete-membre' membre.id %}" class="btn btn-danger">Demande de suppression</a>
+                        {% url 'delete-membre' membre.id as url_suppr %}
+                        {% include "partials/_bouton_confirmer.html" with prefixe="membre" ident=membre.id url=url_suppr libelle="Demande de suppression" titre="Suppression du membre" message="Envoyer la demande de suppression de ce membre ?" libelle_envoi="Envoyer la demande" %}
                         {% endif %}
                       </div>
                     </div>
@@ -310,11 +311,8 @@
                       </h3>
                       <div class="card-body">
                         {% for ville in villes %}
-                        <a href="{% url 'ville-attribution' ville.id membre.id %}">
-                          <h6 class="alert alert-warning m-1">
-                            {{ville.nom}}
-                          </h6>
-                        </a>
+                        {% url 'ville-attribution' ville.id membre.id as url_attr %}
+                        {% include "partials/_bouton_post.html" with url=url_attr libelle=ville.nom classe="btn btn-warning m-1 w-100 text-start" %}
                         {% endfor %}
                       </div>
                     </div>
@@ -326,11 +324,8 @@
                       </h3>
                       <div class="card-body">
                         {% for antenne in antennes %}
-                        <a href="{% url 'antenne-attribution' antenne.id membre.id %}">
-                          <h6 class="alert alert-warning m-1">
-                            {{antenne.nom}}
-                          </h6>
-                        </a>
+                        {% url 'antenne-attribution' antenne.id membre.id as url_attr %}
+                        {% include "partials/_bouton_post.html" with url=url_attr libelle=antenne.nom classe="btn btn-warning m-1 w-100 text-start" %}
                         {% endfor %}
                       </div>
                     </div>
@@ -342,11 +337,8 @@
                       </h3>
                       <div class="card-body">
                         {% for structure in structures %}
-                        <a href="{% url 'structure-attribution' structure.id membre.id %}">
-                          <h6 class="alert alert-warning m-1">
-                            {{structure.nom}}
-                          </h6>
-                        </a>
+                        {% url 'structure-attribution' structure.id membre.id as url_attr %}
+                        {% include "partials/_bouton_post.html" with url=url_attr libelle=structure.nom classe="btn btn-warning m-1 w-100 text-start" %}
                         {% endfor %}
                       </div>
                     </div>
@@ -729,8 +721,8 @@
                           <td>
                             <a href="{% url 'edit-moto' moto.id %}" class="btn btn-primary btn-sm"
                               title="Upload new profile image"><i class="bi bi-upload"></i></a>
-                            <a href="{% url 'delete-moto' moto.id %}" class="btn btn-danger btn-sm"
-                              title="Remove my profile image"><i class="bi bi-trash"></i></a>
+                            {% url 'delete-moto' moto.id as url_suppr %}
+                            {% include "partials/_bouton_confirmer.html" with prefixe="moto" ident=moto.id url=url_suppr libelle="Supprimer l'engin" icone="bi bi-trash" classe="btn btn-danger btn-sm" titre="Supprimer l'engin" message="Supprimer cet engin ? Cette action est irréversible." %}
                           </td>
                           {% endif %}
                         </tr>
@@ -807,8 +799,8 @@
                           <td>
                             <a href="{% url 'edit-moto' motoAttr.id %}" class="btn btn-primary btn-sm"
                               title="Upload new profile image"><i class="bi bi-upload"></i></a>
-                            <a href="{% url 'delete-moto' motoAttr.id %}" class="btn btn-danger btn-sm"
-                              title="Remove my profile image"><i class="bi bi-trash"></i></a>
+                            {% url 'delete-moto' motoAttr.id as url_suppr %}
+                            {% include "partials/_bouton_confirmer.html" with prefixe="moto-attr" ident=motoAttr.id url=url_suppr libelle="Supprimer l'engin" icone="bi bi-trash" classe="btn btn-danger btn-sm" titre="Supprimer l'engin" message="Supprimer cet engin ? Cette action est irréversible." %}
                           </td>
                           {% endif %}
                         </tr>
@@ -821,43 +813,8 @@
               </div>
 
               <div class="tab-pane fade pt-3" id="profile-securite">
-
-                <form method="post" action="{% url 'security' membre.id %}">
-                  {% csrf_token %}
-                  <div class="row mb-3">
-                    <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Ancien pseudo:</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input type="text" name="pseudoA" class="form-control" value="{{user.username}}"
-                        id="currentPassword">
-                    </div>
-                  </div>
-
-                  <div class="row mb-3">
-                    <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Nouveau pseudo:</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input type="text" name="pseudoN" class="form-control" id="currentPassword">
-                    </div>
-                  </div>
-
-                  <div class="row mb-3">
-                    <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Ancien mot de passe:</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input type="password" name="passA" class="form-control" id="currentPassword">
-                    </div>
-                  </div>
-
-                  <div class="row mb-3">
-                    <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Nouveau mot de passe:</label>
-                    <div class="col-md-8 col-lg-9">
-                      <input type="password" name="passN" class="form-control" id="currentPassword">
-                    </div>
-                  </div>
-
-                  <div class="">
-                    <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label"></label>
-                    <button name="modifier" value="envoyer" class="btn btn-primary">Modifier</button>
-                  </div>
-                </form><!-- End Change Password Form -->
+                <p>Le changement de mot de passe se fait depuis votre page de sécurité.</p>
+                <a href="{% url 'securite' %}" class="btn btn-primary" style="min-height:44px">Changer mon mot de passe</a>
 
               </div>
 
@@ -960,8 +917,8 @@
                           <td>
                             <a href="{% url 'edit-family' famille.id %}" class="btn btn-primary btn-sm"
                               title="Upload new profile image"><i class="bi bi-upload"></i></a>
-                            <a href="{% url 'delete-family' famille.id %}" class="btn btn-danger btn-sm"
-                              title="Remove my profile image"><i class="bi bi-trash"></i></a>
+                            {% url 'delete-family' famille.id as url_suppr %}
+                            {% include "partials/_bouton_confirmer.html" with prefixe="famille" ident=famille.id url=url_suppr libelle="Supprimer" icone="bi bi-trash" classe="btn btn-danger btn-sm" titre="Supprimer le bénéficiaire" message="Retirer ce membre de la famille ? Cette action est irréversible." %}
                           </td>
                           {% endif %}
                         </tr>

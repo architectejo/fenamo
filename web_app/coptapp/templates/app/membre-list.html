@@ -81,9 +81,8 @@
 
                           {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
                             <td scope="col">
-                              <a href="{% url 'validate' membre.id %}" class="btn btn-success">
-                                Validé
-                              </a>
+                              {% url 'validate' membre.id as url_valider %}
+                              {% include "partials/_bouton_post.html" with url=url_valider libelle="Valider" classe="btn btn-success" %}
                             </td>
                           {% endif %}
 

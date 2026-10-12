@@ -207,10 +207,13 @@
           </li>
           {% endif %}
           <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'deconnexion' %}">
-              <i class="bi bi-box-arrow-right"></i>
-              <span>Déconnexion</span>
-            </a>
+            <form method="post" action="{% url 'deconnexion' %}">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item d-flex align-items-center" style="min-height:44px">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Déconnexion</span>
+              </button>
+            </form>
           </li>
 
         </ul><!-- End Profile Dropdown Items -->
@@ -388,10 +391,13 @@
     {% endif %}
 
     <li class="nav-item">
-      <a class="nav-link collapsed" href="{% url 'deconnexion' %}">
-        <i class="bi bi-box-arrow-right"></i>
-        <span>Déconnexion</span>
-      </a>
+      <form method="post" action="{% url 'deconnexion' %}">
+        {% csrf_token %}
+        <button type="submit" class="nav-link collapsed w-100 border-0 bg-transparent text-start" style="min-height:44px">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Déconnexion</span>
+        </button>
+      </form>
     </li><!-- End Error 404 Page Nav -->
 
 

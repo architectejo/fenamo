@@ -133,9 +133,8 @@
                         </td>
                         <td>{{article.mise_a_jour}}</td>
                         <td>
-                            <a href="{% url 'delete-article' article.id %}">
-                                <span class="badge bg-danger">Supprimer</span>
-                            </a>
+                            {% url 'delete-article' article.id as url_suppr %}
+                            {% include "partials/_bouton_confirmer.html" with prefixe="article" ident=article.id url=url_suppr libelle="Supprimer" classe="btn btn-sm btn-danger" titre="Supprimer l'article" message="Supprimer définitivement cet article ? Cette action est irréversible." %}
                             <a href="{% url 'article' article.id %}">
                                 <span class="badge bg-primary">Modifier</span>
                             </a>

@@ -36,7 +36,12 @@
         </div>
       </div><!-- End Recent Sales -->
       {% if contact.traiter %}
-      <div class="col-12 alert alert-success text-center">Vu</div>
+      <div class="col-12 alert alert-success text-center">Traité</div>
+      {% else %}
+      <div class="col-12 text-center">
+        {% url 'contact-view' contact.id as url_traiter %}
+        {% include "partials/_bouton_post.html" with url=url_traiter libelle="Marquer comme traité" classe="btn btn-success" %}
+      </div>
       {% endif %}
 
     </div>
