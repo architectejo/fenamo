@@ -1,5 +1,12 @@
-Django>=5.2,<5.3
-django-environ>=0.12
-requests>=2.32
-pytest>=8
-pytest-django>=4.9
+# Production (cPanel / Passenger). Versions épinglées, testées avec Python 3.12.
+Django==5.2.17
+django-environ==0.14.0
+requests==2.32.3
+whitenoise==6.12.0
+# Dépendances indirectes
+asgiref==3.8.1
+sqlparse==0.4.4
+certifi==2024.8.30
+charset-normalizer==3.3.2
+idna==3.8
+urllib3==2.2.2
