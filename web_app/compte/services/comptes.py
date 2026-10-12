@@ -78,3 +78,14 @@ def changer_mot_de_passe(compte, form):
                 avant=avant, apres={'changement_impose': False},
                 motif=_("Mot de passe modifié par son titulaire."))
     return compte
+
+
+def compte_du_membre(membre_id):
+    """Compte rattaché à un membre : le plus ancien s'il y en a plusieurs, None s'il n'y en a pas.
+
+    Remplace `Compte.objects.get(membreId=…)`, qui lève MultipleObjectsReturned quand plusieurs comptes
+    partagent un membre, et filtre sur « membreId IS NULL » (donc tous les comptes sans membre) si l'identifiant est None.
+    """
+    if not membre_id:
+        return None
+    return get_user_model().objects.filter(membreId=membre_id).order_by('pk').first()

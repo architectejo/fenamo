@@ -3,6 +3,7 @@ from django.contrib import messages as contrib_messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 from compte.models import JournalAction
+from compte.services.comptes import compte_du_membre
 from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
 from coptapp.services.actions import (
@@ -849,9 +850,8 @@ def moto_view(request, id):
         provinces = provinceSelector()
     
     membre = moto.proprietaire
-    verify = len(User.objects.filter(membreId=id))
-    if verify != 0:
-        membreUser = User.objects.get(membreId=id)
+    membreUser = compte_du_membre(id)
+    verify = 1 if membreUser else 0
     
     if moto.motard_id:
         motard = Membre.objects.get(id=moto.motard_id)
@@ -877,9 +877,8 @@ def province_view(request, id):
     for mbr in membre:
         membre = mbr
     #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-    verify = len(User.objects.filter(membreId=id))
-    if verify != 0:
-        membreUser = User.objects.get(membreId=id)
+    membreUser = compte_du_membre(id)
+    verify = 1 if membreUser else 0
     
     province = Province.objects.get(id=id)
     villes = Ville.objects.filter(province=province).order_by('nom')
@@ -901,9 +900,8 @@ def recherche(request):
         try:
             membre = Membre.objects.get(id=user.membreId)
             #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-            verify = len(User.objects.filter(membreId=membre.id))
-            if verify != 0:
-                membreUser = User.objects.get(membreId=membre.id)
+            membreUser = compte_du_membre(membre.id)
+            verify = 1 if membreUser else 0
         except:
             pass
     
@@ -943,9 +941,8 @@ def ville_view(request, id):
     if membre:
         membre = membre[0]
     #motos = len(Moto.objects.filter(proprietaire=membre, is_delete=False))
-    verify = len(User.objects.filter(membreId=id))
-    if verify != 0:
-        membreUser = User.objects.get(membreId=id)
+    membreUser = compte_du_membre(id)
+    verify = 1 if membreUser else 0
     
     ville = Ville.objects.get(id=id)
     if user.is_superuser or user.privilege5:
@@ -964,23 +961,21 @@ def membreListe(request):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        if userMembre.ville:
-            villeId = userMembre.ville.id
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    if userMembre and userMembre.ville:
+        villeId = userMembre.ville.id
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
     
     user = request.user
-    membre = Membre.objects.filter(id=user.membreId)
-    if membre:
-        membre = membre[0]
-    membreUser = User.objects.get(membreId=user.membreId)
+    membre = userMembre
+    membreUser = compte_du_membre(user.membreId)
     
     try:
         ville = membre.ville
     except: pass
+    membres = Membre.objects.none()
     if user.is_superuser or user.privilege5:
         membres = Membre.objects.filter(is_delete=False).order_by('user__username','antenne', 'nom')
     else:
@@ -1008,9 +1003,8 @@ def notificationsView(request):
 
     # Un compte sans membre (ou dont le membre a disparu) reste valide : membre = None.
     membre = userMembre
-    verify = len(User.objects.filter(membreId=user.membreId)) if user.membreId else 0
-    if verify != 0:
-        membreUser = User.objects.get(membreId=user.membreId)
+    membreUser = compte_du_membre(user.membreId)
+    verify = 1 if membreUser else 0
 
     notifys = myNotify(request)
     return render(request, 'app/notifications.html', locals())
