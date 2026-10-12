@@ -100,6 +100,7 @@
       if (!tpl) { return; }
       contenu.replaceChildren(tpl.content.cloneNode(true));
       if (window.htmx) { htmx.process(contenu); }
+      document.dispatchEvent(new CustomEvent('modaleLocale', { detail: local.getAttribute('data-modale-locale') }));
       D.ouvrirModale('#modale');
       focaliser();
     }
@@ -133,6 +134,64 @@
   });
   window.addEventListener('pageshow', function (e) {
     if (e.persisted) { document.querySelectorAll('button[aria-busy=true]').forEach(function (b) { b.disabled = false; b.removeAttribute('aria-busy'); }); }
+  });
+
+  /* ------------------------------------------------------------------ Liste filtrée : formulaire unique [data-filtres-form] */
+  // Le formulaire porte la recherche, les puces (radios) et les filtres avancés (champs cachés) : la modale « Filtres » copie ses
+  // valeurs dans ces champs, puis déclenche l'événement « filtres » (un seul envoi HTMX avec toutes les valeurs).
+  var CHAMPS_AVANCES = ['qualite', 'antenne', 'association'];
+  function formFiltres() { return document.querySelector('[data-filtres-form]'); }
+  function majCompteFiltres() {
+    var f = formFiltres();
+    var pastille = f && f.querySelector('[data-filtres-compte]');
+    if (!pastille) { return; }
+    var n = CHAMPS_AVANCES.filter(function (nom) { return f.elements[nom] && f.elements[nom].value; }).length;
+    pastille.textContent = n ? String(n) : '';
+    pastille.hidden = !n;
+  }
+  function declencherFiltres() { var f = formFiltres(); majCompteFiltres(); if (f && window.htmx) { htmx.trigger(f, 'filtres'); } }
+  function effacerFiltres() {
+    var f = formFiltres();
+    if (!f) { return; }
+    CHAMPS_AVANCES.forEach(function (nom) { if (f.elements[nom]) { f.elements[nom].value = ''; } });
+    if (f.elements.q) { f.elements.q.value = ''; }
+    var tous = f.querySelector('input[name=etat][value=""]');
+    if (tous) { tous.checked = true; }
+    declencherFiltres();
+  }
+  document.addEventListener('modaleLocale', function (e) {
+    var f = formFiltres();
+    if (e.detail !== '#modale-filtres' || !f || !lierModale()) { return; }
+    contenu.querySelectorAll('[data-filtre-champ]').forEach(function (s) { s.value = f.elements[s.dataset.filtreChamp].value; });
+  });
+  document.addEventListener('click', function (e) {
+    var f = formFiltres();
+    if (e.target.closest('[data-filtres-appliquer]') && f) {
+      contenu.querySelectorAll('[data-filtre-champ]').forEach(function (s) { f.elements[s.dataset.filtreChamp].value = s.value; });
+      D.fermerModale('#modale'); viderApresFermeture(); declencherFiltres();
+    } else if (e.target.closest('[data-filtres-effacer]') && f) {
+      D.fermerModale('#modale'); viderApresFermeture(); CHAMPS_AVANCES.forEach(function (nom) { f.elements[nom].value = ''; }); declencherFiltres();
+    } else if (e.target.closest('[data-effacer-filtres]')) {
+      e.preventDefault(); effacerFiltres();
+    }
+  });
+  document.addEventListener('DOMContentLoaded', majCompteFiltres);
+  // Après un changement de page : le focus revient en tête de la zone remplacée (le lien activé a disparu)
+  document.addEventListener('htmx:afterSwap', function (e) {
+    var cible = e.detail.target;
+    var declencheur = e.detail.requestConfig && e.detail.requestConfig.elt;
+    if (cible && cible.id === 'liste-zone' && declencheur && declencheur.closest && declencheur.closest('.pages, [data-effacer-filtres]')) {
+      cible.focus({ preventScroll: true });
+      cible.scrollIntoView({ block: 'start' });
+    }
+  });
+
+  // Déconnexion : l'historique HTMX gardé dans le stockage local ne doit pas survivre à la session
+  document.addEventListener('submit', function (e) {
+    var action = e.target && e.target.getAttribute && e.target.getAttribute('action');
+    if (action && /\/deconnexion\/?$/.test(action)) {
+      try { localStorage.removeItem('htmx-history-cache'); } catch (err) { /* stockage refusé : rien à effacer */ }
+    }
   });
 
   /* ------------------------------------------------------------------ File de validation : compteurs

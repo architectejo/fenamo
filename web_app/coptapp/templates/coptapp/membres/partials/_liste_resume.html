@@ -1,0 +1,8 @@
+{% load i18n design %}{% comment %}
+Région vivante PERMANENTE de la liste (hors de #liste-zone, jamais remplacée) : résumé des filtres et « 1 à 25 sur 31 » / « Aucun membre ne correspond ».
+Le fragment de la liste en renvoie une copie avec oob=True (hx-swap-oob) : seule cette phrase est annoncée aux lecteurs d'écran, pas toute la zone.
+Contexte : page_obj, filtres, choix, filtres_actifs, oob.
+{% endcomment %}<p id="liste-resume" class="resume-liste" role="status"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <span>{% if filtres_actifs %}{% translate "Filtres :" %}{% if filtres.q %} « {{ filtres.q }} »{% endif %}{% if filtres.etat %} · {% translate "état" %} {{ filtres.etat|libelle_code_etat|lower }}{% endif %}{% if filtres.qualite %} · {{ filtres.qualite }}{% endif %}{% if filtres.antenne %}{% for a in choix.antennes %}{% if a.id == filtres.antenne %} · {% blocktranslate with nom=a.nom %}antenne de {{ nom }}{% endblocktranslate %}{% endif %}{% endfor %}{% endif %}{% if filtres.association %}{% for s in choix.associations %}{% if s.id == filtres.association %} · {% firstof s.sigle s.nom %}{% endif %}{% endfor %}{% endif %}{% endif %}</span>
+  <span>{% if page_obj.paginator.count %}{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}{% else %}{% translate "Aucun membre ne correspond" %}{% endif %}</span>
+</p>

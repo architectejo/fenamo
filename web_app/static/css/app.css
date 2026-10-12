@@ -619,6 +619,12 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .puce:hover { border-color: var(--texte); }
 .puce[aria-pressed="true"] { background: var(--encre); color: var(--sur-encre); border-color: var(--encre); font-weight: var(--graisse-forte); }
 :root[data-theme="sombre"] .puce[aria-pressed="true"] { background: var(--texte); border-color: var(--texte); }
+/* Puce à choix unique (liste filtrée) : un bouton radio caché porte la valeur, le formulaire de filtres reste la seule source de vérité */
+.puce { position: relative; }
+.puce > input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.puce:has(> input:checked) { background: var(--encre); color: var(--sur-encre); border-color: var(--encre); font-weight: var(--graisse-forte); }
+:root[data-theme="sombre"] .puce:has(> input:checked) { background: var(--texte); border-color: var(--texte); }
+.puce:has(> input:focus-visible) { box-shadow: 0 0 0 3px var(--focus-halo); outline: 2px solid var(--encre); outline-offset: 1px; }
 .puce .nombre { font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); }
 .defile-horizontal { display: flex; gap: var(--e-2); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--e-4)); padding: 2px var(--e-4) var(--e-1); scroll-snap-type: x proximity; }
 .defile-horizontal::-webkit-scrollbar { display: none; }
