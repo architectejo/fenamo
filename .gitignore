@@ -1,0 +1,35 @@
+# Environnements et secrets
+.env
+.env.*.local
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Données locales
+*.sqlite3
+media/
+staticfiles/
+*.log
+
+# Ancien projet (archive conservée hors dépôt)
+fenamo.zip
+
+# Claude Code : préférences personnelles
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Document de référence volumineux (conservé hors dépôt)
+STATUT-FENAMO.pdf
+
+# Données réelles interdites
+db.sqlite3
+media/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.whl
