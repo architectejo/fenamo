@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>File de validation · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="file-de-validation.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>File de validation</span><span class="nombre" data-demo-compte>24</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg><span>Associations membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-wallet"></use></svg><span>Paiements</span></a><p class="menu-groupe">Organisation</p><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg><span>Parkings</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span>Utilisateurs nommés</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-file-text"></use></svg><span>Rapport hebdomadaire</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme" data-theme-basculer style="border:0;background:none;width:calc(100% - var(--e-6));margin:0 var(--e-3) var(--e-2);cursor:pointer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Validateur provincial</span><strong>Coordination Kinshasa-Est</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="#"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche" data-demo-recherche>
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg>
+        <label class="lecteur" for="recherche-globale">Rechercher</label>
+        <input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off">
+        <div class="recherche-resultats" role="listbox" hidden>
+          <a href="fiche-membre.html" role="option"><span class="avatar avatar--petit" aria-hidden="true">HK</span><span><strong><mark>Muk</mark>endi Kasongo Héritier</strong><span class="meta"> MBR0004127 · Lemba</span></span></a>
+          <a href="fiche-membre.html" role="option"><span class="avatar avatar--petit" aria-hidden="true">NB</span><span><strong><mark>Muk</mark>oko Bena Nathalie</strong><span class="meta"> MBR0003981 · Matete</span></span></a>
+          <a href="#" role="option"><span class="avatar avatar--petit"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg></span><span><span class="plaque " aria-label="Engin n° 00147 KN-E"><span class="plaque-numero">00147</span><span class="plaque-code">KN-E</span></span> <span class="meta">propr. <mark>Muk</mark>endi</span></span></a>
+        </div>
+      </div>
+      <div class="rangee pousse" style="flex-wrap:nowrap;gap:var(--e-1)">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <div style="position:relative" data-demo-notifs>
+          <button type="button" class="bouton-icone" aria-label="Notifications, 5 non lues" aria-expanded="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille">5</span></button>
+          <div class="flottant" hidden>
+            <div class="panneau-tete" style="padding-bottom:var(--e-3)"><h2>Notifications</h2><button class="bouton bouton--discret bouton--petit pousse">Tout marquer comme lu</button></div>
+            <a class="notif non-lue" href="#"><span class="avatar avatar--petit" aria-hidden="true">GT</span><span><strong>Grâce Mbombo</strong> a saisi 4 membres à Lemba<span class="meta" style="display:block">il y a 12 min</span></span></a>
+            <a class="notif non-lue" href="#"><span class="avatar avatar--petit"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg></span><span>Dossier <span class="ident">MBR0003902</span> renvoyé par la coordination<span class="meta" style="display:block">il y a 1 h</span></span></a>
+            <a class="notif" href="#"><span class="avatar avatar--petit"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg></span><span>Nouvelle demande d'adhésion : <strong>AMOTAK asbl</strong><span class="meta" style="display:block">hier, 16:40</span></span></a>
+            <div class="panneau-pied"><a href="#">Voir toutes les notifications</a></div>
+          </div>
+        </div>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar " aria-hidden="true">CM</span><span class="profil-texte"><strong>Christian Kabeya</strong><span class="meta" style="display:block">Validateur provincial</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">File de validation</h1>
+    <p class="page-contexte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Coordination Kinshasa-Est · 2e validation (province)</p>
+  </div>
+</div>
+<div class="onglets" role="tablist">
+  <button class="onglet" role="tab" aria-selected="true">Membres <span class="nombre" data-demo-compte>24</span></button>
+  <button class="onglet" role="tab" aria-selected="false">Engins <span class="nombre">17</span></button>
+  <button class="onglet" role="tab" aria-selected="false">Associations membres <span class="nombre">2</span></button>
+</div>
+<div class="defile-horizontal" style="margin-bottom:var(--e-4)" data-demo-puces>
+  <button class="puce" aria-pressed="true">Toutes les antennes</button>
+  <button class="puce" aria-pressed="false">Lemba <span class="nombre">7</span></button>
+  <button class="puce" aria-pressed="false">Limete <span class="nombre">5</span></button>
+  <button class="puce" aria-pressed="false">Masina <span class="nombre">4</span></button>
+  <button class="puce" aria-pressed="false">Matete <span class="nombre">3</span></button>
+  <button class="puce" aria-pressed="false">N'djili <span class="nombre">3</span></button>
+  <button class="puce" aria-pressed="false">Kisenso <span class="nombre">2</span></button>
+</div>
+<p class="resume-liste"><span>Les plus anciens en premier</span><span>6 sur 24 affichés</span></p>
+<div class="zone-rafraichie" data-demo-zone>
+  <ul class="file" data-demo-file><li class="dossier">
+  <span class="avatar " aria-hidden="true">HK</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Héritier Mukendi Kasongo</a><span class="ident doux">MBR0004127</span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Lemba</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg>Rond-point Ngaba</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg>ALEMO asbl</span></div>
+    <div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="petit">Motard</span><span class="dossier-attente">en attente depuis 3 j</span></div>
+  </div>
+  <div class="dossier-actions">
+    <button class="bouton bouton--valider" type="button" data-demo-valider data-nom="Héritier Mukendi Kasongo"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg>Valider</button>
+    <button class="bouton bouton--danger" type="button" data-demo-renvoyer data-nom="Héritier Mukendi Kasongo"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar " aria-hidden="true">TN</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Trésor Lutete Nsimba</a><span class="ident doux">MBR0004119</span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Matete</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg>Marché Matete</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg>ALEMO asbl</span></div>
+    <div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="petit">Motard et propriétaire</span><span class="dossier-attente">en attente depuis 4 j</span></div>
+  </div>
+  <div class="dossier-actions">
+    <button class="bouton bouton--valider" type="button" data-demo-valider data-nom="Trésor Lutete Nsimba"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg>Valider</button>
+    <button class="bouton bouton--danger" type="button" data-demo-renvoyer data-nom="Trésor Lutete Nsimba"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar " aria-hidden="true">GN</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Glody Mavungu Ngoma</a><span class="ident doux">MBR0004102</span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Limete</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg>Échangeur</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg>LITATSHA asbl</span></div>
+    <div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="petit">Propriétaire</span><span class="dossier-attente dossier-attente--longue">en attente depuis 6 j</span></div>
+  </div>
+  <div class="dossier-actions">
+    <button class="bouton bouton--valider" type="button" data-demo-valider data-nom="Glody Mavungu Ngoma"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg>Valider</button>
+    <button class="bouton bouton--danger" type="button" data-demo-renvoyer data-nom="Glody Mavungu Ngoma"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar " aria-hidden="true">JL</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Junior Bokele Likwela</a><span class="ident doux">MBR0004098</span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Masina</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg>Pascal</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg>LITATSHA asbl</span></div>
+    <div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="petit">Motard</span><span class="dossier-attente dossier-attente--longue">en attente depuis 6 j</span></div>
+  </div>
+  <div class="dossier-actions">
+    <button class="bouton bouton--valider" type="button" data-demo-valider data-nom="Junior Bokele Likwela"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg>Valider</button>
+    <button class="bouton bouton--danger" type="button" data-demo-renvoyer data-nom="Junior Bokele Likwela"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar " aria-hidden="true">FB</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Fiston Kalombo Banza</a><span class="ident doux">MBR0004091</span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de N'djili</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg>Quartier 7</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg>AMOTSHA asbl</span></div>
+    <div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="petit">Motard</span><span class="dossier-attente">en attente depuis 1 j</span></div>
+  </div>
+  <div class="dossier-actions">
+    <button class="bouton bouton--valider" type="button" data-demo-valider data-nom="Fiston Kalombo Banza"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg>Valider</button>
+    <button class="bouton bouton--danger" type="button" data-demo-renvoyer data-nom="Fiston Kalombo Banza"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar " aria-hidden="true">NB</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Nathalie Mukoko Bena</a><span class="ident doux">MBR0003981</span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Kisenso</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg>Mbuku</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg>ALEMO asbl</span></div>
+    <div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="petit">Propriétaire</span><span class="dossier-attente">en attente depuis 2 j</span></div>
+  </div>
+  <div class="dossier-actions">
+    <button class="bouton bouton--valider" type="button" data-demo-valider data-nom="Nathalie Mukoko Bena"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg>Valider</button>
+    <button class="bouton bouton--danger" type="button" data-demo-renvoyer data-nom="Nathalie Mukoko Bena"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer</button>
+  </div>
+</li></ul>
+  <ul class="file" data-demo-squelette hidden aria-hidden="true"><li class="squelette squelette--ligne"></li><li class="squelette squelette--ligne"></li><li class="squelette squelette--ligne"></li></ul>
+</div>
+<div class="vide" data-demo-vide hidden>
+  <div class="vide-icone"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check-check"></use></svg></div>
+  <h2>File à jour</h2>
+  <p>Aucun membre n'attend la validation de la coordination Kinshasa-Est.</p>
+  <a class="bouton" href="#">Voir les engins en attente</a>
+</div>
+<nav class="pages" aria-label="Pagination">
+  <a class="bouton" href="#" aria-disabled="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-left"></use></svg><span class="pages-libelle">Précédent</span></a>
+  <span class="pages-position">Page 1 sur 4</span>
+  <ol class="pages-numeros"><li><span aria-current="page">1</span></li><li><a href="#">2</a></li><li><a href="#">3</a></li><li><a href="#">4</a></li></ol>
+  <a class="bouton" href="#"><span class="pages-libelle">Suivant</span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-right"></use></svg></a>
+</nav>
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a href="file-de-validation.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>À valider</span><span class="compteur-pastille" data-demo-compte>24</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+<div class="bulles" aria-live="polite"></div>
+<div class="modale" id="modale-renvoi" role="dialog" aria-modal="true" aria-labelledby="renvoi-titre" hidden>
+  <div class="modale-voile"></div>
+  <form class="feuille" data-demo-form-renvoi novalidate>
+    <div class="feuille-tete">
+      <h2 id="renvoi-titre">Renvoyer à l'antenne<span class="sous-titre" data-demo-renvoi-nom>Héritier Mukendi Kasongo · MBR0004127</span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps formulaire">
+      <p class="doux" style="margin:0">Le dossier repart chez le validateur de l'antenne de Lemba, avec votre motif. Il pourra le corriger ou le renvoyer à l'agent.</p>
+      <div class="champ" data-demo-champ-motif>
+        <label class="champ-libelle" for="motif">Motif du renvoi</label>
+        <div class="defile-horizontal" style="margin-inline:0;padding-inline:0">
+          <button type="button" class="puce" data-demo-motif>Photo illisible</button>
+          <button type="button" class="puce" data-demo-motif>Pièce d'identité manquante</button>
+          <button type="button" class="puce" data-demo-motif>Jeton de résidence absent</button>
+          <button type="button" class="puce" data-demo-motif>Doublon probable</button>
+        </div>
+        <textarea class="champ-saisie" id="motif" name="motif" rows="4" autofocus aria-describedby="motif-aide motif-erreur" placeholder="Expliquez ce qu'il faut corriger"></textarea>
+        <p class="champ-aide" id="motif-aide">L'agent lira ce texte tel quel. Soyez précis.</p>
+        <p class="champ-erreur" id="motif-erreur" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Indiquez le motif du renvoi pour que l'antenne sache quoi corriger.</p>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyer à l'antenne</button>
+    </div>
+  </form>
+</div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+</body>
+</html>

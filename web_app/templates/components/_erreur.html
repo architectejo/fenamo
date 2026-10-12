@@ -1,0 +1,19 @@
+{% comment %}
+Message dans la page (alerte) : erreur, avertissement, information, confirmation durable.
+Paramètres :
+  niveau      "danger" | "alerte" | "info" | "succes"
+  titre       phrase courte en gras (obligatoire)
+  texte       ce qu'il faut faire (facultatif)
+  icone       facultatif ; par défaut : circle-alert, triangle-alert, info, circle-check selon le niveau
+  reessayer   URL : ajoute un bouton « Réessayer » (hx-get vers cette URL, cible = cible)
+  cible       hx-target du bouton Réessayer
+Cas « connexion perdue » : titre=_("Connexion perdue.") texte=_("Votre saisie est conservée. Réessayez quand le réseau revient.") icone="wifi-off".
+Une erreur explique quoi faire, sans s'excuser ni accuser.
+Usage : {% include "components/_erreur.html" with niveau="danger" titre=_("Chargement impossible.") reessayer=request.get_full_path cible="#resultats" %}
+{% endcomment %}{% load i18n %}<div class="alerte alerte--{{ niveau|default:'info' }}"{% if niveau == "danger" %} role="alert"{% endif %}>
+  {% if icone %}{% include "components/_icone.html" with nom=icone classe="" %}{% elif niveau == "danger" %}{% include "components/_icone.html" with nom="circle-alert" classe="" %}{% elif niveau == "alerte" %}{% include "components/_icone.html" with nom="triangle-alert" classe="" %}{% elif niveau == "succes" %}{% include "components/_icone.html" with nom="circle-check" classe="" %}{% else %}{% include "components/_icone.html" with nom="info" classe="" %}{% endif %}
+  <div>
+    <strong class="alerte-titre">{{ titre }}</strong>{% if texte %}{{ texte }}{% endif %}
+    {% if reessayer %}<div class="groupe-boutons"><button type="button" class="bouton bouton--petit" hx-get="{{ reessayer }}"{% if cible %} hx-target="{{ cible }}"{% endif %} hx-disabled-elt="this"><span class="roue" aria-hidden="true"></span>{% include "components/_icone.html" with nom="refresh-cw" classe="" %}{% translate "Réessayer" %}</button></div>{% endif %}
+  </div>
+</div>

@@ -1,0 +1,14 @@
+{% comment %}
+État vide : une liste sans résultat dit pourquoi et propose l'action suivante.
+Paramètres :
+  icone         facultatif (défaut : inbox) ; « check-check » pour une file à jour, « search » pour une recherche sans résultat
+  titre         « File à jour », « Aucun engin », « Aucun membre ne correspond »
+  texte         une phrase : la raison ou la suite (facultatif)
+  action        libellé du bouton (facultatif) ; action_url (lien) ou action_hx_get + modale=True (formulaire)
+Usage : {% include "components/_etat_vide.html" with icone="check-check" titre=_("File à jour") texte=_("Aucun membre n'attend votre validation.") %}
+{% endcomment %}<div class="vide">
+  <div class="vide-icone">{% include "components/_icone.html" with nom=icone|default:"inbox" classe="" %}</div>
+  <h2>{{ titre }}</h2>
+  {% if texte %}<p>{{ texte }}</p>{% endif %}
+  {% if action %}{% include "components/_bouton.html" with libelle=action href=action_url hx_get=action_hx_get modale=modale icone=action_icone variante="" taille="" bloc=False type="button" hx_post="" hx_target="" hx_swap="" etiquette="" %}{% endif %}
+</div>

@@ -1,0 +1,6 @@
+{% comment %}
+Plaque d'engin : reprend l'autocollant vinyle (art. 7.2). Liseré aux couleurs du drapeau, numéro, code de coordination.
+Paramètres : numero (compteur, ex. "00147") ; code (code officiel de la coordination, ex. "KN-E") ; grande=True (fiche, vérification).
+Le format exact du numéro vient du service de numérotation (F-31) ; ce composant affiche les deux parties sans rien inventer.
+Usage : {% include "components/_plaque.html" with numero=engin.numero code=engin.coordination.code %}
+{% endcomment %}{% load i18n %}<span class="plaque{% if grande %} plaque--grande{% endif %}" aria-label="{% blocktranslate %}Engin n° {{ numero }} {{ code }}{% endblocktranslate %}"><span class="plaque-numero">{{ numero }}</span><span class="plaque-code">{{ code }}</span></span>

@@ -1,0 +1,19 @@
+{% comment %}
+Aperçu de la carte de membre (F-27), proportions d'une carte bancaire. Seul endroit, avec la plaque, où apparaît le liseré du drapeau.
+Paramètres :
+  nom, ident, qualite      « Mukendi Kasongo Héritier », « MBR0004127 », « Motard »
+  coordination, antenne    « Kinshasa-Est », « Lemba »
+  annee, valide_jusqu      « 2026 », « 31/12/2026 »
+  gilet                    numéro de gilet (facultatif)
+  photo                    URL de la photo (facultatif ; sinon initiales)
+  qr_svg                   SVG du QR code de vérification produit côté serveur (balisage sûr, jamais une saisie utilisateur)
+La carte n'existe que si le membre est actif, identifié pour l'année et à jour de cotisation : sinon, ne pas inclure ce composant
+mais une alerte info qui dit ce qui manque (voir maquette fiche-membre.html).
+Usage : {% include "components/_carte_membre.html" with nom=… ident=… qr_svg=carte.qr_svg %}
+{% endcomment %}{% load static i18n %}<div class="carte-membre" role="img" aria-label="{% blocktranslate %}Carte de membre {{ annee }} de {{ nom }}, {{ ident }}{% endblocktranslate %}">
+  <div class="carte-membre-tete"><img src="{% static 'img/logo-48.webp' %}" width="28" height="28" alt=""><strong>FENAMO-RDC</strong><span class="pousse meta">{{ annee }}</span></div>
+  <div class="carte-membre-photo">{% if photo %}<img src="{{ photo }}" alt="">{% else %}{{ nom|slice:":1"|upper }}{% endif %}</div>
+  <div class="carte-membre-infos"><div class="carte-membre-nom">{{ nom }}</div><div class="carte-membre-ident">{{ ident }}</div><div>{{ qualite }} · {{ coordination }}</div><div>{% blocktranslate %}Antenne de {{ antenne }}{% endblocktranslate %}</div></div>
+  <div class="carte-membre-qr">{{ qr_svg }}</div>
+  <div class="carte-membre-pied"><span>{% blocktranslate %}Valide jusqu'au {{ valide_jusqu }}{% endblocktranslate %}</span>{% if gilet %}<span>{% blocktranslate %}Gilet {{ gilet }}{% endblocktranslate %}</span>{% endif %}</div>
+</div>

@@ -1,0 +1,10 @@
+{% comment %}
+Zone des bulles (toasts), incluse une fois dans base.html. Les bulles sont créées par FenamoDesign.bulle() :
+  - après une requête HTMX : en-tête HX-Trigger {"toast": {"message": "Membre validé", "detail": "...", "niveau": "success"}} ;
+  - au chargement d'une page complète : les messages Django ci-dessous sont convertis par fenamo.js (data-niveau = level_tag).
+Niveaux : success (vert), error / danger (rouge, reste 9 s, role="alert"), warning (jaune), info.
+Écriture : le message reprend le verbe du bouton (« Valider le membre » → « Membre validé ») ; le détail dit la suite.
+Position : en haut sous la barre sur téléphone (loin du pouce et de la barre basse), en bas à droite dès 576 px.
+Usage : {% include "components/_bulles.html" %}
+{% endcomment %}<div class="bulles" aria-live="polite" aria-atomic="false"></div>
+{% if messages and not request.htmx %}<div id="messages-django" hidden>{% for m in messages %}<span data-niveau="{{ m.level_tag|default:'info' }}">{{ m }}</span>{% endfor %}</div>{% endif %}

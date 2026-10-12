@@ -1,0 +1,19 @@
+{% comment %}
+Tableau qui devient une pile de cartes sous 576 px (CSS seul, aucune duplication du HTML).
+Le fragment hérite : {% extends "components/tableau_base.html" %} et remplit :
+  legende   <caption> lue par les lecteurs d'écran (« Membres de la coordination Kinshasa-Est »)
+  entetes   les <th scope="col">
+  lignes    les <tr> ; chaque <td> porte data-libelle="…" (libellé affiché devant la valeur sur téléphone)
+Rôles de cellule :
+  data-role="titre"    la cellule principale (personne, plaque) : en tête de carte, sans libellé ; contient a.lien-ligne
+                       (sur téléphone, toute la carte devient cliquable)
+  data-role="actions"  boutons, alignés à gauche en bas de carte
+Nombres : class="num" (alignés à droite). Dates et identifiants : class="chiffres".
+Le <tbody> porte l'id de la zone rafraîchie par HTMX (recherche, filtres, pagination) : id="resultats-lignes" par défaut.
+{% endcomment %}<div class="liste-enveloppe">
+  <table class="liste">
+    <caption class="lecteur">{% block legende %}{% endblock %}</caption>
+    <thead><tr>{% block entetes %}{% endblock %}</tr></thead>
+    <tbody id="{% block id_lignes %}resultats-lignes{% endblock %}">{% block lignes %}{% endblock %}</tbody>
+  </table>
+</div>

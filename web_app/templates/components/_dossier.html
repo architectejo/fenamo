@@ -1,0 +1,31 @@
+{% comment %}
+Ligne de la file de validation (membre, engin ou association membre). Carte empilée sur téléphone, ligne dès 768 px.
+Paramètres :
+  titre, url       nom affiché et lien vers la fiche
+  ident            identifiant (MBR0004127) ; pour un engin, passer plaque_numero + plaque_code à la place
+  antenne, parking, association   lieu et rattachement (facultatifs)
+  etat             code d'état (voir _badge_etat.html)
+  qualite          « Motard », « Propriétaire »… (facultatif)
+  attente          « 3 j » ; attente_longue=True colore en rouge (au-delà du délai fixé par la fédération)
+  motif            motif du dernier renvoi (facultatif, affiché en encadré)
+  url_valider      POST de validation (bouton vert « Valider ») ; absent = pas le droit, pas de bouton
+  url_renvoyer     GET du formulaire de renvoi (ouvert dans la modale) ; absent = pas de bouton
+  url_corriger     GET du formulaire de correction (agent : « Corriger le dossier ») ; facultatif
+  photo            URL de la vignette (facultatif ; sinon initiales)
+Réponse attendue de url_valider : 200 avec un fragment vide + HX-Trigger {"toast": …, "fileMaj": …} ;
+avant le retrait, fenamo.js appelle FenamoDesign.retirerDossier(ligne, 'traite') (flash vert, puis la ligne glisse et se replie).
+Usage : {% include "components/_dossier.html" with titre=m.nom_complet url=m.get_absolute_url ident=m.identifiant etat=m.etat antenne=m.antenne.nom url_valider=… url_renvoyer=… %}
+{% endcomment %}{% load i18n %}{% firstof ident plaque_numero as cle %}<li class="dossier" id="dossier-{{ cle|slugify }}">
+  {% if photo %}<span class="avatar"><img src="{{ photo }}" alt="" loading="lazy" width="40" height="40"></span>{% else %}<span class="avatar" aria-hidden="true">{{ titre|slice:":1"|upper }}</span>{% endif %}
+  <div>
+    <div class="dossier-titre"><a href="{{ url }}">{{ titre }}</a>{% if plaque_numero %}{% include "components/_plaque.html" with numero=plaque_numero code=plaque_code grande=False %}{% else %}<span class="ident doux">{{ ident }}</span>{% endif %}</div>
+    {% if antenne or parking or association %}<div class="dossier-lieu">{% if antenne %}<span>{% include "components/_icone.html" with nom="map-pin" classe="" %}{% blocktranslate %}Antenne de {{ antenne }}{% endblocktranslate %}</span>{% endif %}{% if parking %}<span>{% include "components/_icone.html" with nom="square-parking" classe="" %}{{ parking }}</span>{% endif %}{% if association %}<span>{% include "components/_icone.html" with nom="building-2" classe="" %}{{ association }}</span>{% endif %}</div>{% endif %}
+    <div class="dossier-etat">{% include "components/_badge_etat.html" with etat=etat change=False %}{% if qualite %}<span class="petit">{{ qualite }}</span>{% endif %}{% if attente %}<span class="dossier-attente{% if attente_longue %} dossier-attente--longue{% endif %}">{% blocktranslate %}en attente depuis {{ attente }}{% endblocktranslate %}</span>{% endif %}</div>
+    {% if motif %}<p class="dossier-motif"><strong>{% translate "Motif du renvoi :" %}</strong> {{ motif }}</p>{% endif %}
+  </div>
+  {% if url_valider or url_renvoyer or url_corriger %}<div class="dossier-actions">
+    {% if url_corriger %}<button type="button" class="bouton bouton--principal" hx-get="{{ url_corriger }}" hx-target="#modale-contenu" hx-disabled-elt="this"><span class="roue" aria-hidden="true"></span>{% include "components/_icone.html" with nom="square-pen" classe="" %}{% translate "Corriger le dossier" %}</button>{% endif %}
+    {% if url_valider %}<button type="button" class="bouton bouton--valider" hx-post="{{ url_valider }}" hx-target="closest .dossier" hx-swap="outerHTML swap:900ms" hx-disabled-elt="this"><span class="roue" aria-hidden="true"></span>{% include "components/_icone.html" with nom="check" classe="" %}{% translate "Valider" %}</button>{% endif %}
+    {% if url_renvoyer %}<button type="button" class="bouton bouton--danger" hx-get="{{ url_renvoyer }}" hx-target="#modale-contenu" hx-disabled-elt="this"><span class="roue" aria-hidden="true"></span>{% include "components/_icone.html" with nom="undo-2" classe="" %}{% translate "Renvoyer" %}</button>{% endif %}
+  </div>{% endif %}
+</li>

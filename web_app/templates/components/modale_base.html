@@ -1,0 +1,29 @@
+{% comment %}
+Gabarit d'un fragment de modale (formulaire chargé par HTMX dans #modale-contenu, voir docs/design/systeme-de-design.md § Modale).
+Le fragment hérite : {% extends "components/modale_base.html" %} et remplit :
+  titre       verbe + objet : « Enregistrer un membre », « Renvoyer à l'antenne »
+  sous_titre  contexte : nom et identifiant du dossier (facultatif)
+  etapes      facultatif : <div class="etapes" aria-hidden="true"><span class="fait"></span><span></span><span></span></div>
+  corps       les champs (components/_champ.html) dans <div class="formulaire">
+  pied        Annuler (secondaire, data-ferme-modale) puis l'action (principal, valider ou danger-plein), dans cet ordre
+Variables : action (URL du POST, obligatoire), large=True (840 px, deux colonnes).
+Comportement : téléphone = feuille plein écran qui monte du bas ; dès 576 px = boîte centrée.
+Erreur : la vue renvoie ce fragment (statut 422), il remplace le formulaire dans la modale restée ouverte, la saisie est conservée.
+Succès : statut 204 + HX-Trigger {"toast": {"message": "...", "niveau": "success"}, "modaleFermer": true} + rafraîchissement de la zone.
+{% endcomment %}{% load i18n %}<form class="feuille{% if large %} feuille--large{% endif %}" method="post" action="{{ action }}" hx-post="{{ action }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find [type=submit]" novalidate>
+  {% csrf_token %}
+  <div class="feuille-tete">
+    <h2 id="modale-titre">{% block titre %}{% endblock %}<span class="sous-titre">{% block sous_titre %}{% endblock %}</span></h2>
+    <button type="button" class="bouton-icone" data-ferme-modale aria-label="{% translate 'Fermer' %}">{% include "components/_icone.html" with nom="x" classe="" %}</button>
+  </div>
+  {% block etapes %}{% endblock %}
+  <div class="feuille-corps">
+    <div class="formulaire">
+      {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+      {% block corps %}{% endblock %}
+    </div>
+  </div>
+  <div class="feuille-pied">
+    {% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button>{% endblock %}
+  </div>
+</form>

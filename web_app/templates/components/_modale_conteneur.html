@@ -1,0 +1,10 @@
+{% comment %}
+Conteneur unique de la modale commune, inclus une fois dans base.html juste avant </body>.
+HTMX charge un fragment (hérité de components/modale_base.html) dans #modale-contenu ; fenamo.js appelle alors
+FenamoDesign.ouvrirModale('#modale'). L'événement « modaleFermer » (HX-Trigger) appelle FenamoDesign.fermerModale('#modale').
+Pendant le chargement du fragment, #modale-contenu affiche components/_squelette.html avec variante="modale".
+Usage : {% include "components/_modale_conteneur.html" %}
+{% endcomment %}<div class="modale" id="modale" role="dialog" aria-modal="true" aria-labelledby="modale-titre" hidden>
+  <div class="modale-voile"></div>
+  <div class="modale-contenu" id="modale-contenu"></div>
+</div>

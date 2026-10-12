@@ -1,0 +1,7 @@
+{% comment %}
+Icône du sprite (static/img/icons.svg : Lucide ISC + « tricycle » maison).
+Paramètres : nom (obligatoire, sans le préfixe « i- ») ; classe (facultatif : « ic--petite », « ic--grande »).
+Décorative : le texte voisin porte le sens. Bouton sans texte : aria-label sur le bouton.
+Usage : {% include "components/_icone.html" with nom="check" %}
+Équivalent : la balise {% icone "check" %} (fenamo/balises.py) produit le même balisage.
+{% endcomment %}{% load static %}<svg class="ic{% if classe %} {{ classe }}{% endif %}" aria-hidden="true" focusable="false"><use href="{% static 'img/icons.svg' %}#i-{{ nom }}"></use></svg>

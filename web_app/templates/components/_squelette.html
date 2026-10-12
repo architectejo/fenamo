@@ -1,0 +1,12 @@
+{% comment %}
+Squelettes de chargement, affichés pendant une requête HTMX lente (3G). Reflet animé, figé si prefers-reduced-motion.
+Paramètres :
+  variante  "lignes" (défaut : cartes de liste / file) | "chiffres" (tableau d'affichage) | "modale" (formulaire en cours de chargement)
+  nombre    nombre de lignes pour "lignes" (défaut 3, maximum 9)
+Règle : un squelette seulement si la réponse tarde (au-delà de 300 ms) ; sinon la zone pâlit (.zone-rafraichie) et c'est tout.
+La variante "modale" est un .feuille complet : elle se place directement dans #modale-contenu.
+Usage : {% include "components/_squelette.html" with variante="lignes" nombre=4 %}
+{% endcomment %}{% load i18n %}{% if variante == "modale" %}<div class="feuille" role="status" aria-label="{% translate 'Chargement…' %}"><div class="feuille-tete"><span class="squelette squelette--titre"></span></div><div class="feuille-corps pile"><span class="squelette squelette--champ"></span><span class="squelette squelette--champ"></span><span class="squelette squelette--champ"></span></div></div>{% else %}<div class="pile-serree" role="status" aria-label="{% translate 'Chargement…' %}">
+{% if variante == "chiffres" %}<div class="affichage"><div><span class="squelette squelette--chiffre"></span></div><div><span class="squelette squelette--chiffre"></span></div><div><span class="squelette squelette--chiffre"></span></div><div><span class="squelette squelette--chiffre"></span></div></div>
+{% else %}{% with n=nombre|default:3 %}{% for i in "123456789"|make_list|slice:n %}<span class="squelette squelette--ligne"></span>{% endfor %}{% endwith %}{% endif %}
+</div>{% endif %}

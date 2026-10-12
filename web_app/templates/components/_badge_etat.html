@@ -1,0 +1,8 @@
+{% comment %}
+Badge d'état du circuit de validation : texte + pastilles (jamais la couleur seule).
+Paramètre : etat = "saisi" | "valide-antenne" | "valide-province" | "actif" | "renvoye" | "a-renouveler" | "supprime"
+  Les trois pastilles comptent les validations obtenues (antenne, province, national).
+  Renvoyé, à renouveler et supprimé portent une icône à la place des pastilles.
+Facultatif : change=True ajoute l'animation « tampon » (fragment renvoyé juste après une validation).
+Usage : {% include "components/_badge_etat.html" with etat=membre.etat %}
+{% endcomment %}{% load i18n %}<span class="etat etat--{{ etat }}{% if change %} change{% endif %}">{% if etat == "renvoye" %}{% include "components/_icone.html" with nom="undo-2" classe="" %}{% translate "Renvoyé" %}{% elif etat == "a-renouveler" %}{% include "components/_icone.html" with nom="clock" classe="" %}{% translate "À renouveler" %}{% elif etat == "supprime" %}{% include "components/_icone.html" with nom="trash-2" classe="" %}{% translate "Supprimé" %}{% else %}<span class="etat-pastilles" aria-hidden="true"><i{% if etat == "valide-antenne" or etat == "valide-province" or etat == "actif" %} class="plein"{% endif %}></i><i{% if etat == "valide-province" or etat == "actif" %} class="plein"{% endif %}></i><i{% if etat == "actif" %} class="plein"{% endif %}></i></span>{% if etat == "valide-antenne" %}{% translate "Validé antenne" %}{% elif etat == "valide-province" %}{% translate "Validé province" %}{% elif etat == "actif" %}{% translate "Actif" %}{% else %}{% translate "Saisi" %}{% endif %}{% endif %}</span>

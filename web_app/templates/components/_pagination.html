@@ -1,0 +1,18 @@
+{% comment %}
+Pagination (25 lignes par défaut, cahier des charges § 8). Conserve les filtres de l'adresse grâce à {% querystring %} (Django 5.1+).
+Paramètres :
+  page_obj   objet Page de Django (obligatoire)
+  cible      hx-target de la zone de résultats (ex. "#resultats") ; sans cible, liens classiques (hx-boost)
+  precedent, suivant   libellés (défaut « Précédent » / « Suivant » ; journal : « Plus récent » / « Plus ancien »)
+Téléphone : boutons + « Page 2 sur 14 » (libellés masqués visuellement sous 420 px) ; dès 768 px : numéros de page.
+Usage : {% include "components/_pagination.html" with page_obj=page_obj cible="#resultats" %}
+{% endcomment %}{% load i18n %}{% if page_obj.paginator.num_pages > 1 %}<nav class="pages" aria-label="{% translate 'Pagination' %}">
+  {% if page_obj.has_previous %}<a class="bouton" href="{% querystring page=page_obj.previous_page_number %}"{% if cible %} hx-get="{% querystring page=page_obj.previous_page_number %}" hx-target="{{ cible }}" hx-push-url="true"{% endif %} aria-label="{% translate 'Page précédente' %}">{% include "components/_icone.html" with nom="chevron-left" classe="" %}<span class="pages-libelle">{{ precedent|default:_("Précédent") }}</span></a>
+  {% else %}<span class="bouton" aria-disabled="true">{% include "components/_icone.html" with nom="chevron-left" classe="" %}<span class="pages-libelle">{{ precedent|default:_("Précédent") }}</span></span>{% endif %}
+  <span class="pages-position">{% blocktranslate with n=page_obj.number total=page_obj.paginator.num_pages %}Page {{ n }} sur {{ total }}{% endblocktranslate %}</span>
+  <ol class="pages-numeros">
+    {% for n in page_obj.paginator.get_elided_page_range %}{% if n == page_obj.number %}<li><span aria-current="page">{{ n }}</span></li>{% elif n == page_obj.paginator.ELLIPSIS %}<li><span aria-hidden="true">…</span></li>{% else %}<li><a href="{% querystring page=n %}"{% if cible %} hx-get="{% querystring page=n %}" hx-target="{{ cible }}" hx-push-url="true"{% endif %}>{{ n }}</a></li>{% endif %}{% endfor %}
+  </ol>
+  {% if page_obj.has_next %}<a class="bouton" href="{% querystring page=page_obj.next_page_number %}"{% if cible %} hx-get="{% querystring page=page_obj.next_page_number %}" hx-target="{{ cible }}" hx-push-url="true"{% endif %} aria-label="{% translate 'Page suivante' %}"><span class="pages-libelle">{{ suivant|default:_("Suivant") }}</span>{% include "components/_icone.html" with nom="chevron-right" classe="" %}</a>
+  {% else %}<span class="bouton" aria-disabled="true"><span class="pages-libelle">{{ suivant|default:_("Suivant") }}</span>{% include "components/_icone.html" with nom="chevron-right" classe="" %}</span>{% endif %}
+</nav>{% endif %}

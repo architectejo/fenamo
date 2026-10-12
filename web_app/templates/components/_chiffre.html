@@ -1,0 +1,16 @@
+{% comment %}
+Chiffre clé du tableau d'affichage (pas de carte, pas d'icône : le chiffre est l'élément visuel).
+À placer dans <div class="affichage"> (2 colonnes sur téléphone, 4 dès 768 px), 4 chiffres au plus.
+Paramètres :
+  valeur    entier (obligatoire) ; affiché formaté et animé de 0 à la valeur au premier affichage (data-compteur)
+  libelle   « Membres actifs »
+  ecart     « +1 204 ce mois » (facultatif) ; baisse=True le passe en rouge avec la flèche descendante
+  detail    une ligne grise (« 29 118 motos · 2 786 tricycles ») ; ou lien_url + lien_libelle
+Usage : {% include "components/_chiffre.html" with valeur=stats.membres_actifs libelle=_("Membres actifs") ecart=stats.ecart_mois %}
+{% endcomment %}<div>
+  <span class="chiffre-valeur" data-compteur="{{ valeur }}">{{ valeur|floatformat:"g" }}</span>
+  <span class="chiffre-libelle">{{ libelle }}</span>
+  {% if ecart %}<span class="chiffre-ecart{% if baisse %} chiffre-ecart--baisse{% endif %}">{% include "components/_icone.html" with nom=baisse|yesno:"trending-down,trending-up" classe="ic--petite" %}{{ ecart }}</span>{% endif %}
+  {% if detail %}<span class="meta">{{ detail }}</span>{% endif %}
+  {% if lien_url %}<a class="petit" href="{{ lien_url }}">{{ lien_libelle }}</a>{% endif %}
+</div>

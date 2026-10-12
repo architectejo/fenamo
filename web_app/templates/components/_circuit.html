@@ -1,0 +1,10 @@
+{% comment %}
+Circuit de validation détaillé (fiche membre, fiche engin, fiche association membre) : quatre étapes.
+Paramètre : etapes = liste de 4 dictionnaires {libelle, statut, quand}, préparée par la vue à partir de l'historique :
+  statut = "fait" (vert) | "courant" (jaune : le dossier attend ici) | "renvoi" (rouge) | "" (à venir)
+  quand  = « 10/10 · Lemba », « en attente », « national »
+Le badge d'état reste affiché à côté du nom ; ce composant détaille seulement qui a validé et quand.
+Usage : {% include "components/_circuit.html" with etapes=circuit %}
+{% endcomment %}{% load i18n %}<ol class="circuit" aria-label="{% translate 'Circuit de validation' %}">
+  {% for e in etapes %}<li{% if e.statut %} class="{{ e.statut }}"{% endif %}{% if e.statut == "courant" %} aria-current="step"{% endif %}>{{ e.libelle }}<span class="quand">{{ e.quand }}</span></li>{% endfor %}
+</ol>

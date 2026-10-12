@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Connexion · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+</head>
+<body>
+<main class="porte">
+  <section class="porte-visuel" aria-hidden="true">
+    <img class="porte-logo" src="../../../static/img/logo-160.webp" width="96" height="96" alt="">
+    <p class="devise"><span>Unité,</span><span>Discipline</span><span>et Progrès</span></p>
+    <p class="meta" style="color:inherit;opacity:.75">Fédération nationale des associations des motocyclistes taximen de la RDC</p>
+  </section>
+  <div class="porte-cadre">
+    <div class="porte-entete porte-entete--mobile">
+      <img src="../../../static/img/logo-160.webp" width="56" height="56" alt="Logo de la FENAMO-RDC">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+    </div>
+    <h1 style="font-size:var(--t-5)">Connexion à l'espace de gestion</h1>
+    <p class="doux" style="margin-top:var(--e-2)">Utilisez l'identifiant reçu lors de votre nomination.</p>
+    <div class="alerte alerte--danger" role="alert" style="margin:var(--e-5) 0 0" data-demo-erreur hidden>
+      <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg><div><strong class="alerte-titre">Identifiant ou mot de passe incorrect.</strong>Vérifiez la saisie. Après 5 essais, la connexion est bloquée 15 minutes.</div>
+    </div>
+    <form class="formulaire" style="margin-top:var(--e-6)" data-demo-connexion novalidate>
+      <div class="champ">
+        <label class="champ-libelle" for="identifiant">Identifiant</label>
+        <input class="champ-saisie" id="identifiant" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" value="gmbombo">
+      </div>
+      <div class="champ">
+        <label class="champ-libelle" for="mdp">Mot de passe</label>
+        <div class="champ-mdp">
+          <input class="champ-saisie" id="mdp" name="password" type="password" autocomplete="current-password" value="motdepasse">
+          <button type="button" class="bouton-icone" data-demo-voir-mdp aria-label="Afficher le mot de passe" aria-pressed="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-eye"></use></svg></button>
+        </div>
+      </div>
+      <button class="bouton bouton--principal bouton--bloc" type="submit"><span class="roue" aria-hidden="true"></span>Se connecter</button>
+      <p class="petit doux" style="margin:0">Mot de passe oublié ? Demandez une réinitialisation à la personne qui vous a nommé.</p>
+    </form>
+    <p class="meta" style="margin-top:var(--e-8)">FENAMO-RDC asbl · app.fenamordc.cd</p>
+  </div>
+</main>
+<div class="bulles" aria-live="polite"></div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+</body>
+</html>

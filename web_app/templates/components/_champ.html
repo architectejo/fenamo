@@ -1,0 +1,16 @@
+{% comment %}
+Champ de formulaire Django : libellé, widget, aide, erreur. Dans <div class="formulaire"> (ou .formulaire-ligne : deux colonnes dès 576 px).
+Paramètres :
+  champ       BoundField (obligatoire)
+  prefixe     texte fixe avant la saisie (ex. "+243")
+  facultatif  True : ajoute « (facultatif) » au libellé. On marque l'exception, pas la règle : pas d'astérisques.
+Le widget est rendu tel quel ({{ champ }}) : app.css lui donne l'apparence .champ-saisie ; Django 5.2 pose aria-invalid et aria-describedby.
+Erreur : dire quoi faire (« Saisissez 9 chiffres après +243 »), sans s'excuser.
+Tuiles de choix (moto / tricycle, motard / propriétaire) : balisage .choix du catalogue, écrit dans le fragment.
+Usage : {% include "components/_champ.html" with champ=form.telephone prefixe="+243" %}
+{% endcomment %}{% load i18n %}<div class="champ{% if champ.errors %} champ--erreur{% endif %}">
+  <label class="champ-libelle" for="{{ champ.id_for_label }}">{{ champ.label }}{% if facultatif %} <span class="facultatif">({% translate "facultatif" %})</span>{% endif %}</label>
+  {% if prefixe %}<div class="champ-prefixe"><span>{{ prefixe }}</span>{{ champ }}</div>{% else %}{{ champ }}{% endif %}
+  {% if champ.help_text %}<p class="champ-aide" id="{{ champ.auto_id }}_helptext">{{ champ.help_text }}</p>{% endif %}
+  {% for erreur in champ.errors %}<p class="champ-erreur" id="{{ champ.auto_id }}_error">{% include "components/_icone.html" with nom="circle-alert" classe="" %}{{ erreur }}</p>{% endfor %}
+</div>

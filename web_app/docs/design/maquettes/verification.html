@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Vérification de carte · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+</head>
+<body>
+<main class="contenu" style="padding-bottom:var(--e-8)">
+  <div class="verif">
+    <div class="porte-entete rangee" style="margin-bottom:var(--e-6);flex-wrap:nowrap">
+      <img src="../../../static/img/logo-160.webp" width="48" height="48" alt="Logo de la FENAMO-RDC">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Vérification d'une carte de membre</div></div>
+      <button type="button" class="bouton-icone pousse" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+    </div>
+    <section data-demo-verif="valide">
+      <h1 class="verif-verdict verif-verdict--valide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg><span>Carte valide<span style="display:block;font-size:var(--t-3);font-weight:var(--graisse-normale)">Membre actif, identification 2026 à jour</span></span></h1>
+      <div class="verif-corps">
+        <div class="carte-membre-photo" style="font-size:var(--t-6)">HM</div>
+        <dl class="definitions">
+          <div><dt>Nom</dt><dd>Mukendi Kasongo Héritier</dd></div>
+          <div><dt>Identifiant</dt><dd class="ident" style="font-size:var(--t-5)">MBR0004127</dd></div>
+          <div><dt>Gilet</dt><dd class="ident" style="font-size:var(--t-5)">0457</dd></div>
+          <div><dt>Valide jusqu'au</dt><dd>31/12/2026</dd></div>
+          <div><dt>Coordination</dt><dd>Kinshasa-Est · antenne de Lemba</dd></div>
+        </dl>
+      </div>
+      <h2 style="font-size:var(--t-4);margin:var(--e-6) 0 var(--e-3)">Engin rattaché</h2>
+      <p class="rangee"><span class="plaque plaque--grande" aria-label="Engin n° 00147 KN-E"><span class="plaque-numero">00147</span><span class="plaque-code">KN-E</span></span><span>Moto · TVS HLX 125 · rouge</span></p>
+    </section>
+    <section data-demo-verif="invalide" hidden>
+      <h1 class="verif-verdict verif-verdict--invalide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-x"></use></svg><span>Carte non valide<span style="display:block;font-size:var(--t-3);font-weight:var(--graisse-normale)">Identification 2026 non renouvelée</span></span></h1>
+      <div class="verif-corps">
+        <div class="carte-membre-photo" style="font-size:var(--t-6)">ON</div>
+        <dl class="definitions">
+          <div><dt>Nom</dt><dd>Ngandu Kapinga Olivier</dd></div>
+          <div><dt>Identifiant</dt><dd class="ident" style="font-size:var(--t-5)">MBR0002871</dd></div>
+          <div><dt>Dernière validité</dt><dd>31/12/2025</dd></div>
+        </dl>
+      </div>
+      <p style="margin-top:var(--e-4)">Le membre doit renouveler son identification auprès de l'antenne de Masina.</p>
+    </section>
+    <p class="meta" style="margin-top:var(--e-7)">Cette page n'affiche ni adresse, ni téléphone, ni autre donnée personnelle. Vérifié le 12/10/2026 à 10:21.</p>
+    <p class="rangee" style="margin-top:var(--e-3)"><button class="bouton bouton--petit" type="button" data-demo-basculer-verif>Voir le cas « carte non valide »</button></p>
+  </div>
+</main>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+</body>
+</html>

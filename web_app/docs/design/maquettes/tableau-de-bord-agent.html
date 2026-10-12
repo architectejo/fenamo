@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Tableau de bord · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="tableau-de-bord-agent.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clipboard-list"></use></svg><span>Mes dossiers</span><span class="nombre" data-demo-compte>3</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-timer-reset"></use></svg><span>Identifications à renouveler</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme" data-theme-basculer style="border:0;background:none;width:calc(100% - var(--e-6));margin:0 var(--e-3) var(--e-2);cursor:pointer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Agent de terrain</span><strong>Antenne de Lemba · parking Rond-point Ngaba</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="#"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche" data-demo-recherche>
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg>
+        <label class="lecteur" for="recherche-globale">Rechercher</label>
+        <input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off">
+        <div class="recherche-resultats" role="listbox" hidden>
+          <a href="fiche-membre.html" role="option"><span class="avatar avatar--petit" aria-hidden="true">HK</span><span><strong><mark>Muk</mark>endi Kasongo Héritier</strong><span class="meta"> MBR0004127 · Lemba</span></span></a>
+          <a href="fiche-membre.html" role="option"><span class="avatar avatar--petit" aria-hidden="true">NB</span><span><strong><mark>Muk</mark>oko Bena Nathalie</strong><span class="meta"> MBR0003981 · Matete</span></span></a>
+          <a href="#" role="option"><span class="avatar avatar--petit"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg></span><span><span class="plaque " aria-label="Engin n° 00147 KN-E"><span class="plaque-numero">00147</span><span class="plaque-code">KN-E</span></span> <span class="meta">propr. <mark>Muk</mark>endi</span></span></a>
+        </div>
+      </div>
+      <div class="rangee pousse" style="flex-wrap:nowrap;gap:var(--e-1)">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <div style="position:relative" data-demo-notifs>
+          <button type="button" class="bouton-icone" aria-label="Notifications, 3 non lues" aria-expanded="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille">3</span></button>
+          <div class="flottant" hidden>
+            <div class="panneau-tete" style="padding-bottom:var(--e-3)"><h2>Notifications</h2><button class="bouton bouton--discret bouton--petit pousse">Tout marquer comme lu</button></div>
+            <a class="notif non-lue" href="#"><span class="avatar avatar--petit" aria-hidden="true">GT</span><span><strong>Grâce Mbombo</strong> a saisi 4 membres à Lemba<span class="meta" style="display:block">il y a 12 min</span></span></a>
+            <a class="notif non-lue" href="#"><span class="avatar avatar--petit"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg></span><span>Dossier <span class="ident">MBR0003902</span> renvoyé par la coordination<span class="meta" style="display:block">il y a 1 h</span></span></a>
+            <a class="notif" href="#"><span class="avatar avatar--petit"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg></span><span>Nouvelle demande d'adhésion : <strong>AMOTAK asbl</strong><span class="meta" style="display:block">hier, 16:40</span></span></a>
+            <div class="panneau-pied"><a href="#">Voir toutes les notifications</a></div>
+          </div>
+        </div>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar " aria-hidden="true">GT</span><span class="profil-texte"><strong>Grâce Mbombo</strong><span class="meta" style="display:block">Agent de terrain</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">Bonjour Grâce</h1>
+    <p class="page-contexte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Lemba · parking Rond-point Ngaba</p>
+  </div>
+</div>
+
+<div class="grille grille--2">
+  <a class="bouton bouton--principal bouton--bloc" href="modale-enregistrer-membre.html" style="min-height:64px;font-size:var(--t-4)"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-plus"></use></svg>Enregistrer un membre</a>
+  <a class="bouton bouton--bloc" href="#" style="min-height:64px;font-size:var(--t-4)"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg>Enregistrer un engin</a>
+</div>
+
+<div class="alerte alerte--danger" style="margin-top:var(--e-6)">
+  <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg><div><strong class="alerte-titre">3 dossiers vous ont été renvoyés.</strong>Corrigez-les pour qu'ils repartent vers l'antenne.</div>
+</div>
+
+<h2 class="lecteur">Mes saisies</h2>
+<div class="affichage" style="margin-top:var(--e-6)">
+  <div><span class="chiffre-valeur" data-compteur="17">17</span><span class="chiffre-libelle">Saisis cette semaine</span></div>
+  <div><span class="chiffre-valeur" data-compteur="11">11</span><span class="chiffre-libelle">Validés par l'antenne</span></div>
+  <div><span class="chiffre-valeur">3</span><span class="chiffre-libelle">Renvoyés</span></div>
+  <div><span class="chiffre-valeur">5</span><span class="chiffre-libelle">Identifications à renouveler</span></div>
+</div>
+
+<section style="margin-top:var(--e-7)">
+  <div class="rangee" style="margin-bottom:var(--e-3)"><h2 style="font-size:var(--t-4)">Mes derniers dossiers</h2><a class="pousse petit" href="#">Tout voir</a></div>
+  <ul class="file"><li class="dossier"><span class="avatar " aria-hidden="true">BK</span><div><div class="dossier-titre"><a href="fiche-membre.html">Bienvenu Tshimanga Kazadi</a><span class="ident doux">MBR0004188</span></div><div class="dossier-etat"><span class="etat etat--renvoye"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-undo-2"></use></svg>Renvoyé</span><span class="dossier-attente">saisi le 10/10/2026</span></div><p class="dossier-motif"><strong>Motif du renvoi :</strong> Photo floue : reprendre la photo de face, sans casque.</p></div><div class="dossier-actions"><a class="bouton bouton--principal" href="#" data-ouvre-modale="#modale-membre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-pen"></use></svg>Corriger le dossier</a></div></li><li class="dossier"><span class="avatar " aria-hidden="true">RK</span><div><div class="dossier-titre"><a href="fiche-membre.html">Rodrigue Mbala Kiese</a><span class="ident doux">MBR0004186</span></div><div class="dossier-etat"><span class="etat etat--saisi"><span class="etat-pastilles" aria-hidden="true"><i class=""></i><i class=""></i><i class=""></i></span>Saisi</span><span class="dossier-attente">saisi le 10/10/2026</span></div></div></li><li class="dossier"><span class="avatar " aria-hidden="true">CM</span><div><div class="dossier-titre"><a href="fiche-membre.html">Christelle Nzuzi Makiese</a><span class="ident doux">MBR0004181</span></div><div class="dossier-etat"><span class="etat etat--valide-antenne"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class=""></i><i class=""></i></span>Validé antenne</span><span class="dossier-attente">saisi le 10/10/2026</span></div></div></li><li class="dossier"><span class="avatar " aria-hidden="true">PM</span><div><div class="dossier-titre"><a href="fiche-membre.html">Papy Makaba Mpia</a><span class="ident doux">MBR0004175</span></div><div class="dossier-etat"><span class="etat etat--actif"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i class="plein"></i></span>Actif</span><span class="dossier-attente">saisi le 10/10/2026</span></div></div></li></ul>
+</section>
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="tableau-de-bord-agent.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clipboard-list"></use></svg><span>Mes dossiers</span><span class="compteur-pastille" data-demo-compte>3</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+<div class="bulles" aria-live="polite"></div>
+<div class="modale" id="modale-membre" role="dialog" aria-modal="true" aria-labelledby="membre-titre" hidden data-demo-etapes>
+  <div class="modale-voile"></div>
+  <form class="feuille feuille--large" novalidate>
+    <div class="feuille-tete">
+      <h2 id="membre-titre">Enregistrer un membre<span class="sous-titre" data-demo-etape-libelle>Étape 1 sur 3 · Identité</span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="etapes" aria-hidden="true"><span class="fait"></span><span></span><span></span></div>
+    <div class="feuille-corps">
+      <div class="formulaire etape-panneau" data-etape="1">
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="nom">Nom</label><input class="champ-saisie" id="nom" value="Mukendi" autocomplete="family-name"></div>
+          <div class="champ"><label class="champ-libelle" for="postnom">Postnom</label><input class="champ-saisie" id="postnom" value="Kasongo"></div>
+        </div>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="prenom">Prénom</label><input class="champ-saisie" id="prenom" value="Héritier" autocomplete="given-name"></div>
+          <div class="champ"><label class="champ-libelle" for="naissance">Date de naissance</label><input class="champ-saisie" id="naissance" inputmode="numeric" placeholder="JJ/MM/AAAA" value="14/03/1994"></div>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle" style="font-size:var(--t-3)">Sexe</legend>
+          <div class="choix">
+            <label><input type="radio" name="sexe" checked>Masculin<span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="sexe">Féminin<span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+          </div>
+        </fieldset>
+        <div class="champ champ--erreur">
+          <label class="champ-libelle" for="tel">Téléphone</label>
+          <div class="champ-prefixe"><span>+243</span><input class="champ-saisie" id="tel" type="tel" inputmode="tel" value="81 234 567" aria-invalid="true" aria-describedby="tel-erreur" autocomplete="tel-national"></div>
+          <p class="champ-erreur" id="tel-erreur"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Saisissez 9 chiffres après +243, par exemple 812 345 678.</p>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle" style="font-size:var(--t-3)">Qualité <span class="facultatif">(une ou deux)</span></legend>
+          <div class="choix">
+            <label><input type="checkbox" checked><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Motard<span class="choix-sous">conduit un engin</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="checkbox"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span>Propriétaire<span class="choix-sous">possède un engin</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+          </div>
+        </fieldset>
+      </div>
+      <div class="formulaire etape-panneau" data-etape="2" hidden>
+        <div class="champ"><label class="champ-libelle" for="antenne">Antenne</label><select class="champ-saisie" id="antenne"><option>Lemba</option><option>Limete</option><option>Matete</option><option>Ngaba</option><option>Kisenso</option></select></div>
+        <div class="champ"><label class="champ-libelle" for="parking">Parking <span class="facultatif">(facultatif)</span></label><select class="champ-saisie" id="parking"><option>Rond-point Ngaba · KN-E-LEM-014</option><option>Université · KN-E-LEM-003</option></select><p class="champ-aide">Le parking habituel du motard.</p></div>
+        <div class="champ"><label class="champ-libelle" for="asso">Association membre</label><select class="champ-saisie" id="asso"><option>ALEMO asbl</option><option>LITATSHA asbl</option><option>AMOTSHA asbl</option></select></div>
+        <div class="alerte alerte--alerte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-triangle-alert"></use></svg><div><strong class="alerte-titre">Doublon possible.</strong>Un membre « Mukendi Kasongo », né le 14/03/1994, existe déjà à Matete (<span class="ident">MBR0001812</span>). Vérifiez avant de continuer.</div></div>
+      </div>
+      <div class="formulaire etape-panneau" data-etape="3" hidden>
+        <div class="champ"><span class="champ-libelle">Photo de face</span>
+          <label class="depot"><span class="depot-apercu" data-demo-apercu><svg class="ic ic--grande" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-camera"></use></svg></span><span><strong>Prendre ou choisir une photo</strong><span class="champ-aide" style="display:block">JPG ou PNG. Visage visible, sans casque.</span></span><input type="file" accept="image/*" capture="environment" class="lecteur" data-demo-photo></label>
+        </div>
+        <div class="champ"><span class="champ-libelle">Pièces jointes</span>
+          <label class="case"><input type="checkbox" checked>Pièce d'identité <span class="doux">· carte d'électeur, recto</span></label>
+          <label class="case"><input type="checkbox">Jeton de résidence signé par le chef d'avenue et de quartier</label>
+          <label class="case"><input type="checkbox" checked>Permis de conduire</label>
+        </div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-demo-precedent>Annuler</button>
+      <button type="button" class="bouton bouton--principal" data-demo-suivant><span class="roue" aria-hidden="true"></span>Continuer</button>
+    </div>
+  </form>
+</div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+</body>
+</html>

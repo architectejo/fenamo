@@ -1,0 +1,19 @@
+{% comment %}
+Bouton (ou lien d'action). Un bouton dit ce qu'il fait : « Valider le membre », jamais « Soumettre ».
+Paramètres :
+  libelle    texte (obligatoire, traduit par l'appelant : with libelle=_("Valider le membre"))
+  variante   "" (secondaire, défaut) | "principal" | "valider" | "danger" | "danger-plein" | "discret"
+  icone      nom d'icône à gauche (facultatif)
+  taille     "" | "petit"
+  bloc       True : pleine largeur
+  href       si présent, rend un <a>
+  type       "button" (défaut) | "submit"
+  hx_get, hx_post, hx_target, hx_swap   attributs HTMX (facultatifs)
+  modale     True : la réponse de hx_get va dans la modale commune (#modale-contenu)
+  etiquette  aria-label si le libellé seul est ambigu (facultatif)
+Pendant la requête : hx-disabled-elt="this" désactive le bouton, .htmx-request affiche la roue à la place de l'icône.
+Règles : un seul « principal » par zone ; « valider » réservé au circuit de validation ; « danger-plein » seulement dans une modale de confirmation.
+Exemples :
+  {% include "components/_bouton.html" with libelle=_("Enregistrer un membre") variante="principal" icone="user-plus" hx_get=url_ajout modale=True %}
+  {% include "components/_bouton.html" with libelle=_("Valider") variante="valider" icone="check" hx_post=url_valider hx_target="closest .dossier" hx_swap="outerHTML" %}
+{% endcomment %}{% if href %}<a href="{{ href }}"{% else %}<button type="{{ type|default:'button' }}"{% endif %} class="bouton{% if variante %} bouton--{{ variante }}{% endif %}{% if taille %} bouton--{{ taille }}{% endif %}{% if bloc %} bouton--bloc{% endif %}"{% if etiquette %} aria-label="{{ etiquette }}"{% endif %}{% if hx_get %} hx-get="{{ hx_get }}"{% endif %}{% if hx_post %} hx-post="{{ hx_post }}"{% endif %}{% if modale %} hx-target="#modale-contenu" hx-swap="innerHTML"{% elif hx_target %} hx-target="{{ hx_target }}"{% endif %}{% if hx_swap and not modale %} hx-swap="{{ hx_swap }}"{% endif %}{% if hx_get or hx_post %} hx-disabled-elt="this"{% endif %}><span class="roue" aria-hidden="true"></span>{% if icone %}{% include "components/_icone.html" with nom=icone classe="" %}{% endif %}<span>{{ libelle }}</span>{% if href %}</a>{% else %}</button>{% endif %}
