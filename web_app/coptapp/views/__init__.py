@@ -70,38 +70,6 @@ def myNotify(request):
                 data = Notification.objects.filter(user=user, membre=membre).order_by('-id')
     return data
 
-#Securité
-def security(request, id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
-    user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        villeId = userMembre.ville.id
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    user = request.user
-    membre = Membre.objects.get(id=id)
-    
-    
-    user = request.user
-    if request.method == 'POST':
-        if user.username == request.POST['pseudoA']:
-            connecting = authenticate(username=request.POST['pseudoA'], password=request.POST['passA'])
-            if connecting is not None:
-                if request.POST['pseudoN']:
-                    user.username = request.POST['pseudoN']
-                if request.POST['passN']:
-                    user.set_password(request.POST['passN'])
-                user.save()
-                message = 'mise à jour !'
-                classe = 'alert alert-info'
-                logout(request)
-                return redirect("home")
-    return render(request, 'app/membre.html', locals())
-
 #Validation des membres
 @require_POST
 def validate(request, id):

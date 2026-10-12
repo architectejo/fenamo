@@ -53,7 +53,7 @@ def table(j):
         ('deconnexion', {}, '/deconnexion/'),
         ('adminer', {'id': m}, f'/membres/{m}/creer-compte/'),
         ('add-user', {}, '/comptes/ajouter/'),
-        ('delete-user', {}, '/comptes/desactiver/'),
+        ('securite', {}, '/mon-compte/securite/'),
         ('tableau-bord', {}, '/'),
         ('home-session', {}, '/associations/mon-association/'),
         ('structure-admin', {'id': a}, f'/associations/{a}/'),
@@ -116,7 +116,7 @@ def test_adresses_cibles(jeu):
 
 
 NOMS_ECRANS = [
-    'application', 'adminer', 'add-user', 'tableau-bord', 'home-session', 'structure-admin',
+    'application', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'structure-admin',
     'add-structure', 'edit-structure', 'str-list', 'add-province', 'province-view', 'add-ville',
     'ville-view', 'ville-select', 'add-antenne', 'edit-antenne', 'antenne-view', 'liste-membre',
     'add-fenamo-membre', 'add-membre', 'membre-view', 'validate', 'delete-membre', 'view-user',
@@ -139,7 +139,7 @@ def test_chaque_ecran_repond(client, jeu, nom):
 
 def test_deconnexion_et_page_de_suppression(client, jeu):
     client.force_login(jeu['compte'])
-    assert client.get('/comptes/desactiver/').status_code == 200
+    assert client.get('/comptes/desactiver/').status_code == 404
     assert client.get('/deconnexion/').status_code == 405
     assert client.post('/deconnexion/').status_code == 302
 

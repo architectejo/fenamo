@@ -11,3 +11,5 @@ class Compte(AbstractUser, models.Model):
     privilege5 = models.BooleanField(default=False, null=True, blank=True)
     privilege = models.IntegerField(null=True, blank=True)
     editor = models.BooleanField(default=False, null=True, blank=True)
+    # Vrai après création par un super-utilisateur : changement imposé à la première connexion.
+    doit_changer_mot_de_passe = models.BooleanField(default=False)

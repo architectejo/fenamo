@@ -53,6 +53,7 @@ MIDDLEWARE = [
     # Après HtmxSessionMessagesMiddleware : sa redirection vers /connexion/ devient un HX-Redirect en HTMX.
     # Toute vue exige la connexion, sauf celles marquées @login_not_required (connexion, santé, /mob/, /ancien-site/).
     'django.contrib.auth.middleware.LoginRequiredMiddleware',
+    'compte.middleware.ChangementMotDePasseMiddleware',
 ]
 
 ROOT_URLCONF = 'fenamo.urls'

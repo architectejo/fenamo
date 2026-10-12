@@ -62,7 +62,6 @@ urlpatterns = [
     path('motos/<int:id>/attribuer/', attributMoto, name="moto-attribution"),  # <id> = membre (POST seulement)
 
     # Compte, recherche, notifications
-    path('mon-compte/securite/<int:id>/', security, name="security"),
     path('recherche/', recherche, name="recherche"),
     path('notifications/', notificationsView, name="notifys"),
 
