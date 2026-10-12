@@ -44,7 +44,7 @@ def connexion(request):
             return redirect('tableau-bord')
         elif user is None:
             classMessage = 'alert alert-danger'
-            message = "Pseudo ou mot de passe incorrect !"
+            message = _("Pseudo ou mot de passe incorrect !")
     return render(request, 'compte/pages-login.html', locals())
 
 @require_POST
@@ -64,8 +64,9 @@ def add_user(request):
             compte, mdp = creer_compte(
                 form.cleaned_data['username'], form.cleaned_data['email'], auteur=request.user,
             )
-            message = (f"Compte créé. Pseudo : {compte.username} - mot de passe temporaire : {mdp} "
-                       "(affiché une seule fois ; à changer à la première connexion).")
+            message = _("Compte créé. Pseudo : %(pseudo)s - mot de passe temporaire : %(mdp)s "
+                        "(affiché une seule fois ; à changer à la première connexion).") % {
+                'pseudo': compte.username, 'mdp': mdp}
             classe = 'alert alert-success text-center'
             form = AddUserForm()
     else:
@@ -80,6 +81,6 @@ def securite(request, id=None):
     if request.method == 'POST' and form.is_valid():
         changer_mot_de_passe(request.user, form)
         update_session_auth_hash(request, request.user)
-        messages.success(request, "Mot de passe modifié.")
+        messages.success(request, _("Mot de passe modifié."))
         return redirect('tableau-bord')
     return render(request, 'compte/securite.html', {'form': form, 'force': force_changement})

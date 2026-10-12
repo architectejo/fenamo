@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static i18n %}
 
 {% block body %}
 
@@ -82,7 +82,7 @@
                           {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
                             <td scope="col">
                               {% url 'validate' membre.id as url_valider %}
-                              {% include "partials/_bouton_post.html" with url=url_valider libelle="Valider" classe="btn btn-success" %}
+                              {% translate "Valider" as t_libelle %}{% include "partials/_bouton_post.html" with url=url_valider libelle=t_libelle classe="btn btn-success" %}
                             </td>
                           {% endif %}
 

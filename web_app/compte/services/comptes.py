@@ -40,8 +40,8 @@ def creer_compte(username, email='', membre=None, auteur=None, **extra):
         membreId=membre.id if membre else None, doit_changer_mot_de_passe=True, **extra,
     )
     Notification.objects.create(
-        user=auteur, membre=membre, titre='Création de compte',
-        description=f'Compte {compte.username} créé (mot de passe temporaire à changer).',
+        user=auteur, membre=membre, titre=_('Création de compte'),
+        description=_('Compte %(pseudo)s créé (mot de passe temporaire à changer).') % {'pseudo': compte.username},
     )
     return compte, mdp
 

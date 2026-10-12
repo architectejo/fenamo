@@ -102,3 +102,16 @@ def test_F04_compte_cree_par_l_admin_doit_changer_son_mot_de_passe(client, jeu):
         'username': 'par-admin', 'password1': 'Mdp-admin-test-7391', 'password2': 'Mdp-admin-test-7391'})
     assert r.status_code == 302
     assert Compte.objects.get(username='par-admin').doit_changer_mot_de_passe
+
+
+# ------------------------------------------------------------- bouton « Créer le compte »
+
+def test_F04_bouton_creer_le_compte_pour_les_su_seulement(client, jeu):
+    Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
+    url = reverse('membre-view', kwargs={'id': jeu['membre'].id})
+    client.force_login(jeu['compte'])
+    html = client.get(url).content.decode()
+    assert 'Créer le compte' in html and 'Attribuer un rôle' not in html
+    p5 = Compte.objects.create_user('p5', password=MDP, privilege5=True, privilege3=True)
+    client.force_login(p5)
+    assert 'Créer le compte' not in client.get(url).content.decode()

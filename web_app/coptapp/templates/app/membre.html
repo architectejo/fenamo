@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static i18n %}
 
 {% block body %}
 
@@ -110,10 +110,8 @@
                         {% endif %}
                         <h2>{{membre.nom}}</h2>
                         {% if not membre.is_user %}
-                        {% if user.is_superuser or user.privilege5 %}
-                        {% url 'adminer' membre.id as url_adminer %}{% include "partials/_bouton_post.html" with url=url_adminer libelle="Attribuer un rôle" classe="btn btn-light" %}
-                        {% elif membre.structure == structure and user.privilege3 %}
-                        {% url 'adminer' membre.id as url_adminer %}{% include "partials/_bouton_post.html" with url=url_adminer libelle="Attribuer un rôle" classe="btn btn-light" %}
+                        {% if user.is_superuser %}
+                        {% translate "Créer le compte" as libelle_compte %}{% url 'adminer' membre.id as url_adminer %}{% include "partials/_bouton_post.html" with url=url_adminer libelle=libelle_compte classe="btn btn-light" %}
                         {% endif %}
                         {% endif %}
                         {% if membre.is_user and user.is_authenticated %}
@@ -292,10 +290,10 @@
                       <div class="col-lg-9 col-md-8">
                         {% if membre.is_delete %}
                         {% url 'delete-membre' membre.id as url_suppr %}
-                        {% include "partials/_bouton_confirmer.html" with prefixe="membre" ident=membre.id url=url_suppr libelle="Désactiver le processus de suppression" titre="Suppression du membre" message="Désactiver le processus de suppression de ce membre ?" libelle_envoi="Confirmer" %}
+                        {% translate "Désactiver le processus de suppression" as t_libelle %}{% translate "Suppression du membre" as t_titre %}{% translate "Désactiver le processus de suppression de ce membre ?" as t_message %}{% translate "Confirmer" as t_libelle_envoi %}{% include "partials/_bouton_confirmer.html" with prefixe="membre" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_libelle_envoi %}
                         {% else %}
                         {% url 'delete-membre' membre.id as url_suppr %}
-                        {% include "partials/_bouton_confirmer.html" with prefixe="membre" ident=membre.id url=url_suppr libelle="Demande de suppression" titre="Suppression du membre" message="Envoyer la demande de suppression de ce membre ?" libelle_envoi="Envoyer la demande" %}
+                        {% translate "Demande de suppression" as t_libelle %}{% translate "Suppression du membre" as t_titre %}{% translate "Envoyer la demande de suppression de ce membre ?" as t_message %}{% translate "Envoyer la demande" as t_libelle_envoi %}{% include "partials/_bouton_confirmer.html" with prefixe="membre" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_libelle_envoi %}
                         {% endif %}
                       </div>
                     </div>
@@ -722,7 +720,7 @@
                             <a href="{% url 'edit-moto' moto.id %}" class="btn btn-primary btn-sm"
                               title="Upload new profile image"><i class="bi bi-upload"></i></a>
                             {% url 'delete-moto' moto.id as url_suppr %}
-                            {% include "partials/_bouton_confirmer.html" with prefixe="moto" ident=moto.id url=url_suppr libelle="Supprimer l'engin" icone="bi bi-trash" classe="btn btn-danger btn-sm" titre="Supprimer l'engin" message="Supprimer cet engin ? Cette action est irréversible." %}
+                            {% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer l'engin" as t_titre %}{% translate "Supprimer cet engin ? Cette action est irréversible." as t_message %}{% include "partials/_bouton_confirmer.html" with prefixe="moto" ident=moto.id url=url_suppr libelle=t_libelle icone="bi bi-trash" classe="btn btn-danger btn-sm" titre=t_titre message=t_message %}
                           </td>
                           {% endif %}
                         </tr>
@@ -800,7 +798,7 @@
                             <a href="{% url 'edit-moto' motoAttr.id %}" class="btn btn-primary btn-sm"
                               title="Upload new profile image"><i class="bi bi-upload"></i></a>
                             {% url 'delete-moto' motoAttr.id as url_suppr %}
-                            {% include "partials/_bouton_confirmer.html" with prefixe="moto-attr" ident=motoAttr.id url=url_suppr libelle="Supprimer l'engin" icone="bi bi-trash" classe="btn btn-danger btn-sm" titre="Supprimer l'engin" message="Supprimer cet engin ? Cette action est irréversible." %}
+                            {% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer l'engin" as t_titre %}{% translate "Supprimer cet engin ? Cette action est irréversible." as t_message %}{% include "partials/_bouton_confirmer.html" with prefixe="moto-attr" ident=motoAttr.id url=url_suppr libelle=t_libelle icone="bi bi-trash" classe="btn btn-danger btn-sm" titre=t_titre message=t_message %}
                           </td>
                           {% endif %}
                         </tr>
@@ -918,7 +916,7 @@
                             <a href="{% url 'edit-family' famille.id %}" class="btn btn-primary btn-sm"
                               title="Upload new profile image"><i class="bi bi-upload"></i></a>
                             {% url 'delete-family' famille.id as url_suppr %}
-                            {% include "partials/_bouton_confirmer.html" with prefixe="famille" ident=famille.id url=url_suppr libelle="Supprimer" icone="bi bi-trash" classe="btn btn-danger btn-sm" titre="Supprimer le bénéficiaire" message="Retirer ce membre de la famille ? Cette action est irréversible." %}
+                            {% translate "Supprimer" as t_libelle %}{% translate "Supprimer le bénéficiaire" as t_titre %}{% translate "Retirer ce membre de la famille ? Cette action est irréversible." as t_message %}{% include "partials/_bouton_confirmer.html" with prefixe="famille" ident=famille.id url=url_suppr libelle=t_libelle icone="bi bi-trash" classe="btn btn-danger btn-sm" titre=t_titre message=t_message %}
                           </td>
                           {% endif %}
                         </tr>
