@@ -111,7 +111,7 @@ def test_fenamo_js_sans_acces_interne_alpine():
     from django.conf import settings
     js = (Path(settings.BASE_DIR) / 'static' / 'js' / 'fenamo.js').read_text(encoding='utf-8')
     assert '_x_dataStack' not in js
-    assert 'Alpine.$data' in js
+    assert 'FenamoDesign' in js  # l'affichage passe par design.js
 
 
 # ------------------------------------------------------------------ libellés

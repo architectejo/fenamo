@@ -1,8 +1,11 @@
-{% load i18n %}
-<div class="alert alert-success" role="status" hx-history="false">
-  <h1 class="h5">{% translate "Compte créé" %}</h1>
-  <p class="mb-1">{% translate "Pseudo :" %} <strong>{{ compte.username }}</strong></p>
-  <p class="mb-1">{% translate "Mot de passe temporaire :" %} <strong class="user-select-all">{{ mot_de_passe }}</strong></p>
-  <p class="mb-0 small">{% translate "À transmettre au membre. Il devra le changer à sa première connexion. Il ne sera plus jamais affiché : notez-le maintenant." %}</p>
-</div>
-<a class="btn btn-primary" href="{% url 'membre-view' membre.id %}">{% translate "Retour à la fiche du membre" %}</a>
+{% load i18n design %}
+<section class="panneau panneau--etroit" role="status" hx-history="false">
+  <div class="panneau-corps pile">
+    <h1 class="page-titre">{% icone "circle-check" "ic--grande" %} {% translate "Compte créé" %}</h1>
+    <div><p class="doux u-mb-2">{% translate "Pseudo :" %}</p><p class="u-mb-0"><strong class="ident">{{ compte.username }}</strong></p></div>
+    <div><p class="doux u-mb-2">{% translate "Mot de passe temporaire :" %}</p><p class="u-mb-0"><strong class="secret">{{ mot_de_passe }}</strong></p></div>
+    {% include "components/_erreur.html" with niveau="alerte" titre=_("À transmettre au membre.") texte=_("Il devra le changer à sa première connexion. Il ne sera plus jamais affiché : notez-le maintenant.") %}
+    {% url 'membre-view' membre.id as url_fiche %}
+    {% include "components/_bouton.html" with libelle=_("Retour à la fiche du membre") icone="arrow-left" href=url_fiche variante="principal" %}
+  </div>
+</section>

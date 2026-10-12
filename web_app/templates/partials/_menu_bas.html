@@ -1,0 +1,10 @@
+{% load i18n design %}
+{# Barre basse sur téléphone : destinations au pouce (maquettes). #}
+{% with nom=request.resolver_match.url_name %}
+<nav class="bas" aria-label="{% translate 'Navigation rapide' %}">
+  <a href="{% url 'tableau-bord' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top"{% if nom == 'tableau-bord' %} aria-current="page"{% endif %}>{% icone "house" %}<span>{% translate "Accueil" %}</span></a>
+  <a href="{% url 'liste-membre' %}" data-prefixe="/membres/" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top"{% if nom == 'liste-membre' or nom == 'membre-view' %} aria-current="page"{% endif %}>{% icone "users" %}<span>{% translate "Membres" %}</span></a>
+  <a href="{% url 'notifys' %}" hx-boost="false">{% icone "bell" %}<span>{% translate "Alertes" %}</span>{% if fn_notifs_total %}<span class="compteur-pastille">{{ fn_notifs_total }}</span>{% endif %}</a>
+  <button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu">{% icone "menu" %}<span>{% translate "Menu" %}</span></button>
+</nav>
+{% endwith %}

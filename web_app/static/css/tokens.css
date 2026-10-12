@@ -164,24 +164,3 @@
 @media (prefers-reduced-motion: reduce) {
   :root { --d-court: 0ms; --d-moyen: 0ms; --d-long: 0ms; --d-compteur: 0ms; }
 }
-
-/* ---------- Pont TEMPORAIRE vers le brouillon (static/css/base.css, layout.css, components.css…)
-   À SUPPRIMER par frontend-htmx dès que base.html charge app.css. ---------- */
-:root, :root[data-theme="sombre"] {
-  --fn-bleu: var(--action); --fn-bleu-fort: var(--action-survol); --fn-bleu-nuit: var(--encre);
-  --fn-ciel: var(--ciel); --fn-ciel-doux: var(--info-bg); --fn-jaune: var(--jaune); --fn-jaune-doux: var(--alerte-bg);
-  --fn-rouge: var(--rouge); --fn-rouge-doux: var(--danger-bg); --fn-vert: var(--vert); --fn-vert-doux: var(--succes-bg);
-  --fn-fond: var(--fond); --fn-surface: var(--surface); --fn-surface-2: var(--surface-2);
-  --fn-bordure: var(--trait); --fn-bordure-forte: var(--trait-fort); --fn-texte: var(--texte); --fn-texte-doux: var(--texte-doux);
-  --fn-lien: var(--lien); --fn-focus: var(--jaune);
-  --fn-menu-fond: var(--encre); --fn-menu-texte: var(--papier); --fn-menu-actif: var(--action-survol);
-  --fn-r-s: var(--r-champ); --fn-r-m: var(--r-champ); --fn-r-l: var(--r-panneau); --fn-r-pilule: var(--r-rond);
-  --fn-ombre-1: var(--o-0); --fn-ombre-2: var(--o-2); --fn-ombre-3: var(--o-3);
-  --fn-e1: var(--e-1); --fn-e2: var(--e-2); --fn-e3: var(--e-3); --fn-e4: var(--e-4); --fn-e5: var(--e-6); --fn-e6: var(--e-7); --fn-e7: var(--e-8);
-  --fn-police: var(--police-texte);
-  --fn-t-xs: var(--t-1); --fn-t-s: var(--t-2); --fn-t-m: var(--t-3); --fn-t-l: var(--t-4); --fn-t-xl: var(--t-5); --fn-t-xxl: var(--t-6);
-  --fn-entete: var(--haut); --fn-menu: var(--menu); --fn-bas: var(--bas);
-  --fn-rapide: var(--d-court); --fn-normal: var(--d-moyen); --fn-courbe: var(--courbe-sortie);
-  --bs-body-font-family: var(--police-texte); --bs-body-bg: var(--fond); --bs-body-color: var(--texte);
-  --bs-border-color: var(--trait); --bs-link-color: var(--lien);
-}

@@ -37,7 +37,7 @@ def test_page_connexion_legere(client):
     """Poids de la page de connexion (HTML + ressources locales) < 500 Ko."""
     html = client.get(reverse('application')).content.decode()
     total = len(html.encode())
-    for chemin in re.findall(r'(?:src|href)="/static/([^"]+)"', html):
+    for chemin in set(re.findall(r'(?:src|href)="/static/([^"#]+)', html)):
         fichier = Path(settings.BASE_DIR) / 'static' / chemin
         if not fichier.exists():
             fichier = Path(settings.BASE_DIR) / 'coptapp' / 'static' / chemin
@@ -56,8 +56,8 @@ def test_tableau_de_bord_connecte(client, utilisateur):
     html = client.get(reverse('tableau-bord')).content.decode()
     assert 'hx-headers' in html and 'X-CSRFToken' in html
     assert 'id="modale-contenu"' in html
-    assert 'modal-fullscreen-sm-down' in html
-    assert 'zone-toasts' in html
+    assert 'class="modale"' in html  # feuille plein écran sous 576 px (CSS)
+    assert 'class="bulles"' in html
 
 
 def test_session_expiree_redirige_en_htmx(client):

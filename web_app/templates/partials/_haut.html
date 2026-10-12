@@ -1,0 +1,54 @@
+{% load i18n static design %}
+{# Barre du haut (maquettes) : marque sur téléphone, recherche, thème, notifications, profil. #}
+<header class="haut">
+  <a class="haut-marque" href="{% url 'tableau-bord' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top"><img src="{% static 'img/logo-48.webp' %}" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+
+  <form class="recherche" method="post" action="{% url 'recherche' %}" role="search" hx-boost="false">
+    {% csrf_token %}
+    {% icone "search" %}
+    <label class="lecteur" for="recherche-globale">{% translate "Rechercher un membre ou un engin" %}</label>
+    <input id="recherche-globale" type="search" name="champ" placeholder="{% translate 'Rechercher' %}" autocomplete="off" required>
+    <input type="hidden" name="search" value="search">
+  </form>
+
+  <div class="rangee pousse rangee--serree">
+    <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="{% translate 'Changer de thème' %}">{% icone "moon" %}</button>
+
+    <div class="relatif" x-data="{ ouvert: false }" @keydown.escape="ouvert = false" @click.outside="ouvert = false">
+      <button type="button" class="bouton-icone" @click="ouvert = !ouvert" :aria-expanded="ouvert.toString()" aria-haspopup="true"
+              aria-label="{% blocktranslate count n=fn_notifs_total|default:0 %}Notifications : {{ n }} non lue{% plural %}Notifications : {{ n }} non lues{% endblocktranslate %}">
+        {% icone "bell" %}{% if fn_notifs_total %}<span class="compteur-pastille" aria-hidden="true">{% if fn_notifs_total > 99 %}99+{% else %}{{ fn_notifs_total }}{% endif %}</span>{% endif %}
+      </button>
+      <div class="flottant" x-show="ouvert" x-cloak>
+        <div class="panneau-tete panneau-tete--serree"><h2>{% translate "Notifications" %}</h2></div>
+        {% for n in fn_notifs %}
+        <a class="notif non-lue" hx-boost="false" href="{% if n.membre_id %}{% url 'membre-view' n.membre_id %}{% else %}{% url 'notifys' %}{% endif %}">
+          <span class="avatar avatar--petit">{% icone "info" "ic--petite" %}</span>
+          <span><strong>{{ n.titre|default:"—"|truncatechars:48 }}</strong><span class="meta bloc">{{ n.mise_a_jour|date:"d/m/Y H:i" }}</span></span>
+        </a>
+        {% empty %}
+        <p class="panneau-corps doux">{% translate "Aucune nouvelle notification." %}</p>
+        {% endfor %}
+        <div class="panneau-pied"><a hx-boost="false" href="{% url 'notifys' %}">{% translate "Voir toutes les notifications" %}</a></div>
+      </div>
+    </div>
+
+    <div class="relatif" x-data="{ ouvert: false }" @keydown.escape="ouvert = false" @click.outside="ouvert = false">
+      <button type="button" class="profil" @click="ouvert = !ouvert" :aria-expanded="ouvert.toString()" aria-haspopup="true" aria-label="{% translate 'Mon compte' %}">
+        <span class="avatar" aria-hidden="true">{{ user.get_username|slice:":2"|upper }}</span>
+        <span class="profil-texte"><strong>{{ user.get_username }}</strong><span class="meta bloc">{{ fn_role|default:"" }}</span></span>
+      </button>
+      <div class="flottant flottant--etroit" x-show="ouvert" x-cloak>
+        <a class="notif" href="{% url 'securite' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top" @click="ouvert = false">
+          <span class="avatar avatar--petit">{% icone "key-round" "ic--petite" %}</span><span>{% translate "Changer mon mot de passe" %}</span>
+        </a>
+        <form method="post" action="{% url 'deconnexion' %}" hx-boost="false">
+          {% csrf_token %}
+          <button type="submit" class="notif notif--bouton">
+            <span class="avatar avatar--petit">{% icone "log-out" "ic--petite" %}</span><span>{% translate "Déconnexion" %}</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>

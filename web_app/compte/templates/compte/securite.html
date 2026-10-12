@@ -1,21 +1,23 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n design %}{% comment %}
+Changement de son mot de passe. La vue répond par une page (formulaire POST, redirection au succès) : écran gardé en page
+et non en modale tant que la vue ne sert pas de fragment HTMX ; obligatoire et non fermable quand le compte porte un mot de passe temporaire.
+{% endcomment %}
 {% block titre %}{% translate "Sécurité du compte" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<h1 class="h4">{% translate "Changer mon mot de passe" %}</h1>
-{% if force %}<div class="alert alert-warning" role="alert">{% translate "Votre compte a été créé avec un mot de passe temporaire : choisissez un mot de passe personnel pour continuer." %}</div>{% endif %}
-<form method="post" class="vstack gap-3" style="max-width: 32rem" hx-boost="false">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% for champ in form %}
-  <div>
-    <label for="{{ champ.id_for_label }}" class="form-label">{{ champ.label }}</label>
-    {{ champ }}
-    {% for erreur in champ.errors %}<div class="text-danger small">{{ erreur }}</div>{% endfor %}
-    {% comment %}help_text|safe : texte fourni par les validateurs de mot de passe de Django (AUTH_PASSWORD_VALIDATORS, balisage <ul>), jamais une saisie utilisateur.{% endcomment %}
-    {% if champ.help_text %}<div class="form-text">{{ champ.help_text|safe }}</div>{% endif %}
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">{% translate "Changer mon mot de passe" %}</h1>
+    <p class="page-contexte">{% icone "shield-check" %}{% translate "Choisissez un mot de passe que vous seul connaissez." %}</p>
   </div>
-  {% endfor %}
-  <button type="submit" class="btn btn-primary">{% translate "Enregistrer" %}</button>
-</form>
+</div>
+{% if force %}<div class="u-mb-4">{% include "components/_erreur.html" with niveau="alerte" titre=_("Mot de passe temporaire.") texte=_("Votre compte a été créé avec un mot de passe temporaire : choisissez un mot de passe personnel pour continuer.") %}</div>{% endif %}
+<section class="panneau panneau--etroit">
+  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+    {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+    {% include "components/_bouton.html" with libelle=_("Enregistrer le mot de passe") variante="principal" type="submit" icone="check" %}
+  </form>
+</section>
 {% endblock %}

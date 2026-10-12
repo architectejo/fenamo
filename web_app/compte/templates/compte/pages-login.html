@@ -1,31 +1,43 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n design %}{% comment %}
+Connexion (maquette connexion.html) : page hors coque, panneau devise sur ordinateur, formulaire dans .porte-cadre.
+Le bouton « Auto-identification » du brouillon n'est pas repris : aucune fonction du cahier des charges ne le prévoit.
+{% endcomment %}
 {% block titre %}{% translate "Connexion" %} - FENAMO-RDC{% endblock %}
 {% block coque %}
-<main class="page-connexion" id="contenu">
-  <div class="card shadow">
-    <div class="card-body p-4">
-      <div class="text-center mb-3">
-        <img src="{% static 'img/logo-160.webp' %}" width="120" height="120" alt="{% translate 'Logo de la FENAMO-RDC' %}">
-        <h1 class="h4 mt-2 mb-1">FENAMO-RDC</h1>
-        <p class="devise mb-0">{% translate "Unité, Discipline et Progrès" %}</p>
-      </div>
-      <h2 class="h5 text-center">{% translate "Connexion" %}</h2>
-      {% if message %}<div class="{{ classMessage|default:'alert alert-danger' }}" role="alert">{{ message }}</div>{% endif %}
-      <form method="post" class="vstack gap-3" hx-boost="false">
-        {% csrf_token %}
-        <div>
-          <label for="id_username" class="form-label">{% translate "Pseudo" %}</label>
-          <input type="text" name="username" id="id_username" class="form-control" required autofocus autocomplete="username" autocapitalize="none">
-        </div>
-        <div>
-          <label for="id_password" class="form-label">{% translate "Mot de passe" %}</label>
-          <input type="password" name="password" id="id_password" class="form-control" required autocomplete="current-password">
-        </div>
-        <button class="btn btn-primary w-100" name="connexion" value="connexion" type="submit">{% translate "Se connecter" %}</button>
-        <a href="{% url 'register' %}" class="btn btn-outline-primary w-100">{% translate "Auto-identification" %}</a>
-      </form>
+<main class="porte" id="contenu">
+  <section class="porte-visuel" aria-hidden="true">
+    <img class="porte-logo" src="{% static 'img/logo-160.webp' %}" width="96" height="96" alt="">
+    <p class="devise"><span>{% translate "Unité," %}</span><span>{% translate "Discipline" %}</span><span>{% translate "et Progrès" %}</span></p>
+    <p class="meta meta--visuel">{% translate "Fédération nationale des associations des motocyclistes taximen de la RDC" %}</p>
+  </section>
+  <div class="porte-cadre">
+    <div class="porte-entete porte-entete--mobile">
+      <img src="{% static 'img/logo-160.webp' %}" width="56" height="56" alt="{% translate 'Logo de la FENAMO-RDC' %}">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">{% translate "Unité, Discipline et Progrès" %}</div></div>
     </div>
+    <h1 class="u-t-5">{% translate "Connexion à l'espace de gestion" %}</h1>
+    <p class="doux u-mt-2">{% translate "Utilisez l'identifiant reçu lors de votre nomination." %}</p>
+    {% if message %}<div class="u-mt-5">{% include "components/_erreur.html" with niveau="danger" titre=message texte=_("Vérifiez la saisie. Après plusieurs essais, la connexion est bloquée un moment.") %}</div>{% endif %}
+    <form class="formulaire u-mt-6" method="post" hx-boost="false" x-data="{ voir: false }" novalidate>
+      {% csrf_token %}
+      <div class="champ">
+        <label class="champ-libelle" for="id_username">{% translate "Identifiant" %}</label>
+        <input class="champ-saisie" type="text" name="username" id="id_username" required autofocus autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="champ">
+        <label class="champ-libelle" for="id_password">{% translate "Mot de passe" %}</label>
+        <div class="champ-mdp">
+          <input class="champ-saisie" :type="voir ? 'text' : 'password'" type="password" name="password" id="id_password" required autocomplete="current-password">
+          <button type="button" class="bouton-icone" @click="voir = !voir" :aria-pressed="voir.toString()" aria-pressed="false" aria-label="{% translate 'Afficher le mot de passe' %}">
+            <span x-show="!voir">{% icone "eye" %}</span><span x-show="voir" x-cloak>{% icone "eye-off" %}</span>
+          </button>
+        </div>
+      </div>
+      <button class="bouton bouton--principal bouton--bloc" name="connexion" value="connexion" type="submit"><span class="roue" aria-hidden="true"></span>{% translate "Se connecter" %}</button>
+      <p class="petit doux u-mb-0">{% translate "Mot de passe oublié ? Demandez une réinitialisation à la personne qui vous a nommé." %}</p>
+    </form>
+    <p class="meta u-mt-8">FENAMO-RDC asbl</p>
   </div>
 </main>
 {% endblock coque %}

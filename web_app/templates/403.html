@@ -1,0 +1,6 @@
+{% extends "erreur_base.html" %}
+{% load i18n %}
+{% block titre_erreur %}{% translate "Accès refusé" %}{% endblock %}
+{% block code %}403{% endblock %}
+{% block titre_page %}{% translate "Accès refusé" %}{% endblock %}
+{% block message %}{% translate "Votre compte n'a pas le droit d'ouvrir cette page. Si vous pensez que c'est une erreur, contactez un administrateur de la FENAMO-RDC." %}{% endblock %}

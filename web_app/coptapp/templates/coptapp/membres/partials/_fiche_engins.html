@@ -1,0 +1,75 @@
+{% load i18n design %}{% comment %}
+Onglet « Engins » (maquette fiche-membre.html) : engins du membre (propriétaire) puis engin attribué (motard), en tableau devenu cartes sous 576 px.
+Contexte : membre, user, motos, nbrMoto, motoAttr. Conditions de l'écran hérité conservées (y compris « privilage5 », faute de frappe
+d'origine : seuls les super-utilisateurs voient les actions de modification et de suppression).
+Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 : la plaque affiche pour l'instant le numéro hérité.
+{% endcomment %}
+{% if membre.qualite == 'PROPRIETAIRE' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
+<section class="panneau">
+  <div class="panneau-tete"><h2>{% translate "Engins du membre" %} <span class="ident doux">{{ nbrMoto }}</span></h2>
+    {% if not user.privilege4 %}<a href="{% url 'add-moto' membre.id %}" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un engin" %}</span></a>{% endif %}
+  </div>
+  <div class="panneau-corps">
+  {% if motos %}
+    <table class="liste">
+      <caption class="lecteur">{% translate "Engins du membre" %}</caption>
+      <thead><tr><th scope="col">{% translate "Numéro" %}</th><th scope="col">{% translate "Plaque" %}</th><th scope="col">{% translate "Antenne" %}</th><th scope="col">{% translate "Fin d'identification" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+      {% for moto in motos %}
+        <tr>
+          <td data-role="titre"><a class="lien-ligne" href="{% url 'view-moto' moto.id %}">{% include "components/_plaque.html" with numero=moto.numero|default:"—" code="" %}</a></td>
+          <td data-libelle="{% translate 'Plaque' %}" class="chiffres">{{ moto.num_plaque|default:"—" }}</td>
+          <td data-libelle="{% translate 'Antenne' %}">{{ moto.antenne.nom|default:"—" }}</td>
+          <td data-libelle="{% translate 'Fin d’identification' %}" class="chiffres">{{ moto.abonnement|default:"—" }}</td>
+          <td data-role="actions">
+          {% if user.is_superuser or user.privilage5 %}
+            <a href="{% url 'edit-moto' moto.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
+            {% url 'delete-moto' moto.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Cette action est irréversible." as t_message %}
+            {% include "components/_confirmer.html" with prefixe="moto" ident=moto.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message icone="trash-2" icone_seule=True %}
+          {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    {% translate "Aucun engin" as t_vide %}{% translate "Les engins de ce membre apparaîtront ici." as t_msg %}
+    {% include "components/_etat_vide.html" with icone="motorbike" titre=t_vide texte=t_msg %}
+  {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if not user.privilege4 %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
+<section class="panneau u-mt-4">
+  <div class="panneau-tete"><h2>{% translate "Engin attribué" %}</h2>
+    <button type="button" class="bouton bouton--petit pousse" data-modale-locale="#modale-attribuer">{% icone "plus" %}<span>{% translate "Attribuer un engin" %}</span></button>
+  </div>
+  <div class="panneau-corps">
+  {% if motoAttr %}
+    <table class="liste">
+      <caption class="lecteur">{% translate "Engin attribué" %}</caption>
+      <thead><tr><th scope="col">{% translate "Numéro" %}</th><th scope="col">{% translate "Plaque" %}</th><th scope="col">{% translate "Antenne" %}</th><th scope="col">{% translate "Propriétaire" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+        <tr>
+          <td data-role="titre"><a class="lien-ligne" href="{% url 'view-moto' motoAttr.id %}">{% include "components/_plaque.html" with numero=motoAttr.numero|default:"—" code="" %}</a></td>
+          <td data-libelle="{% translate 'Plaque' %}" class="chiffres">{{ motoAttr.num_plaque|default:"—" }}</td>
+          <td data-libelle="{% translate 'Antenne' %}">{{ motoAttr.antenne.nom|default:"—" }}</td>
+          <td data-libelle="{% translate 'Propriétaire' %}">{{ motoAttr.proprietaire.nom|default:"—" }}</td>
+          <td data-role="actions">
+          {% if user.is_superuser or user.privilage5 %}
+            <a href="{% url 'edit-moto' motoAttr.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
+            {% url 'delete-moto' motoAttr.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Cette action est irréversible." as t_message %}
+            {% include "components/_confirmer.html" with prefixe="moto-attribue" ident=motoAttr.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message icone="trash-2" icone_seule=True %}
+          {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  {% else %}
+    {% translate "Aucun engin attribué" as t_vide %}{% translate "Attribuez un engin par son numéro." as t_msg %}
+    {% include "components/_etat_vide.html" with icone="motorbike" titre=t_vide texte=t_msg %}
+  {% endif %}
+  </div>
+</section>
+{% endif %}{% endif %}

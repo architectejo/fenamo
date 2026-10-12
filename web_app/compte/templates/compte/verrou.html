@@ -1,12 +1,18 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load static i18n design %}{% comment %}Connexion bloquée (verrou par adresse IP) : mêmes gabarits que la connexion (.porte), message dans une .alerte--alerte.{% endcomment %}
 {% block titre %}{% translate "Connexion bloquée" %} - FENAMO-RDC{% endblock %}
 {% block coque %}
-<main class="page-connexion" id="contenu">
-  <div class="card shadow"><div class="card-body p-4 text-center">
-    <h1 class="h5">{% translate "Connexion temporairement bloquée" %}</h1>
-    <p>{% translate "Trop de tentatives échouées. Réessayez plus tard ou contactez un administrateur de la FENAMO-RDC." %}</p>
-    <a class="btn btn-primary" href="{% url 'application' %}">{% translate "Retour à la connexion" %}</a>
-  </div></div>
+<main class="porte porte--seule" id="contenu">
+  <div class="porte-cadre">
+    <div class="porte-entete">
+      <img src="{% static 'img/logo-160.webp' %}" width="56" height="56" alt="{% translate 'Logo de la FENAMO-RDC' %}">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">{% translate "Unité, Discipline et Progrès" %}</div></div>
+    </div>
+    <h1 class="u-t-5">{% translate "Connexion temporairement bloquée" %}</h1>
+    <div class="u-mt-5">{% include "components/_erreur.html" with niveau="alerte" icone="lock-keyhole" titre=_("Trop de tentatives échouées.") texte=_("Réessayez plus tard ou contactez un administrateur de la FENAMO-RDC.") %}</div>
+    {% url 'application' as url_connexion %}
+    <div class="u-mt-6">{% include "components/_bouton.html" with libelle=_("Retour à la connexion") icone="arrow-left" href=url_connexion bloc=True %}</div>
+    <p class="meta u-mt-8">FENAMO-RDC asbl</p>
+  </div>
 </main>
 {% endblock coque %}

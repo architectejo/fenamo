@@ -1,0 +1,19 @@
+{% load i18n design %}{% comment %}
+Onglet « Rôles » : privilèges actuels du compte du membre (le formulaire s'ouvre dans la modale commune).
+Contexte : membre, membreUser, checked1 à checked5 (« checked » quand le privilège est accordé).
+{% endcomment %}
+<section class="panneau">
+  <div class="panneau-tete"><h2>{% translate "Privilèges du compte" %}</h2>
+    <button type="button" class="bouton bouton--petit pousse" data-modale-locale="#modale-privileges">{% icone "pencil" %}<span>{% translate "Modifier les privilèges" %}</span></button>
+  </div>
+  <div class="panneau-corps">
+    <ul class="rangee">
+      {% if checked1 %}<li class="etat etat--actif">{% icone "check" %}{% translate "Privilèges bas niveau" %}</li>{% endif %}
+      {% if checked2 %}<li class="etat etat--actif">{% icone "check" %}{% translate "Privilège niveau moyen" %}</li>{% endif %}
+      {% if checked3 %}<li class="etat etat--actif">{% icone "check" %}{% translate "Privilège niveau avancé" %}</li>{% endif %}
+      {% if checked4 %}<li class="etat etat--actif">{% icone "check" %}{% translate "Visiteur privilégié" %}</li>{% endif %}
+      {% if checked5 %}<li class="etat etat--actif">{% icone "check" %}{% translate "Privilège ultra avancé" %}</li>{% endif %}
+      {% if not checked1 and not checked2 and not checked3 and not checked4 and not checked5 %}<li class="doux">{% translate "Aucun privilège accordé." %}</li>{% endif %}
+    </ul>
+  </div>
+</section>

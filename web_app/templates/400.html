@@ -1,0 +1,6 @@
+{% extends "erreur_base.html" %}
+{% load i18n %}
+{% block titre_erreur %}{% translate "Requête incorrecte" %}{% endblock %}
+{% block code %}400{% endblock %}
+{% block titre_page %}{% translate "Requête incorrecte" %}{% endblock %}
+{% block message %}{% translate "La demande n'a pas pu être comprise. Revenez à la page précédente et réessayez." %}{% endblock %}

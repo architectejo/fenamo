@@ -741,6 +741,33 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .verif .meta, .verif .menu-devise { color: var(--texte); } /* AAA : pas de texte atténué */
 
 /* =========================================================
+   16 bis. Utilitaires d'intégration (remplacent les style="" des maquettes ; uniquement des jetons)
+   ========================================================= */
+.relatif { position: relative; }
+.page-tete--haut { align-items: flex-start; }
+.texte-plein { color: var(--texte); }
+.champ--plein { grid-column: 1 / -1; }
+.u-inline { display: inline; }
+.bloc { display: block; }
+.rangee--serree { flex-wrap: nowrap; gap: var(--e-1); }
+.u-centre { text-align: center; }
+.u-t-5 { font-size: var(--t-5); }
+.u-mt-2 { margin-top: var(--e-2); } .u-mt-3 { margin-top: var(--e-3); } .u-mt-4 { margin-top: var(--e-4); }
+.u-mt-5 { margin-top: var(--e-5); } .u-mt-6 { margin-top: var(--e-6); } .u-mt-7 { margin-top: var(--e-7); } .u-mt-8 { margin-top: var(--e-8); }
+.u-mb-0 { margin-bottom: 0; } .u-mb-2 { margin-bottom: var(--e-2); } .u-mb-4 { margin-bottom: var(--e-4); }
+.menu-bouton { border: 0; background: none; width: calc(100% - var(--e-6)); margin: 0 var(--e-3) var(--e-2); cursor: pointer; }
+.meta--visuel { color: inherit; opacity: .75; }
+.porte--seule { grid-template-columns: minmax(0, 1fr); place-items: center; }
+.groupe-boutons--centre { justify-content: center; }
+.panneau--etroit { max-width: 520px; }
+.panneau-tete--serree { padding-bottom: var(--e-3); }
+.flottant--etroit { width: min(92vw, 17rem); }
+.notif--bouton { width: 100%; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; align-items: center; }
+.secret { font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); font-size: var(--t-5); letter-spacing: .04em; overflow-wrap: anywhere; }
+.liste-nombre { margin-left: auto; }
+.a-traiter h2 { font-size: var(--t-4); margin-top: var(--e-2); }
+
+/* =========================================================
    17. Animations (toutes neutralisées par prefers-reduced-motion via les jetons de durée)
    ========================================================= */
 @keyframes fondu { from { opacity: 0; } }

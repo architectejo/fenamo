@@ -1,19 +1,29 @@
-{% load i18n %}
-{# Menu latéral. Les liens boostés (hx-boost) remplacent seulement #contenu ; les écrans hérités (base-app.html) gardent hx-boost="false" jusqu'à leur migration (lots 3-4). #}
+{% load i18n static design %}
+{# Menu latéral (maquettes). Les liens des écrans migrés sont boostés (seul #contenu change) ; les écrans hérités (base-app.html) gardent hx-boost="false" jusqu'à leur migration. #}
 {% with nom=request.resolver_match.url_name %}
-<nav id="menu-principal" class="app-menu" aria-label="{% translate 'Menu principal' %}"
-     hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="innerHTML show:window:top">
-  <ul class="nav flex-column pb-4">
-    <li>
-      <a class="nav-link" href="{% url 'tableau-bord' %}"{% if nom == 'tableau-bord' %} aria-current="page"{% endif %}>{% translate "Tableau de bord" %}</a>
-    </li>
-    <li class="titre-groupe" aria-hidden="true">{% translate "Gestion" %}</li>
-    <li><a class="nav-link" hx-boost="false" href="{% url 'str-list' %}">{% translate "Associations membres" %}</a></li>
-    <li><a class="nav-link" hx-boost="false" href="{% url 'liste-membre' %}">{% translate "Membres" %}</a></li>
-    <li><a class="nav-link" hx-boost="false" href="{% url 'list-message' %}">{% translate "Communiqués" %}</a></li>
-    <li><a class="nav-link" hx-boost="false" href="{% url 'notifys' %}">{% translate "Notifications" %}</a></li>
-    <li class="titre-groupe" aria-hidden="true">{% translate "Site public" %}</li>
-    <li><a class="nav-link" hx-boost="false" href="{% url 'site' %}">{% translate "Contenu du site" %}</a></li>
-  </ul>
+<nav class="menu" id="menu" aria-label="{% translate 'Menu principal' %}">
+  <div class="menu-tete">
+    <img src="{% static 'img/logo-160.webp' %}" width="44" height="44" alt="">
+    <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">{% translate "Unité, Discipline et Progrès" %}</div></div>
+    <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="{% translate 'Fermer le menu' %}">{% icone "x" %}</button>
+  </div>
+  <div class="menu-defile" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">
+    <a class="menu-lien" href="{% url 'tableau-bord' %}"{% if nom == 'tableau-bord' %} aria-current="page"{% endif %}>{% icone "layout-dashboard" %}<span>{% translate "Tableau de bord" %}</span></a>
+
+    <p class="menu-groupe">{% translate "Dossiers" %}</p>
+    <a class="menu-lien" href="{% url 'liste-membre' %}" data-prefixe="/membres/"{% if nom == 'liste-membre' or nom == 'membre-view' %} aria-current="page"{% endif %}>{% icone "users" %}<span>{% translate "Membres" %}</span></a>
+    <a class="menu-lien" hx-boost="false" href="{% url 'str-list' %}" data-prefixe="/associations/">{% icone "building-2" %}<span>{% translate "Associations membres" %}</span></a>
+
+    <p class="menu-groupe">{% translate "Communication" %}</p>
+    <a class="menu-lien" hx-boost="false" href="{% url 'list-message' %}" data-prefixe="/communiques/">{% icone "megaphone" %}<span>{% translate "Communiqués" %}</span></a>
+    <a class="menu-lien" hx-boost="false" href="{% url 'notifys' %}">{% icone "bell" %}<span>{% translate "Notifications" %}</span>{% if fn_notifs_total %}<span class="nombre">{{ fn_notifs_total }}</span>{% endif %}</a>
+    <a class="menu-lien" hx-boost="false" href="{% url 'site' %}" data-prefixe="/contenu-site/">{% icone "globe" %}<span>{% translate "Contenu du site" %}</span></a>
+
+    <p class="menu-groupe">{% translate "Mon compte" %}</p>
+    <a class="menu-lien" href="{% url 'securite' %}"{% if nom == 'securite' %} aria-current="page"{% endif %}>{% icone "shield-check" %}<span>{% translate "Sécurité du compte" %}</span></a>
+    {% if user.is_superuser %}<a class="menu-lien" hx-boost="false" href="{% url 'add-user' %}">{% icone "user-plus" %}<span>{% translate "Créer un compte" %}</span></a>{% endif %}
+  </div>
+  <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer>{% icone "moon" %}<span>{% translate "Changer de thème" %}</span></button>
+  {% if fn_role %}<div class="menu-perimetre"><span class="meta">{{ fn_role }}</span><strong>{{ fn_perimetre|default:"—" }}</strong></div>{% endif %}
 </nav>
 {% endwith %}

@@ -84,7 +84,7 @@ def test_F70_creation_de_compte_adminer_et_add_user(client, jeu):
     Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
     client.force_login(jeu['compte'])
     r = client.post(reverse('adminer', kwargs={'id': jeu['membre'].id}))
-    mdp = r.content.decode().split('<strong class="user-select-all">')[1].split('</strong>')[0]
+    mdp = r.content.decode().split('<strong class="secret">')[1].split('</strong>')[0]
     client.post(reverse('add-user'), {'username': 'direct', 'email': 'd@example.invalid'})
     assert lignes(A.CREATION_COMPTE).count() == 2
     for ligne in lignes(A.CREATION_COMPTE):

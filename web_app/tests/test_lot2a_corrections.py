@@ -45,7 +45,7 @@ def test_F02_adminer_mot_de_passe_dans_le_corps_pas_dans_les_cookies(client, jeu
     assert 'no-store' in r['Cache-Control']
     compte = Compte.objects.get(membreId=jeu['membre'].id)
     corps = r.content.decode()
-    mdp = corps.split('<strong class="user-select-all">')[1].split('</strong>')[0]
+    mdp = corps.split('<strong class="secret">')[1].split('</strong>')[0]
     assert compte.check_password(mdp)
     cookies = ' '.join(m.value for m in r.cookies.values())
     assert mdp not in cookies and 'messages' not in r.cookies

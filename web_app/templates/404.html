@@ -1,0 +1,6 @@
+{% extends "erreur_base.html" %}
+{% load i18n %}
+{% block titre_erreur %}{% translate "Page introuvable" %}{% endblock %}
+{% block code %}404{% endblock %}
+{% block titre_page %}{% translate "Page introuvable" %}{% endblock %}
+{% block message %}{% translate "Cette page n'existe pas ou a été déplacée. Vérifiez l'adresse ou revenez à l'accueil." %}{% endblock %}

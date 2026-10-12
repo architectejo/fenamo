@@ -1,0 +1,42 @@
+{% load i18n design %}{% comment %}
+En-tête de la fiche d'un membre (maquette fiche-membre.html) : photo (ou initiales), nom, identifiant, qualité, badge d'état, actions selon le droit.
+Contexte : membre, user, structure, membreUser. Les boutons gardent les conditions de l'écran hérité.
+Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non intégrés, les données (qui a validé quand, jeton QR) n'existent pas encore (F-23, F-27).
+{% endcomment %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'liste-membre' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{% translate "Membres" %}</a><span aria-hidden="true">/</span><span>{{ membre.nom|default:"—" }}</span></nav>
+<div class="page-tete page-tete--haut">
+  {% avatar membre.nom membre.photo 96 %}
+  <div class="page-tete-texte">
+    <h1 class="page-titre" id="nom-membre">{{ membre.nom|default:"—" }}</h1>
+    <p class="page-contexte">{% if membre.numero_carte_de_membre %}<span class="ident texte-plein">{{ membre.numero_carte_de_membre }}</span>{% endif %}{% if membre.qualite %} · {{ membre.qualite }}{% endif %}{% if membre.is_user %} · {% blocktranslate with pseudo=membreUser.username %}compte {{ pseudo }}{% endblocktranslate %}{% endif %}</p>
+    <p class="page-contexte">{% if membre.antenne.nom %}{% icone "map-pin" %}{% blocktranslate with nom=membre.antenne.nom %}Antenne de {{ nom }}{% endblocktranslate %}{% endif %}{% if membre.structure.sigle %} · {{ membre.structure.sigle }}{% endif %}{% if membre.province.nom %} · {{ membre.province.nom }}{% endif %}</p>
+    <p class="u-mt-2">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</p>
+  </div>
+  <div class="page-actions">
+    {% if user.is_superuser or user.privilege5 %}
+    <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
+    {% elif membre.structure == structure and user.privilege3 %}
+    <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
+    {% endif %}
+
+    {% if user.is_superuser or user.privilege1 %}
+    <button type="button" class="bouton" data-modale-locale="#modale-demande">{% icone "send" %}<span>{% translate "Demande de modification" %}</span></button>
+    {% endif %}
+
+    {% if not membre.is_user and user.is_superuser %}
+    {% translate "Créer le compte" as t_libelle %}{% url 'adminer' membre.id as url_adminer %}
+    {% include "partials/_bouton_post.html" with url=url_adminer libelle=t_libelle classe="bouton" %}
+    {% endif %}
+
+    {% if user.privilege4 == False %}
+    {% url 'delete-membre' membre.id as url_suppr %}
+    {% if membre.is_delete %}
+    {% translate "Désactiver le processus de suppression" as t_libelle %}{% translate "Suppression du membre" as t_titre %}{% translate "Désactiver le processus de suppression de ce membre ?" as t_message %}{% translate "Confirmer" as t_envoi %}
+    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_envoi icone="rotate-ccw" %}
+    {% else %}
+    {% translate "Demande de suppression" as t_libelle %}{% translate "Suppression du membre" as t_titre %}{% translate "Envoyer la demande de suppression de ce membre ?" as t_message %}{% translate "Envoyer la demande" as t_envoi %}
+    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_envoi icone="trash-2" variante="danger" %}
+    {% endif %}
+    {% endif %}
+  </div>
+</div>

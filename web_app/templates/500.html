@@ -1,0 +1,6 @@
+{% extends "erreur_base.html" %}
+{% load i18n %}
+{% block titre_erreur %}{% translate "Erreur du serveur" %}{% endblock %}
+{% block code %}500{% endblock %}
+{% block titre_page %}{% translate "Erreur du serveur" %}{% endblock %}
+{% block message %}{% translate "Un problème est survenu de notre côté. Réessayez dans un instant ; si cela continue, prévenez un administrateur." %}{% endblock %}

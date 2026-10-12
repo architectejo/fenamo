@@ -1,0 +1,155 @@
+{% extends "components/modale_post.html" %}
+{% load i18n %}{% comment %}
+Formulaire de modification du membre (champs et noms identiques à l'écran hérité : traités par la vue membre_view, bouton « modifier »).
+Les listes reprennent la valeur actuelle (l'écran hérité renvoyait la première option si on n'y touchait pas).
+Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique + multipart).
+{% endcomment %}
+{% block titre %}{% translate "Modifier le membre" %}{% endblock %}
+{% block corps %}
+<div class="formulaire-ligne">
+  <div class="champ champ--plein">
+    <label class="champ-libelle" for="mm-photo">{% translate "Photo" %}</label>
+    <input name="photo" type="file" accept="image/*" id="mm-photo">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-nom">{% translate "Nom complet" %}</label>
+    <input name="nom" type="text" id="mm-nom" value="{{ membre.nom|default_if_none:'' }}" required maxlength="50">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-date">{% translate "Date de naissance (JJ-MM-AAAA)" %}</label>
+    <input name="date" type="text" id="mm-date" value="{{ membre.date_naissance|date:'d-m-Y' }}" placeholder="JJ-MM-AAAA" inputmode="numeric" pattern="\d{2}-\d{2}-\d{4}" required>
+  </div>
+  <div class="champ champ--plein">
+    <label class="champ-libelle" for="mm-about">{% translate "À propos" %}</label>
+    <textarea name="about" id="mm-about" rows="3">{{ membre.a_propos|default_if_none:'' }}</textarea>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-genre">{% translate "Genre" %}</label>
+    <select name="genre" id="mm-genre">
+      <option value="HOMME"{% if membre.genre == 'HOMME' %} selected{% endif %}>HOMME</option>
+      <option value="FEMME"{% if membre.genre == 'FEMME' %} selected{% endif %}>FEMME</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-titre">{% translate "Titre" %}</label>
+    <select name="titre" id="mm-titre">
+      <option value="MR"{% if membre.titre == 'MR' %} selected{% endif %}>MR</option>
+      <option value="MME"{% if membre.titre == 'MME' %} selected{% endif %}>MME</option>
+      <option value="MLLE"{% if membre.titre == 'MLLE' %} selected{% endif %}>MLLE</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-fonction">{% translate "Fonction" %}</label>
+    <select name="fonction" id="mm-fonction">
+      <option value="Membre simple"{% if membre.fonction == 'Membre simple' %} selected{% endif %}>Membre simple</option>
+      <option value="Membre du comité"{% if membre.fonction == 'Membre du comité' %} selected{% endif %}>Membre du comité</option>
+      <option value="Associe"{% if membre.fonction == 'Associe' %} selected{% endif %}>Associe</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-comite">{% translate "Type de comité" %}</label>
+    <select name="comite" id="mm-comite">
+      <option value="SUPERVISION MOBILE"{% if membre.comite == 'SUPERVISION MOBILE' %} selected{% endif %}>SUPERVISION MOBILE</option>
+      <option value="SUPERVISION PARKING"{% if membre.comite == 'SUPERVISION PARKING' %} selected{% endif %}>SUPERVISION PARKING</option>
+      <option value="ANTENNE"{% if membre.comite == 'ANTENNE' %} selected{% endif %}>ANTENNE</option>
+      <option value="COORDINATION PROVINCIAL"{% if membre.comite == 'COORDINATION PROVINCIAL' %} selected{% endif %}>COORDINATION PROVINCIALE</option>
+      <option value="COMITE NATIONAL"{% if membre.comite == 'COMITE NATIONAL' %} selected{% endif %}>COMITE NATIONAL</option>
+      <option value="ZONE OPS"{% if membre.comite == 'ZONE OPS' %} selected{% endif %}>ZONE OPS</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-nation">{% translate "Nationalité" %}</label>
+    <input name="nation" type="text" id="mm-nation" value="{{ membre.nation|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-brevet">{% translate "Numéro de brevet" %}</label>
+    <input name="brevet" type="text" id="mm-brevet" value="{{ membre.brevet|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-etat-civil">{% translate "État civil" %}</label>
+    <select name="etat_civil" id="mm-etat-civil">
+      <option value="Celibataire"{% if membre.etat_civil == 'Celibataire' %} selected{% endif %}>Celibataire</option>
+      <option value="Marié(e)"{% if membre.etat_civil == 'Marié(e)' %} selected{% endif %}>Marié(e)</option>
+      <option value="Divorcé"{% if membre.etat_civil == 'Divorcé' %} selected{% endif %}>Divorcé</option>
+      <option value="Veuf(Veuve)"{% if membre.etat_civil == 'Veuf(Veuve)' %} selected{% endif %}>Veuf(Veuve)</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-epouse">{% translate "Époux / épouse" %}</label>
+    <input name="epouse" type="text" id="mm-epouse" value="{{ membre.epouse|default_if_none:'' }}">
+  </div>
+  <div class="champ champ--plein">
+    <label class="champ-libelle" for="mm-adresse">{% translate "Adresse" %}</label>
+    <input name="adresse" type="text" id="mm-adresse" value="{{ membre.adresse|default_if_none:'' }}" autocomplete="street-address">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-tel">{% translate "Téléphone" %}</label>
+    <input name="telephone" type="tel" id="mm-tel" value="{{ membre.telephone|default_if_none:'' }}" autocomplete="tel" placeholder="+243…">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-mail">{% translate "E-mail" %}</label>
+    <input name="mail" type="email" id="mm-mail" value="{{ membre.mail|default_if_none:'' }}" autocomplete="email">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-categorie">{% translate "Catégorie de permis" %}</label>
+    <select name="categorie" id="mm-categorie">
+      <option value="H"{% if membre.categorie == 'H' %} selected{% endif %}>H</option>
+      <option value="F"{% if membre.categorie == 'F' %} selected{% endif %}>F</option>
+      <option value="S"{% if membre.categorie == 'S' %} selected{% endif %}>S</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-permis">{% translate "Numéro de permis" %}</label>
+    <input name="permis" type="text" id="mm-permis" value="{{ membre.permis|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-qualite">{% translate "Qualité" %}</label>
+    <select name="qualite" id="mm-qualite">
+      <option value="..."{% if membre.qualite == '...' %} selected{% endif %}>...</option>
+      <option value="PROPRIETAIRE"{% if membre.qualite == 'PROPRIETAIRE' %} selected{% endif %}>PROPRIETAIRE</option>
+      <option value="MOTARD"{% if membre.qualite == 'MOTARD' %} selected{% endif %}>MOTARD</option>
+      <option value="MOTARD ET PROPRIETAIRE"{% if membre.qualite == 'MOTARD ET PROPRIETAIRE' %} selected{% endif %}>MOTARD ET PROPRIETAIRE</option>
+    </select>
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-autre">{% translate "Autre association" %}</label>
+    <input name="autre_asbl" type="text" id="mm-autre" value="{{ membre.autre_asbl|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-electeur">{% translate "Numéro de pièce d'identité" %}</label>
+    <input name="numero_carte_d_electeur" type="text" id="mm-electeur" value="{{ membre.numero_carte_d_electeur|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-carte">{% translate "Numéro de carte de membre" %}</label>
+    <input name="numero_carte_de_membre" type="text" id="mm-carte" value="{{ membre.numero_carte_de_membre|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-pere">{% translate "Nom du père" %}</label>
+    <input name="nom_pere" type="text" id="mm-pere" value="{{ membre.nom_pere|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-mere">{% translate "Nom de la mère" %}</label>
+    <input name="nom_mere" type="text" id="mm-mere" value="{{ membre.nom_mere|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-village">{% translate "Village d'origine" %}</label>
+    <input name="village" type="text" id="mm-village" value="{{ membre.village|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-chefferie">{% translate "Chefferie" %}</label>
+    <input name="chefferie" type="text" id="mm-chefferie" value="{{ membre.chefferie|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-territoire">{% translate "Territoire" %}</label>
+    <input name="territoire" type="text" id="mm-territoire" value="{{ membre.territoire|default_if_none:'' }}">
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="mm-province">{% translate "Province d'origine" %}</label>
+    <input name="province_origine" type="text" id="mm-province" value="{{ membre.province_origine|default_if_none:'' }}">
+  </div>
+</div>
+{% endblock %}
+{% block pied %}
+<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button>
+<button type="submit" name="modifier" value="modifier" class="bouton bouton--principal">{% translate "Enregistrer" %}</button>
+{% endblock %}

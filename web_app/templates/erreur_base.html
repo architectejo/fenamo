@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static i18n design %}{% comment %}
+Page d'erreur (400, 403, 404, 500) : .porte + .vide, sans coque et sans requête à la base de données (la 500 doit toujours pouvoir s'afficher).
+Blocs : titre_erreur, code, titre_page, message.
+{% endcomment %}
+{% block titre %}{% block titre_erreur %}{% endblock %} - FENAMO-RDC{% endblock %}
+{% block coque %}
+<main class="porte porte--seule" id="contenu">
+  <div class="porte-cadre">
+    <div class="vide">
+      <div class="vide-icone">{% icone "triangle-alert" %}</div>
+      <p class="ident u-mb-0" aria-hidden="true">{% block code %}{% endblock %}</p>
+      <h1>{% block titre_page %}{% endblock %}</h1>
+      <p>{% block message %}{% endblock %}</p>
+      <div class="groupe-boutons groupe-boutons--centre">
+        <a class="bouton bouton--principal" href="{% url 'tableau-bord' %}">{% icone "house" %}<span>{% translate "Revenir au tableau de bord" %}</span></a>
+        <button type="button" class="bouton" data-retour>{% icone "arrow-left" %}<span>{% translate "Page précédente" %}</span></button>
+      </div>
+    </div>
+    <p class="meta u-centre">FENAMO-RDC asbl &middot; {% translate "Unité, Discipline et Progrès" %}</p>
+  </div>
+</main>
+{% endblock coque %}

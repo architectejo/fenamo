@@ -1,8 +1,7 @@
 {% load i18n %}{% comment %}
-Bouton qui déclenche une action en POST (route POST seulement) sur les écrans hérités.
-Contexte : url, libelle, classe (défaut « btn btn-primary »). Le bouton est désactivé à l'envoi (envoi-unique.js).
-Pour une suppression, utiliser partials/_bouton_confirmer.html.
-{% endcomment %}<form method="post" action="{{ url }}" class="d-inline">
+Bouton qui déclenche une action en POST (route POST seulement) : formulaire ordinaire avec CSRF, désactivé à l'envoi (fenamo.js).
+Contexte : url, libelle, classe (défaut « bouton »). À migrer vers components/_bouton.html (hx-post) avec les vues concernées.
+{% endcomment %}<form method="post" action="{{ url }}" class="u-inline" hx-boost="false">
   {% csrf_token %}
-  <button type="submit" class="{{ classe|default:'btn btn-primary' }}" style="min-height:44px">{{ libelle }}</button>
+  <button type="submit" class="{{ classe|default:'bouton' }}"><span class="roue" aria-hidden="true"></span><span>{{ libelle }}</span></button>
 </form>

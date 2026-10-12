@@ -1,0 +1,24 @@
+{% load i18n design %}{% comment %}
+Onglet « Historique » : dernières actions du journal d'activités (F-70) sur ce membre, sans les valeurs avant/après.
+Contexte : membre. Balise historique_objet (service coptapp/services/historique.py).
+{% endcomment %}
+{% historique_objet membre as lignes %}
+<section class="panneau">
+  <div class="panneau-tete"><h2>{% translate "Historique du dossier" %}</h2></div>
+  <div class="panneau-corps">
+  {% if lignes %}
+    <ol class="historique">
+      {% for l in lignes %}
+      <li><span class="point">{% icone "history" %}</span><div>
+        <p><strong>{{ l.get_action_display }}</strong>{% if l.auteur %} {% translate "par" %} {{ l.auteur.get_username }}{% endif %}</p>
+        {% if l.motif %}<p>{{ l.motif }}</p>{% endif %}
+        <p class="meta"><time datetime="{{ l.date|date:'c' }}">{{ l.date|date:"d/m/Y · H:i" }}</time></p>
+      </div></li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    {% translate "Aucune action enregistrée" as t_vide %}{% translate "Les validations, renvois et rattachements de ce dossier seront listés ici." as t_msg %}
+    {% include "components/_etat_vide.html" with icone="history" titre=t_vide texte=t_msg %}
+  {% endif %}
+  </div>
+</section>

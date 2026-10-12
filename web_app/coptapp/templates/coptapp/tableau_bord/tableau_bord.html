@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static design %}
 {% block titre %}{% translate "Tableau de bord" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<h1 class="titre-page">{% translate "Tableau de bord" %}</h1>
-<p class="text-muted">{% blocktranslate with nom=user.get_username %}Bienvenue, {{ nom }}.{% endblocktranslate %}</p>
-{% include "coptapp/tableau_bord/partials/_raccourcis.html" %}
+{% comment %}
+Les indicateurs viennent de la variable `indicateurs` si la vue la fournit (F-16, F-51), sinon de la balise indicateurs_tableau_bord (service coptapp/services/tableau_bord.py).
+{% endcomment %}
+{% if indicateurs %}{% with ind=indicateurs %}{% include "coptapp/tableau_bord/partials/_corps.html" %}{% endwith %}
+{% else %}{% indicateurs_tableau_bord as ind %}{% include "coptapp/tableau_bord/partials/_corps.html" %}{% endif %}
 {% endblock %}

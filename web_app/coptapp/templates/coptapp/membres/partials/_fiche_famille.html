@@ -1,0 +1,48 @@
+{% load i18n design %}{% comment %}
+Onglet « Famille » : composition familiale et bénéficiaires. Contexte : membre, user, structure, familles.
+{% endcomment %}
+<section class="panneau">
+  <div class="panneau-tete"><h2>{% translate "Composition familiale" %}</h2>
+    {% if not user.privilege4 %}{% if structure == membre.structure %}
+    <a href="{% url 'add-family' membre.id %}" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un membre de la famille" %}</span></a>
+    {% endif %}{% endif %}
+  </div>
+  <div class="panneau-corps pile">
+    <dl class="definitions">
+      <div><dt>{% translate "Zone opérationnelle" %}</dt><dd>{{ membre.antenne.zone }}</dd></div>
+      <div><dt>{% translate "Coordination provinciale" %}</dt><dd>{{ membre.province.nom }}</dd></div>
+      {% if user.is_authenticated %}
+      <div><dt>{% translate "Adresse" %}</dt><dd>{{ membre.adresse|default_if_none:"" }}</dd></div>
+      <div><dt>{% translate "Téléphone" %}</dt><dd>{{ membre.telephone|default_if_none:"" }}</dd></div>
+      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.epouse }}</dd></div>
+      {% endif %}
+    </dl>
+    {% if familles %}
+    <h3>{% translate "Bénéficiaires" %}</h3>
+    <table class="liste">
+      <caption class="lecteur">{% translate "Bénéficiaires" %}</caption>
+      <thead><tr><th scope="col">{% translate "Nom" %}</th><th scope="col">{% translate "Lien" %}</th><th scope="col">{% translate "Genre" %}</th><th scope="col">{% translate "Année" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th></tr></thead>
+      <tbody>
+        {% for famille in familles %}
+        <tr>
+          <td data-role="titre"><div class="cellule-personne">{% avatar famille.beneficiere "" 40 %}<div>{{ famille.beneficiere }}</div></div></td>
+          <td data-libelle="{% translate 'Lien' %}">{{ famille.qualite|default:"—" }}</td>
+          <td data-libelle="{% translate 'Genre' %}">{{ famille.genre|default:"—" }}</td>
+          <td data-libelle="{% translate 'Année' %}" class="chiffres">{{ famille.annee|default:"—" }}</td>
+          <td data-role="actions">
+          {% if user.is_superuser or user.privilage5 or user.privilage3 %}
+            <a href="{% url 'edit-family' famille.id %}" class="bouton-icone" aria-label="{% translate 'Modifier le bénéficiaire' %}" title="{% translate 'Modifier le bénéficiaire' %}">{% icone "pencil" %}</a>
+            {% url 'delete-family' famille.id as url_suppr %}{% translate "Supprimer le bénéficiaire" as t_titre %}{% translate "Retirer ce membre de la famille ? Cette action est irréversible." as t_message %}{% translate "Supprimer" as t_libelle %}
+            {% include "components/_confirmer.html" with prefixe="famille" ident=famille.id url=url_suppr libelle=t_titre titre=t_titre message=t_message libelle_envoi=t_libelle icone="trash-2" icone_seule=True %}
+          {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    {% translate "Aucun bénéficiaire" as t_vide %}{% translate "Les membres de la famille apparaîtront ici." as t_msg %}
+    {% include "components/_etat_vide.html" with icone="baby" titre=t_vide texte=t_msg %}
+    {% endif %}
+  </div>
+</section>

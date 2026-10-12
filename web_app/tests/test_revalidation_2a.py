@@ -59,7 +59,7 @@ def test_F02_adminer_mot_de_passe_unique_et_non_cache(client, jeu):
     r = client.post(reverse('adminer', kwargs={'id': jeu['membre'].id}))
     assert r.status_code == 200
     assert 'no-store' in r['Cache-Control']
-    mdp = r.content.decode().split('<strong class="user-select-all">')[1].split('</strong>')[0]
+    mdp = r.content.decode().split('<strong class="secret">')[1].split('</strong>')[0]
     assert Compte.objects.get(membreId=jeu['membre'].id).check_password(mdp)
     assert 'messages' not in r.cookies
     assert all(mdp not in m.value for m in r.cookies.values())

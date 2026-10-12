@@ -78,7 +78,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'fenamo.contexte.textes_interface',
+                'fenamo.contexte.coque',
             ],
+            'libraries': {'design': 'fenamo.balises'},
         },
     },
 ]
