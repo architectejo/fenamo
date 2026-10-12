@@ -103,6 +103,13 @@ AUTHENTICATION_BACKENDS = [
 ]
 AXES_FAILURE_LIMIT = env.int('AXES_FAILURE_LIMIT', default=5)
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+# Nom normalisé (strip + minuscules) : « Admin » et « admin  » comptent pour le même verrou.
+AXES_USERNAME_CALLABLE = 'compte.services.verrou.nom_utilisateur_normalise'
+# Journal des échecs, base du seuil par adresse IP seule (compte/services/verrou.py).
+AXES_ENABLE_ACCESS_FAILURE_LOG = True
+# Verrou par adresse IP seule (rotation de pseudos) : seuil plus haut, car plusieurs agents peuvent partager
+# une même adresse (cybercafé, antenne de téléphonie).
+IP_ECHECS_MAX = env.int('IP_ECHECS_MAX', default=30)
 AXES_COOLOFF_TIME = timedelta(minutes=env.int('AXES_COOLOFF_MINUTES', default=30))
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = 'compte/verrou.html'

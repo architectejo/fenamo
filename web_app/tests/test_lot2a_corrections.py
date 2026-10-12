@@ -67,3 +67,21 @@ def test_F04_add_user_no_store(client, jeu):
 
 def test_messages_stockes_en_session(settings):
     assert settings.MESSAGE_STORAGE.endswith('session.SessionStorage')
+
+
+# ------------------------------------------------------------- M2 : verrou normalisé et par IP
+
+def test_F04_verrou_insensible_a_la_casse_et_aux_espaces(client, db):
+    Compte.objects.create_user('cible', password=MDP)
+    for variante in ('cible', 'CIBLE', ' Cible ', 'cible', 'CiBle'):
+        client.post('/connexion/', {'username': variante, 'password': 'faux'})
+    assert client.post('/connexion/', {'username': 'cible', 'password': MDP}).status_code == 429
+
+
+def test_F04_verrou_par_adresse_ip_seule(client, db, settings):
+    settings.IP_ECHECS_MAX = 8
+    Compte.objects.create_user('bon', password=MDP)
+    for i in range(8):
+        assert client.post('/connexion/', {'username': f'inconnu{i}', 'password': 'faux'}).status_code == 200
+    # tous pseudos confondus : l'adresse est bloquée, même avec un pseudo sain et le bon mot de passe
+    assert client.post('/connexion/', {'username': 'bon', 'password': MDP}).status_code == 429

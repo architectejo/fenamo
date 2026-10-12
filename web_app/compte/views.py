@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from coptapp.models import Membre
 from compte.forms import *
 from compte.permissions import superuser_requis
+from compte.services.verrou import ip_bloquee
 from compte.services.comptes import creer_compte, creer_compte_pour_membre
 
 User = get_user_model()
@@ -35,6 +36,8 @@ def connexion(request):
     if request.method == 'POST':
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
+        if ip_bloquee(request):
+            return render(request, 'compte/verrou.html', status=429)
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
