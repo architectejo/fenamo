@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import PasswordChangeForm
 
 from compte.models import Compte
@@ -28,3 +29,9 @@ class ChangementMotDePasseForm(PasswordChangeForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+    def clean_new_password1(self):
+        nouveau = self.cleaned_data['new_password1']
+        if self.user.check_password(nouveau):
+            raise forms.ValidationError(_("Le nouveau mot de passe doit être différent de l'ancien."), code='identique')
+        return nouveau

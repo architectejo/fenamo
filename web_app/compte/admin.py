@@ -15,5 +15,11 @@ class CompteAdmin(UserAdmin):
                                    'privilege3', 'privilege4', 'privilege5', 'privilege', 'editor')}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('FENAMO-RDC', {'fields': ('email', 'membreId', 'doit_changer_mot_de_passe')}),
+        ('FENAMO-RDC', {'fields': ('email', 'membreId')}),
     )
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            # Compte créé par l'administration : mot de passe saisi par un tiers, à changer à la première connexion.
+            obj.doit_changer_mot_de_passe = True
+        super().save_model(request, obj, form, change)

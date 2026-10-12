@@ -5,6 +5,7 @@ import unicodedata
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils.translation import gettext as _
 
 from coptapp.models import Notification
 
@@ -63,3 +64,15 @@ def creer_compte_pour_membre(membre, auteur=None):
     if membre.structure:
         membre.structure.users.add(compte)
     return compte, mdp
+
+
+@transaction.atomic
+def changer_mot_de_passe(compte, form):
+    """Enregistre le nouveau mot de passe d'un formulaire valide et lève l'obligation de changement."""
+    form.save()
+    if compte.doit_changer_mot_de_passe:
+        compte.doit_changer_mot_de_passe = False
+        compte.save(update_fields=['doit_changer_mot_de_passe'])
+    Notification.objects.create(user=compte, titre=_("Changement de mot de passe"),
+                                description=_("Mot de passe modifié par son titulaire."))
+    return compte

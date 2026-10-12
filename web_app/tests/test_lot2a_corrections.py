@@ -85,3 +85,20 @@ def test_F04_verrou_par_adresse_ip_seule(client, db, settings):
         assert client.post('/connexion/', {'username': f'inconnu{i}', 'password': 'faux'}).status_code == 200
     # tous pseudos confondus : l'adresse est bloquée, même avec un pseudo sain et le bon mot de passe
     assert client.post('/connexion/', {'username': 'bon', 'password': MDP}).status_code == 429
+
+
+# ------------------------------------------------------------- mot de passe : identique, admin
+
+def test_F04_nouveau_mot_de_passe_identique_refuse(client, db):
+    c = Compte.objects.create_user('u', password=MDP)
+    client.force_login(c)
+    r = client.post(reverse('securite'), {'old_password': MDP, 'new_password1': MDP, 'new_password2': MDP})
+    assert r.status_code == 200 and 'différent de l' in r.content.decode()
+
+
+def test_F04_compte_cree_par_l_admin_doit_changer_son_mot_de_passe(client, jeu):
+    client.force_login(jeu['compte'])
+    r = client.post('/gestion-technique/compte/compte/add/', {
+        'username': 'par-admin', 'password1': 'Mdp-admin-test-7391', 'password2': 'Mdp-admin-test-7391'})
+    assert r.status_code == 302
+    assert Compte.objects.get(username='par-admin').doit_changer_mot_de_passe

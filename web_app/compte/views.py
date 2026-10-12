@@ -9,7 +9,7 @@ from coptapp.models import Membre
 from compte.forms import *
 from compte.permissions import superuser_requis
 from compte.services.verrou import ip_bloquee
-from compte.services.comptes import creer_compte, creer_compte_pour_membre
+from compte.services.comptes import changer_mot_de_passe, creer_compte, creer_compte_pour_membre
 
 User = get_user_model()
 
@@ -78,9 +78,7 @@ def securite(request, id=None):
     force_changement = request.user.doit_changer_mot_de_passe
     form = ChangementMotDePasseForm(request.user, request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        form.save()
-        request.user.doit_changer_mot_de_passe = False
-        request.user.save(update_fields=['doit_changer_mot_de_passe'])
+        changer_mot_de_passe(request.user, form)
         update_session_auth_hash(request, request.user)
         messages.success(request, "Mot de passe modifié.")
         return redirect('tableau-bord')
