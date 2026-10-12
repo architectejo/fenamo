@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import redirect, render
 from coptapp.models import Membre
@@ -21,6 +22,7 @@ def adminer(request, id):
         membre.structure.save()
     return redirect('membre-view', id=id)
 
+@login_not_required
 def connexion(request):
     if request.user.is_authenticated:
         return redirect('tableau-bord')
