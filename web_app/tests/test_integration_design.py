@@ -18,7 +18,7 @@ from django.views import defaults
 from compte.models import Compte
 from coptapp.models import Membre, Notification
 from coptapp.services.etats import ETATS
-from fenamo.balises import ETATS as LIBELLES_ETATS
+from coptapp.services.etats import LIBELLES as LIBELLES_ETATS
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
 RACINE = Path(settings.BASE_DIR)
@@ -207,7 +207,7 @@ def test_design_badge_rendu_pour_chaque_etat(etat):
     code_css = etat.replace('_', '-')
     html = tpl.render({'code': code_css})
     assert html.strip() and 'etat--' + code_css in html
-    assert LIBELLES_ETATS[etat.replace('_', '-')] and str(LIBELLES_ETATS[etat.replace('_', '-')]) in html
+    assert LIBELLES_ETATS[etat] and str(LIBELLES_ETATS[etat]) in html
 
 
 def test_design_liste_affiche_les_etats(client, jeu):

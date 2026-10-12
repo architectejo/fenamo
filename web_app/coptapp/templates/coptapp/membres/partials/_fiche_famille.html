@@ -1,5 +1,5 @@
 {% load i18n design %}{% comment %}
-Onglet « Famille » : composition familiale et bénéficiaires. Droits : peut_modifier_famille et peut_supprimer_famille (fournis par la vue) ; en attendant, réservés aux super-utilisateurs. La suppression d'un bénéficiaire est définitive (famille.delete()).
+Onglet « Famille » : composition familiale et bénéficiaires. Droits : peut_gerer_famille (modifier et supprimer ; booléen fourni par la vue membre_view). La suppression d'un bénéficiaire est définitive (famille.delete()).
 Contexte : membre, user, structure, familles.
 {% endcomment %}
 <section class="panneau">
@@ -27,10 +27,10 @@ Contexte : membre, user, structure, familles.
           <td data-libelle="{% translate 'Genre' %}">{{ famille.genre|default:"—" }}</td>
           <td data-libelle="{% translate 'Année' %}" class="chiffres">{{ famille.annee|default:"—" }}</td>
           <td data-role="actions">
-          {% if peut_modifier_famille or user.is_superuser %}
+          {% if peut_gerer_famille %}
             <a href="{% url 'edit-family' famille.id %}" class="bouton-icone" aria-label="{% translate 'Modifier le bénéficiaire' %}" title="{% translate 'Modifier le bénéficiaire' %}">{% icone "pencil" %}</a>
           {% endif %}
-          {% if peut_supprimer_famille or user.is_superuser %}
+          {% if peut_gerer_famille %}
             {% url 'delete-family' famille.id as url_suppr %}{% translate "Supprimer le bénéficiaire" as t_titre %}{% translate "Retirer ce membre de la famille ? Cette action est irréversible." as t_message %}{% translate "Supprimer" as t_libelle %}
             {% include "components/_confirmer.html" with prefixe="famille" ident=famille.id url=url_suppr libelle=t_titre titre=t_titre message=t_message libelle_envoi=t_libelle icone="trash-2" icone_seule=True %}
           {% endif %}

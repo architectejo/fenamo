@@ -1,9 +1,9 @@
 {% load i18n %}{% comment %}
 Bouton + confirmation en modale pour une action POST (suppression, demande, annulation) sans fragment serveur : le contenu de la modale est
 un <template> de la page, que fenamo.js recopie dans #modale-contenu. Le formulaire part en POST ordinaire avec CSRF.
-Contexte : prefixe + ident (identifiant unique dans la page), url (POST), libelle (bouton), titre, message, libelle_envoi,
+Contexte : avec_motif (+ motif_initial, motif_libelle) pour exiger un motif ; variante_envoi (style du bouton de la modale) ; prefixe + ident (identifiant unique dans la page), url (POST), libelle (bouton), titre, message, libelle_envoi,
 variante (classe du bouton déclencheur, ex. "discret" ; défaut ""), variante_envoi (bouton de la modale ; défaut "danger-plein" = suppression), icone (nom du sprite), icone_seule (bouton réduit à l'icône, libellé en aria-label).
 {% endcomment %}{% if icone_seule %}<button type="button" class="bouton-icone" data-modale-locale="#confirmer-{{ prefixe }}-{{ ident }}" aria-label="{{ libelle }}" title="{{ libelle }}">{% include "components/_icone.html" with nom=icone classe="" %}</button>{% else %}<button type="button" class="bouton{% if variante %} bouton--{{ variante }}{% endif %}" data-modale-locale="#confirmer-{{ prefixe }}-{{ ident }}">{% if icone %}{% include "components/_icone.html" with nom=icone classe="" %}{% endif %}<span>{{ libelle }}</span></button>{% endif %}
 <template id="confirmer-{{ prefixe }}-{{ ident }}">
-  {% include "components/modale_confirmation.html" with action_url=url variante_envoi=variante_envoi %}
+  {% include "components/modale_confirmation.html" with action_url=url variante_envoi=variante_envoi ident=ident avec_motif=avec_motif motif_initial=motif_initial motif_libelle=motif_libelle %}
 </template>

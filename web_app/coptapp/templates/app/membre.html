@@ -7,7 +7,7 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
 {% block titre %}{{ membre.nom|default:_("Membre") }} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div hidden hx-history="false"></div>{# données personnelles : pas de copie de la page dans l'historique HTMX #}
-{% if message %}<div class="u-mb-4">{% include "components/_erreur.html" with niveau="info" titre=message %}</div>{% endif %}
+{% if message and not erreurs_modifier %}<div class="u-mb-4">{% include "components/_erreur.html" with niveau="info" titre=message %}</div>{% endif %}
 
 {% include "coptapp/membres/partials/_fiche_entete.html" %}
 
@@ -70,7 +70,7 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
 
 {# Contenus des modales (recopiés dans la modale commune au clic, voir static/js/fenamo.js) #}
 {% if peut_modifier %}
-<template id="modale-modifier">{% include "coptapp/membres/partials/_modale_modifier.html" with action_url=request.path multipart=True large=True libelle_envoi=_("Enregistrer le membre") nom_envoi="modifier" %}</template>
+<template id="modale-modifier"{% if erreurs_modifier %} data-ouvrir{% endif %}>{% include "coptapp/membres/partials/_modale_modifier.html" with action_url=request.path multipart=True large=True libelle_envoi=_("Enregistrer le membre") nom_envoi="modifier" %}</template>
 {% endif %}
 {% if peut_demander_modification %}
 <template id="modale-demande">{% include "coptapp/membres/partials/_modale_demande.html" with action_url=request.path libelle_envoi=_("Envoyer la demande") nom_envoi="envoyer" %}</template>

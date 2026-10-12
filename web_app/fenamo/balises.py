@@ -14,22 +14,10 @@ from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from coptapp.services.etats import etat_de
+from coptapp.services.etats import LIBELLES, etat_de
 from fenamo.htmx import veut_fragment as _veut_fragment
 
 register = template.Library()
-
-# Circuit de validation (CLAUDE.md « Règles métier ») : saisi -> validé antenne -> validé province -> actif,
-# plus « renvoyé », « à renouveler » et « supprimé ».
-ETATS = {
-    'saisi': _('Saisi'),
-    'valide-antenne': _('Validé antenne'),
-    'valide-province': _('Validé province'),
-    'actif': _('Actif'),
-    'renvoye': _('Renvoyé'),
-    'a-renouveler': _('À renouveler'),
-    'supprime': _('Supprimé'),
-}
 
 
 @register.simple_tag
@@ -119,10 +107,56 @@ def palier_5(valeur):
 @register.filter
 def libelle_code_etat(code):
     """Libellé d'un code d'état du service (``valide_antenne``) : « Validé antenne »."""
-    return ETATS.get(str(code).replace('_', '-'), code)
+    return LIBELLES.get(str(code).replace('-', '_'), code)
 
 
 @register.filter
 def veut_fragment(request):
     """Vrai si la requête attend un fragment (voir fenamo.htmx.veut_fragment) : sert à n'émettre les zones hors bande qu'alors."""
     return _veut_fragment(request)
+
+
+# Noms envoyés par la modale « Modifier » -> champs du modèle (voir coptapp.services.membres.ALIAS_POST).
+ALIAS_MODIFIER = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb'}
+
+
+def _saisie_refusee(context):
+    """Vrai si la fiche est réaffichée après un formulaire « Modifier » invalide : la saisie de l'utilisateur est conservée."""
+    requete = context.get('request')
+    return bool(context.get('erreurs_modifier')) and requete is not None and 'modifier' in requete.POST
+
+
+@register.simple_tag(takes_context=True)
+def saisie(context, nom, defaut=''):
+    """Valeur d'un champ de la modale « Modifier » : la saisie refusée si le formulaire est invalide, sinon la valeur actuelle."""
+    if _saisie_refusee(context):
+        return context['request'].POST.get(nom, '')
+    return '' if defaut is None else defaut
+
+
+@register.simple_tag(takes_context=True)
+def selectionne(context, nom, defaut, option):
+    """`` selected`` si `option` est la valeur à afficher (saisie refusée ou valeur actuelle) dans une liste de la modale « Modifier »."""
+    return ' selected' if str(saisie(context, nom, defaut)) == str(option) else ''
+
+
+@register.simple_tag(takes_context=True)
+def erreur_modifier(context, nom):
+    """Message d'erreur d'un champ de la modale « Modifier » (sous le champ, lié par aria-describedby)."""
+    erreurs = context.get('erreurs_modifier') or {}
+    messages = erreurs.get(ALIAS_MODIFIER.get(nom, nom))
+    if not messages:
+        return ''
+    return format_html(
+        '<p class="champ-erreur" id="mm-{}-erreur"><svg class="ic" aria-hidden="true" focusable="false"><use href="{}#i-circle-alert"></use></svg>{}</p>',
+        nom, static('img/icons.svg'), ' '.join(messages),
+    )
+
+
+@register.simple_tag(takes_context=True)
+def invalide(context, nom):
+    """Attributs ARIA d'un champ refusé de la modale « Modifier »."""
+    erreurs = context.get('erreurs_modifier') or {}
+    if erreurs.get(ALIAS_MODIFIER.get(nom, nom)):
+        return format_html(' aria-invalid="true" aria-describedby="mm-{}-erreur"', nom)
+    return ''

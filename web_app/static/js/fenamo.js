@@ -93,18 +93,37 @@
   document.addEventListener('click', function (e) {
     if (e.target.closest('[data-ferme-modale], .modale-voile')) { viderApresFermeture(); }
     if (e.target.closest('[data-retour]')) { history.back(); return; }
-    // Modale alimentée par un <template> de la page (confirmation, formulaire existant sans fragment serveur)
     var local = e.target.closest('[data-modale-locale]');
-    if (local && lierModale()) {
-      var tpl = document.querySelector(local.getAttribute('data-modale-locale'));
-      if (!tpl) { return; }
-      contenu.replaceChildren(tpl.content.cloneNode(true));
-      if (window.htmx) { htmx.process(contenu); }
-      document.dispatchEvent(new CustomEvent('modaleLocale', { detail: local.getAttribute('data-modale-locale') }));
-      D.ouvrirModale('#modale');
-      focaliser();
-    }
+    if (local) { ouvrirLocale(local.getAttribute('data-modale-locale')); }
   });
+  // Modale alimentée par un <template> de la page (confirmation, formulaire existant sans fragment serveur)
+  function ouvrirLocale(selecteur) {
+    if (!lierModale()) { return; }
+    var tpl = document.querySelector(selecteur);
+    if (!tpl) { return; }
+    contenu.replaceChildren(tpl.content.cloneNode(true));
+    if (window.htmx) { htmx.process(contenu); }
+    document.dispatchEvent(new CustomEvent('modaleLocale', { detail: selecteur }));
+    D.ouvrirModale('#modale');
+    focaliser();
+  }
+  // Un <template data-ouvrir> s'ouvre dès le chargement : formulaire réaffiché avec ses erreurs (fiche en statut 400)
+  document.addEventListener('DOMContentLoaded', function () {
+    var d = document.querySelector('template[data-ouvrir][id]');
+    if (d) { ouvrirLocale('#' + d.id); }
+  });
+  // Motif obligatoire : un envoi sans motif est bloqué avec un message lisible (le serveur le vérifie aussi)
+  document.addEventListener('submit', function (e) {
+    var champ = e.target.querySelector && e.target.querySelector('[data-motif-requis] textarea');
+    if (!champ) { return; }
+    var erreur = document.getElementById(champ.getAttribute('aria-describedby'));
+    if (!champ.value.trim()) {
+      e.preventDefault();
+      if (erreur) { erreur.hidden = false; }
+      champ.setAttribute('aria-invalid', 'true');
+      champ.focus();
+    }
+  }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { viderApresFermeture(); } });
 
   // Une requête GET qui cible la modale l'ouvre tout de suite avec un squelette (retour visuel immédiat en 3G)
