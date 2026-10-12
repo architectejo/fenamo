@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'compte',
     'coptapp',
     'virtrine',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -83,6 +84,8 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
 # Mots de passe
 
 AUTH_USER_MODEL = 'compte.Compte'
+LOGIN_URL = 'application'
+LOGIN_REDIRECT_URL = 'home-app'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
