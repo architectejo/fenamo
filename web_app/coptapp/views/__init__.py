@@ -1,4 +1,6 @@
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, render
+from compte.services.privileges import attribuer_privileges
 from django.views.decorators.http import require_POST
 from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
@@ -801,32 +803,11 @@ def membre_view(request, id):
                 message = 'Votre demande a déjà été envoyer'
                 classMessage = 'alert alert-info'
         elif 'privilege' in request.POST:
-            if 'privilege1' in request.POST:
-                membreUser.privilege1 = True
-            else:
-                membreUser.privilege1 = False
-
-            if 'privilege2' in request.POST:
-                membreUser.privilege2 = True
-            else:
-                membreUser.privilege2 = False
-
-            if 'privilege3' in request.POST:
-                membreUser.privilege3 = True
-            else:
-                membreUser.privilege3 = False
-
-            if 'privilege4' in request.POST:
-                membreUser.privilege4 = True
-            else:
-                membreUser.privilege4 = False
-
-            if 'privilege5' in request.POST:
-                membreUser.privilege5 = True
-            else:
-                membreUser.privilege5 = False
-            membreUser.save()
-            notify(user=user, membre=membre, titre="Attribution des privilegès")
+            # Réservé aux super-utilisateurs (403 sinon) : correctif minimal avant les rôles (sous-lot 2e).
+            if not request.user.is_superuser:
+                raise PermissionDenied
+            if verify:
+                attribuer_privileges(request.user, membreUser, membre, request.POST)
     if request.user.is_authenticated:
         if verify:
             if membreUser.privilege1: checked1 = 'checked'
