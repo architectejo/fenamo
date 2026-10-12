@@ -23,14 +23,14 @@ def adminer(request, id):
 
 def connexion(request):
     if request.user.is_authenticated:
-        return redirect('home-app')
+        return redirect('tableau-bord')
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('home-app')
+            return redirect('tableau-bord')
         elif user is None:
             classMessage = 'alert alert-danger'
             message = "Pseudo ou mot de passe incorrect !"

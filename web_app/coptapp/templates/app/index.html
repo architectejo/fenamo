@@ -174,56 +174,22 @@
 
               <div class="card-body">
                 <h5 class="card-title">Evolution <span>/{{an}}</span></h5>
-                <div id="reportsChart"></div>
+                <div style="height:350px"><canvas id="reportsChart" role="img" aria-label="Évolution des motos et des membres"></canvas></div>
 
                 <script>
                   document.addEventListener("DOMContentLoaded", () => {
-                    new ApexCharts(document.querySelector("#reportsChart"), {
-                      series: [{
-                        name: 'Motos',
-                        data: [{{ motoDuMois.janvier }}, {{ motoDuMois.fevrier }}, {{ motoDuMois.mars }}, {{ motoDuMois.avril }}, {{ motoDuMois.mai }}, {{ motoDuMois.juin }}, {{ motoDuMois.juillet }}, {{ motoDuMois.aout }}, {{ motoDuMois.septembre }}, {{ motoDuMois.octobre }}, {{ motoDuMois.novembre }}, {{ motoDuMois.decembre }}],
-                        }, {
-                      name: 'Membres',
-                      data: [{{ membreDuMois.janvier }}, {{ membreDuMois.fevrier }}, {{ membreDuMois.mars }}, {{ membreDuMois.avril }}, {{ membreDuMois.mai }}, {{ membreDuMois.juin }}, {{ membreDuMois.juillet }}, {{ membreDuMois.aout }}, {{ membreDuMois.septembre }}, {{ membreDuMois.octobre }}, {{ membreDuMois.novembre }}, {{ membreDuMois.decembre }}]
-                        }],
-                    chart: {
-                    height: 350,
-                    type: 'area',
-                    toolbar: {
-                      show: false
-                    },
-                  },
-                    markers: {
-                    size: 4
-                  },
-                    colors: ['#4154f1', '#fbff00'],
-                    fill: {
-                    type: "gradient",
-                    gradient: {
-                      shadeIntensity: 1,
-                      opacityFrom: 0.3,
-                      opacityTo: 0.4,
-                      stops: [0, 90, 100]
-                    }
-                  },
-                    dataLabels: {
-                    enabled: false
-                  },
-                    stroke: {
-                    curve: 'smooth',
-                    width: 2
-                  },
-                    xaxis: {
-                    type: 'date',
-                    categories: ["Janvier", "Fevrier", "Mars", "avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Decembre"]
-                  },
-                    tooltip: {
-                    x: {
-                      format: 'MM/yy'
-                    },
-                  }
-                      }).render();
+                    new Chart(document.getElementById("reportsChart"), {
+                      type: 'line',
+                      data: {
+                        labels: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+                        datasets: [
+                          {label: 'Motos', data: [{{ motoDuMois.janvier }}, {{ motoDuMois.fevrier }}, {{ motoDuMois.mars }}, {{ motoDuMois.avril }}, {{ motoDuMois.mai }}, {{ motoDuMois.juin }}, {{ motoDuMois.juillet }}, {{ motoDuMois.aout }}, {{ motoDuMois.septembre }}, {{ motoDuMois.octobre }}, {{ motoDuMois.novembre }}, {{ motoDuMois.decembre }}], borderColor: '#4154f1', backgroundColor: 'rgba(65,84,241,.25)', fill: true, tension: .4},
+                          {label: 'Membres', data: [{{ membreDuMois.janvier }}, {{ membreDuMois.fevrier }}, {{ membreDuMois.mars }}, {{ membreDuMois.avril }}, {{ membreDuMois.mai }}, {{ membreDuMois.juin }}, {{ membreDuMois.juillet }}, {{ membreDuMois.aout }}, {{ membreDuMois.septembre }}, {{ membreDuMois.octobre }}, {{ membreDuMois.novembre }}, {{ membreDuMois.decembre }}], borderColor: '#b58105', backgroundColor: 'rgba(252,209,22,.3)', fill: true, tension: .4}
+                        ]
+                      },
+                      options: {maintainAspectRatio: false}
                     });
+                  });
                 </script>
                 <!-- End Line Chart -->
 
@@ -316,3 +282,4 @@
 {% include './footer.html' %}
 
 {% endblock body %}
+{% block scripts %}<script src="{% static 'vendor/chartjs/chart.min.js' %}"></script>{% endblock %}

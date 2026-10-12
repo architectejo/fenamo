@@ -1,0 +1,99 @@
+{% load static i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'fr' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="htmx-config" content='{"timeout": 30000, "responseHandling": [{"code": "204", "swap": false}, {"code": "[23]..", "swap": true}, {"code": "422", "swap": true, "error": false}, {"code": "[45]..", "swap": false, "error": true}, {"code": "...", "swap": false}]}'>
+  <title>{% block titre %}FENAMO-RDC{% endblock %}</title>
+  <link rel="icon" href="{% static 'img/favicon.png' %}" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'img/favicon.png' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/fenamo.css' %}">
+  {% block tete %}{% endblock %}
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <div id="chargement" aria-hidden="true"></div>
+
+  {% block coque %}
+  {# Coque de l'application : en-tête, menu latéral repliable, contenu #}
+  <div id="app" x-data="coque()" :class="{ 'menu-ouvert': ouvert, 'menu-ferme': ferme }" @keydown.escape.window="fermerTiroir()">
+    <a class="visually-hidden-focusable btn btn-warning" href="#contenu">{% translate "Aller au contenu" %}</a>
+
+    <header class="app-entete">
+      <button type="button" class="btn btn-outline-light btn-entete" @click="basculer()"
+              :aria-expanded="estOuvert().toString()" aria-controls="menu-principal" aria-label="{% translate 'Ouvrir ou fermer le menu' %}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <a class="app-marque" href="{% url 'tableau-bord' %}">
+        <img src="{% static 'img/logo-48.webp' %}" width="40" height="40" alt="">
+        <span>FENAMO-RDC</span>
+      </a>
+      {% if user.is_authenticated %}
+      <div class="app-utilisateur">
+        <span class="nom d-none d-sm-inline">{{ user.get_username }}</span>
+        <form method="post" action="{% url 'deconnexion' %}" hx-boost="false">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-light btn-entete btn-sm">{% translate "Déconnexion" %}</button>
+        </form>
+      </div>
+      {% endif %}
+    </header>
+
+    <div class="app-voile" x-show="ouvert" x-cloak @click="fermerTiroir()" aria-hidden="true"></div>
+    {% include "partials/_menu.html" %}
+
+    <div class="app-corps">
+      <main id="contenu" class="app-contenu" tabindex="-1">
+        {% block contenu %}{% endblock %}
+      </main>
+      <footer class="app-pied">
+        FENAMO-RDC asbl &middot; {% translate "Unité, Discipline et Progrès" %}
+      </footer>
+    </div>
+  </div>
+  {% endblock coque %}
+
+  {# Modale commune : tout formulaire s'y charge par HTMX (plein écran sous 576 px) #}
+  <div class="modal fade" id="modale" tabindex="-1" aria-labelledby="modale-titre" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content" id="modale-contenu"></div>
+    </div>
+  </div>
+
+  {# Zone de toasts : alimentée par HX-Trigger (événement « toast ») et par les messages Django #}
+  <div class="zone-toasts" x-data="toasts()" @toast.window="ajouter($event.detail)" aria-live="polite" aria-atomic="false">
+    <template x-for="t in items" :key="t.id">
+      <div class="toast-fenamo" :class="'niveau-' + t.niveau" :role="t.niveau === 'danger' ? 'alert' : 'status'">
+        <div class="corps" x-text="t.message"></div>
+        <button type="button" class="btn-close m-2" aria-label="{% translate 'Fermer' %}" @click="retirer(t.id)"></button>
+      </div>
+    </template>
+  </div>
+  {% if not request.htmx %}
+  <div id="messages-django" hidden>{% for m in messages %}<span data-niveau="{{ m.level_tag|default:'info' }}">{{ m }}</span>{% endfor %}</div>
+  {% endif %}
+
+  {# Erreur réseau ou serveur #}
+  <div class="bandeau-reseau" x-data x-show="$store.reseau.visible" x-cloak role="alert">
+    <strong x-text="$store.reseau.texte"></strong>
+    <button type="button" class="btn btn-dark btn-sm" @click="$store.reseau.reessayer()">{% translate "Réessayer" %}</button>
+    <button type="button" class="btn btn-outline-dark btn-sm" @click="$store.reseau.cacher()">{% translate "Fermer" %}</button>
+  </div>
+  <noscript><p class="app-pied">{% translate "JavaScript est nécessaire pour utiliser cette application." %}</p></noscript>
+
+  <script>
+    window.FENAMO_TEXTES = {
+      connexionPerdue: "{% translate 'Connexion perdue, réessayez' %}",
+      erreurServeur: "{% translate 'Erreur du serveur, réessayez' %}",
+      refuse: "{% translate 'Accès refusé' %}",
+      introuvable: "{% translate 'Page ou élément introuvable' %}"
+    };
+  </script>
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
+  <script src="{% static 'js/fenamo.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+  <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+</body>
+</html>

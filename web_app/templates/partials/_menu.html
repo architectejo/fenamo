@@ -1,0 +1,19 @@
+{% load i18n %}
+{# Menu latéral. Les liens boostés (hx-boost) remplacent seulement #contenu ; les écrans hérités (base-app.html) gardent hx-boost="false" jusqu'à leur migration (lots 3-4). #}
+{% with nom=request.resolver_match.url_name %}
+<nav id="menu-principal" class="app-menu" aria-label="{% translate 'Menu principal' %}"
+     hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="innerHTML show:window:top">
+  <ul class="nav flex-column pb-4">
+    <li>
+      <a class="nav-link" href="{% url 'tableau-bord' %}"{% if nom == 'tableau-bord' %} aria-current="page"{% endif %}>{% translate "Tableau de bord" %}</a>
+    </li>
+    <li class="titre-groupe" aria-hidden="true">{% translate "Gestion" %}</li>
+    <li><a class="nav-link" hx-boost="false" href="{% url 'str-list' %}">{% translate "Associations membres" %}</a></li>
+    <li><a class="nav-link" hx-boost="false" href="{% url 'liste-membre' %}">{% translate "Membres" %}</a></li>
+    <li><a class="nav-link" hx-boost="false" href="{% url 'list-message' %}">{% translate "Communiqués" %}</a></li>
+    <li><a class="nav-link" hx-boost="false" href="{% url 'notifys' %}">{% translate "Notifications" %}</a></li>
+    <li class="titre-groupe" aria-hidden="true">{% translate "Site public" %}</li>
+    <li><a class="nav-link" hx-boost="false" href="{% url 'site' %}">{% translate "Contenu du site" %}</a></li>
+  </ul>
+</nav>
+{% endwith %}

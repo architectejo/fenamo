@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class="row g-3" id="raccourcis">
+  <div class="col-12 col-sm-6 col-lg-4">
+    <a class="carte-raccourci" href="{% url 'liste-membre' %}">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h5 card-title">{% translate "Membres" %}</h2>
+        <p class="card-text text-muted mb-0">{% translate "Consulter, rechercher et valider les membres." %}</p>
+      </div></div>
+    </a>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-4">
+    <a class="carte-raccourci" href="{% url 'str-list' %}">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h5 card-title">{% translate "Associations membres" %}</h2>
+        <p class="card-text text-muted mb-0">{% translate "Associations membres, antennes et parkings." %}</p>
+      </div></div>
+    </a>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-4">
+    <a class="carte-raccourci" href="{% url 'list-message' %}">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h5 card-title">{% translate "Communiqués" %}</h2>
+        <p class="card-text text-muted mb-0">{% translate "Messages adressés aux membres." %}</p>
+      </div></div>
+    </a>
+  </div>
+</div>

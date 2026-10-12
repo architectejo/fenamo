@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    'fenamo.htmx.HtmxSessionMessagesMiddleware',
 ]
 
 ROOT_URLCONF = 'fenamo.urls'
@@ -85,7 +86,7 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
 
 AUTH_USER_MODEL = 'compte.Compte'
 LOGIN_URL = 'application'
-LOGIN_REDIRECT_URL = 'home-app'
+LOGIN_REDIRECT_URL = 'tableau-bord'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

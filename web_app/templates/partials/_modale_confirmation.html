@@ -1,0 +1,12 @@
+{% extends "partials/_modale.html" %}
+{% load i18n %}{% comment %}
+Confirmation avant toute suppression. Contexte : titre, message, action_url (POST), libelle_envoi (ex. « Supprimer »).
+{% endcomment %}
+{% block corps %}<p class="mb-0">{{ message }}</p>{% endblock %}
+{% block pied %}
+<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Annuler" %}</button>
+<button type="submit" class="btn btn-danger">
+  <span class="spinner-border spinner-border-sm htmx-indicator" role="status" aria-hidden="true"></span>
+  {{ libelle_envoi|default:_("Supprimer") }}
+</button>
+{% endblock %}

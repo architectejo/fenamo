@@ -1,0 +1,35 @@
+{% load i18n %}{% comment %}
+Contenu de la modale commune (injecté dans #modale-contenu). Un formulaire l'étend :
+
+  {% extends "partials/_modale.html" %}
+  {% block titre %}Ajouter un membre{% endblock %}
+  {% block corps %}{{ form.as_div }}{% endblock %}
+
+Contexte : action_url (hx-post ; sans lui, simple fenêtre d'information), libelle_envoi (défaut « Enregistrer »).
+Ouverture : <button hx-get="..." hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">.
+Erreurs : la vue re-rend ce fragment (statut 200 ou 422) ; la modale reste ouverte avec la saisie.
+Succès : la vue répond fenamo.htmx.reponse_succes(message, evenements=[...]) : la modale se ferme,
+un toast confirme, les zones qui écoutent l'événement se rafraîchissent.
+{% endcomment %}
+{% if action_url %}<form method="post" action="{{ action_url }}" hx-post="{{ action_url }}" hx-target="#modale-contenu" hx-swap="innerHTML"
+      hx-disabled-elt="find button[type=submit]" hx-indicator="this" class="d-flex flex-column h-100 overflow-hidden">
+  {% csrf_token %}{% endif %}
+  <div class="modal-header">
+    <h2 class="modal-title fs-5" id="modale-titre">{% block titre %}{{ titre }}{% endblock %}</h2>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Fermer' %}"></button>
+  </div>
+  <div class="modal-body">
+    {% block corps %}{% endblock %}
+  </div>
+  <div class="modal-footer">
+    {% block pied %}
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Annuler" %}</button>
+    {% if action_url %}
+    <button type="submit" class="btn btn-primary">
+      <span class="spinner-border spinner-border-sm htmx-indicator" role="status" aria-hidden="true"></span>
+      {{ libelle_envoi|default:_("Enregistrer") }}
+    </button>
+    {% endif %}
+    {% endblock %}
+  </div>
+{% if action_url %}</form>{% endif %}
