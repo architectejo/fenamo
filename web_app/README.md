@@ -56,6 +56,24 @@ python manage.py check --deploy --settings=fenamo.settings.prod   # nécessite l
 
 Les tests créent leur propre base de test ; ils durent quelques minutes, car certains lancent `manage.py` dans un sous-processus.
 
+## Verrou des connexions (F-01)
+
+Deux verrous se cumulent (django-axes et `compte/services/verrou.py`), sur `/connexion/` comme sur `/gestion-technique/login/` :
+
+- **Pseudo + adresse IP** : 5 échecs (`AXES_FAILURE_LIMIT`), blocage de 30 minutes (`AXES_COOLOFF_MINUTES`). Le pseudo est normalisé (espaces et casse ignorés).
+- **Adresse IP seule** : `IP_ECHECS_MAX` échecs (30 par défaut, tous pseudos confondus) pendant la durée de blocage. Le seuil est volontairement haut : plusieurs agents partagent souvent une même adresse (NAT des opérateurs, cybercafés). Réglage dans `.env`.
+
+Déblocage par un super-utilisateur ou le prestataire, en ligne de commande :
+
+```bash
+python manage.py debloquer_ip 203.0.113.7     # verrous pseudo+IP et IP seule d'une adresse
+python manage.py axes_reset_username agent1   # un pseudo
+python manage.py axes_reset                   # tout débloquer (tentatives axes)
+python manage.py axes_reset_failure_logs      # vide aussi le journal d'échecs (verrou IP seule)
+```
+
+Attention : `axes_reset_ip` et `axes_reset` n'effacent pas le journal d'échecs que compte le verrou par IP seule ; utilisez `debloquer_ip` (ou `axes_reset_failure_logs`) pour lever ce verrou.
+
 ## Réglages par environnement
 
 | Fichier | Usage |

@@ -23,3 +23,11 @@ class CompteAdmin(UserAdmin):
             # Compte créé par l'administration : mot de passe saisi par un tiers, à changer à la première connexion.
             obj.doit_changer_mot_de_passe = True
         super().save_model(request, obj, form, change)
+
+    def user_change_password(self, request, id, form_url=''):
+        """Mot de passe changé par un super-utilisateur : le titulaire doit le changer à sa prochaine connexion."""
+        avant = Compte.objects.filter(pk=id).values_list('password', flat=True).first()
+        reponse = super().user_change_password(request, id, form_url)
+        if request.method == 'POST' and avant is not None:
+            Compte.objects.filter(pk=id).exclude(password=avant).update(doit_changer_mot_de_passe=True)
+        return reponse
