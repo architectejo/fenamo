@@ -1,5 +1,6 @@
 {% load i18n design %}{% comment %}
 Onglet « Engins » (maquette fiche-membre.html) : engins du membre (propriétaire) puis engin attribué (motard), en tableau devenu cartes sous 576 px.
+Droits : peut_modifier_engin et peut_supprimer_engin (fournis par la vue) ; en attendant, ces deux actions restent réservées aux super-utilisateurs (user.is_superuser).
 Contexte : membre, user, motos, nbrMoto, motoAttr. Conditions de l'écran hérité conservées.
 Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 : la plaque affiche pour l'instant le numéro hérité.
 {% endcomment %}
@@ -21,9 +22,11 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
           <td data-libelle="{% translate 'Antenne' %}">{{ moto.antenne.nom|default:"—" }}</td>
           <td data-libelle="{% translate 'Fin d’identification' %}" class="chiffres">{{ moto.abonnement|default:"—" }}</td>
           <td data-role="actions">
-          {% if peut_gerer_engins %}
+          {% if peut_modifier_engin or user.is_superuser %}
             <a href="{% url 'edit-moto' moto.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
-            {% url 'delete-moto' moto.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Cette action est irréversible." as t_message %}
+          {% endif %}
+          {% if peut_supprimer_engin or user.is_superuser %}
+            {% url 'delete-moto' moto.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Il disparaîtra des listes ; la suppression est enregistrée dans le journal." as t_message %}
             {% include "components/_confirmer.html" with prefixe="moto" ident=moto.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message icone="trash-2" icone_seule=True %}
           {% endif %}
           </td>
@@ -56,9 +59,11 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
           <td data-libelle="{% translate 'Antenne' %}">{{ motoAttr.antenne.nom|default:"—" }}</td>
           <td data-libelle="{% translate 'Propriétaire' %}">{{ motoAttr.proprietaire.nom|default:"—" }}</td>
           <td data-role="actions">
-          {% if peut_gerer_engins %}
+          {% if peut_modifier_engin or user.is_superuser %}
             <a href="{% url 'edit-moto' motoAttr.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
-            {% url 'delete-moto' motoAttr.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Cette action est irréversible." as t_message %}
+          {% endif %}
+          {% if peut_supprimer_engin or user.is_superuser %}
+            {% url 'delete-moto' motoAttr.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Il disparaîtra des listes ; la suppression est enregistrée dans le journal." as t_message %}
             {% include "components/_confirmer.html" with prefixe="moto-attribue" ident=motoAttr.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message icone="trash-2" icone_seule=True %}
           {% endif %}
           </td>
