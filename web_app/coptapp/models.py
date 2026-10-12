@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from compte.models import Compte
 from datetime import date
 
@@ -7,8 +8,8 @@ from datetime import date
 #Configurations
 class Province(models.Model):
     class Meta:
-        verbose_name = 'coordination provinciale'
-        verbose_name_plural = 'coordinations provinciales'
+        verbose_name = _('coordination provinciale')
+        verbose_name_plural = _('coordinations provinciales')
 
     user = models.ForeignKey(Compte, on_delete=models.RESTRICT, null=True, blank=True)
     nom = models.CharField(max_length=50, null=True, blank=True)
@@ -29,13 +30,13 @@ class Ville(models.Model):
     
 class AssociationMembre(models.Model):
     class Meta:
-        verbose_name = 'association membre'
-        verbose_name_plural = 'associations membres'
+        verbose_name = _('association membre')
+        verbose_name_plural = _('associations membres')
 
     users = models.ManyToManyField(Compte, blank=True, related_name="users_of_structure")
     ville = models.ForeignKey(Ville, on_delete=models.SET_NULL, null=True, blank=True)
     province = models.ForeignKey(Province, on_delete=models.SET_NULL, null=True, blank=True)
-    type_de_structure = models.CharField(max_length=50, null=True,blank=True, verbose_name="type d'association")
+    type_de_structure = models.CharField(max_length=50, null=True,blank=True, verbose_name=_("type d'association"))
     num_justice = models.CharField(max_length=50, null=True, blank=True, unique=True)
     capture_justice = models.ImageField(upload_to='./F92/', null=True, blank=True)
     nom = models.CharField(max_length=255, null=True, blank=True)
@@ -56,7 +57,7 @@ class AssociationMembre(models.Model):
 
 class Antenne(models.Model):
     user = models.ForeignKey(Compte, on_delete=models.RESTRICT, null=True, blank=True)
-    structure = models.ForeignKey(AssociationMembre, on_delete=models.RESTRICT, null=True, blank=True, verbose_name='association membre')
+    structure = models.ForeignKey(AssociationMembre, on_delete=models.RESTRICT, null=True, blank=True, verbose_name=_('association membre'))
     nom = models.CharField(max_length=50, null=True, blank=True)
     zone = models.CharField(max_length=50, null=True, blank=True)
     code = models.CharField(max_length=20, null=True, blank=True)
@@ -75,7 +76,7 @@ class Membre(models.Model):
     antenne = models.ForeignKey(Antenne, on_delete=models.SET_NULL, null=True, blank=True)
     ville = models.ForeignKey(Ville, on_delete=models.SET_NULL, null=True, blank=True)
     province = models.ForeignKey(Province, on_delete=models.SET_NULL, null=True, blank=True)
-    structure = models.ForeignKey(to=AssociationMembre, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='association membre')
+    structure = models.ForeignKey(to=AssociationMembre, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('association membre'))
     code_parking = models.CharField(max_length=100, null=True, blank=True)
     nom = models.CharField(max_length=50, null=True, blank=True)
     date_naissance = models.DateField(null=True, blank=True)
@@ -119,11 +120,11 @@ class Membre(models.Model):
 
 class Moto(models.Model):
     class Meta:
-        verbose_name = 'engin'
-        verbose_name_plural = 'engins'
+        verbose_name = _('engin')
+        verbose_name_plural = _('engins')
 
     user = models.ForeignKey(Compte, on_delete=models.RESTRICT, null=True, blank=True)
-    structure = models.ForeignKey(to=AssociationMembre, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='association membre')
+    structure = models.ForeignKey(to=AssociationMembre, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('association membre'))
     proprietaire = models.ForeignKey(Membre, on_delete=models.RESTRICT, null=True, blank=True)
     antenne = models.ForeignKey(Antenne, on_delete=models.RESTRICT, null=True, blank=True)
     ville = models.ForeignKey(Ville, on_delete=models.RESTRICT, null=True, blank=True)
