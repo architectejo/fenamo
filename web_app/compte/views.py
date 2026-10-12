@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_not_required
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from coptapp.models import Membre
 from compte.forms import *
@@ -14,19 +16,17 @@ User = get_user_model()
 
 @superuser_requis
 @require_POST
+@never_cache
 def adminer(request, id):
-    """Crée le compte d'un membre : mot de passe aléatoire affiché une seule fois."""
+    """Crée le compte d'un membre. Le mot de passe temporaire est dans la réponse au POST (jamais en
+    message flash ni en cache) : il n'est affiché qu'une fois."""
     membre = get_object_or_404(Membre, id=id)
     compte, mdp = creer_compte_pour_membre(membre, auteur=request.user)
-    if mdp:
-        messages.success(
-            request,
-            f"Compte créé. Pseudo : {compte.username} - mot de passe temporaire : {mdp} "
-            "(à transmettre au membre ; il devra le changer à sa première connexion, il ne sera plus affiché).",
-        )
-    else:
-        messages.info(request, f"Ce membre a déjà un compte ({compte.username}).")
-    return redirect('membre-view', id=id)
+    if not mdp:
+        messages.info(request, _("Ce membre a déjà un compte (%(pseudo)s).") % {'pseudo': compte.username})
+        return redirect('membre-view', id=id)
+    modele = 'compte/partials/_compte_cree.html' if request.htmx else 'compte/compte_cree.html'
+    return render(request, modele, {'compte': compte, 'mot_de_passe': mdp, 'membre': membre})
 
 @login_not_required
 def connexion(request):
@@ -53,6 +53,7 @@ def deconnexion(request):
 # Comptes
 
 @superuser_requis
+@never_cache
 def add_user(request):
     if request.method == 'POST':
         form = AddUserForm(request.POST)

@@ -33,3 +33,37 @@ def test_F02_su_attribue_les_privileges_et_journalise(client, jeu, pirate):
     pirate.refresh_from_db()
     assert pirate.privilege3 and not pirate.privilege5
     assert Notification.objects.filter(titre="Attribution des privilèges").exists()
+
+
+# ------------------------------------------------------------- M1 : mot de passe jamais en cookie
+
+def test_F04_adminer_mot_de_passe_dans_le_corps_pas_dans_les_cookies(client, jeu):
+    Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
+    client.force_login(jeu['compte'])
+    r = client.post(reverse('adminer', kwargs={'id': jeu['membre'].id}))
+    assert r.status_code == 200
+    assert 'no-store' in r['Cache-Control']
+    compte = Compte.objects.get(membreId=jeu['membre'].id)
+    corps = r.content.decode()
+    mdp = corps.split('<strong class="user-select-all">')[1].split('</strong>')[0]
+    assert compte.check_password(mdp)
+    cookies = ' '.join(m.value for m in r.cookies.values())
+    assert mdp not in cookies and 'messages' not in r.cookies
+    assert mdp not in client.get('/membres/').content.decode()  # affiché une seule fois
+
+
+def test_F04_adminer_htmx_renvoie_le_fragment(client, jeu):
+    Compte.objects.filter(pk=jeu['compte'].pk).update(membreId=None)
+    client.force_login(jeu['compte'])
+    r = client.post(reverse('adminer', kwargs={'id': jeu['membre'].id}), HTTP_HX_REQUEST='true')
+    assert r.status_code == 200 and '<html' not in r.content.decode()
+
+
+def test_F04_add_user_no_store(client, jeu):
+    client.force_login(jeu['compte'])
+    r = client.post(reverse('add-user'), {'username': 'nstore', 'email': 'n@example.invalid'})
+    assert 'no-store' in r['Cache-Control']
+
+
+def test_messages_stockes_en_session(settings):
+    assert settings.MESSAGE_STORAGE.endswith('session.SessionStorage')

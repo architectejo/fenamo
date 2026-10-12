@@ -60,6 +60,9 @@ MIDDLEWARE = [
     'axes.middleware.AxesMiddleware',  # en dernier (documentation django-axes)
 ]
 
+# Messages en session (jamais dans un cookie : un message peut contenir une information sensible).
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 ROOT_URLCONF = 'fenamo.urls'
 WSGI_APPLICATION = 'fenamo.wsgi.application'
 

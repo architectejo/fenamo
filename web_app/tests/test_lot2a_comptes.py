@@ -35,8 +35,8 @@ def test_adminer_cree_compte_mot_de_passe_aleatoire(client, jeu):
     assert compte.doit_changer_mot_de_passe
     assert not compte.is_superuser
     assert compte.username != (compte.email or 'x')
-    texte = ' '.join(str(m) for m in get_messages(r.wsgi_request))
-    mdp = texte.split('mot de passe temporaire : ')[1].split(' ')[0]
+    corps = r.content.decode()
+    mdp = corps.split('Mot de passe temporaire :')[1].split('<strong class="user-select-all">')[1].split('</strong>')[0]
     assert compte.check_password(mdp)
     assert mdp != compte.username and 'fenamo.cd' not in compte.email
 

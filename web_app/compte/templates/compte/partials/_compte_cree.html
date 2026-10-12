@@ -1,0 +1,8 @@
+{% load i18n %}
+<div class="alert alert-success" role="status">
+  <h1 class="h5">{% translate "Compte créé" %}</h1>
+  <p class="mb-1">{% translate "Pseudo :" %} <strong>{{ compte.username }}</strong></p>
+  <p class="mb-1">{% translate "Mot de passe temporaire :" %} <strong class="user-select-all">{{ mot_de_passe }}</strong></p>
+  <p class="mb-0 small">{% translate "À transmettre au membre. Il devra le changer à sa première connexion. Il ne sera plus jamais affiché : notez-le maintenant." %}</p>
+</div>
+<a class="btn btn-primary" href="{% url 'membre-view' membre.id %}">{% translate "Retour à la fiche du membre" %}</a>
