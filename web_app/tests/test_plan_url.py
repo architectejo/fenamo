@@ -55,7 +55,6 @@ def table(j):
         ('add-user', {}, '/comptes/ajouter/'),
         ('delete-user', {}, '/comptes/desactiver/'),
         ('tableau-bord', {}, '/'),
-        ('accueil-ancien', {}, '/accueil-ancien/'),
         ('home-session', {}, '/associations/mon-association/'),
         ('structure-admin', {'id': a}, f'/associations/{a}/'),
         ('add-structure', {}, '/associations/ajouter/'),
@@ -104,13 +103,20 @@ def table(j):
     ]
 
 
+# Routes qui modifient des données : POST seulement (GET -> 405).
+ROUTES_POST_SEULEMENT = {
+    'deconnexion', 'adminer', 'validate', 'delete-membre', 'structure-attribution', 'ville-attribution',
+    'antenne-attribution', 'ville-attr', 'delete-family', 'delete-moto', 'delete-article', 'moto-attribution',
+}
+
+
 def test_adresses_cibles(jeu):
     for nom, kwargs, cible in table(jeu):
         assert reverse(nom, kwargs=kwargs) == cible, nom
 
 
 NOMS_ECRANS = [
-    'application', 'adminer', 'add-user', 'tableau-bord', 'accueil-ancien', 'home-session', 'structure-admin',
+    'application', 'adminer', 'add-user', 'tableau-bord', 'home-session', 'structure-admin',
     'add-structure', 'edit-structure', 'str-list', 'add-province', 'province-view', 'add-ville',
     'ville-view', 'ville-select', 'add-antenne', 'edit-antenne', 'antenne-view', 'liste-membre',
     'add-fenamo-membre', 'add-membre', 'membre-view', 'validate', 'delete-membre', 'view-user',
@@ -127,13 +133,15 @@ def test_chaque_ecran_repond(client, jeu, nom):
     client.force_login(jeu['compte'])
     cible = next(c for n, _, c in table(jeu) if n == nom)
     reponse = client.get(cible)
-    assert reponse.status_code in (200, 302), f"{nom} {cible} -> {reponse.status_code}"
+    attendus = (405,) if nom in ROUTES_POST_SEULEMENT else (200, 302)
+    assert reponse.status_code in attendus, f"{nom} {cible} -> {reponse.status_code}"
 
 
 def test_deconnexion_et_page_de_suppression(client, jeu):
     client.force_login(jeu['compte'])
     assert client.get('/comptes/desactiver/').status_code == 200
-    assert client.get('/deconnexion/').status_code == 302
+    assert client.get('/deconnexion/').status_code == 405
+    assert client.post('/deconnexion/').status_code == 302
 
 
 def test_connexion_anonyme(client, db):

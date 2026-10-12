@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 from coptapp.models import Membre
 from compte.forms import *
 
@@ -8,6 +9,7 @@ User = get_user_model()
 
 # Create your views here.
 
+@require_POST
 def adminer(request, id):
     membre = Membre.objects.get(id=id)
     tabname = membre.nom.split(' ')
@@ -38,6 +40,7 @@ def connexion(request):
             message = "Pseudo ou mot de passe incorrect !"
     return render(request, 'compte/pages-login.html', locals())
 
+@require_POST
 def deconnexion(request):
     logout(request)
     return redirect('application')

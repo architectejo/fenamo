@@ -17,7 +17,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.urls import reverse
 
 # Fabrique de jeu d'essai et table des écrans de l'annexe B (tests/test_plan_url.py).
-from tests.test_plan_url import NOMS_ECRANS, hachage_rapide, jeu, table  # noqa: F401
+from tests.test_plan_url import NOMS_ECRANS, ROUTES_POST_SEULEMENT, hachage_rapide, jeu, table  # noqa: F401
 
 RACINE = Path(settings.BASE_DIR)
 PYTHON = sys.executable
@@ -104,23 +104,12 @@ def test_lot1_pas_de_coptam_dans_l_interface(client, jeu):
 
 # --------------------------------------------------- écrans de l'annexe B
 
-# Écrans qui redirigent par conception (GET qui agit puis renvoie vers une fiche : lot 2 les passera en POST,
-# ou connexion déjà ouverte). Tout autre écran doit répondre 200.
+# Écrans qui redirigent par conception ; les routes POST seulement répondent 405 en GET (lot 2a) ;
+# tout autre écran doit répondre 200.
 REDIRECTIONS_ATTENDUES = {
     'application': '/',
-    'adminer': '/membres/',
-    'ville-select': '/associations/',
-    'validate': '/associations/mon-association/',
-    'delete-membre': '/membres/',
     'view-user': '/membres/',
-    'delete-family': '/membres/',
-    'delete-moto': '/membres/',
-    'moto-attribution': '/membres/',
-    'delete-article': '/contenu-site/',
-    'structure-attribution': '/membres/',
-    'ville-attribution': '/membres/',
-    'antenne-attribution': '/membres/',
-    'ville-attr': '/villes/',
+    'ville-select': '/associations/',
 }
 
 
@@ -129,7 +118,9 @@ def test_lot1_ecran_annexe_B_repond(client, jeu, nom):
     client.force_login(jeu['compte'])
     cible = next(c for n, _, c in table(jeu) if n == nom)
     reponse = client.get(cible)
-    if nom in REDIRECTIONS_ATTENDUES:
+    if nom in ROUTES_POST_SEULEMENT:
+        assert reponse.status_code == 405, f"{nom} {cible} -> {reponse.status_code}"
+    elif nom in REDIRECTIONS_ATTENDUES:
         assert reponse.status_code == 302, f"{nom} {cible} -> {reponse.status_code}"
         assert reponse['Location'].startswith(REDIRECTIONS_ATTENDUES[nom]), (nom, reponse['Location'])
     else:
@@ -159,9 +150,8 @@ def test_lot1_virtrine_gestion_du_contenu_ouvre(client, jeu):
 
 # ----------------------------------------------------------------- vocabulaire
 
-@pytest.mark.xfail(reason="Lot 2 : certaines routes (valider, supprimer, rattacher) modifient encore en GET", strict=False)
 def test_lot1_aucune_modification_en_get(client, jeu):
-    """Reporté au lot 2 (§ 11.1). Le test échoue tant que des routes modifient en GET ; la liste est dans le message."""
+    """§ 11.1 : aucune route ne modifie de données en GET (2a)."""
     from django.apps import apps as registre
     client.force_login(jeu['compte'])
 

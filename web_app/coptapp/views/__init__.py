@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
 from virtrine.models import Article, Contact, Galery
@@ -20,6 +21,7 @@ def provinceSelector():
         prov.membre = len(Membre.objects.filter(province=prov))
     return provinces
 
+@require_POST
 def demandeSuppression(request, id):
     user = request.user
     membre = Membre.objects.get(id=id)
@@ -101,6 +103,7 @@ def security(request, id):
     return render(request, 'app/membre.html', locals())
 
 #Validation des membres
+@require_POST
 def validate(request, id):
     user = request.user
     membre = Membre.objects.get(id=id)
@@ -132,36 +135,6 @@ def validate(request, id):
 #---------------------------------------------------------------------------------------------------------------------------
 
 #User session redirect liste of structures
-
-def home(request):
-
-    # redirection
-    if not request.user.is_superuser and not request.user.privilege5:
-        return redirect('home-session')
-
-    if not request.user.membreId and request.user.is_superuser:
-        province = Province.objects.create()
-        ville = Ville.objects.create(province=province)
-        membre = Membre.objects.create(user=request.user)
-        membre.ville = ville
-        membre.province = province
-        membre.save()
-        request.user.membreId = Membre.objects.last().id
-        request.user.save()
-    errors = Error.objects.filter(error404=True).last()
-    if errors:
-        message = 404
-        return redirect("error")
-    else:
-        provinces = Province.objects.order_by('nom').exclude(nom=None)
-        for prov in provinces:
-            structures = AssociationMembre.objects.filter(province=prov).order_by('nom')
-            for strct in structures:
-                membres = len(Membre.objects.filter(structure=strct, is_delete=False, is_validate3=True))
-                strct.membres = membres
-            prov.structures = structures
-    return render(request, 'app/home.html', locals())
-
 
 # Add structure
 
@@ -197,6 +170,7 @@ def ville_select(request, id):
     return render(request, 'app/ville-select.html', locals())
 
 
+@require_POST
 def ville_attr(request, id, sid):
     try:
         structure = AssociationMembre.objects.get(id=sid)
@@ -207,6 +181,7 @@ def ville_attr(request, id, sid):
         pass
     return redirect('ville-select', id=structure.id)
 
+@require_POST
 def ville_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
     ville = Ville.objects.get(id=id)
@@ -214,6 +189,7 @@ def ville_attr_membre(request, id, idM):
     membre.save()
     return redirect('membre-view', id=idM)
 
+@require_POST
 def antenne_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
     antenne = Antenne.objects.get(id=id)
@@ -221,6 +197,7 @@ def antenne_attr_membre(request, id, idM):
     membre.save()
     return redirect('membre-view', id=idM)
 
+@require_POST
 def structure_attr_membre(request, id, idM):
     membre = Membre.objects.get(id=idM)
     asbl = AssociationMembre.objects.get(id=id)
@@ -450,10 +427,6 @@ def addCommunique(request):
         userMembre = Membre.objects.get(id=user.membreId)
         if userMembre.ville:
             villeId = userMembre.ville.id
-        else:
-            userMembre.ville = Ville.objects.get(id=1)
-            userMembre.save()
-            villeId = userMembre.ville.id
     
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
@@ -650,6 +623,7 @@ def addVille(request, id):
             notify(user=user, titre="Ajout d'une ville", description=f"Province:{setter.province.nom} Ville:{setter.nom}")
     return render(request, 'app/add-ville.html', locals())
 
+@require_POST
 def attributMoto(request, id):
     membre = Membre.objects.get(id=id)
     if request.method == 'POST':
@@ -686,10 +660,12 @@ def contactView(request, id):
     provinces = provinceSelector()
     
     contact = Contact.objects.get(id=id)
-    contact.traiter = True
-    contact.save()
+    if request.method == 'POST':
+        contact.traiter = True
+        contact.save()
     return render(request, 'app/contact-view.html', locals())
 
+@require_POST
 def deleteMoto(request,id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
@@ -708,6 +684,7 @@ def deleteMoto(request,id):
     return redirect('membre-view', id=moto.proprietaire.id)
 
 
+@require_POST
 def deleteFamily(request, id):
     famille = Famille.objects.get(id=id)
     idMbr = famille.membre.id
@@ -881,6 +858,7 @@ def membre_view(request, id):
             else:
                 membreUser.privilege5 = False
             membreUser.save()
+            notify(user=user, membre=membre, titre="Attribution des privilegès")
     if request.user.is_authenticated:
         if verify:
             if membreUser.privilege1: checked1 = 'checked'
@@ -888,7 +866,6 @@ def membre_view(request, id):
             if membreUser.privilege3: checked3 = 'checked'
             if membreUser.privilege4: checked4 = 'checked'
             if membreUser.privilege5: checked5 = 'checked'
-            notify(user=user, membre=membre, titre="Attribution des privilegès")
         motos = Moto.objects.filter(proprietaire=membre, is_delete=False)
         nbrMoto = len(motos)
     return render(request, 'app/membre.html', locals())
@@ -1189,6 +1166,7 @@ def article(request, id):
     articles = Article.objects.order_by('-id')
     return render(request, 'app/site.html', locals())
 
+@require_POST
 def deleteArticle(request, id):
     article = Article.objects.get(id=id)
     try: os.remove(article.image.path)
