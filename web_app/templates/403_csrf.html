@@ -1,0 +1,8 @@
+{% extends "erreur_base.html" %}
+{% load i18n %}{% comment %}
+Échec CSRF (vue par défaut de Django, qui cherche ce gabarit). On n'affiche jamais la raison technique.
+{% endcomment %}
+{% block titre_erreur %}{% translate "Envoi refusé" %}{% endblock %}
+{% block code %}403{% endblock %}
+{% block titre_page %}{% translate "Envoi refusé" %}{% endblock %}
+{% block message %}{% translate "Votre page est restée ouverte trop longtemps ou la connexion a été interrompue. Rechargez la page, puis recommencez l'opération." %}{% endblock %}

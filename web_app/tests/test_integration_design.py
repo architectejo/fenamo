@@ -370,7 +370,6 @@ def test_design_fiche_modales_locales_presentes_et_postent_vers_des_routes_post(
         assert f'id="{cible[1:]}"' in html, cible
 
 
-@pytest.mark.xfail(strict=True, reason="Constat design : securite et add-user sans hx-history=\"false\" (a renvoyer a frontend-htmx)")
 def test_design_hx_history_false_sur_mots_de_passe(client, jeu):
     """Le mot de passe temporaire ne doit jamais entrer dans le cache d'historique de HTMX."""
     compte_cree = (RACINE / 'compte' / 'templates' / 'compte' / 'partials' / '_compte_cree.html').read_text(encoding='utf-8')
@@ -382,7 +381,6 @@ def test_design_hx_history_false_sur_mots_de_passe(client, jeu):
             assert 'hx-history="false"' in html, f'{url} : champs mot de passe sans hx-history="false"'
 
 
-@pytest.mark.xfail(strict=True, reason="Constat design : page de connexion sans hx-history=\"false\" (a renvoyer a frontend-htmx)")
 def test_design_hx_history_false_page_de_connexion(client, db):
     html = client.get(reverse('application')).content.decode()
     assert 'hx-history="false"' in html, 'page de connexion (champ mot de passe) sans hx-history="false"'

@@ -12,7 +12,7 @@ et non en modale tant que la vue ne sert pas de fragment HTMX ; obligatoire et n
   </div>
 </div>
 {% if force %}<div class="u-mb-4">{% include "components/_erreur.html" with niveau="alerte" titre=_("Mot de passe temporaire.") texte=_("Votre compte a été créé avec un mot de passe temporaire : choisissez un mot de passe personnel pour continuer.") %}</div>{% endif %}
-<section class="panneau panneau--etroit">
+<section class="panneau panneau--etroit" hx-history="false">
   <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
