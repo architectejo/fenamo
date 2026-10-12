@@ -283,7 +283,7 @@ def test_lot1_aucun_http_externe_dans_les_gabarits():
     """Aucune URL http(s):// dans les gabarits, hors liens <a> et espaces de noms XML/SVG."""
     fautifs = []
     for fichier in RACINE.rglob('*.html'):
-        if {'vendor', 'node_modules', '__pycache__'} & set(fichier.parts):
+        if {'vendor', 'node_modules', '__pycache__', '.env', '.venv', 'venv', 'site-packages'} & set(fichier.relative_to(RACINE).parts):
             continue
         texte = fichier.read_text(encoding='utf-8', errors='ignore')
         texte = re.sub(r'xmlns(?::\w+)?="https?://[^"]*"', '', texte)
