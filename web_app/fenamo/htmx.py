@@ -16,7 +16,7 @@ import json
 from django.http import HttpResponse
 from django.contrib import messages
 from django.urls import reverse
-from django.utils.cache import patch_vary_headers
+from django.utils.cache import patch_cache_control, patch_vary_headers
 
 NIVEAUX = {'debug': 'info', 'info': 'info', 'success': 'success', 'warning': 'warning', 'error': 'danger'}
 
@@ -25,10 +25,11 @@ def veut_fragment(request):
     """Vrai si la requête vient de HTMX ET attend un fragment (zone, modale…).
 
     Une navigation « boostée » (``hx-boost``) attend la page complète : le serveur rend la coque et le client
-    ne garde que ``#contenu`` (``hx-select``).
+    ne garde que ``#contenu`` (``hx-select``). Une restauration d'historique (retour arrière sans cache) attend aussi la
+    page complète : servir un fragment afficherait la zone seule à la place de la page.
     """
     htmx = getattr(request, 'htmx', None)
-    return bool(htmx) and not getattr(htmx, 'boosted', False)
+    return bool(htmx) and not getattr(htmx, 'boosted', False) and not getattr(htmx, 'history_restore_request', False)
 
 
 def ajouter_declencheurs(response, declencheurs):
@@ -79,7 +80,12 @@ class HtmxSessionMessagesMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        patch_vary_headers(response, ['HX-Request'])
+        # Page complète et fragment partagent la même adresse : le cache ne doit pas les confondre.
+        patch_vary_headers(response, ['HX-Request', 'HX-Boosted', 'HX-History-Restore-Request'])
+        user = getattr(request, 'user', None)
+        if user is not None and user.is_authenticated:
+            # Données personnelles : ni cache partagé ni stockage (retour arrière, proxy).
+            patch_cache_control(response, private=True, no_store=True)
         if not getattr(request, 'htmx', False):
             return response
 
