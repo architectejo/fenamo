@@ -33,3 +33,6 @@ __pycache__/
 .coverage
 htmlcov/
 *.whl
+
+# Site web : base locale (sessions, compteurs) et cache fichiers
+website/var/

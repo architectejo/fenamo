@@ -50,10 +50,13 @@ TEMPLATES = [
 ]
 
 # --- Base locale : sessions et compteurs seulement, aucune donnée métier ---
+# var/ n'est pas versionné : on le crée au démarrage (dépôt neuf, déploiement).
+VAR_DIR = BASE_DIR / "var"
+(VAR_DIR / "cache").mkdir(parents=True, exist_ok=True)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "var" / "site.sqlite3",
+        "NAME": VAR_DIR / "site.sqlite3",
     }
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -63,7 +66,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": str(BASE_DIR / "var" / "cache"),
+        "LOCATION": str(VAR_DIR / "cache"),
     }
 }
 
