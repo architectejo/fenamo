@@ -237,18 +237,29 @@ def associations_du_compte(user):
 
 
 def _lieux_du_compte(user):
-    """(ids de coordinations, de villes, d'antennes) liés au compte : ses associations et sa fiche membre."""
+    """(ids de coordinations, de villes, d'antennes) liés au compte : ses associations et sa fiche membre.
+
+    Tient compte des antennes issues des villes héritées (``Antenne.ville_origine``) et de ``AssociationMembre.antenne`` : une
+    ville du compte donne son antenne, une antenne du compte donne sa ville d'origine et sa coordination.
+    """
     provinces, villes, antennes = set(), set(), set()
-    for a in associations_du_compte(user).prefetch_related('antenne_set'):
+    for a in associations_du_compte(user).prefetch_related('antennes_de_structure'):
         provinces.add(a.province_id)
         villes.add(a.ville_id)
-        antennes.update(x.pk for x in a.antenne_set.all())
+        antennes.add(a.antenne_id)
+        antennes.update(x.pk for x in a.antennes_de_structure.all())
     if user.membreId:
         fiche = Membre.objects.filter(pk=user.membreId).first()
         if fiche:
             provinces.add(fiche.province_id)
             villes.add(fiche.ville_id)
             antennes.add(fiche.antenne_id)
+    villes.discard(None)
+    antennes.discard(None)
+    antennes.update(Antenne.objects.filter(ville_origine_id__in=villes).values_list('pk', flat=True))
+    for ville_id, coordination_id in Antenne.objects.filter(pk__in=antennes).values_list('ville_origine_id', 'coordination_id'):
+        villes.add(ville_id)
+        provinces.add(coordination_id)
     return provinces - {None}, villes - {None}, antennes - {None}
 
 
@@ -291,7 +302,9 @@ def cible_rattachable(user, champ, cible):
     if champ == 'structure':
         return associations.filter(pk=cible.pk).exists()
     if champ == 'antenne':
-        return associations.filter(pk=cible.structure_id).exists() if cible.structure_id else False
+        # l'ancienne antenne d'une association du compte, l'antenne choisie par une association, ou l'antenne issue de sa ville
+        return (bool(cible.structure_id) and associations.filter(pk=cible.structure_id).exists()
+                or associations.filter(antenne=cible).exists() or associations.filter(ville__antenne_issue=cible).exists())
     if champ == 'ville':
-        return associations.filter(ville=cible).exists()
+        return associations.filter(ville=cible).exists() or associations.filter(antenne__ville_origine=cible).exists()
     return False
