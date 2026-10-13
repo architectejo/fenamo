@@ -14,6 +14,7 @@ from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
+from coptapp.forms import ALIAS_POST
 from coptapp.services.etats import LIBELLES, etat_de
 from fenamo.htmx import veut_fragment as _veut_fragment
 
@@ -116,8 +117,8 @@ def veut_fragment(request):
     return _veut_fragment(request)
 
 
-# Noms envoyés par la modale « Modifier » -> champs du modèle (voir coptapp.services.membres.ALIAS_POST).
-ALIAS_MODIFIER = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb', 'epouse': 'nom_epouse'}
+# Noms envoyés par la modale « Modifier » -> champs du modèle : table UNIQUE définie dans coptapp.forms (ALIAS_POST).
+ALIAS_MODIFIER = ALIAS_POST
 
 
 def _saisie_refusee(context):
