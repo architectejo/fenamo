@@ -7,6 +7,21 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
 {% block titre %}{{ membre.nom|default:_("Membre") }} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div hidden hx-history="false"></div>{# données personnelles : pas de copie de la page dans l'historique HTMX #}
+{% for m in fn_messages %}{% if " mobile" in m.message %}
+<div class="u-mb-4" role="status" x-data="{ copie: false, mdp: (($el.dataset.message || '').match(/: (\S+) \(/) || [])[1] || '' }" data-message="{{ m.message }}">
+  <div class="alerte alerte--succes">
+    {% icone "smartphone" %}
+    <div>
+      <strong class="alerte-titre">{% translate "Mot de passe mobile défini" %}</strong>
+      <p class="u-mb-2">{{ m.message }}</p>
+      <button type="button" class="bouton bouton--petit" x-show="mdp" x-cloak
+              @click="navigator.clipboard.writeText(mdp).then(() => { copie = true; setTimeout(() => copie = false, 3000); })">
+        {% icone "clipboard-list" %}<span x-text="copie ? '{% translate "Copié" %}' : '{% translate "Copier le mot de passe" %}'">{% translate "Copier le mot de passe" %}</span>
+      </button>
+    </div>
+  </div>
+</div>
+{% endif %}{% endfor %}
 {% if message and not erreurs_modifier %}<div class="u-mb-4">{% include "components/_erreur.html" with niveau="info" titre=message %}</div>{% endif %}
 
 {% include "coptapp/membres/partials/_fiche_entete.html" %}

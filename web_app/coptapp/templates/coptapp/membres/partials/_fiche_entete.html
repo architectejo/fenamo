@@ -27,6 +27,12 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     {% include "partials/_bouton_post.html" with url=url_adminer libelle=t_libelle classe="bouton" %}
     {% endif %}
 
+    {% if peut_creer_membre and membre.idf and not membre.is_delete %}
+    {% url 'mot-de-passe-mobile' membre.id as url_mdp_mobile %}
+    {% translate "Définir un mot de passe mobile" as t_libelle %}{% translate "Un mot de passe temporaire sera généré pour l'espace mobile de ce membre. Il ne sera affiché qu'une seule fois : communiquez-le au membre. L'ancien mot de passe cesse de fonctionner." as t_message %}{% translate "Générer le mot de passe" as t_envoi %}
+    {% include "components/_confirmer.html" with prefixe="mdp-mobile" ident=membre.id url=url_mdp_mobile libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_envoi icone="smartphone" variante_envoi="principal" %}
+    {% endif %}
+
     {% url 'delete-membre' membre.id as url_suppr %}
     {% if peut_restaurer %}
     {% translate "Restaurer" as t_libelle %}{% translate "Restaurer le membre" as t_titre %}{% translate "Restaurer ce membre ? Il réapparaîtra dans les listes ; l'opération est enregistrée au journal." as t_message %}
