@@ -73,12 +73,16 @@ def _associations_de(user):
 def droits_membre(user, membre=None):
     """Booléens de droits pour les gabarits (liste : `membre` absent, droit « en général » ; fiche : `membre` donné).
 
-    Clés : peut_modifier, peut_valider, peut_demander_suppression, peut_attribuer_privileges, peut_gerer_famille,
-    peut_gerer_engins, peut_voir_historique, plus peut_demander_modification (envoi d'une demande de modification).
+    Clés : peut_creer_membre, peut_modifier, peut_valider, peut_demander_suppression, peut_attribuer_privileges
+    (SU seulement), peut_voir_historique, peut_demander_modification (demande à un validateur) ;
+    ajout : peut_ajouter_engin, peut_ajouter_famille ; modification et suppression des engins et de la famille
+    (F-35, F-26 : agent seul avant la 1re validation) : peut_modifier_engin, peut_supprimer_engin,
+    peut_modifier_famille, peut_supprimer_famille ; suppression du membre (F-25) : peut_executer_suppression,
+    peut_restaurer, peut_annuler_demande_suppression (ces deux dernières exigent un `membre`).
     """
     nul = {
         'peut_creer_membre': False, 'peut_modifier': False, 'peut_valider': False, 'peut_demander_suppression': False,
-        'peut_attribuer_privileges': False, 'peut_gerer_famille': False, 'peut_gerer_engins': False,
+        'peut_attribuer_privileges': False, 'peut_ajouter_famille': False, 'peut_ajouter_engin': False,
         'peut_voir_historique': False, 'peut_demander_modification': False,
         'peut_modifier_engin': False, 'peut_supprimer_engin': False, 'peut_modifier_famille': False,
         'peut_supprimer_famille': False, 'peut_executer_suppression': False, 'peut_restaurer': False,
@@ -128,8 +132,8 @@ def droits_membre(user, membre=None):
         # Réservé aux SU (correctif C1) : le privilege5 hérité ne suffit pas.
         'peut_attribuer_privileges': su,
         # F-26 : l'agent gère la famille de ses saisies comme leurs engins ; privilege2 et 3 dans leur association.
-        'peut_gerer_famille': gerer,
-        'peut_gerer_engins': gerer,
+        'peut_ajouter_famille': gerer,
+        'peut_ajouter_engin': gerer,
         'peut_voir_historique': not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3)),
         'peut_demander_modification': su or bool(user.privilege1 and not lecture_seule),
     }

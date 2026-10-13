@@ -98,7 +98,7 @@ def test_F23_contexte_de_la_fiche_porte_les_droits(client, jeu):
     client.force_login(jeu['compte'])
     c = client.get(url_fiche(jeu['membre'])).context
     assert c['peut_modifier'] and c['peut_valider'] and c['peut_attribuer_privileges'] and c['peut_voir_historique']
-    assert c['droits']['peut_gerer_engins']
+    assert c['droits']['peut_ajouter_engin']
 
 
 # ------------------------------------------------------------------ modification (POST modifier)

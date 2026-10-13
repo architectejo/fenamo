@@ -10,7 +10,7 @@ from coptapp.services.tableau_bord import indicateurs_tableau_bord
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
 CLES = ('peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
-        'peut_gerer_famille', 'peut_gerer_engins', 'peut_voir_historique')
+        'peut_ajouter_famille', 'peut_ajouter_engin', 'peut_voir_historique')
 
 
 def _compte(nom, **privileges):
@@ -24,7 +24,7 @@ def _vrais(droits):
 def test_F28_droits_super_utilisateur(jeu):
     assert _vrais(droits_membre(jeu['compte'], jeu['membre'])) == {
         'peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
-        'peut_gerer_famille', 'peut_gerer_engins', 'peut_voir_historique'}
+        'peut_ajouter_famille', 'peut_ajouter_engin', 'peut_voir_historique'}
 
 
 def test_F28_privilege5_ne_donne_pas_l_attribution_des_privileges(jeu):
@@ -42,8 +42,8 @@ def test_F28_droits_agent_privilege1(jeu):
     agent = _compte('agent', privilege1=True)
     droits = droits_membre(agent, jeu['membre'])
     assert _vrais(droits) == {'peut_demander_suppression'}  # pas sa saisie : ni engins ni famille
-    assert droits_membre(agent, Membre(user=agent, structure=None))['peut_gerer_engins']
-    assert droits_membre(agent, Membre(user=agent))['peut_gerer_famille']
+    assert droits_membre(agent, Membre(user=agent, structure=None))['peut_ajouter_engin']
+    assert droits_membre(agent, Membre(user=agent))['peut_ajouter_famille']
     assert droits['peut_demander_modification'] and not droits['peut_modifier']
 
 
@@ -57,7 +57,7 @@ def test_F28_droits_privilege3_modifie_seulement_dans_son_association(jeu):
     assert not droits_membre(p3, jeu['membre'])['peut_modifier']
     jeu['association'].users.add(p3)
     droits = droits_membre(p3, jeu['membre'])
-    assert droits['peut_modifier'] and droits['peut_gerer_famille'] and not droits['peut_valider']  # étape 2 pas encore validée
+    assert droits['peut_modifier'] and droits['peut_ajouter_famille'] and not droits['peut_valider']  # étape 2 pas encore validée
     autre = AssociationMembre.objects.create(nom='Autre', num_justice='F-9')
     etranger = Membre.objects.create(nom='Etranger', structure=autre, is_validate2=True)
     assert not droits_membre(p3, etranger)['peut_modifier']

@@ -451,7 +451,7 @@ def addCommunique(request):
 
 def addFamily(request,id):
     user = request.user
-    membre = membre_pour(user, id, 'peut_gerer_famille')
+    membre = membre_pour(user, id, 'peut_ajouter_famille')
     if request.method == 'POST':
         getter, setter = Famille.objects.get_or_create(
             user=user
@@ -529,7 +529,7 @@ def addMoto(request, id):
     provinces = provinceSelector()
     
     user = request.user
-    membre = membre_pour(user, id, 'peut_gerer_engins')
+    membre = membre_pour(user, id, 'peut_ajouter_engin')
     structure = membre.structure
     if request.method == 'POST':
         photo = request.FILES.get('photo')
@@ -607,7 +607,7 @@ def addVille(request, id):
 
 @require_POST
 def attributMoto(request, id):
-    membre = membre_pour(request.user, id, 'peut_gerer_engins')
+    membre = membre_pour(request.user, id, 'peut_ajouter_engin')
     numero = (request.POST.get('numero') or '').strip()
     if not numero:
         contrib_messages.error(request, _("Indiquez le numéro de l'engin."))
@@ -735,10 +735,8 @@ def membre_view(request, id):
 
     404 si le membre est hors du périmètre du compte (voir coptapp.services.droits_provisoires) ; 403 si l'action
     POST demandée est interdite ; 400 si le formulaire « modifier » est invalide (la fiche est réaffichée avec
-    ``erreurs_modifier``). Contexte : membre, historique (lignes du journal, vide sans le droit), droits
-    (dictionnaire) et chaque ``peut_*`` à plat (peut_modifier, peut_valider, peut_demander_suppression,
-    peut_attribuer_privileges, peut_gerer_famille, peut_gerer_engins, peut_voir_historique,
-    peut_demander_modification).
+    ``erreurs_modifier``). Contexte : membre, historique (lignes du journal, vide sans le droit), droits (dictionnaire) et
+    chacune de ses clés à plat : voir `coptapp.services.droits_provisoires.droits_membre`.
     """
     user = request.user
     membre, droits = membre_et_droits(user, id, supprimes_visibles=True)  # supprimé : visible de qui peut le restaurer
@@ -866,9 +864,9 @@ def membreListe(request):
     - ``filtres_actifs`` : vrai si une recherche ou un filtre est posé (message « aucun résultat » ou vide) ;
     - ``choix`` : ``antennes``, ``associations`` (du périmètre), ``qualites``, ``etats`` (codes) pour les listes
       déroulantes ;
-    - ``peut_modifier``, ``peut_valider``, ``peut_demander_suppression``, ``peut_attribuer_privileges``,
-      ``peut_gerer_famille``, ``peut_gerer_engins``, ``peut_voir_historique`` (droits « en général », voir
-      ``coptapp.services.droits_provisoires``), ``droits`` (le même dictionnaire) et ``user``.
+    - les droits « en général » (``peut_creer_membre``, ``peut_valider``…, voir
+      `coptapp.services.droits_provisoires.droits_membre`) à plat, ``droits`` (le même dictionnaire) et ``user`` ;
+    - sur chaque membre de ``page_obj`` : ``peut_valider`` (droit de valider CE membre, calculé sans requête).
     """
     user = request.user
     resultat = lister_membres(user, request.GET, request.GET.get('page'))

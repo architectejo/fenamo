@@ -117,7 +117,7 @@ def test_F28_vue_page_complete_et_contexte(client, liste):
     assert 'membres' not in c and 'filtres_url' not in c
     assert {'antennes', 'associations', 'qualites', 'etats'} <= set(c['choix'])
     for cle in ('peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
-                'peut_gerer_famille', 'peut_gerer_engins', 'peut_voir_historique'):
+                'peut_ajouter_famille', 'peut_ajouter_engin', 'peut_voir_historique'):
         assert cle in c
 
 

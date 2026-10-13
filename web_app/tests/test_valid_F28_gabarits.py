@@ -99,7 +99,7 @@ def test_F28_fiche_su_voit_privileges_et_historique_visiteur_non(client, jeu):
     r = c2.get(reverse('membre-view', args=[actif.id]))
     assert r.status_code == 200
     for cle in ('peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
-                'peut_gerer_famille', 'peut_gerer_engins', 'peut_voir_historique'):
+                'peut_ajouter_famille', 'peut_ajouter_engin', 'peut_voir_historique'):
         assert r.context[cle] is False, cle
     corps = r.content.decode()
     assert reverse('delete-membre', args=[actif.id]) not in corps

@@ -41,7 +41,7 @@ def test_F35_agent_perd_la_main_apres_la_premiere_validation(saisie):
     Membre.objects.filter(pk=saisie['membre'].pk).update(is_validate2=True)
     membre = Membre.objects.get(pk=saisie['membre'].pk)
     droits = droits_membre(saisie['agent'], membre)
-    assert _vrais(droits) == set() and droits['peut_gerer_engins'] and droits['peut_gerer_famille']  # ajouter reste permis
+    assert _vrais(droits) == set() and droits['peut_ajouter_engin'] and droits['peut_ajouter_famille']  # ajouter reste permis
 
 
 def test_F35_roles_superieurs_gardent_la_main(saisie):
