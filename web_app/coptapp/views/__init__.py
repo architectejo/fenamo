@@ -192,9 +192,11 @@ def ville_attr(request, id, sid):
         raise Http404
     return redirect('ville-select', id=structure.id)
 
-def _rattacher_membre(request, idM, champ, cible):
-    """Rattache le membre `idM` à `cible` : membre visible (404), droit de modifier (403) et cible gérable (403)."""
+def _rattacher_membre(request, idM, champ, modele, id_cible):
+    """Rattache le membre `idM` à la cible `id_cible` (de `modele`) : membre visible (404), droit de modifier (403),
+    PUIS cible existante (404) et gérable (403). Le membre est contrôlé avant la cible : pas d'énumération."""
     membre = membre_pour(request.user, idM, 'peut_modifier')
+    cible = get_object_or_404(modele, id=id_cible)
     if not cible_rattachable(request.user, champ, cible):
         raise PermissionDenied
     rattacher(request.user, membre, champ, cible)
@@ -203,15 +205,18 @@ def _rattacher_membre(request, idM, champ, cible):
 
 @require_POST
 def ville_attr_membre(request, id, idM):
-    return _rattacher_membre(request, idM, 'ville', get_object_or_404(Ville, id=id))
+    return _rattacher_membre(request, idM, 'ville', Ville, id)
+
 
 @require_POST
 def antenne_attr_membre(request, id, idM):
-    return _rattacher_membre(request, idM, 'antenne', get_object_or_404(Antenne, id=id))
+    return _rattacher_membre(request, idM, 'antenne', Antenne, id)
+
 
 @require_POST
 def structure_attr_membre(request, id, idM):
-    return _rattacher_membre(request, idM, 'structure', get_object_or_404(AssociationMembre, id=id))
+    return _rattacher_membre(request, idM, 'structure', AssociationMembre, id)
+
 
 @referentiel_ecriture_requis
 def edit_structure(request, id):
@@ -410,7 +415,7 @@ def addAntenne(request, id):
 
 @referentiel_ecriture_requis
 def editAntenne(request,id):
-    antenne = Antenne.objects.get(id=id)
+    antenne = get_object_or_404(Antenne, id=id)
     structure = antenne.structure
     form = AntenneForm(instance=antenne)
     if request.method == 'POST':
@@ -425,8 +430,8 @@ def addCommunique(request):
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        if userMembre.ville:
+        userMembre = Membre.objects.filter(id=user.membreId).first()
+        if userMembre and userMembre.ville:
             villeId = userMembre.ville.id
     
     notifications = myNotify(request)[0:3]
@@ -437,7 +442,7 @@ def addCommunique(request):
     membre = None
     user = request.user
     if user.membreId:
-        membre = Membre.objects.get(id=user.membreId)
+        membre = Membre.objects.filter(id=user.membreId).first()
     if request.method == 'POST':
         message = request.POST['message']
         getter, setter = Communique.objects.get_or_create(user=user, membre=membre, message=message)
@@ -518,12 +523,8 @@ def addMoto(request, id):
     #Configuration
     messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.get(id=user.membreId)
-        try:
-            villeId = userMembre.ville.id
-        except Exception as error:
-            print(f"\n\n\n{error}\n\n\n")
+    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
+    villeId = userMembre.ville_id if userMembre else None
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
@@ -594,7 +595,7 @@ def addVille(request, id):
     provinces = provinceSelector()
     
     user = request.user
-    province = Province.objects.get(id=id)
+    province = get_object_or_404(Province, id=id)
     if request.method == 'POST':
         getter, setter = Ville.objects.get_or_create(user=user, province=province, nom=request.POST['nom'])
         if setter:
@@ -655,7 +656,7 @@ def contactView(request, id):
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
     
-    contact = Contact.objects.get(id=id)
+    contact = get_object_or_404(Contact, id=id)
     if request.method == 'POST':
         contact.traiter = True
         contact.save()
@@ -931,7 +932,7 @@ def messageView(request, id):
     provinces = provinceSelector()
     
     
-    message = Communique.objects.get(id=id)
+    message = get_object_or_404(Communique, id=id)
     reactions = Reaction.objects.filter(communique=message)
     return render(request, 'app/message-view.html', locals())
 
@@ -1007,7 +1008,7 @@ def article(request, id):
     intit = "Modifier l'article"
     
     #Article edit
-    article = Article.objects.get(id=id)
+    article = get_object_or_404(Article, id=id)
     if request.method == 'POST':
         image = request.FILES.get('image')
         erreur_photo = erreur_image(image) if image else None
