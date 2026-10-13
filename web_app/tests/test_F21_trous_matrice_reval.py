@@ -205,7 +205,6 @@ def test_F21_ajout_famille_sans_champs_ne_donne_pas_500(client, acteurs):
     assert r.status_code < 500
 
 
-@pytest.mark.xfail(reason='BUG a corriger (backend-django) : Province.DoesNotExist -> 500 sur identifiant inconnu (addVille).', strict=False)
 def test_F21_ajout_ville_province_inconnue_donne_404(client, acteurs):
     client.raise_request_exception = False
     client.force_login(acteurs['comptes']['su'])
@@ -213,7 +212,6 @@ def test_F21_ajout_ville_province_inconnue_donne_404(client, acteurs):
     assert r.status_code == 404
 
 
-@pytest.mark.xfail(reason='BUG a corriger (backend-django) : Antenne.DoesNotExist -> 500 sur identifiant inconnu (editAntenne).', strict=False)
 def test_F21_modifier_antenne_inconnue_donne_404(client, acteurs):
     client.raise_request_exception = False
     client.force_login(acteurs['comptes']['su'])

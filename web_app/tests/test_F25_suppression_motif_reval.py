@@ -106,9 +106,6 @@ def test_F25_reval_visiteur_lecture_seule(client, acteurs, cible):
     assert _etat(cible) == (False, False, None)
 
 
-@pytest.mark.xfail(strict=False, reason=(
-    "BUG de 322e2da (backend-django) : le SU et le privilege5 voient « Annuler la demande de suppression » mais le service "
-    "exige un motif et EXECUTE la suppression au lieu d'annuler. Corrige par la variante a action explicite."))
 @pytest.mark.parametrize('profil', ['su', 'p5'])
 def test_F25_reval_su_et_p5_annulent_une_demande_en_cours(client, acteurs, cible, profil):
     _agir(client, acteurs, 'p1', cible, 'demander', motif='Erreur de saisie')

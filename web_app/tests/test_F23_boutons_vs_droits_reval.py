@@ -124,12 +124,14 @@ def _preparer(acteurs, etat):
 BUG_FICHE_SUPPRIMEE = pytest.mark.xfail(strict=False, reason=(
     "BUG a corriger (frontend-htmx / backend-django) : sur la fiche d'un membre SUPPRIME, les boutons engins et famille "
     "(ajouter, modifier, supprimer, attribuer) restent affiches alors que les vues repondent 404 (membre hors perimetre)."))
-ETATS_A_REJOUER = [pytest.param(e, marks=BUG_FICHE_SUPPRIMEE) if e == 'supprime' else e for e in ETATS_FICHE]
+ETATS_A_REJOUER = list(ETATS_FICHE)
 
 
 @pytest.mark.parametrize('etat', ETATS_A_REJOUER)
 @pytest.mark.parametrize('profil', PROFILS)
-def test_F23_aucun_bouton_de_la_fiche_dont_la_vue_repond_refus(client, acteurs, profil, etat):
+def test_F23_aucun_bouton_de_la_fiche_dont_la_vue_repond_refus(client, acteurs, profil, etat, request):
+    if etat == 'supprime' and profil in ('su', 'p5'):  # seuls ceux qui peuvent restaurer voient la fiche supprimée
+        request.applymarker(BUG_FICHE_SUPPRIMEE)
     membre = _preparer(acteurs, etat)
     client.raise_request_exception = False
     client.force_login(acteurs['comptes'][profil])

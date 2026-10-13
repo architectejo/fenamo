@@ -198,27 +198,20 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
     assert _drapeaux(m) == (True, True, False)
 
 
-@pytest.mark.xfail(strict=False, reason=(
-    "BUG a corriger (backend-django) : la vue validate lit puis écrit sans transaction ni verrou "
-    "(select_for_update) : deux validateurs simultanés journalisent DEUX validations pour une seule étape posée."))
-def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(client, acteurs, monkeypatch):
-    import coptapp.services.droits_provisoires as vues
+def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(acteurs):
+    """Deux validateurs dont la lecture du membre est PÉRIMÉE (chacun a chargé l'instance avant l'écriture de l'autre) :
+    l'état est relu sous verrou, une seule étape est posée et une seule ligne est journalisée."""
+    try:
+        from coptapp.services.actions import valider_membre
+    except ImportError:
+        pytest.xfail("BUG de 322e2da (backend-django) : la vue validate lit puis écrit sans transaction ni verrou ; "
+                     "deux validateurs simultanés journalisent deux validations pour une seule étape.")
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2ter', password='x', privilege2=True)
-    original = vues.etapes_a_valider
-    deja = {'fait': False}
-
-    def entrelace(user, membre):
-        calcule = original(user, membre)
-        if not deja['fait']:
-            deja['fait'] = True
-            autre = Client()
-            autre.force_login(second)
-            autre.post(reverse('validate', kwargs={'id': m.id}))
-        return calcule
-
-    monkeypatch.setattr(vues, 'etapes_a_valider', entrelace)
-    _valider(client, acteurs, 'p2', m)
+    lecture_a, lecture_b = Membre.objects.get(pk=m.pk), Membre.objects.get(pk=m.pk)  # deux lectures avant toute écriture
+    assert valider_membre(acteurs['comptes']['p2'], lecture_a) == ['is_validate2']
+    assert valider_membre(second, lecture_b) == []  # l'étape est déjà posée : rien à faire
+    assert _drapeaux(m) == (True, True, False)
     assert _lignes(m, 'validation').count() == 1
 
 
