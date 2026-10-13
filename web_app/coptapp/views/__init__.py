@@ -22,6 +22,7 @@ from coptapp.services.droits_provisoires import (
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
     membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
+from coptapp.services.geographie import antenne_depuis_ville, completer_antenne, rattacher_antenne, rattacher_ville
 from coptapp.services.engins import (
     CoordinationInconnue, EnginDejaEnregistre, attribuer_engin, enregistrer_engin,
 )
@@ -180,8 +181,7 @@ def ville_select(request, id):
             classe = 'alert alert-danger text-center'
             return render(request, 'app/ville-select.html', locals(), status=400)
         ville = Ville.objects.filter(nom=nom).first() or Ville.objects.create(province=structure.province, nom=nom)
-        structure.ville = ville
-        structure.save(update_fields=['ville'])
+        rattacher_ville(request.user, structure, ville)
         return redirect("edit-structure", id=structure.id)
     return render(request, 'app/ville-select.html', locals())
 
@@ -192,7 +192,7 @@ def ville_attr(request, id, sid):
     try:
         structure = AssociationMembre.objects.get(id=sid)
         ville = Ville.objects.get(id=id)
-        rattacher(request.user, structure, 'ville', ville)
+        rattacher_ville(request.user, structure, ville)
     except (AssociationMembre.DoesNotExist, Ville.DoesNotExist):
         raise Http404
     return redirect('ville-select', id=structure.id)
@@ -204,7 +204,12 @@ def _rattacher_membre(request, idM, champ, modele, id_cible):
     cible = get_object_or_404(modele, id=id_cible)
     if not cible_rattachable(request.user, champ, cible):
         raise PermissionDenied
-    rattacher(request.user, membre, champ, cible)
+    if champ == 'ville':
+        rattacher_ville(request.user, membre, cible)  # ville ET antenne, une seule transaction
+    elif champ == 'antenne':
+        rattacher_antenne(request.user, membre, cible)
+    else:
+        rattacher(request.user, membre, champ, cible)
     return redirect('membre-view', id=idM)
 
 
@@ -404,7 +409,7 @@ def addAntenne(request, id):
         if form.is_valid():
             antenne = form.save(commit=False)
             antenne.structure = structure
-            antenne.ville = structure.ville
+            antenne.coordination = structure.province
             antenne.province = structure.province
             antenne.user = request.user
             antenne.save()
@@ -500,6 +505,7 @@ def addMembre(request, id):
             membre.province = structure.province
             membre.user = user
             membre.save()
+            completer_antenne(membre)
             classe = 'alert alert-info text-center'
             message = "Ajout du membre"
             notify(user=user, titre="Ajout d'un membre")
@@ -523,6 +529,7 @@ def add_membre_from_fenamo(request):
                 membre.province = membre.ville.province
             membre.user = user
             membre.save()
+            completer_antenne(membre)
             return redirect('membre-view', id=membre.id)
     else:
         form = MembreFenamoForm()
@@ -618,6 +625,7 @@ def addVille(request, id):
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-ville.html', locals(), status=400)
         ville, cree = Ville.objects.get_or_create(user=user, province=province, nom=nom_ville)
+        antenne_depuis_ville(ville, creer=True)  # toute ville a son antenne
         if cree:
             classe = 'alert alert-info text-center'
             message = _("Antenne ajoutée à la coordination provinciale.")
