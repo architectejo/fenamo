@@ -10,6 +10,7 @@ import pytest
 from django.contrib.auth.hashers import check_password, make_password
 from django.urls import reverse
 
+from compte.services.mobile import empreinte_session
 from coptapp.models import AssociationMembre, Membre, Moto, Ville
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
@@ -20,6 +21,7 @@ def connecter(client, membre):
     """Ouvre la session mobile du membre comme le fait la connexion."""
     session = client.session
     session['mob_membre_id'] = membre.id
+    session['mob_empreinte'] = empreinte_session(Membre.objects.get(pk=membre.pk))
     session.save()
 
 
@@ -52,12 +54,12 @@ def test_F20_mob_accueil_repond_200_anonyme(client, mob):
 
 def test_F20_mob_identifiant_inconnu(client, mob):
     r = client.post(reverse('home-mob'), {'idf': 'INCONNU', 'pass': ''})
-    assert r.status_code == 200 and 'Identifiant non reconnu' in r.content.decode()
+    assert r.status_code == 200 and 'Identifiant ou mot de passe incorrect' in r.content.decode()
 
 
 def test_F20_mob_mauvais_mot_de_passe(client, mob):
     r = client.post(reverse('home-mob'), {'idf': 'MBR0000002', 'pass': 'faux'})
-    assert r.status_code == 200 and 'Mot de passe incorrect' in r.content.decode()
+    assert r.status_code == 200 and 'Identifiant ou mot de passe incorrect' in r.content.decode()
 
 
 def test_F20_mob_bon_mot_de_passe_ouvre_la_session_et_redirige_vers_l_espace(client, mob):
@@ -144,7 +146,7 @@ def test_F20_mob_l_espace_d_un_membre_demande_une_authentification(client, mob):
 
 def test_F20_mob_membre_sans_mot_de_passe_ne_se_connecte_pas(client, mob):
     r = client.post(reverse('home-mob'), {'idf': 'MBR0000001', 'pass': ''})
-    assert r.status_code == 200 and 'Mot de passe à définir' in r.content.decode() and 'contactez votre agent' in r.content.decode()
+    assert r.status_code == 200 and 'Identifiant ou mot de passe incorrect' in r.content.decode()  # message unique
     assert 'mob_membre_id' not in client.session
     r = client.post(reverse('home-mob'), {'idf': 'MBR0000001', 'pass': 'nimporte'})
     assert r.status_code == 200 and 'mob_membre_id' not in client.session

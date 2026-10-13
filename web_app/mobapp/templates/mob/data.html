@@ -28,8 +28,8 @@
 <section class="panneau u-mt-4">
   <div class="panneau-tete"><h2>{% translate "Votre association membre" %}</h2></div>
   <div class="panneau-corps pile">
-    {% for structure in structures %}
-    <form method="post" action="{% url 'attribut-str' membre.id structure.id %}">{% csrf_token %}<button type="submit" class="bouton bouton--bloc"><span class="roue" aria-hidden="true"></span><span>{{ structure.nom }}</span></button></form>
+    {% for association in associations %}
+    <form method="post" action="{% url 'attribut-str' membre.id association.id %}">{% csrf_token %}<button type="submit" class="bouton bouton--bloc"><span class="roue" aria-hidden="true"></span><span>{{ association.nom }}</span></button></form>
     {% endfor %}
   </div>
 </section>

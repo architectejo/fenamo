@@ -17,7 +17,8 @@ COMMUNS = [
 ATTENDUS = {
     MembreForm: ['fiche_id', 'ville', 'code_parking'] + COMMUNS,
     MembreFenamoForm: ['fiche_id', 'province', 'code_parking'] + COMMUNS,
-    MembreFormRegister: ['province'] + COMMUNS,
+    # formulaire public : jamais le numéro de carte de membre (attribué par la FENAMO)
+    MembreFormRegister: ['province'] + [c for c in COMMUNS if c != 'numero_carte_de_membre'],
 }
 INTERDITS = ('suppression_demandee', 'motif_suppression', 'suppression_demandee_par', 'is_delete', 'is_validate1',
              'is_validate2', 'is_validate3', 'is_user', 'is_membre', 'user', 'structure', 'antenne', 'idf', 'password',

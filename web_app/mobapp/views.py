@@ -1,84 +1,101 @@
 """Application mobile actuelle (/mob/), reprise au sous-lot 2c (cahier des charges web § 9.1 et § 2.3).
 
-Compatibilité : les adresses /mob/… et les noms de routes ne changent pas. Nouveautés de sécurité :
+Compatibilité : les adresses /mob/… et les noms de routes ne changent pas. Sécurité :
 - connexion par identifiant + mot de passe HACHÉ (``check_password``) ; un membre sans mot de passe ne peut pas se
-  connecter tant qu'un agent n'en a pas défini (``manage.py definir_mot_de_passe_membre``) ;
+  connecter tant qu'un agent n'en a pas défini (``manage.py definir_mot_de_passe_membre``) ; un seul message pour tout
+  échec (identifiant inconnu, sans mot de passe, mauvais mot de passe) et un hachage factice si l'identifiant est inconnu ;
 - limitation des tentatives par identifiant et par adresse IP (``compte.services.mobile``) ;
-- après la connexion, ``request.session['mob_membre_id']`` ; l'espace, les données et les rattachements d'un membre exigent
-  que cet identifiant soit celui de l'adresse (403 sinon) ;
-- les rattachements (association membre, antenne) ne se font plus que par POST avec jeton CSRF.
+- après la connexion, la session porte ``mob_membre_id`` ET une empreinte HMAC du hachage du mot de passe : changer le mot de
+  passe invalide la session ; ``POST /mob/deconnexion/`` la ferme ;
+- l'espace, les données, les rattachements et la photo d'un membre exigent cette session (403 sinon) ;
+- les rattachements (association membre, antenne) ne se font que par POST avec jeton CSRF ;
+- toutes les pages personnelles sont envoyées avec ``Cache-Control: no-store``.
 """
-from django.contrib.auth.hashers import check_password, make_password
+from functools import wraps
+
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.cache import add_never_cache_headers
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from compte.services.mobile import (
-    connexion_bloquee, effacer_echecs, inscriptions_trop_nombreuses, noter_echec, noter_inscription,
+    connexion_bloquee, effacer_echecs, empreinte_session, inscriptions_trop_nombreuses, noter_echec, noter_inscription,
+    session_valide, verifier_mot_de_passe,
 )
 from coptapp.models import AssociationMembre, Membre, Ville
 from coptapp.services.engins import CoordinationInconnue, EnginDejaEnregistre, enregistrer_engin
+from coptapp.services.fichiers_prives import reponse_fichier
 from mobapp.forms import InscriptionMobileForm, MotoFormRegister
 
-SESSION_CLE = 'mob_membre_id'
+CLES_SESSION = ('mob_membre_id', 'mob_empreinte')
 CHAMPS_ENGIN = ('num_plaque', 'num_moteur', 'num_chassie', 'marque', 'couleur')
+
+
+def sans_cache(vue):
+    """Page personnelle : jamais conservée par le navigateur ni un intermédiaire (``Cache-Control: no-store, private``)."""
+    @wraps(vue)
+    def enveloppe(request, *args, **kwargs):
+        reponse = vue(request, *args, **kwargs)
+        add_never_cache_headers(reponse)
+        reponse['Cache-Control'] = 'no-store, private'
+        return reponse
+    return enveloppe
 
 
 def ouvrir_session(request, membre):
     """Connecte `membre` à l'espace mobile (nouvelle clé de session : pas de fixation de session)."""
     request.session.cycle_key()
-    request.session[SESSION_CLE] = membre.id
+    request.session['mob_membre_id'] = membre.id
+    request.session['mob_empreinte'] = empreinte_session(membre)
 
 
 def membre_connecte(vue):
-    """Réserve la vue au membre connecté dont l'identifiant est celui de l'adresse : 403 sinon."""
+    """Réserve la vue au membre connecté dont l'identifiant est celui de l'adresse et dont le mot de passe n'a pas changé
+    depuis la connexion : 403 sinon."""
+    @wraps(vue)
     def enveloppe(request, id, *args, **kwargs):
-        if request.session.get(SESSION_CLE) != id:
+        if not session_valide(request.session, id):
             raise PermissionDenied
         return vue(request, id, *args, **kwargs)
-    enveloppe.__name__ = vue.__name__
-    enveloppe.__doc__ = vue.__doc__
     return enveloppe
 
 
+def _message(request, texte, niveau):
+    """Contexte d'un message : ``niveau`` vaut 'succes' ou 'danger' (affiché par mob/_message.html)."""
+    return {'message': texte, 'niveau': niveau}
+
+
+@sans_cache
 def home(request):
-    title = "Authentification"
+    title = _("Authentification")
+    contexte = {'title': title}
     if request.method == 'POST':
         idf_post = (request.POST.get('idf') or '').strip()
         password = request.POST.get('pass') or ''
         if connexion_bloquee(request, idf_post):
-            message = "Trop d'essais : réessayez plus tard."
-            classe = "alert alert-danger"
-            return render(request, 'mob/home.html', locals(), status=429)
+            contexte.update(_message(request, _("Trop d'essais : réessayez plus tard."), 'danger'))
+            return render(request, 'mob/home.html', contexte, status=429)
         membre = Membre.objects.filter(idf=idf_post, is_delete=False).first() if idf_post else None
-        if membre is None:
-            noter_echec(request, idf_post)
-            message = "Identifiant non reconnu !"
-            classe = "alert alert-danger"
-        elif not membre.password:
-            message = "Mot de passe à définir : contactez votre agent."
-            classe = "alert alert-danger"
-        elif check_password(password, membre.password):
+        if verifier_mot_de_passe(membre, password):
             effacer_echecs(request, idf_post)
             ouvrir_session(request, membre)
             return redirect('session', id=membre.id)
-        else:
-            noter_echec(request, idf_post)
-            message = "Mot de passe incorrect !"
-            classe = "alert alert-danger"
-    return render(request, 'mob/home.html', locals())
+        noter_echec(request, idf_post)  # message UNIQUE (rien ne révèle si l'identifiant existe) ; toutes les branches d'échec comptent, y compris « mot de passe à définir »
+        contexte.update(_message(request, _("Identifiant ou mot de passe incorrect."), 'danger'))
+    return render(request, 'mob/home.html', contexte)
 
 
+@sans_cache
 def register(request):
-    title = "Enregistrement"
+    contexte = {'title': _("Enregistrement")}
     if request.method == 'POST':
         form = InscriptionMobileForm(request.POST, request.FILES)
         if inscriptions_trop_nombreuses(request):
-            message = "Trop d'inscriptions depuis cette connexion : réessayez plus tard."
-            classe = 'alert alert-danger text-center'
-            return render(request, 'mob/register.html', locals(), status=429)
+            contexte.update(_message(request, _("Trop d'inscriptions depuis cette connexion : réessayez plus tard."), 'danger'))
+            return render(request, 'mob/register.html', {**contexte, 'form': form}, status=429)
         if form.is_valid():
             with transaction.atomic():
                 membre = form.save(commit=False)
@@ -89,17 +106,27 @@ def register(request):
             noter_inscription(request)
             ouvrir_session(request, membre)
             return redirect('data', id=membre.id)
-        message = "Echec d'enregistrement !"
-        classe = 'alert alert-danger text-center'
+        contexte.update(_message(request, _("Échec de l'enregistrement !"), 'danger'))
     else:
         form = InscriptionMobileForm()
-    return render(request, 'mob/register.html', locals())
+    return render(request, 'mob/register.html', {**contexte, 'form': form})
 
 
+@require_POST
+def deconnexion(request):
+    """Ferme l'espace mobile : retire la session du membre (la session du site, si elle existe, n'est pas touchée)."""
+    for cle in CLES_SESSION:
+        request.session.pop(cle, None)
+    request.session.cycle_key()
+    return redirect('home-mob')
+
+
+@sans_cache
 @membre_connecte
 def session(request, id):
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    motos = membre.moto_set.all()
+    contexte = {'membre': membre}
+    form = MotoFormRegister()
     if request.method == 'POST':
         form = MotoFormRegister(request.POST, request.FILES)
         if form.is_valid():
@@ -107,85 +134,82 @@ def session(request, id):
             try:
                 enregistrer_engin(membre, None, donnees, photo=form.cleaned_data.get('photo'))
             except CoordinationInconnue:
-                message = "Votre coordination provinciale est inconnue : contactez votre agent."
-                classe = 'alert alert-danger text-center'
+                contexte.update(_message(request, _("Votre coordination provinciale est inconnue : contactez votre agent."), 'danger'))
             except EnginDejaEnregistre:
-                message = "La moto est déjà enregistré !"
-                classe = 'alert alert-danger text-center'
+                contexte.update(_message(request, _("Cet engin est déjà enregistré (même numéro de châssis et de moteur)."), 'danger'))
             else:
-                message = "Mise à jour !"
-                classe = 'alert alert-success text-center'
+                contexte.update(_message(request, _("Engin enregistré."), 'succes'))
                 form = MotoFormRegister()
         else:
-            message = "Vérifiez les informations de la moto."
-            classe = 'alert alert-danger text-center'
-    else:
-        form = MotoFormRegister()
-    motos = membre.moto_set.all()
-    return render(request, 'mob/session.html', locals())
+            contexte.update(_message(request, _("Vérifiez les informations de l'engin."), 'danger'))
+    contexte.update({'form': form, 'motos': membre.moto_set.all()})
+    return render(request, 'mob/session.html', contexte)
 
 
 def _choix_du_membre(membre):
     """Associations membres et antennes proposées : celles de la coordination du membre."""
-    structures = AssociationMembre.objects.filter(province=membre.province).exclude(ville=None)
+    associations = AssociationMembre.objects.filter(province=membre.province).exclude(ville=None)
     villes = Ville.objects.filter(province=membre.province).exclude(nom=None)
-    return structures, villes
+    return associations, villes
 
 
+@sans_cache
 @membre_connecte
 def data_membre(request, id):
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    structures, villes = _choix_du_membre(membre)
+    associations, villes = _choix_du_membre(membre)
     if membre.ville:
         return redirect('session', id=membre.id)
     if request.method == 'POST':
-        champs = []
-        structure_id, ville_id = request.POST.get('structure'), request.POST.get('ville')
-        if structure_id:
-            structure = get_object_or_404(structures, id=int(structure_id)) if structure_id.isdigit() else None
-            if structure is None:
-                raise Http404
-            membre.structure, membre.ville = structure, structure.ville
-            champs += ['structure', 'ville']
-        if ville_id:
-            ville = get_object_or_404(villes, id=int(ville_id)) if ville_id.isdigit() else None
-            if ville is None:
-                raise Http404
-            membre.ville = ville
-            champs.append('ville')
+        champs = set()
+        if request.POST.get('structure'):
+            association = get_object_or_404(associations, id=_entier(request.POST['structure']))
+            membre.structure, membre.ville = association, association.ville
+            champs |= {'structure', 'ville'}
+        if request.POST.get('ville'):
+            membre.ville = get_object_or_404(villes, id=_entier(request.POST['ville']))
+            champs.add('ville')
         if champs:
-            membre.save(update_fields=sorted(set(champs)) + ['mise_a_jour'])
+            membre.save(update_fields=sorted(champs) + ['mise_a_jour'])
         return redirect('session', id=membre.id)
-    return render(request, 'mob/data.html', locals())
+    return render(request, 'mob/data.html', {'membre': membre, 'associations': associations, 'villes': villes})
+
+
+def _entier(texte):
+    """Entier tiré d'un champ de formulaire ; 0 (introuvable, donc 404) si le texte n'en est pas un."""
+    try:
+        return int(texte)
+    except (TypeError, ValueError):
+        return 0
 
 
 @require_POST
+@sans_cache
 @membre_connecte
 def attribut_ville(request, id, id_ville):
     """POST seulement (jeton CSRF) : rattache le membre connecté à une antenne de sa coordination."""
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    ville = get_object_or_404(_choix_du_membre(membre)[1], id=id_ville)
-    membre.ville = ville
+    membre.ville = get_object_or_404(_choix_du_membre(membre)[1], id=id_ville)
     membre.save(update_fields=['ville', 'mise_a_jour'])
     return redirect('data', id=id)
 
 
 @require_POST
+@sans_cache
 @membre_connecte
 def attribut_str(request, id, id_str):
     """POST seulement (jeton CSRF) : rattache le membre connecté à une association membre de sa coordination."""
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    structure = get_object_or_404(_choix_du_membre(membre)[0], id=id_str)
-    membre.structure = structure
+    membre.structure = get_object_or_404(_choix_du_membre(membre)[0], id=id_str)
     membre.save(update_fields=['structure', 'mise_a_jour'])
     return redirect('data', id=id)
 
 
 @require_GET
+@sans_cache
 @membre_connecte
 def photo_membre(request, id):
-    """Photo (ou vignette avec ``?vignette=1``) du membre connecté : l'espace mobile n'a pas de compte Django, il ne peut
-    donc pas utiliser la vue /fichiers/… ; mêmes protections (type réel, nosniff, Content-Disposition neutre)."""
-    from coptapp.views.fichiers import _reponse
+    """Photo (ou vignette avec ``?vignette=1``) du membre connecté : l'espace mobile n'a pas de compte Django, il ne peut donc
+    pas utiliser la vue /fichiers/… ; mêmes protections (type réel, nosniff, Content-Disposition neutre, no-store)."""
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    return _reponse(request, membre, 'photo', piece=False, vignette=request.GET.get('vignette') == '1')
+    return reponse_fichier(None, membre, 'photo', piece=False, vignette=request.GET.get('vignette') == '1')

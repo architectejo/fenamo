@@ -7,6 +7,7 @@ from mobapp.views import *
 urlpatterns = [
     path('', login_not_required(home), name="home-mob"),
     path('espace/<int:id>', login_not_required(session), name="session"),
+    path('deconnexion/', login_not_required(deconnexion), name="deconnexion-mob"),
     path('register/', login_not_required(register), name="register"),
     path('photo/<int:id>', login_not_required(photo_membre), name="photo-mob"),
     path('data/<int:id>', login_not_required(data_membre), name="data"),

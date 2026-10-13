@@ -6,17 +6,21 @@ même table, même durée de blocage (``AXES_COOLOFF_TIME``) et mêmes seuils qu
 """
 import secrets
 from datetime import timedelta
+from functools import lru_cache
 
 from axes.helpers import get_client_ip_address
 from axes.models import AccessFailureLog
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils import timezone
+from django.utils.crypto import constant_time_compare, salted_hmac
 
 from compte.models import JournalAction
 from compte.services.journal import journaliser
+from coptapp.models import Membre
+from coptapp.services.droits_provisoires import droits_membre, membres_du_perimetre
 
 PREFIXE = 'mob:'
 INSCRIPTION = 'mob-inscription'
@@ -76,7 +80,6 @@ def definir_mot_de_passe_membre(auteur, membre):
     journal garde l'auteur, la date et le membre, JAMAIS le mot de passe. Droits : SU, ou compte qui peut enregistrer
     des membres (jamais en lecture seule) et voit ce membre dans son périmètre ; PermissionDenied sinon.
     """
-    from coptapp.services.droits_provisoires import droits_membre, membres_du_perimetre
     if not auteur.is_superuser and not (
         membres_du_perimetre(auteur).filter(pk=membre.pk).exists() and droits_membre(auteur, membre)['peut_creer_membre']
     ):
@@ -87,3 +90,34 @@ def definir_mot_de_passe_membre(auteur, membre):
     journaliser(auteur, JournalAction.Action.CHANGEMENT_MOT_DE_PASSE, membre, apres={'defini': True},
                 motif="Mot de passe de l'espace mobile défini (temporaire)", libelle=membre.nom or '')
     return clair
+
+
+# ---------------------------------------------------------------- session mobile liée au mot de passe
+
+def empreinte_session(membre):
+    """Empreinte HMAC (clé secrète du site) du membre et du HACHAGE de son mot de passe : stockée dans la session mobile
+    et recomparée à chaque page ; un changement de mot de passe (réinitialisation par un agent) l'invalide aussitôt."""
+    return salted_hmac('mobapp.session', f'{membre.pk}:{membre.password or ""}').hexdigest()
+
+
+def session_valide(session, membre_id):
+    """Vrai si la session mobile désigne `membre_id`, que ce membre existe (non supprimé) et que l'empreinte stockée est celle
+    de son mot de passe actuel."""
+    if session.get('mob_membre_id') != membre_id:
+        return False
+    membre = Membre.objects.filter(pk=membre_id, is_delete=False).only('id', 'password').first()
+    return bool(membre and constant_time_compare(session.get('mob_empreinte', ''), empreinte_session(membre)))
+
+
+@lru_cache(maxsize=1)
+def _hachage_factice():
+    return make_password('hachage-factice-contre-la-mesure-du-temps')
+
+
+def verifier_mot_de_passe(membre, mot_de_passe):
+    """Vérifie le mot de passe en temps comparable que le membre existe ou non (hachage factice si `membre` est None ou sans
+    mot de passe) : la durée de la réponse ne révèle pas l'existence d'un identifiant."""
+    if membre is None or not membre.password:
+        check_password(mot_de_passe, _hachage_factice())
+        return False
+    return check_password(mot_de_passe, membre.password)

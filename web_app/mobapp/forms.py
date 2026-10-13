@@ -1,5 +1,9 @@
 from django import forms
-from coptapp.models import *
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
+from coptapp.models import Membre, Moto, Province
 
 
 class MotoFormRegister(forms.ModelForm):
@@ -10,10 +14,10 @@ class MotoFormRegister(forms.ModelForm):
         # Liste blanche (jamais d'exclude : formulaire public)
         fields = ('photo', 'num_plaque', 'num_moteur', 'num_chassie', 'marque', 'couleur')
         labels = {
-            'photo':"Image",
-            'num_plaque':"Numéro Plaque",
-            'num_moteur':"Numéro Moteur",
-            'num_chassie':"Numéro Chassie",
+            'photo': _("Image"),
+            'num_plaque': _("Numéro de plaque"),
+            'num_moteur': _("Numéro de moteur"),
+            'num_chassie': _("Numéro de châssis"),
         }
     def __init__(self, *args, **kwargs):
         super(MotoFormRegister, self).__init__(*args, **kwargs)
@@ -26,7 +30,7 @@ class MembreFormRegister(forms.ModelForm):
     qualites_liste = [('PROPRIETAIRE','PROPRIETAIRE'),('MOTARD ET PROPRIETAIRE','MOTARD ET PROPRIETAIRE')]
     genre = forms.ChoiceField(choices=genre_liste)
     qualite = forms.ChoiceField(choices=qualites_liste)
-    province = forms.ModelChoiceField(queryset=Province.objects.order_by('nom').exclude(nom=None), label='Province', required=True)
+    province = forms.ModelChoiceField(queryset=Province.objects.order_by('nom').exclude(nom=None), label=_('Province'), required=True)
     class Meta:
         model = Membre
         # Liste blanche (jamais d'exclude : formulaire public anonyme)
@@ -44,7 +48,6 @@ class MembreFormRegister(forms.ModelForm):
             'nom_epouse',
             'nation',
             'numero_carte_d_electeur',
-            'numero_carte_de_membre',
             'nom_pere',
             'nom_mere',
             'village',
@@ -60,21 +63,20 @@ class MembreFormRegister(forms.ModelForm):
             'qualite',
         )
         labels = {
-            'nom':"Nom complet",
-            'date_naissance':"Date de naissance",
-            'lieux_naissance':"Lieux de naissance",
-            'comite':"Comité",
-            'brevet':"Brevet de formation",
-            'nom_epouse':"Nom de l'epouse(Si marié)",
-            'nation':"Nationalité",
-            'Numero_carte_d_electeur':"Numéro carte d'electeur",
-            'numero_carte_de_membre':"Numéro carte de membre",
-            'nom_pere':"Nom du père",
-            'province_origine':"Province d'origine",
-            'telephone':"Téléphone",
-            'mail':"E-Mail",
-            'categorie':"Catégorie",
-            'qualite':"Qualité",
+            'nom': _("Nom complet"),
+            'date_naissance': _("Date de naissance"),
+            'lieux_naissance': _("Lieu de naissance"),
+            'comite': _("Comité"),
+            'brevet': _("Brevet de formation"),
+            'nom_epouse': _("Nom de l'épouse (si marié)"),
+            'nation': _("Nationalité"),
+            'numero_carte_d_electeur': _("Numéro de carte d'électeur"),
+            'nom_pere': _("Nom du père"),
+            'province_origine': _("Province d'origine"),
+            'telephone': _("Téléphone"),
+            'mail': _("E-mail"),
+            'categorie': _("Catégorie"),
+            'qualite': _("Qualité"),
         }
 
     def __init__(self, *args, **kwargs):
@@ -91,8 +93,8 @@ class InscriptionMobileForm(MembreFormRegister):
     (saisi deux fois, règles de mot de passe de Django, enregistré HACHÉ) et un champ piège caché contre les robots :
     un champ rempli par un robot rejette l'inscription sans rien enregistrer."""
 
-    password1 = forms.CharField(label='Mot de passe', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
-    password2 = forms.CharField(label='Confirmez le mot de passe', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    password1 = forms.CharField(label=_('Mot de passe'), widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    password2 = forms.CharField(label=_('Confirmez le mot de passe'), widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
     piege = forms.CharField(required=False, widget=forms.HiddenInput, label='')
 
     def __init__(self, *args, **kwargs):
@@ -103,13 +105,11 @@ class InscriptionMobileForm(MembreFormRegister):
     def clean(self):
         donnees = super().clean()
         if donnees.get('piege'):
-            raise forms.ValidationError("Inscription refusée.")
+            raise forms.ValidationError(_("Inscription refusée."))
         mot1, mot2 = donnees.get('password1'), donnees.get('password2')
         if mot1 and mot2 and mot1 != mot2:
-            self.add_error('password2', "Les deux mots de passe ne correspondent pas.")
+            self.add_error('password2', _("Les deux mots de passe ne correspondent pas."))
         elif mot1:
-            from django.contrib.auth.password_validation import validate_password
-            from django.core.exceptions import ValidationError
             try:
                 validate_password(mot1)
             except ValidationError as erreur:

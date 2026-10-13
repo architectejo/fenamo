@@ -1,10 +1,11 @@
-{% load i18n %}{% comment %}En-tête du membre connecté : photo servie par /mob/photo/<id> (vignette), jamais /media/.{% endcomment %}
+{% load i18n design %}{% comment %}En-tête du membre connecté : photo servie par /mob/photo/<id> (vignette), jamais /media/ ; initiales sinon (balise avatar).{% endcomment %}
 <section class="mob-membre">
   {% if membre.photo %}<span class="avatar avatar--grand"><img src="{% url 'photo-mob' membre.id %}?vignette=1" alt="" width="88" height="88" loading="lazy"></span>
-  {% else %}<span class="avatar avatar--grand" aria-hidden="true">{{ membre.nom|slice:":1"|upper }}</span>{% endif %}
+  {% else %}{% avatar membre.nom None 88 %}{% endif %}
   <div>
     <h1 class="u-t-5">{{ membre.nom }}</h1>
     <p class="doux u-mb-0">{{ membre.qualite }}</p>
     <p class="u-mb-0"><span class="ident">{{ membre.idf }}</span></p>
+    <form method="post" action="{% url 'deconnexion-mob' %}" class="u-mt-2">{% csrf_token %}<button type="submit" class="bouton bouton--petit">{% translate "Se déconnecter" %}</button></form>
   </div>
 </section>

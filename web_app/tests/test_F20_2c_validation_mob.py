@@ -1,5 +1,5 @@
 """Validation indépendante 2c : /mob/ (connexion, 429, session, CSRF, photo, inscription), verrou IP partagé avec la
-connexion web, et constats de sécurité ouverts (xfail strict : ils passeront, et feront échouer la suite, le jour où
+connexion web et anciens constats de sécurité, aujourd'hui corrigés (plus aucun xfail ; ils auraient échoué, en strict, le jour où
 backend-django aura corrigé : retirer alors le marqueur)."""
 import re
 from html import unescape
@@ -13,11 +13,10 @@ from django.urls import reverse
 from django.utils import timezone
 
 from coptapp.models import AssociationMembre, Membre
-from compte.services.mobile import definir_mot_de_passe_membre
+from compte.services.mobile import definir_mot_de_passe_membre, empreinte_session
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
 MDP = 'Secret-fictif-91x'
-CONSTAT = lambda raison: pytest.mark.xfail(strict=True, reason='CONSTAT securite ouvert : ' + raison)  # noqa: E731
 
 
 @pytest.fixture
@@ -34,10 +33,11 @@ def mob(jeu):
 def connecter(client, membre):
     s = client.session
     s['mob_membre_id'] = membre.id
+    s['mob_empreinte'] = empreinte_session(Membre.objects.get(pk=membre.pk))
     s.save()
 
 
-PHRASES = ('Identifiant non reconnu', 'Mot de passe incorrect', 'Mot de passe à définir', "Trop d'essais")
+PHRASES = ('Identifiant ou mot de passe incorrect', "Trop d'essais")
 
 
 def _msg(r):
@@ -78,17 +78,30 @@ def test_F20_2c_connexion_get_ne_cree_pas_de_session_membre(client, mob):
     assert 'mob_membre_id' not in client.session
 
 
-def test_F20_2c_messages_actuels_documentes(client, mob):
-    """Documente l'état réel : trois messages distincts (voir le constat d'énumération ci-dessous)."""
+def test_F20_2c_message_unique_pour_tout_echec(client, mob):
     inconnu = _msg(_post(client, 'INCONNU', 'x'))
     faux = _msg(_post(Client(), 'MBR0000002', 'x'))
     sans = _msg(_post(Client(), 'MBR0000001', 'x'))
-    assert (inconnu, faux, sans) == PHRASES[:3]
+    assert inconnu == faux == sans == 'Identifiant ou mot de passe incorrect'
 
 
-@CONSTAT("énumération : « Identifiant non reconnu » / « Mot de passe incorrect » / « Mot de passe à définir » révèlent si "
-         "un identifiant MBRxxxxxxx (séquentiel, devinable) existe et s'il a un mot de passe")
-def test_F20_2c_constat_enumeration_meme_message_pour_tout_echec(mob):
+def test_F20_2c_echec_compte_dans_toutes_les_branches_y_compris_sans_mot_de_passe(client, mob, settings):
+    for _ in range(settings.AXES_FAILURE_LIMIT):
+        assert _post(client, 'MBR0000001', 'x').status_code == 200  # membre SANS mot de passe
+    assert _post(client, 'MBR0000001', 'x').status_code == 429
+
+
+def test_F20_2c_hachage_factice_pour_un_identifiant_inconnu(client, mob, monkeypatch):
+    appels = []
+    import compte.services.mobile as mobile
+    vrai = mobile.check_password
+    monkeypatch.setattr(mobile, 'check_password', lambda mot, hache: appels.append(hache) or vrai(mot, hache))
+    _post(client, 'INCONNU', 'x')
+    _post(Client(), 'MBR0000001', 'x')  # sans mot de passe
+    assert len(appels) == 2  # un hachage est toujours calculé, même sans membre ou sans mot de passe
+
+
+def test_F20_2c_meme_message_pour_tout_echec(mob):
     messages = {_msg(_post(Client(), 'INCONNU', 'x')), _msg(_post(Client(), 'MBR0000002', 'x')),
                 _msg(_post(Client(), 'MBR0000001', 'x'))}
     assert None not in messages and len(messages) == 1
@@ -122,14 +135,16 @@ def test_F20_2c_succes_efface_les_echecs_de_cet_identifiant_seulement(client, mo
     assert _post(c, 'MBR0000003', MDP).status_code == 429
 
 
-def test_F20_2c_verrou_ip_mob_bloque_aussi_la_connexion_web_documente(client, mob, settings):
-    """DOCUMENTE : les échecs /mob/ s'ajoutent au même journal que la connexion web (AccessFailureLog, même IP) ;
-    IP_ECHECS_MAX échecs mobiles verrouillent donc AUSSI /connexion/ pour cette IP (effet de bord, risque de déni de
-    service entre utilisateurs derrière une même adresse)."""
+def test_F20_2c_echecs_et_inscriptions_mob_ne_bloquent_pas_la_connexion_web(client, mob, settings):
+    """Les échecs /mob/ (pseudos « mob:… ») et les inscriptions (« mob-inscription ») ne comptent pas dans le verrou par
+    adresse IP de /connexion/ : /mob/ a son propre compteur."""
     for i in range(settings.IP_ECHECS_MAX):
         _post(Client(), f'FANTOME{i}', 'x')
+    for _ in range(settings.IP_ECHECS_MAX):
+        AccessFailureLog.objects.create(username='mob-inscription', ip_address='127.0.0.1', user_agent='t', http_accept='',
+                                        path_info='/mob/register/', attempt_time=timezone.now(), locked_out=False)
     r = Client().post(reverse('application'), {'username': 'admin-test', 'password': 'mot-de-passe-test-123'})
-    assert r.status_code == 429
+    assert r.status_code != 429
 
 
 def test_F20_2c_verrou_web_ne_bloque_pas_mob(client, mob, settings):
@@ -257,10 +272,9 @@ def test_F20_2c_inscription_mot_de_passe_hache_et_session_ouverte(client, mob):
     assert client.get(reverse('session', kwargs={'id': m.id})).status_code == 200
 
 
-# ---------------------------------------------------------------- constats de sécurité ouverts
+# ---------------------------------------------------------------- anciens constats de sécurité, corrigés
 
-@CONSTAT("la session /mob/ survit au changement de mot de passe du membre (aucun lien avec le hachage)")
-def test_F20_2c_constat_session_mobile_invalidee_par_changement_de_mot_de_passe(client, mob):
+def test_F20_2c_session_mobile_invalidee_par_changement_de_mot_de_passe(client, mob):
     assert _post(client, 'MBR0000002', MDP).status_code == 302
     url = reverse('session', kwargs={'id': mob['avec'].id})
     assert client.get(url).status_code == 200
@@ -268,16 +282,58 @@ def test_F20_2c_constat_session_mobile_invalidee_par_changement_de_mot_de_passe(
     assert client.get(url).status_code == 403
 
 
-@CONSTAT("aucun en-tête Cache-Control: no-store sur les pages personnelles de /mob/ (espace, données, photo)")
-def test_F20_2c_constat_mob_pages_personnelles_no_store(client, mob):
+def test_F20_2c_mob_pages_personnelles_no_store(client, mob):
     connecter(client, mob['avec'])
     r = client.get(reverse('session', kwargs={'id': mob['avec'].id}))
     assert r.status_code == 200 and 'no-store' in r.get('Cache-Control', '')
 
 
-@CONSTAT("le formulaire public d'inscription expose numero_carte_de_membre (numéro attribué par la FENAMO)")
-def test_F20_2c_constat_formulaire_public_sans_numero_de_carte_de_membre(client, mob):
+def test_F20_2c_formulaire_public_sans_numero_de_carte_de_membre(client, mob):
     from mobapp.forms import InscriptionMobileForm
     assert 'numero_carte_de_membre' not in InscriptionMobileForm().fields
     client.post(reverse('register'), _insc(mob, nom='Carte forgée', numero_carte_de_membre='CARTE-FORGEE'))
     assert Membre.objects.get(nom='Carte forgée').numero_carte_de_membre in (None, '')
+
+
+def test_F20_2c_deconnexion_post_seulement_ferme_la_session_mobile(client, mob):
+    connecter(client, mob['avec'])
+    url = reverse('session', kwargs={'id': mob['avec'].id})
+    assert client.get(url).status_code == 200
+    assert client.get(reverse('deconnexion-mob')).status_code == 405
+    assert client.get(url).status_code == 200  # un GET ne déconnecte pas
+    r = client.post(reverse('deconnexion-mob'))
+    assert r.status_code == 302 and r['Location'] == reverse('home-mob')
+    assert 'mob_membre_id' not in client.session and client.get(url).status_code == 403
+
+
+def test_F20_2c_la_deconnexion_mobile_garde_la_session_du_site(client, mob):
+    client.force_login(mob['compte'])
+    connecter(client, mob['avec'])
+    client.post(reverse('deconnexion-mob'))
+    assert client.get(reverse('tableau-bord')).status_code == 200  # toujours connecté à l'application web
+
+
+def test_F20_2c_session_mobile_sans_empreinte_ou_avec_une_autre_refusee(client, mob):
+    url = reverse('session', kwargs={'id': mob['avec'].id})
+    s = client.session
+    s['mob_membre_id'] = mob['avec'].id  # identifiant seul, sans empreinte : forgé
+    s.save()
+    assert client.get(url).status_code == 403
+    s['mob_empreinte'] = 'x' * 40
+    s.save()
+    assert client.get(url).status_code == 403
+    connecter(client, mob['autre'])
+    s = client.session
+    s['mob_membre_id'] = mob['avec'].id  # empreinte d'un autre membre
+    s.save()
+    assert client.get(url).status_code == 403
+
+
+@pytest.mark.parametrize('route', ['session', 'data'])
+def test_F20_2c_pages_mob_no_store_aussi_quand_la_session_mobile_existe(client, mob, route):
+    sans_ville = Membre.objects.create(nom='Sans ville', password=make_password(MDP), province=mob['province'])
+    connecter(client, sans_ville)
+    r = client.get(reverse(route, kwargs={'id': sans_ville.id}))
+    assert r.status_code in (200, 302) and 'no-store' in r['Cache-Control']
+    assert 'no-store' in client.get(reverse('home-mob'))['Cache-Control']
+    assert 'no-store' in client.get(reverse('register'))['Cache-Control']
