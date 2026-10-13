@@ -12,7 +12,8 @@ Ce document est la référence de `frontend-htmx` : il applique ce qui est écri
 | Icônes (sprite) + licence ISC | `static/img/icons.svg`, `static/img/LICENCE-ICONES.txt` |
 | Gabarits de composants documentés | `templates/components/` |
 | Maquettes statiques (utilisent les vrais fichiers ci-dessus) | `docs/design/maquettes/` (ouvrir `index.html`) |
-| Captures 360 px et 1280 px, clair et sombre | `docs/design/captures/` |
+| Captures des maquettes, 360 px et 1280 px, clair et sombre | `docs/design/captures/` |
+| Captures des écrans intégrés (application réelle), 360 px et 1280 px | `docs/design/captures-integration/` |
 
 Pour ouvrir les maquettes avec les polices : depuis `web_app/`, `python -m http.server 8078`, puis `http://localhost:8078/docs/design/maquettes/`. Paramètres utiles : `?theme=sombre`, `?modale=modale-renvoi`, `?menu=ouvert`, `?bulle=1`, `?etat=invalide` (vérification).
 
@@ -126,7 +127,7 @@ Comparaison du premier jet (et du brouillon trouvé dans le dépôt) avec ce qu'
 - Toute couleur, taille, durée, ombre, rayon ou plan (`z-index`) vient d'une variable. Aucune valeur en dur dans les gabarits ni dans une autre feuille.
 - Thème sombre : attribut `data-theme="sombre"` sur `<html>`, posé par `theme.js` (choix enregistré dans `localStorage` sous la clé `fn-theme`, sinon préférence du système). Bascule : tout élément portant `data-theme-basculer` (géré par `design.js`, qui émet l'événement `themechange` pour Chart.js).
 - `prefers-reduced-motion: reduce` met toutes les durées à 0 (jetons `--d-*`) et `app.css` neutralise les animations restantes.
-- **Pont temporaire** en fin de fichier : il redirige les anciennes variables `--fn-*` du brouillon vers les nouveaux jetons pour que les écrans du brouillon restent utilisables. **À supprimer** dès que `base.html` charge `app.css` (voir § 8).
+- Le pont temporaire `--fn-*` du brouillon est supprimé : `base.html` charge `tokens.css` puis `app.css`, aucune variable `--fn-*` ne subsiste.
 
 Variables les plus utilisées :
 
@@ -253,29 +254,21 @@ Durées : `--d-court` 120 ms (survol, appui), `--d-moyen` 200 ms (bulles, tiroir
 | Journal d'activités (F-70, F-71) | `journal.html` | Filtres en puces + recherche ; jours en intertitres collants ; entrées `.journal` (heure, auteur, rôle, type d'action, objet, lieu) et `.journal-diff` pour l'avant/après ; pagination « Plus récent / Plus ancien ». |
 | Vérification d'une carte (aperçu, futur site) | `verification.html` | `.verif` : verdict plein (valide / non valide) en titre, photo, nom, identifiant, gilet, validité, coordination, engin en plaque ; **aucune donnée personnelle** au-delà (§ API) ; contraste AAA. |
 
-### 8.3 État du brouillon trouvé dans le dépôt
+### 8.3 État de l'intégration (application web)
 
-| Élément | Décision | Détail |
-| --- | --- | --- |
-| `static/js/theme.js` | **Garder** | Inchangé. |
-| `static/img/icons.svg`, `LICENCE-ICONES.txt` | **Gardé, régénéré** | Mêmes identifiants `i-<nom>` + nouvelles icônes (motorbike, square-parking, list-checks, tricycle…). Licence mise à jour (Lucide 1.55, ISC). |
-| `static/img/logo-*.webp`, `favicon.png` | **Garder** | |
-| `fenamo/balises.py` | **Garder `icone`** ; adapter le reste | `badge_etat` doit rendre `components/_badge_etat.html` ; `avatar` : classes `.avatar` neutres, **supprimer `teinte_avatar`** ; `etat_membre` : vérifier la correspondance (il saute « validé province » : `is_validate2` y est lu comme « validé antenne ») avec `backend-django` ; `indicateurs_tableau_bord` et `historique_objet` sont de la logique métier dans une balise : à déplacer dans un service (`backend-django`). |
-| `static/js/fenamo.js` | **Adapter** | Voir § 8.1, point 3. |
-| `static/js/envoi-unique.js` | **Garder** | Sert les écrans hérités (`base-app.html`). |
-| `templates/base.html`, `partials/_menu.html`, `_haut.html`, `_menu_bas.html` | **Refaire** | Sur la coque des maquettes. |
-| `partials/_modale.html`, `_modale_confirmation.html`, `_bouton_post.html`, `_bouton_confirmer.html` | **Remplacer** | Par `components/modale_base.html` (la confirmation de suppression est une modale avec un bouton `danger-plein`) et `components/_bouton.html`. |
-| `partials/composants/*` (`_stat`, `_raccourci`, `_avatar`, `_badge_etat`, `_etat_vide`, `_squelette`, `_entete_page`, `_confirmer`) | **Jeter** | Remplacés par `templates/components/`. La grille de raccourcis disparaît. |
-| `static/css/base.css`, `layout.css`, `components.css`, `pages.css`, `animations.css` | **Jeter** | Remplacés par `app.css` (après le § 8.1). |
-| `static/fonts/plus-jakarta-sans-latin.woff2`, `LICENCE-POLICE.txt` | **Jeter** | Remplacés par Atkinson Hyperlegible Next et Barlow Condensed. |
-| `tableau_bord/tableau_bord.html`, `partials/_corps.html`, `_raccourcis.html` | **Refaire / jeter `_raccourcis`** | Selon les maquettes de tableau de bord. |
-| `coptapp/membres/partials/*`, `app/membre.html`, `app/membre-list.html` | **Adapter** | Le découpage en fragments est bon ; le balisage suit les maquettes fiche et liste. |
-| `compte/pages-login.html`, `securite.html`, `verrou.html`, `partials/_compte_cree.html` | **Adapter** | Connexion et verrou : `.porte` ; sécurité : panneau + modale ; compte créé : modale avec le mot de passe temporaire en `.ident` et un bouton « Copier ». |
-| `templates/400.html` … `500.html`, `erreur_base.html` | **Adapter** | `.porte` + `.vide` + bouton « Revenir au tableau de bord ». |
+**Écrans intégrés** (gabarits sur la coque des maquettes, captures dans `docs/design/captures-integration/`) : connexion, verrou, changement de mot de passe, compte créé, erreurs 400/403/404/500, tableau de bord (variante président), liste des membres (recherche, puces d'état au pluriel, filtres en modale, pagination serveur), fiche membre et ses fragments, modales de la fiche (modifier, demande de modification, privilèges, attribution d'engin, suppression et restauration avec motif).
 
-À signaler à `backend-django` (constaté pendant les captures sur une copie de la base) : `/membres/` répond 500 (`Compte.MultipleObjectsReturned`, un `get()` trouve deux comptes) pour un super-utilisateur sans fiche membre.
+**Socle** : `base.html`, `partials/_menu.html`, `_haut.html`, `_menu_bas.html` ; `static/js/fenamo.js` (plomberie HTMX branchée sur `FenamoDesign`) ; `fenamo/balises.py` (`icone`, `badge_etat`, `avatar`, filtres d'état lisant `coptapp.services.etats`) ; `static/js/theme.js`, `envoi-unique.js` (écrans hérités).
 
----
+**Composants utilisés par les écrans intégrés** : `components/modale_post.html` (envoi ordinaire, CSRF), `modale_confirmation.html` et `_confirmer.html` (confirmation avec motif, action explicite, réponse 409 en bulle), `_champ`, `_bouton`, `_erreur`, `_etat_vide`, `_pagination`, `_badge_etat`, `_plaque`, `_icone`, `_squelette`, `_bulles`, `_modale_conteneur`, `_chiffre`. Codes d'état en snake_case partout (classes CSS, jetons, URLs) ; libellés dans `coptapp.services.etats.LIBELLES`.
+
+**Fichiers du brouillon jetés** : `base.css`, `layout.css`, `components.css`, `pages.css`, `animations.css`, Plus Jakarta Sans et sa licence, `partials/composants/*`, `_raccourcis.html`, `partials/_modale.html`, `_modale_confirmation.html`, `_bouton_confirmer.html`.
+
+**Encore en service pour les écrans hérités** : `base-app.html` (Bootstrap) et `partials/_bouton_post.html` (bouton POST ordinaire avec CSRF, utilisé aussi par la fiche et la liste), jusqu'à la migration de ces écrans.
+
+**Écrans restants (phase 2)** : tout ce qui étend `base-app.html` (associations membres, communiqués, notifications, contenu du site avec sa modale de suppression d'article en Bootstrap, ajout et fiche d'engin, famille, comptes, résultats de recherche) ; faute de vue ou de données : file de validation et renvoi avec motif (F-23), journal (F-70, F-71), vérification d'une carte, modale d'enregistrement d'un membre en 3 étapes (F-20), tableau de bord de l'agent, circuit détaillé et carte de membre sur la fiche (F-27), plaque d'engin avec code de coordination (F-31), compteurs sur les puces d'état, export de la liste.
+
+Points à garder en tête : l'aide des pièces jointes (« PDF, JPEG ou PNG, 3 Mo ») est écrite en dur dans les pages d'ajout héritées, la limite `UPLOAD_PIECE_MAX_MO` n'étant pas exposée aux gabarits.
 
 ## 9. Autocritique après captures
 
