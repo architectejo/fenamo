@@ -8,15 +8,11 @@ from pathlib import Path
 
 import pytest
 from django.contrib.auth.hashers import check_password
-from django.contrib.messages.storage.session import SessionStorage
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.db import connection
-from django.http import HttpResponse
-from django.test import RequestFactory
 from django.urls import reverse
-from django.utils import translation
 
 from compte.models import JournalAction
 from compte.services.mobile import definir_mot_de_passe_membre
@@ -165,12 +161,13 @@ def _url_mdp(m):
 
 
 def _mdp_affiche(corps):
-    m = re.search(r"espace mobile : (\S+) \(identifiant", unescape(corps))
+    """Le mot de passe affiché une fois, lu dans l'attribut data-mdp de l'encart (pas dans un message)."""
+    m = re.search(r'data-mdp="([^"]+)"', unescape(corps))
     return m.group(1) if m else None
 
 
 @pytest.mark.parametrize('profil, statut', [
-    ('su', 302), ('p5', 302), ('p1', 302), ('p2', 302), ('p3', 302),
+    ('su', 200), ('p5', 200), ('p1', 200), ('p2', 200), ('p3', 200),
     ('p4', 403),   # voit le membre (validé) mais en lecture seule : refus de droit
     ('nu', 404), ('ed', 404),  # hors périmètre
 ])
@@ -179,7 +176,7 @@ def test_F20_2c_mdp_mobile_droits_par_profil(client, fiche, profil, statut):
     r = client.post(_url_mdp(fiche['membre']))
     assert r.status_code == statut, profil
     fiche['membre'].refresh_from_db()
-    assert bool(fiche['membre'].password) == (statut == 302)
+    assert bool(fiche['membre'].password) == (statut == 200)
 
 
 def test_F20_2c_mdp_mobile_anonyme_et_get(client, fiche):
@@ -206,27 +203,33 @@ def test_F20_2c_mdp_service_droits(fiche):
     assert definir_mot_de_passe_membre(fiche['comptes']['su'], m)
 
 
-def test_F20_2c_mdp_affiche_une_seule_fois_hache_absent_journal_cookie_et_session(client, fiche, caplog):
+def test_F20_2c_mdp_affiche_dans_la_reponse_seule_hache_absent_du_reste(client, fiche, caplog):
     m = fiche['membre']
     client.force_login(fiche['comptes']['p1'])
     with caplog.at_level('DEBUG'):
         r = client.post(_url_mdp(m))
-    assert r.status_code == 302 and not r.content
-    cookies = ' '.join(c.value for c in r.cookies.values()) + ' ' + r['Location']
-    r = client.get(r['Location'])
+    assert r.status_code == 200 and 'Location' not in r  # réponse directe, aucune redirection
     clair = _mdp_affiche(r.content.decode())
-    assert clair and len(clair) == 8
+    assert clair and len(clair) == 8 and r.context['mot_de_passe'] == clair
+    cookies = ' '.join(c.value for c in r.cookies.values())
     m.refresh_from_db()
     assert m.password != clair and check_password(clair, m.password)
-    # lecture unique
+    # lecture unique : ni la fiche, ni le tableau de bord, ni les messages ne le redonnent
     assert clair not in client.get(reverse('membre-view', kwargs={'id': m.id})).content.decode()
     assert clair not in client.get(reverse('tableau-bord')).content.decode()
-    # journal (toutes colonnes), cookies de toutes les réponses, journaux applicatifs, session
     for ligne in JournalAction.objects.all():
         assert clair not in ' '.join(str(getattr(ligne, f.name)) for f in ligne._meta.fields)
     assert clair not in cookies and all(clair not in c.value for c in client.cookies.values())
     assert clair not in caplog.text
-    assert clair not in str(client.session.items())
+    assert clair not in str(client.session.items())  # jamais dans la session (donc jamais dans les messages)
+
+
+def test_F20_2c_mdp_fragment_htmx_et_page_complete(client, fiche):
+    client.force_login(fiche['comptes']['su'])
+    page = client.post(_url_mdp(fiche['membre'])).content.decode()
+    assert '<html' in page and 'data-mdp=' in page
+    fragment = client.post(_url_mdp(fiche['membre']), HTTP_HX_REQUEST='true').content.decode()
+    assert '<html' not in fragment and 'data-mdp=' in fragment
 
 
 def test_F20_2c_mdp_rediffuse_un_nouveau_mot_de_passe_et_l_ancien_cesse(client, fiche):
@@ -249,68 +252,20 @@ def test_F20_2c_mdp_commande_affiche_sur_la_sortie_standard_seulement(fiche, cap
 
 def test_F20_2c_page_du_mot_de_passe_mobile_non_mise_en_cache(client, fiche):
     client.force_login(fiche['comptes']['su'])
-    r = client.post(_url_mdp(fiche['membre']), follow=True)
+    r = client.post(_url_mdp(fiche['membre']))
     assert _mdp_affiche(r.content.decode()) and 'no-store' in r.get('Cache-Control', '')
 
 
-# ---------------------------------------------------------------- encart du mot de passe mobile (extraction par regex)
-
-def _regex_du_gabarit():
-    src = Path('coptapp/templates/app/membre.html').read_text(encoding='utf-8')
-    return re.search(r"match\(/(.+?)/\)", src).group(1)
-
-
-def _injecter(client, texte):
-    requete = RequestFactory().get('/')
-    requete.session = client.session
-    stock = SessionStorage(requete)
-    stock.add(25, texte)
-    stock.update(HttpResponse())
-    requete.session.save()
-
-
-def _attribut_message(corps):
-    m = re.search(r'data-message="([^"]*)"', corps)
-    return unescape(m.group(1)) if m else None
-
-
-@pytest.mark.parametrize('mdp', ['abcd2345', 'a"b<c>&\'d', 'p@$$w0rd!#%^*', 'é à ü', 'ab(c', '\\d+$'])
-def test_F20_2c_encart_extraction_du_mot_de_passe_cas_limites(client, fiche, mdp):
-    """Le message flash est rendu dans l'attribut data-message (échappé) puis lu par la regex JavaScript du gabarit."""
-    regex = _regex_du_gabarit()
-    assert regex == r": (\S+) \("
-    client.force_login(fiche['comptes']['su'])
-    _injecter(client, f"Mot de passe temporaire de l'espace mobile : {mdp} (identifiant MBR0000009). Il ne sera plus affiché.")
-    corps = client.get(reverse('membre-view', kwargs={'id': fiche['membre'].id})).content.decode()
-    attribut = _attribut_message(corps)
-    assert attribut is not None, 'encart absent'
-    assert '<script' not in corps.split('data-message=')[1][:300].lower()  # échappé : pas d'injection d'attribut
-    trouve = re.search(regex, attribut)
-    if ' ' in mdp:  # un espace casse la regex : le bouton « Copier » reste simplement caché, rien ne plante
-        assert trouve is None or trouve.group(1) != mdp
-    else:
-        assert trouve and trouve.group(1) == mdp
-
-
-def test_F20_2c_encart_message_traduit_ou_en_anglais(client, fiche):
-    client.force_login(fiche['comptes']['su'])
-    client.post(_url_mdp(fiche['membre']))
-    with translation.override('en'):
-        corps = client.get(reverse('membre-view', kwargs={'id': fiche['membre'].id}), HTTP_ACCEPT_LANGUAGE='en').content.decode()
-    attribut = _attribut_message(corps)
-    # sans catalogue anglais, le texte reste français : l'encart doit toujours s'afficher et l'extraction fonctionner
-    assert attribut is not None and re.search(_regex_du_gabarit(), attribut)
-
-
-@pytest.mark.xfail(strict=True, reason="BUG : le gabarit détecte l'encart par le sous-texte « mobile » : le message d'erreur "
-                                       "« Ce membre n'a pas d'identifiant mobile. » s'affiche comme « Mot de passe mobile défini »")
-def test_F20_2c_encart_n_apparait_pas_pour_un_message_d_erreur(client, fiche):
+def test_F20_2c_erreurs_du_mot_de_passe_mobile_sont_de_simples_messages(client, fiche):
+    """Membre sans identifiant mobile, membre supprimé : message d'erreur ordinaire, aucun encart de mot de passe."""
     client.force_login(fiche['comptes']['su'])
     Membre.objects.filter(pk=fiche['membre'].pk).update(idf=None)
     r = client.post(_url_mdp(fiche['membre']), follow=True)
-    corps = r.content.decode()
-    assert "n'a pas d'identifiant mobile" in unescape(corps)
-    assert 'Mot de passe mobile défini' not in corps
+    corps = unescape(r.content.decode())
+    assert "n'a pas d'identifiant mobile" in corps and 'data-mdp=' not in corps and 'Mot de passe mobile défini' not in corps
+    Membre.objects.filter(pk=fiche['membre'].pk).update(idf='MBR0000009', is_delete=True)
+    r = client.post(_url_mdp(fiche['membre']), follow=True)
+    assert 'data-mdp=' not in r.content.decode() and not Membre.objects.get(pk=fiche['membre'].pk).password
 
 
 # ---------------------------------------------------------------- gabarits sans /media/

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}{% comment %}
+Page de réponse au POST « Définir un mot de passe mobile » (envoi ordinaire du formulaire de confirmation).
+Contexte : membre, mot_de_passe. Le mot de passe n'est affiché que dans cette réponse (no-store) ; recharger la page ne le redonne pas.
+{% endcomment %}
+{% block titre %}{% translate "Mot de passe mobile" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div hidden hx-history="false"></div>
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'membre-view' membre.id %}">{{ membre.nom|default:"—" }}</a><span aria-hidden="true">/</span><span>{% translate "Mot de passe mobile" %}</span></nav>
+{% include "coptapp/membres/partials/_mot_de_passe_mobile.html" %}
+<p><a class="bouton" href="{% url 'membre-view' membre.id %}">{% translate "Retour à la fiche" %}</a></p>
+{% endblock %}

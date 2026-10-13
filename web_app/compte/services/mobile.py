@@ -69,10 +69,10 @@ def mot_de_passe_temporaire(longueur=8):
 
 
 @transaction.atomic
-def definir_mot_de_passe_membre(auteur, membre, mot_de_passe=None):
+def definir_mot_de_passe_membre(auteur, membre):
     """Définit le mot de passe de l'espace mobile de `membre` et le retourne EN CLAIR (à afficher UNE seule fois).
 
-    Un mot de passe temporaire aléatoire est généré si `mot_de_passe` est None. Seul le hachage est enregistré ; le
+    Un mot de passe temporaire aléatoire est généré. Seul le hachage est enregistré ; le
     journal garde l'auteur, la date et le membre, JAMAIS le mot de passe. Droits : SU, ou compte qui peut enregistrer
     des membres (jamais en lecture seule) et voit ce membre dans son périmètre ; PermissionDenied sinon.
     """
@@ -81,7 +81,7 @@ def definir_mot_de_passe_membre(auteur, membre, mot_de_passe=None):
         membres_du_perimetre(auteur).filter(pk=membre.pk).exists() and droits_membre(auteur, membre)['peut_creer_membre']
     ):
         raise PermissionDenied
-    clair = mot_de_passe or mot_de_passe_temporaire()
+    clair = mot_de_passe_temporaire()
     membre.password = make_password(clair)
     membre.save(update_fields=['password', 'mise_a_jour'])
     journaliser(auteur, JournalAction.Action.CHANGEMENT_MOT_DE_PASSE, membre, apres={'defini': True},

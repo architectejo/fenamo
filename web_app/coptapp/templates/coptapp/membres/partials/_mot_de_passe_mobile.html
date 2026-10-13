@@ -1,0 +1,18 @@
+{% load i18n design %}{% comment %}
+Encart à lecture unique : mot de passe temporaire de l'espace mobile (cahier des charges web § 9.1).
+Contexte : membre, mot_de_passe (variable dédiée de la vue ; jamais dans les messages Django ni dans une redirection).
+Le mot de passe est lu par le bouton « Copier » dans l'attribut data-mdp : aucune extraction par expression régulière.
+{% endcomment %}
+<div class="u-mb-4" role="status" x-data="{ copie: false }" data-mdp="{{ mot_de_passe }}">
+  <div class="alerte alerte--succes">
+    {% icone "smartphone" %}
+    <div>
+      <strong class="alerte-titre">{% translate "Mot de passe mobile défini" %}</strong>
+      <p class="u-mb-2">{% blocktranslate with mdp=mot_de_passe idf=membre.idf %}Mot de passe temporaire de l'espace mobile : <strong class="ident">{{ mdp }}</strong> (identifiant {{ idf }}). Il ne sera plus affiché : communiquez-le au membre.{% endblocktranslate %}</p>
+      <button type="button" class="bouton bouton--petit"
+              @click="navigator.clipboard.writeText($root.dataset.mdp).then(() => { copie = true; setTimeout(() => copie = false, 3000); })">
+        {% icone "clipboard-list" %}<span x-text="copie ? '{% translate "Copié" %}' : '{% translate "Copier le mot de passe" %}'">{% translate "Copier le mot de passe" %}</span>
+      </button>
+    </div>
+  </div>
+</div>
