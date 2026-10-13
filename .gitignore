@@ -36,3 +36,6 @@ htmlcov/
 
 # Site web : base locale (sessions, compteurs) et cache fichiers
 website/var/
+
+# Sauvegardes locales des bases de développement
+*.sqlite3.*
