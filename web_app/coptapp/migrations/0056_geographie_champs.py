@@ -6,17 +6,30 @@ from django.db import migrations, models
 
 def normaliser_codes_d_antenne(apps, schema_editor):
     """Prépare l'unicité de ``Antenne.code`` sans rien perdre : un code vide devient NULL (plusieurs NULL sont permis) ; quand un
-    même code non vide existe plusieurs fois, la première antenne (par identifiant) le garde, les suivantes reçoivent ``code-<id>``.
-    Retour arrière : aucune action (les codes déjà normalisés restent valides pour l'ancien schéma)."""
+    même code non vide existe plusieurs fois, la première antenne (par identifiant) le garde, les suivantes reçoivent
+    ``code-<id>``. Le nouveau code est VÉRIFIÉ libre (ni déjà porté par une autre antenne, ni déjà attribué) : en cas de
+    collision on essaie ``code-<id>-2``, ``code-<id>-3``… Longueur maximale 20 : c'est le début du code qui est raccourci, jamais le
+    suffixe. Retour arrière : aucune action (les codes déjà normalisés restent valides pour l'ancien schéma)."""
     Antenne = apps.get_model('coptapp', 'Antenne')
+    pris = {(c or '').strip() for c in Antenne.objects.values_list('code', flat=True)} - {''}  # tous les codes existants
     vus = set()
     renommes = []
+
+    def libre(code, pk):
+        n = 1
+        while True:
+            suffixe = f'-{pk}' + (f'-{n}' if n > 1 else '')
+            candidat = code[:20 - len(suffixe)] + suffixe
+            if candidat not in pris and candidat not in vus:
+                return candidat
+            n += 1
+
     for antenne in Antenne.objects.order_by('pk').iterator():
         code = (antenne.code or '').strip()
         if not code:
             nouveau = None
         elif code in vus:
-            nouveau = f'{code}-{antenne.pk}'[:20]
+            nouveau = libre(code, antenne.pk)
             renommes.append((antenne.pk, code, nouveau))
         else:
             nouveau = code
