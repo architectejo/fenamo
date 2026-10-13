@@ -5,13 +5,13 @@ membres sans nom (fiches vides héritées) sont exclus ici, au niveau du queryse
 """
 from dataclasses import dataclass
 
-from django import forms
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 
 from compte.models import JournalAction
 from compte.services.journal import instantane, journaliser
+from coptapp.forms import CHAMPS_MODIFIABLES, MembreModificationForm
 from coptapp.models import Antenne, AssociationMembre, Membre, Notification
 from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
 from coptapp.services.etats import ETATS, filtrer_membres_par_etat
@@ -103,41 +103,11 @@ def choix_filtres(user):
 
 # ---------------------------------------------------------------- modification d'un membre (F-21)
 
-CHAMPS_MODIFIABLES = (
-    'nom', 'a_propos', 'date_naissance', 'genre', 'titre', 'fonction', 'comite', 'nation', 'brevet', 'etat_civil',
-    'adresse', 'telephone', 'mail', 'categorie', 'permis', 'qualite', 'autre_asb', 'nom_epouse', 'numero_carte_d_electeur',
-    'numero_carte_de_membre', 'nom_pere', 'nom_mere', 'village', 'chefferie', 'territoire', 'province_origine',
-)
-# Noms envoyés par la modale de la fiche -> champs du modèle.
-ALIAS_POST = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb', 'epouse': 'nom_epouse'}
-OBLIGATOIRES = ('nom', 'date_naissance')
 # Le journal ne garde la VALEUR (avant / après) que de ces champs sans donnée personnelle ; pour tous les autres
 # (téléphone, adresse, e-mail, naissance, parents, village, chefferie, pièces d'identité…) il ne garde que le NOM du champ.
 CHAMPS_JOURNALISABLES = ('qualite', 'fonction', 'comite', 'categorie')
 
 
-class MembreModificationForm(forms.ModelForm):
-    """Formulaire de modification : `nom` et la date de naissance sont obligatoires (erreur de formulaire s'ils
-    manquent) ; un autre champ absent du POST garde sa valeur actuelle. Date au format JJ-MM-AAAA (ou AAAA-MM-JJ)."""
-
-    date_naissance = forms.DateField(input_formats=['%d-%m-%Y', '%Y-%m-%d'], required=True)
-
-    class Meta:
-        model = Membre
-        fields = CHAMPS_MODIFIABLES + ('photo',)
-
-    def __init__(self, data=None, files=None, instance=None, **kwargs):
-        if data is not None:
-            data = data.copy()
-            for alias, champ in ALIAS_POST.items():
-                if alias in data and champ not in data:
-                    data[champ] = data[alias]
-            for champ in CHAMPS_MODIFIABLES:
-                if champ not in data and champ not in OBLIGATOIRES and instance is not None:
-                    valeur = getattr(instance, champ)
-                    data[champ] = '' if valeur is None else str(valeur)
-        super().__init__(data, files, instance=instance, **kwargs)
-        self.fields['nom'].required = True
 
 
 def modifier_membre(auteur, membre, donnees, fichiers=None):

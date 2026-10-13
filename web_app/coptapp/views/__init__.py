@@ -766,15 +766,14 @@ def membre_view(request, id):
             formulaire, _modifie = modifier_membre(user, membre, request.POST, request.FILES)  # 403 sans droit
             if formulaire.errors:
                 erreurs_modifier = formulaire.errors
-                message = ' '.join(f'{champ} : {" ".join(e)}' for champ, e in formulaire.errors.items())
                 statut = 400
                 membre = Membre.objects.get(pk=membre.pk)  # l'instance du formulaire porte des valeurs refusées
             elif _modifie:
-                notify(user=membre.user, membre=membre, titre="Motification d'un membre")
+                notify(user=membre.user, membre=membre, titre=_("Modification d'un membre"))
         elif 'envoyer' in request.POST:
             resultat = demander_modification(user, membre, request.POST.get('demande'))  # 403 sans droit
-            message = {'creee': 'Votre demande a été envoyer', 'existante': 'Votre demande a déjà été envoyer',
-                       'vide': 'Indiquez votre demande.'}[resultat]
+            message = {'creee': _("Votre demande a été envoyée"), 'existante': _("Votre demande a déjà été envoyée"),
+                       'vide': _("Indiquez votre demande.")}[resultat]
             classMessage = 'alert alert-info'
         elif 'privilege' in request.POST:
             # Réservé aux super-utilisateurs (403 sinon) : correctif minimal avant les rôles (sous-lot 2e).

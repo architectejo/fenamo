@@ -38,7 +38,7 @@ def indicateurs_tableau_bord(user):
     en_attente = list(
         membres.filter(is_validate3=False).select_related('antenne').order_by('-updated', '-id')[:5]
     )
-    valeurs = {'saisi': saisis, 'valide-antenne': valides_antenne, 'actif': actifs}
+    valeurs = {'saisi': saisis, 'valide_antenne': valides_antenne, 'actif': actifs}
     return {
         'actifs': actifs,
         'valides_antenne': valides_antenne,
@@ -49,8 +49,8 @@ def indicateurs_tableau_bord(user):
         'en_attente': en_attente,
         'graphique': {
             'etats': list(valeurs),
-            'libelles': [str(LIBELLES[e.replace('-', '_')]) for e in valeurs],
+            'libelles': [str(LIBELLES[e]) for e in valeurs],
             'valeurs': list(valeurs.values()),
-            'lignes': [{'etat': e, 'libelle': str(LIBELLES[e.replace('-', '_')]), 'valeur': v} for e, v in valeurs.items()],
+            'lignes': [{'etat': e, 'libelle': str(LIBELLES[e]), 'valeur': v} for e, v in valeurs.items()],
         },
     }
