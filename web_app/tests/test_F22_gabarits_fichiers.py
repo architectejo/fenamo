@@ -100,7 +100,7 @@ def test_F20_bouton_mot_de_passe_mobile_selon_le_droit(client, jeu):
 def test_F20_mot_de_passe_mobile_affiche_une_fois_avec_bouton_copier(client, jeu):
     Membre.objects.filter(pk=jeu['membre'].pk).update(idf='MBR0000001')
     client.force_login(jeu['compte'])
-    r = client.post(reverse('mot-de-passe-mobile', kwargs={'id': jeu['membre'].id}), follow=True)
+    r = client.post(reverse('mot-de-passe-mobile', kwargs={'id': jeu['membre'].id}))  # réponse directe, plus de redirection
     html = r.content.decode()
     assert 'Mot de passe mobile défini' in html and 'Copier le mot de passe' in html and 'hx-history="false"' in html
-    assert 'Mot de passe mobile défini' not in client.get(r.redirect_chain[-1][0]).content.decode()  # une seule fois
+    assert 'Mot de passe mobile défini' not in client.get(reverse('membre-view', kwargs={'id': jeu['membre'].id})).content.decode()  # une seule fois

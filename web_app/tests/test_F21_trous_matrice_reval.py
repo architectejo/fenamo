@@ -46,7 +46,7 @@ TROUS_CONNUS = {
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
     'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom', 'mot-de-passe-mobile',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
-    'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob',
+    'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
     'home', 'vue-article', 'about', 'news', 'portail', 'politique',
 }
 
@@ -59,7 +59,7 @@ def test_F21_trous_de_matrice_listes_et_couverts():
 
 
 ROUTES_PUBLIQUES_ATTENDUES = {
-    'application', 'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob',
+    'application', 'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
     'home', 'vue-article', 'about', 'news', 'portail', 'politique',
 }
 
@@ -176,7 +176,7 @@ def _identifiant(r):
 def test_F21_complement_couvre_chaque_trou_de_l_application_web():
     couverts = {r[0] for r in COMPLEMENT}
     a_couvrir = TROUS_CONNUS - {'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str',
-                                'attribut-ville', 'photo-mob', 'home', 'vue-article', 'about', 'news', 'portail', 'politique'}
+                                'attribut-ville', 'photo-mob', 'deconnexion-mob', 'home', 'vue-article', 'about', 'news', 'portail', 'politique'}
     assert a_couvrir <= couverts, sorted(a_couvrir - couverts)
 
 
