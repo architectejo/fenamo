@@ -243,11 +243,11 @@ def _lieux_du_compte(user):
     ville du compte donne son antenne, une antenne du compte donne sa ville d'origine et sa coordination.
     """
     provinces, villes, antennes = set(), set(), set()
-    for a in associations_du_compte(user).prefetch_related('antennes_de_structure'):
+    for a in associations_du_compte(user).prefetch_related('antennes_heritees'):
         provinces.add(a.province_id)
         villes.add(a.ville_id)
         antennes.add(a.antenne_id)
-        antennes.update(x.pk for x in a.antennes_de_structure.all())
+        antennes.update(x.pk for x in a.antennes_heritees.all())
     if user.membreId:
         fiche = Membre.objects.filter(pk=user.membreId).first()
         if fiche:

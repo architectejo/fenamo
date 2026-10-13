@@ -28,23 +28,38 @@ class Province(models.Model):
     def __str__(self):
         return f"{self.nom}"
 
+    @staticmethod
+    def normaliser_code(code):
+        """Code en majuscules sans espaces ; None si vide (l'unicité ne porte que sur les codes réels)."""
+        return (code or '').strip().upper() or None
+
     def code_fige(self):
-        """Vrai si le code ne peut plus changer : au moins un engin a déjà été numéroté pour cette coordination."""
-        return bool(self.pk) and Moto.objects.filter(province=self).exists()
+        """Vrai si le code enregistré ne peut plus changer : un engin a été numéroté AVEC ce code (son numéro se termine par
+        le code, précédé de chiffres). Une coordination sans code enregistré n'est jamais figée, même si elle a d'anciens
+        engins numérotés avec son sigle : on peut encore lui donner son code."""
+        if not self.pk:
+            return False
+        ancien = Province.objects.filter(pk=self.pk).values_list('code', flat=True).first()
+        if not ancien:
+            return False
+        numeros = Moto.objects.filter(province=self, numero__endswith=ancien).values_list('numero', flat=True)
+        return any(numero[:-len(ancien)].isdigit() for numero in numeros)
+
+    def _verifier_code_modifiable(self):
+        if self.pk and self.code_fige():
+            ancien = Province.objects.filter(pk=self.pk).values_list('code', flat=True).first()
+            if ancien != self.normaliser_code(self.code):
+                raise ValidationError({'code': _("Le code ne peut plus changer : des engins sont déjà numérotés avec ce code.")})
 
     def clean(self):
         super().clean()
-        if self.code is not None:
-            self.code = self.code.strip().upper() or None
-        if self.pk and self.code_fige():
-            ancien = Province.objects.filter(pk=self.pk).values_list('code', flat=True).first()
-            if ancien != self.code:
-                raise ValidationError({'code': _("Le code ne peut plus changer : des engins sont déjà numérotés pour cette coordination.")})
+        self._verifier_code_modifiable()
 
     def save(self, *args, **kwargs):
-        if self.code is not None:
-            self.code = self.code.strip().upper() or None  # jamais de chaîne vide : l'unicité ne porte que sur les codes réels
+        self._verifier_code_modifiable()  # la règle vaut aussi hors formulaire (shell, services)
+        self.code = self.normaliser_code(self.code)  # normalisation faite ICI, une seule fois
         super().save(*args, **kwargs)
+
 
 class Ville(models.Model):
     user = models.ForeignKey(Compte, on_delete=models.RESTRICT, null=True, blank=True)
@@ -93,7 +108,7 @@ class Antenne(models.Model):
 
     user = models.ForeignKey(Compte, on_delete=models.RESTRICT, null=True, blank=True)
     structure = models.ForeignKey(AssociationMembre, on_delete=models.RESTRICT, null=True, blank=True,
-                                  verbose_name=_('association membre'), related_name='antennes_de_structure')
+                                  verbose_name=_('association membre'), related_name='antennes_heritees')
     coordination = models.ForeignKey(Province, on_delete=models.RESTRICT, null=True, blank=True, related_name='antennes')
     type = models.CharField(max_length=10, choices=Type.choices, blank=True)
     ville_origine = models.OneToOneField(Ville, on_delete=models.SET_NULL, null=True, blank=True, related_name='antenne_issue')
