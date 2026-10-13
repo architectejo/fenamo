@@ -170,7 +170,7 @@ def add_structure(request):
 
 @referentiel_ecriture_requis
 def ville_select(request, id):
-    structure = get_object_or_404(AssociationMembre, id=id)
+    structure = get_object_or_404(associations_du_compte(request.user), id=id)  # 404 hors du périmètre du compte
     if structure.ville:
         return redirect('edit-structure', id=structure.id)
     provinces = Ville.objects.filter(province=structure.province).exclude(nom=None)
@@ -180,7 +180,9 @@ def ville_select(request, id):
             message = _("Indiquez l'antenne.")
             classe = 'alert alert-danger text-center'
             return render(request, 'app/ville-select.html', locals(), status=400)
-        ville = Ville.objects.filter(nom=nom).first() or Ville.objects.create(province=structure.province, nom=nom)
+        # une ville homonyme d'une AUTRE coordination n'est jamais réutilisée
+        ville = (Ville.objects.filter(nom=nom, province=structure.province).first()
+                 or Ville.objects.create(province=structure.province, nom=nom))
         rattacher_ville(request.user, structure, ville)
         return redirect("edit-structure", id=structure.id)
     return render(request, 'app/ville-select.html', locals())
@@ -189,12 +191,10 @@ def ville_select(request, id):
 @referentiel_ecriture_requis
 @require_POST
 def ville_attr(request, id, sid):
-    try:
-        structure = AssociationMembre.objects.get(id=sid)
-        ville = Ville.objects.get(id=id)
-        rattacher_ville(request.user, structure, ville)
-    except (AssociationMembre.DoesNotExist, Ville.DoesNotExist):
-        raise Http404
+    """Rattache l'association membre `sid` (de son périmètre : 404 sinon) à la ville `id` de SA coordination (404 sinon)."""
+    structure = get_object_or_404(associations_du_compte(request.user), id=sid)
+    villes = Ville.objects.filter(province=structure.province) if structure.province_id else Ville.objects.all()
+    rattacher_ville(request.user, structure, get_object_or_404(villes, id=id))
     return redirect('ville-select', id=structure.id)
 
 def _rattacher_membre(request, idM, champ, modele, id_cible):
@@ -409,8 +409,7 @@ def addAntenne(request, id):
         if form.is_valid():
             antenne = form.save(commit=False)
             antenne.structure = structure
-            antenne.coordination = structure.province
-            antenne.province = structure.province
+            antenne.coordination = antenne.coordination or structure.province  # choisie dans le formulaire, sinon celle de l'association
             antenne.user = request.user
             antenne.save()
             return redirect('edit-antenne', id=antenne.id)

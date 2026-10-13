@@ -11,7 +11,7 @@ from coptapp.services.droits_provisoires import (
     antennes_du_perimetre, cible_rattachable, provinces_du_perimetre, villes_du_perimetre,
 )
 from coptapp.services.geographie import (
-    antenne_depuis_ville, completer_antenne, coordination_par_code, rattacher_antenne, rattacher_ville, ville_depuis_antenne,
+    antenne_depuis_ville, completer_antenne, coordination_par_code, rattacher_antenne, rattacher_ville,
 )
 from tests.test_F21_matrice_routes import acteurs  # noqa: F401
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
@@ -65,8 +65,7 @@ def test_F11_antenne_depuis_ville_lecture_et_creation(jeu):
     a = antenne_depuis_ville(ville, creer=True)
     assert a.nom == 'Matete' and a.coordination_id == jeu['province'].id and a.ville_origine_id == ville.id
     assert antenne_depuis_ville(ville, creer=True) == a and antenne_depuis_ville(ville) == a  # idempotent
-    assert ville_depuis_antenne(a) == ville and ville_depuis_antenne(None) is None
-    assert ville_depuis_antenne(Antenne.objects.create(nom='Nouvelle')) is None
+    assert a.ville_origine == ville and Antenne.objects.create(nom='Nouvelle').ville_origine is None
 
 
 def test_F11_rattacher_ville_ecrit_ville_et_antenne_et_journalise(jeu):
@@ -252,7 +251,7 @@ def test_F11_cible_rattachable_avec_antennes_issues(jeu):
 # ---------------------------------------------------------------- migration 0056
 
 @pytest.mark.django_db(transaction=True)
-def test_F11_migration_0056_aller_retour_et_codes_d_antenne_normalises():
+def test_F11_migration_0056_aller_retour_et_codes_d_antenne_normalises(capsys):
     executeur = MigrationExecutor(connection)
     executeur.migrate([('coptapp', '0055_hacher_mots_de_passe_des_membres')])
     ancien = MigrationExecutor(connection).loader.project_state([('coptapp', '0055_hacher_mots_de_passe_des_membres')]).apps
@@ -262,6 +261,7 @@ def test_F11_migration_0056_aller_retour_et_codes_d_antenne_normalises():
     Province_.objects.create(nom='Avant', sigle='AV')
     executeur = MigrationExecutor(connection)
     executeur.migrate([('coptapp', '0056_geographie_champs')])
+    assert 'AVERTISSEMENT 0056' in capsys.readouterr().out  # les codes renommés sont signalés
     nouveau = MigrationExecutor(connection).loader.project_state([('coptapp', '0056_geographie_champs')]).apps
     codes = dict(nouveau.get_model('coptapp', 'Antenne').objects.values_list('nom', 'code'))
     assert codes['A'] == 'DUP' and codes['B'] == f'DUP-{ids[1]}' and codes['C'] is None and codes['D'] is None

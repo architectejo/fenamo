@@ -32,23 +32,23 @@ def antenne_depuis_ville(ville, creer=False):
     return antenne
 
 
-def ville_depuis_antenne(antenne):
-    """Ville héritée dont `antenne` est issue (None si l'antenne est nouvelle, sans ville d'origine)."""
-    return antenne.ville_origine if antenne is not None else None
+def _colonnes(objet, *champs):
+    """Colonnes à écrire : `champs` plus la date de mise à jour si le modèle en a une (Membre, pas AssociationMembre)."""
+    return list(champs) + (['mise_a_jour'] if any(f.name == 'mise_a_jour' for f in objet._meta.concrete_fields) else [])
 
 
 @transaction.atomic
 def rattacher_ville(auteur, objet, ville):
     """Rattache `objet` (Membre ou AssociationMembre) à `ville` ET à l'antenne qui en est issue, dans UNE transaction.
 
-    ``ville`` None détache les deux. Écrit seulement les colonnes concernées et journalise (avant / après, ville et antenne).
+    Sur une action explicite de rattachement à une ville, l'antenne actuelle de `objet` est REMPLACÉE par celle de la ville (même
+    si une autre antenne avait été choisie avant) : la ville et l'antenne ne se contredisent jamais. ``ville`` None détache les deux. Écrit seulement les colonnes concernées et journalise (avant / après, ville et antenne).
     `auteur` peut être None (espace mobile : le membre agit sans compte). Aucun contrôle de droit ici : c'est l'affaire de la vue.
     """
     antenne = antenne_depuis_ville(ville, creer=True)
     avant = {'ville': objet.ville_id, 'antenne': objet.antenne_id}
     objet.ville, objet.antenne = ville, antenne
-    champs = ['ville', 'antenne'] + (['mise_a_jour'] if any(f.name == 'mise_a_jour' for f in objet._meta.concrete_fields) else [])
-    objet.save(update_fields=champs)
+    objet.save(update_fields=_colonnes(objet, 'ville', 'antenne'))
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, objet, avant=avant,
                 apres={'ville': objet.ville_id, 'antenne': objet.antenne_id})
     return objet
@@ -64,20 +64,20 @@ def completer_antenne(membre):
 
 @transaction.atomic
 def rattacher_antenne(auteur, objet, antenne):
-    """Rattache `objet` (Membre) à `antenne` ET, si l'antenne est issue d'une ville héritée, à cette ville (même transaction).
+    """Rattache `objet` (Membre) à `antenne`.
 
-    Une antenne nouvelle (sans ville d'origine) laisse la ville inchangée. Écrit seulement les colonnes concernées et journalise.
+    Si l'antenne est issue d'une ville héritée, la ville de `objet` devient cette ville d'origine (même transaction). Si
+    l'antenne est nouvelle (sans ville d'origine), la ville actuelle est CONSERVÉE (jamais vidée) : une antenne créée après
+    la reprise ne sait pas dire de quelle ville héritée elle dépend. Écrit seulement les colonnes concernées et journalise.
     """
-    ville = ville_depuis_antenne(antenne)
+    ville = antenne.ville_origine if antenne is not None else None
     avant = {'ville': objet.ville_id, 'antenne': objet.antenne_id}
     objet.antenne = antenne
     champs = ['antenne']
     if ville is not None:
         objet.ville = ville
         champs.append('ville')
-    if any(f.name == 'mise_a_jour' for f in objet._meta.concrete_fields):
-        champs.append('mise_a_jour')
-    objet.save(update_fields=champs)
+    objet.save(update_fields=_colonnes(objet, *champs))
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, objet, avant=avant,
                 apres={'ville': objet.ville_id, 'antenne': objet.antenne_id})
     return objet
