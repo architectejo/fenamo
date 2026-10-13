@@ -215,12 +215,37 @@ def taille_max_piece_octets():
     return int(float(getattr(settings, 'UPLOAD_PIECE_MAX_MO', 3)) * 1024 * 1024)
 
 
+# Éléments actifs d'un PDF refusés (recherche binaire dans le fichier entier, plafonné par la taille maximale).
+PDF_INTERDITS = (b'/JavaScript', b'/JS', b'/Launch', b'/OpenAction', b'/EmbeddedFile', b'/AA')
+
+
+def controler_pdf(fichier):
+    """Refuse un PDF qui contient du script, un lancement, une action à l'ouverture ou un fichier embarqué, ou qui est
+    tronqué (pas de ``%%EOF`` en fin de fichier).
+
+    LIMITES : recherche textuelle simple (les noms écrits avec des codes ``#xx`` sont décodés d'abord), mais les objets
+    compressés (flux ``/ObjStm``) ne sont pas ouverts. La vraie protection est de servir les pièces par une vue
+    contrôlée (droits, ``Content-Type`` fixe, ``X-Content-Type-Options: nosniff``, ``Content-Disposition``) : sous-lot 2c.
+    """
+    import re
+    fichier.seek(0)
+    contenu = fichier.read(taille_max_piece_octets() + 1)
+    fichier.seek(0)
+    if b'%%EOF' not in contenu[-1024:]:
+        raise ValidationError(_("PDF incomplet ou endommagé."), code='pdf_tronque')
+    nettoye = re.sub(rb'#([0-9A-Fa-f]{2})', lambda m: bytes([int(m.group(1), 16)]), contenu)
+    if any(motif in nettoye for motif in PDF_INTERDITS):
+        raise ValidationError(_("PDF refusé : il contient des éléments actifs (script, lancement, fichier joint)."),
+                              code='pdf_actif')
+
+
 def type_reel_piece(fichier):
     """Extension imposée ('pdf', 'jpg' ou 'png') d'après le CONTENU du fichier ; ValidationError sinon."""
     fichier.seek(0)
     debut = fichier.read(1024)
     fichier.seek(0)
     if debut.lstrip(b'\x00\t\r\n ').startswith(b'%PDF-'):
+        controler_pdf(fichier)
         return 'pdf'
     format_reel = _ouvrir(fichier)[1]
     if format_reel in ('JPEG', 'PNG'):

@@ -80,3 +80,24 @@ def test_E2_formulaires_sans_mot_de_passe_ni_identifiant():
 def test_E2_mobapp_ne_depend_pas_des_formulaires_coptapp():
     from mobapp.forms import MembreFormRegister
     assert 'password' not in MembreFormRegister.base_fields and 'idf' not in MembreFormRegister.base_fields
+
+
+@pytest.mark.parametrize('motif', [b'/JavaScript', b'/JS', b'/Launch', b'/OpenAction', b'/EmbeddedFile', b'/AA'])
+def test_F22_pdf_a_elements_actifs_refuse(motif):
+    pdf = b'%PDF-1.4\n1 0 obj<< ' + motif + b' (x) >>endobj\ntrailer<<>>\n%%EOF\n'
+    assert 'actifs' in erreur_piece(SimpleUploadedFile('a.pdf', pdf))
+
+
+def test_F22_pdf_a_nom_obscurci_par_codes_hexa_refuse():
+    pdf = b'%PDF-1.4\n1 0 obj<< /Java#53cript (x) >>endobj\n%%EOF\n'
+    assert 'actifs' in erreur_piece(SimpleUploadedFile('a.pdf', pdf))
+
+
+def test_F22_pdf_sans_eof_refuse():
+    assert 'incomplet' in erreur_piece(SimpleUploadedFile('a.pdf', b'%PDF-1.4\n1 0 obj<<>>endobj\n'))
+
+
+def test_F22_pdf_simple_accepte_et_enregistre(jeu):
+    jeu['membre'].fiche_id = SimpleUploadedFile('a.pdf', PDF)
+    jeu['membre'].save()
+    assert jeu['membre'].fiche_id.name.endswith('.pdf')

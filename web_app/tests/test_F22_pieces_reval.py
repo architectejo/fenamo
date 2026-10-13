@@ -122,13 +122,11 @@ def test_F22_reval_nom_avec_traversee_de_repertoire_jamais_utilise(jeu, media_te
 
 # ---------------------------------------------------------------- constat : corps hostile derrière un en-tête PDF valide
 
-def test_F22_reval_pdf_corps_hostile_accepte_stocke_en_pdf_sous_nom_aleatoire(client, jeu, media_temporaire):
-    """CONSTAT (securite) : seul l'en-tête « %PDF- » est contrôlé, pas la structure du PDF. Un fichier à corps
-    hostile (JavaScript PDF, HTML) est donc ACCEPTÉ ; il est stocké en .pdf sous nom aléatoire (le serveur web le
-    sert alors comme application/pdf, jamais comme HTML). Ce test fixe l'état actuel. Reste à vérifier sur le
-    serveur : en-tête X-Content-Type-Options: nosniff et service des médias (les médias ne passent pas par Django en
-    production : aucune connexion exigée, la seule protection est le nom aléatoire de 32 caractères)."""
+def test_F22_reval_pdf_corps_hostile_refuse(client, jeu, media_temporaire):
+    """Un PDF à éléments actifs (OpenAction, JavaScript) derrière un en-tête valide est refusé : formulaire réaffiché,
+    aucun fichier stocké. La vraie protection reste de servir les pièces par une vue contrôlée (Content-Type fixe,
+    nosniff, Content-Disposition) : sous-lot 2c."""
     r = _poster(client, jeu, SimpleUploadedFile('x.html', PDF_CORPS_HOSTILE))
-    assert r.status_code == 302
-    membre = Membre.objects.get(nom='Piece Fictive')
-    assert re.fullmatch(r'fiche_id/[0-9a-f]{32}\.pdf', membre.fiche_id.name)
+    assert r.status_code != 302
+    membre = Membre.objects.get(pk=jeu['membre'].pk)
+    assert not membre.fiche_id
