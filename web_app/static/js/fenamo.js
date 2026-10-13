@@ -155,6 +155,34 @@
     if (e.persisted) { document.querySelectorAll('button[aria-busy=true]').forEach(function (b) { b.disabled = false; b.removeAttribute('aria-busy'); }); }
   });
 
+  /* ------------------------------------------------------------------ Suppression d'un membre : modale de confirmation avec action et motif */
+  // Compteur du motif (500 caractères au plus)
+  document.addEventListener('input', function (e) {
+    var zone = e.target.closest && e.target.closest('[data-motif-requis]');
+    var compteur = zone && zone.querySelector('[data-compteur-motif]');
+    if (compteur) { compteur.textContent = e.target.value.length + ' / ' + (e.target.maxLength > 0 ? e.target.maxLength : 500); }
+  });
+  // Un formulaire de modale qui porte un champ « action » part par fetch : une réponse 409 (état du membre changé entre-temps)
+  // devient une bulle claire ; sinon la page est rechargée et affiche le message flash du serveur.
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (e.defaultPrevented || !f.closest || !f.closest('.modale') || !f.querySelector('input[name=action]')) { return; }
+    e.preventDefault();
+    var libere = function () { f.querySelectorAll('button[aria-busy=true]').forEach(function (b) { b.disabled = false; b.removeAttribute('aria-busy'); }); };
+    fetch(f.getAttribute('action'), { method: 'POST', body: new FormData(f), credentials: 'same-origin', redirect: 'manual', headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (r) {
+        if (r.status === 409) {
+          libere(); D.fermerModale('#modale'); viderApresFermeture();
+          D.bulle({ message: f.dataset.texte409 || T().erreurServeur, niveau: 'danger' });
+        } else if (r.type === 'opaqueredirect' || r.ok) {
+          window.location.reload();
+        } else {
+          libere(); D.bulle({ message: r.status >= 500 ? T().erreurServeur : T().refuse, niveau: 'danger' });
+        }
+      })
+      .catch(function () { libere(); D.bulle({ message: T().connexionPerdue, niveau: 'danger' }); });
+  });
+
   /* ------------------------------------------------------------------ Liste filtrée : formulaire unique [data-filtres-form] */
   // Le formulaire porte la recherche, les puces (radios) et les filtres avancés (champs cachés) : la modale « Filtres » copie ses
   // valeurs dans ces champs, puis déclenche l'événement « filtres » (un seul envoi HTMX avec toutes les valeurs).

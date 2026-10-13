@@ -2,13 +2,15 @@
 {% load i18n %}{% comment %}
 Confirmation avant toute suppression ou annulation (modale, jamais un confirm() du navigateur). Contexte : titre, message, action_url (POST), libelle_envoi.
 Le bouton d'action est rouge plein (variante_envoi="danger-plein", défaut) : seul endroit où .bouton--danger-plein est permis ; variante_envoi="principal" pour une restauration.
-avec_motif : ajoute une zone de texte « motif » obligatoire (champ POST « motif », aussi vérifié côté serveur) ; motif_initial la préremplit.
+action_post : valeur du champ POST « action » (demander, annuler, executer, restaurer ; sans lui le serveur répond 400).
+avec_motif : ajoute une zone de texte « motif » obligatoire (champ POST « motif », 500 caractères au plus avec compteur, aussi vérifié côté serveur) ; motif_initial la préremplit.
 Un envoi sans motif est bloqué dans la modale avec un message lisible (fenamo.js, [data-motif-requis]).
 {% endcomment %}
-{% block corps %}<div class="alerte alerte--alerte">{% include "components/_icone.html" with nom="triangle-alert" classe="" %}<div>{{ message }}</div></div>
+{% block corps %}{% if action_post %}<input type="hidden" name="action" value="{{ action_post }}">{% endif %}<div class="alerte alerte--alerte">{% include "components/_icone.html" with nom="triangle-alert" classe="" %}<div>{{ message }}</div></div>
 {% if avec_motif %}<div class="champ" data-motif-requis>
   <label class="champ-libelle" for="motif-{{ ident|default:'conf' }}">{{ motif_libelle|default:_("Motif") }}</label>
-  <textarea name="motif" id="motif-{{ ident|default:'conf' }}" rows="3" required maxlength="500" aria-describedby="motif-{{ ident|default:'conf' }}-erreur">{{ motif_initial|default:"" }}</textarea>
+  <textarea name="motif" id="motif-{{ ident|default:'conf' }}" rows="3" required maxlength="500" aria-describedby="motif-{{ ident|default:'conf' }}-erreur motif-{{ ident|default:'conf' }}-compte">{{ motif_initial|default:"" }}</textarea>
+  <p class="champ-aide" id="motif-{{ ident|default:'conf' }}-compte" data-compteur-motif aria-live="off">0 / 500</p>
   <p class="champ-erreur" id="motif-{{ ident|default:'conf' }}-erreur" role="alert" hidden>{% include "components/_icone.html" with nom="circle-alert" classe="" %}{% translate "Indiquez le motif avant de continuer." %}</p>
 </div>{% endif %}{% endblock %}
 {% block pied %}

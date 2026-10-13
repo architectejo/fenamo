@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static i18n %}
 
 {% block body %}
 
@@ -34,7 +34,7 @@
                 {% csrf_token %}
                 
                 {{form.as_p}}
-                            <p class="form-text">Pièce jointe (fiche d'identité) : PDF, JPEG ou PNG, 3 Mo au maximum.</p>
+                            <p class="form-text">{% translate "Pièce jointe (fiche d'identité) : PDF, JPEG ou PNG, 3 Mo au maximum." %}</p>
 
                 <div class="row mb-3">
                   <label class="col-sm-4 col-form-label"></label>
