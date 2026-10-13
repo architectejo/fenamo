@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %}{% load fichiers %}
 {% if user.is_authenticated %}
 <!-- ======= Header ======= -->
 <header id="header" class="header fixed-top d-flex align-items-center text-light"
@@ -150,7 +150,7 @@
           <li class="message-item">
             <a href="#">
               {% if message.membre.photo %}
-              <img src="{{message.membre.photo.url}}" alt="" class="rounded-circle">
+              <img src="{% url_fichier message.membre "photo" vignette=True %}" alt="" class="rounded-circle">
               {% endif %}
               <div>
                 {% if message.membre.nom %}
@@ -181,7 +181,7 @@
 
         <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
           {% if userMembre.photo %}
-          <img src="{{userMembre.photo.url}}" alt="Profile" class="rounded-circle">
+          <img src="{% url_fichier userMembre "photo" vignette=True %}" alt="Profile" class="rounded-circle">
           {% endif %}
           <span class="d-none d-md-block dropdown-toggle ps-2 text-light">{{user.username}}</span>
         </a><!-- End Profile Iamge Icon -->
@@ -441,7 +441,7 @@
 
         <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
           {% if userMembre.photo %}
-          <img src="{{userMembre.photo.url}}" alt="Profile" class="rounded-circle">
+          <img src="{% url_fichier userMembre "photo" vignette=True %}" alt="Profile" class="rounded-circle">
           {% endif %}
           <span class="d-none d-md-block dropdown-toggle ps-2 text-light">{{user.username}}</span>
         </a><!-- End Profile Iamge Icon -->

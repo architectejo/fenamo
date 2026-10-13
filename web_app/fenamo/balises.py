@@ -15,6 +15,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from coptapp.forms import ALIAS_POST
+from coptapp.templatetags.fichiers import url_fichier
 from coptapp.services.etats import ETATS, LIBELLES, etat_de
 from fenamo.htmx import veut_fragment as _veut_fragment
 
@@ -73,15 +74,15 @@ def avatar(nom, photo=None, taille=40, classe=''):
 
     ``taille`` choisit la variante CSS : 64 et plus = ``avatar--grand``, 32 et moins = ``avatar--petit``.
     """
-    try:
-        url = photo.url if photo else ''
-    except ValueError:  # champ image sans fichier associé
-        url = ''
+    url = ''
+    if photo:
+        # La photo d'un membre est privée : adresse de la vue contrôlée (vignette de 160 px), jamais /media/.
+        url = url_fichier(getattr(photo, 'instance', None), getattr(getattr(photo, 'field', None), 'name', 'photo'), vignette=True)
     variante = ' avatar--grand' if int(taille) >= 64 else (' avatar--petit' if int(taille) <= 32 else '')
     if classe:
         variante += ' ' + classe
     if url:
-        return format_html('<span class="avatar{}"><img src="{}" alt="" loading="lazy" width="{}" height="{}"></span>', variante, url, taille, taille)
+        return format_html('<span class="avatar{}"><img src="{}" alt="" loading="lazy" decoding="async" width="{}" height="{}"></span>', variante, url, taille, taille)
     return format_html('<span class="avatar{}" aria-hidden="true">{}</span>', variante, initiales(nom))
 
 

@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static %}{% load fichiers %}
 
 {% block body %}
 
@@ -44,7 +44,7 @@
                     <div class="post-item clearfix">
                         {% if message.membre.photo %}
                             <a href="{% url 'membre-view' message.membre.id %}">
-                                <img src="{{message.membre.photo.url}}" alt="">
+                                <img src="{% url_fichier message.membre "photo" vignette=True %}" alt="">
                             </a>
                         {% endif %}
                         {% if message.message %}

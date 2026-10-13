@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static %}{% load fichiers %}
 
 {% block body %}
 
@@ -45,7 +45,7 @@
                     {% if note.membre %}
                         <a href="{% url 'membre-view' note.membre.id %}">
                             {% if note.membre.photo %}
-                            <img src="{{note.membre.photo.url}}" alt="">
+                            <img src="{% url_fichier note.membre "photo" vignette=True %}" alt="">
                             {% else %}
                             <img src="{% static 'img/logo-48.webp' %}" alt="">
                             {% endif %}

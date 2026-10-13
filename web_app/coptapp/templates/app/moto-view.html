@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static %}{% load fichiers %}
 
 {% block body %}
 
@@ -97,7 +97,7 @@
                         </div>
                         <div class="col-3">
                           {% if membre.photo %}
-                          <img src="{{membre.photo.url}}" class="img-fluid rounded-start" alt="...">
+                          <img src="{% url_fichier membre "photo" vignette=True %}" class="img-fluid rounded-start" alt="...">
                           {% else %}
                           <i style="font-size: 200px; color: rgb(1, 1, 88);" class="ri-motorbike-fill"></i>
                           {% endif %}

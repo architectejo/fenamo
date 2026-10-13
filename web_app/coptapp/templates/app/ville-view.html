@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static %}{% load fichiers %}
 
 {% block body %}
 
@@ -73,7 +73,7 @@
                       <tr>
                         <th scope="row"><a href="#">
                           {% if membre.photo %}
-                            <img src="{{membre.photo.url}}" alt=""></a>
+                            <img src="{% url_fichier membre "photo" vignette=True %}" alt=""></a>
                           {% endif %}
                         </th>
                         <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>

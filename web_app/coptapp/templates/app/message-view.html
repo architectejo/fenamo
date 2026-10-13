@@ -1,6 +1,6 @@
 {% extends 'base-app.html' %}
 
-{% load static %}
+{% load static %}{% load fichiers %}
 
 {% block body %}
 
@@ -27,7 +27,7 @@
           <div class="row g-0">
             <div class="col-md-4">
               {% if message.membre.photo %}
-              <img src="{{message.membre.photo.url}}" class="img-fluid rounded-start" alt="...">
+              <img src="{% url_fichier message.membre "photo" vignette=True %}" class="img-fluid rounded-start" alt="...">
               {% endif %}
             </div>
             <div class="col-md-8">
