@@ -111,8 +111,9 @@ CHAMPS_MODIFIABLES = (
 # Noms envoyés par la modale de la fiche -> champs du modèle.
 ALIAS_POST = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb', 'epouse': 'nom_epouse'}
 OBLIGATOIRES = ('nom', 'date_naissance')
-# Le journal garde l'existence du changement mais pas la valeur de ces champs d'identité.
-MASQUES_AU_JOURNAL = ('numero_carte_d_electeur', 'permis', 'brevet')
+# Le journal ne garde la VALEUR (avant / après) que de ces champs sans donnée personnelle ; pour tous les autres
+# (téléphone, adresse, e-mail, naissance, parents, village, chefferie, pièces d'identité…) il ne garde que le NOM du champ.
+CHAMPS_JOURNALISABLES = ('qualite', 'fonction', 'comite', 'categorie')
 
 
 class MembreModificationForm(forms.ModelForm):
@@ -142,8 +143,8 @@ class MembreModificationForm(forms.ModelForm):
 def modifier_membre(auteur, membre, donnees, fichiers=None):
     """Modifie `membre` (F-21). Retourne (formulaire, modifie). 403 si `auteur` ne peut pas modifier ce membre.
 
-    Formulaire invalide : rien n'est enregistré. Une modification réelle est journalisée (avant / après, valeurs
-    d'identité masquées) ; aucun changement : rien n'est écrit.
+    Formulaire invalide : rien n'est enregistré. Une modification réelle est journalisée (noms des champs modifiés ; valeurs avant / après
+    seulement pour CHAMPS_JOURNALISABLES) ; aucun changement : rien n'est écrit.
     """
     if not droits_membre(auteur, membre)['peut_modifier']:
         raise PermissionDenied
@@ -155,10 +156,11 @@ def modifier_membre(auteur, membre, donnees, fichiers=None):
         return formulaire, False
     formulaire.save()
     apres = instantane(membre, CHAMPS_MODIFIABLES)
-    changes = [c for c in formulaire.changed_data if c in CHAMPS_MODIFIABLES]
-    masque = lambda dic: {c: ('***' if c in MASQUES_AU_JOURNAL else dic[c]) for c in changes}  # noqa: E731
-    journaliser(auteur, JournalAction.Action.MODIFICATION, membre, avant=masque(avant), apres=masque(apres),
-                motif='photo remplacée' if 'photo' in formulaire.changed_data else '')
+    modifies = [c for c in formulaire.changed_data if c in CHAMPS_MODIFIABLES or c == 'photo']
+    visibles = [c for c in modifies if c in CHAMPS_JOURNALISABLES]
+    journaliser(auteur, JournalAction.Action.MODIFICATION, membre,
+                avant={c: avant[c] for c in visibles},
+                apres={**{c: apres[c] for c in visibles}, 'champs_modifies': modifies})
     return formulaire, True
 
 

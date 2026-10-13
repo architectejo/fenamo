@@ -18,16 +18,36 @@ def _poster(client, jeu, **donnees):
     return client.post(reverse('membre-view', args=[jeu['membre'].id]), base)
 
 
-def test_F21_modification_journalisee_avant_apres(client, jeu):
-    r = _poster(client, jeu, telephone='+243810000000', numero_carte_d_electeur='SECRET-123')
+def test_F21_journal_de_modification_noms_des_champs_et_valeurs_non_sensibles(client, jeu):
+    Membre.objects.filter(pk=jeu['membre'].pk).update(qualite='MOTARD')
+    r = _poster(client, jeu, telephone='+243810000000', numero_carte_d_electeur='SECRET-123', adresse='Rue 5',
+                mail='a@example.invalid', nom_pere='Père', village='Mbanza', qualite='PROPRIETAIRE')
     assert r.status_code == 200
     jeu['membre'].refresh_from_db()
     assert jeu['membre'].nom == 'Nouveau Nom' and jeu['membre'].telephone == '+243810000000'
     ligne = JournalAction.objects.get(action=A.MODIFICATION)
-    assert ligne.avant['nom'] == 'Membre Fictif' and ligne.apres['nom'] == 'Nouveau Nom'
     assert ligne.objet_id == jeu['membre'].id and ligne.auteur == jeu['compte']
-    assert ligne.apres['numero_carte_d_electeur'] == '***' and 'SECRET-123' not in str(ligne.apres)
-    assert 'date_naissance' in ligne.apres
+    assert {'nom', 'telephone', 'numero_carte_d_electeur', 'adresse', 'mail', 'nom_pere', 'village', 'date_naissance',
+            'qualite'} <= set(ligne.apres['champs_modifies'])
+    assert ligne.avant == {'qualite': 'MOTARD'} and ligne.apres['qualite'] == 'PROPRIETAIRE'
+    brut = str(ligne.avant) + str(ligne.apres)
+    for valeur in ('SECRET-123', '+243810000000', 'Rue 5', 'a@example.invalid', 'Père', 'Mbanza', 'Nouveau Nom',
+                   'Membre Fictif', '1990', '1991'):
+        assert valeur not in brut, valeur
+
+
+def test_F70_admin_journal_reserve_aux_super_utilisateurs(client, jeu):
+    from compte.models import Compte
+    staff = Compte.objects.create_user('staff', password='x', is_staff=True, is_active=True)
+    client.force_login(staff)
+    assert client.get('/gestion-technique/compte/journalaction/').status_code in (302, 403, 404)
+    client.force_login(jeu['compte'])
+    assert client.get('/gestion-technique/compte/journalaction/').status_code == 200
+    from django.contrib.admin.sites import site
+    from compte.models import JournalAction
+    admin = site._registry[JournalAction]
+    class R: user = staff
+    assert not admin.has_view_permission(R()) and not admin.has_module_permission(R())
 
 
 def test_F21_champs_absents_gardent_leur_valeur(client, jeu):

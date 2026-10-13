@@ -49,6 +49,13 @@ class JournalActionAdmin(admin.ModelAdmin):
     search_fields = ('objet_libelle', 'auteur__username')
     date_hierarchy = 'date'
 
+    def has_view_permission(self, request, obj=None):
+        # Le journal contient les actions de tous : seul le super-utilisateur (rôle SU, § 4.1) le consulte.
+        return bool(request.user.is_active and request.user.is_superuser)
+
+    def has_module_permission(self, request):
+        return self.has_view_permission(request)
+
     def has_add_permission(self, request):
         return False
 
