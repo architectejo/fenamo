@@ -159,8 +159,9 @@ def test_F70_rattachements(client, jeu):
     client.post(reverse('ville-attribution', kwargs={'idM': m, 'id': jeu['ville'].id}))
     client.post(reverse('antenne-attribution', kwargs={'idM': m, 'id': jeu['antenne'].id}))
     client.post(reverse('ville-attr', kwargs={'sid': jeu['association'].id, 'id': jeu['ville'].id}))
-    champs = sorted(next(k for k in ligne.apres if not k.endswith('_libelle')) for ligne in lignes(A.RATTACHEMENT))
-    assert champs == ['antenne', 'structure', 'ville', 'ville']
+    # un rattachement à une ville ou à une antenne journalise ville ET antenne (service de géographie, 2d)
+    champs = sorted(tuple(sorted(k for k in ligne.apres if not k.endswith('_libelle'))) for ligne in lignes(A.RATTACHEMENT))
+    assert champs == [('antenne', 'ville')] * 3 + [('structure',)] or champs == sorted([('structure',)] + [('antenne', 'ville')] * 3)
 
 
 def test_F70_attribution_d_un_engin_a_un_membre(client, jeu):
