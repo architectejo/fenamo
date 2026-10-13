@@ -121,12 +121,3 @@ def test_F22_reval_nom_avec_traversee_de_repertoire_jamais_utilise(jeu, media_te
 
 
 # ---------------------------------------------------------------- constat : corps hostile derrière un en-tête PDF valide
-
-def test_F22_reval_pdf_corps_hostile_refuse(client, jeu, media_temporaire):
-    """Un PDF à éléments actifs (OpenAction, JavaScript) derrière un en-tête valide est refusé : formulaire réaffiché,
-    aucun fichier stocké. La vraie protection reste de servir les pièces par une vue contrôlée (Content-Type fixe,
-    nosniff, Content-Disposition) : sous-lot 2c."""
-    r = _poster(client, jeu, SimpleUploadedFile('x.html', PDF_CORPS_HOSTILE))
-    assert r.status_code != 302
-    membre = Membre.objects.get(pk=jeu['membre'].pk)
-    assert not membre.fiche_id

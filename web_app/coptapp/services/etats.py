@@ -59,7 +59,6 @@ def filtrer_membres_par_etat(membres, etat):
     'a_renouveler') et 'supprime' (les listes excluent les membres supprimés) donnent une liste vide.
     Un code inconnu ou vide ne filtre pas.
     """
-    etat = (etat or '').replace('-', '_')  # les classes CSS utilisent des tirets
     if etat not in ETATS:
         return membres
     if etat == 'actif':

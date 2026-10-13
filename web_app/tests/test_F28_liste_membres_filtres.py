@@ -61,7 +61,7 @@ def test_F28_service_recherche_nom_identifiant_telephone(liste, q, attendu):
 def test_F28_service_filtres(liste):
     su = liste['compte']
     assert _noms(lister_membres(su, {'etat': 'actif'}).page_obj) == ['Mukendi Paul']
-    assert _noms(lister_membres(su, {'etat': 'valide-antenne'}).page_obj) == ['Kabila Jean']
+    assert _noms(lister_membres(su, {'etat': 'valide_antenne'}).page_obj) == ['Kabila Jean']
     assert sorted(_noms(lister_membres(su, {'etat': 'saisi'}).page_obj)) == ['Membre Fictif', 'Tshala Marie']
     assert _noms(lister_membres(su, {'qualite': 'motard'}).page_obj) == ['Kabila Jean']
     assert _noms(lister_membres(su, {'antenne': liste['autre_antenne'].id}).page_obj) == ['Mukendi Paul']
@@ -107,7 +107,7 @@ def test_F28_service_perimetre_respecte(liste):
 
 def test_F28_vue_page_complete_et_contexte(client, liste):
     client.force_login(liste['compte'])
-    r = client.get(reverse('liste-membre'), {'q': 'kabila', 'etat': 'valide-antenne', 'page': '1'})
+    r = client.get(reverse('liste-membre'), {'q': 'kabila', 'etat': 'valide_antenne', 'page': '1'})
     assert r.status_code == 200
     assert 'app/membre-list.html' in [t.name for t in r.templates]
     assert '<html' in r.content.decode()

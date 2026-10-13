@@ -94,7 +94,7 @@ def test_F28_filtre_etat(client, su, base):
     assert _noms(client.get(URL, {'etat': 'actif'})) == ['Bravo Ilunga']
     assert _noms(client.get(URL, {'etat': 'valide_antenne'})) == ['Alpha Kasongo']
     assert sorted(_noms(client.get(URL, {'etat': 'saisi'}))) == ['Charlie 100% Sûr', 'Membre Fictif']
-    assert _noms(client.get(URL, {'etat': 'valide-antenne'})) == ['Alpha Kasongo']  # tiret toléré
+    assert sorted(_noms(client.get(URL, {'etat': 'valide-antenne'}))) == sorted(_noms(client.get(URL)))  # tiret : forme inconnue, ignorée
 
 
 def test_F28_filtre_qualite_insensible_a_la_casse(client, su, base):

@@ -42,7 +42,7 @@ def _entier(valeur):
 def normaliser_filtres(params):
     """Extrait q, etat, qualite, antenne, association de `params` (QueryDict ou dict) ; valeurs invalides ignorées."""
     q = (params.get('q') or '').strip()[:Q_LONGUEUR_MAX]
-    etat = (params.get('etat') or '').strip().replace('-', '_')
+    etat = (params.get('etat') or '').strip()
     qualite = (params.get('qualite') or '').strip().upper()
     return {
         'q': q,

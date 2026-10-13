@@ -24,7 +24,7 @@ def _champs_de_la_modale(html):
     return donnees
 
 
-def test_modifier_sans_changer_conserve_les_valeurs(client, jeu):
+def test_F21_modifier_sans_changer_conserve_les_valeurs(client, jeu):
     membre = jeu['membre']
     Membre.objects.filter(pk=membre.pk).update(
         nom_epouse='Épouse Fictive', autre_asb='Autre asbl fictive', genre='FEMME', titre='MME', adresse='1 av. Fictive',
@@ -42,7 +42,7 @@ def test_modifier_sans_changer_conserve_les_valeurs(client, jeu):
         assert getattr(apres, champ) == getattr(avant, champ), champ
 
 
-def test_modales_de_suppression_postent_action_et_motif(client, jeu):
+def test_F25_modales_de_suppression_postent_action_et_motif(client, jeu):
     client.force_login(jeu['compte'])
     html = client.get(reverse('membre-view', kwargs={'id': jeu['membre'].id})).content.decode()
     assert 'name="action" value="executer"' in html and 'maxlength="500"' in html and 'data-compteur-motif' in html
@@ -52,10 +52,10 @@ def test_modales_de_suppression_postent_action_et_motif(client, jeu):
     assert 'Ancien motif' not in html.split('name="action" value="restaurer"')[1].split('</template>')[0]
 
 
-def test_badge_et_puces_utilisent_la_table_unique_des_libelles(client, jeu):
+def test_F28_badge_et_puces_utilisent_la_table_unique_des_libelles(client, jeu):
     from coptapp.services.etats import LIBELLES
     client.force_login(jeu['compte'])
     html = client.get(reverse('liste-membre')).content.decode()
-    assert 'etat--valide_antenne' not in html or 'valide-antenne' not in html
+    assert 'valide-antenne' not in html  # une seule forme de code d'état : snake_case
     for code in ('saisi', 'valide_antenne', 'actif'):
         assert f'value="{code}"' in html and str(LIBELLES[code]) in html
