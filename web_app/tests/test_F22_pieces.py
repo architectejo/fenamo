@@ -101,3 +101,45 @@ def test_F22_pdf_simple_accepte_et_enregistre(jeu):
     jeu['membre'].fiche_id = SimpleUploadedFile('a.pdf', PDF)
     jeu['membre'].save()
     assert jeu['membre'].fiche_id.name.endswith('.pdf')
+
+
+def test_F22_pdf_piege_de_codes_hexa_refuse_vite_et_une_seule_fois(monkeypatch):
+    import time
+
+    from coptapp import validators
+    piege = b'%PDF-1.4\n/' + b'#41' * 1_000_000 + b'\n%%EOF\n'  # 3 Mo
+    fichier = SimpleUploadedFile('piege.pdf', piege)
+    debut = time.perf_counter()
+    assert 'suspecte' in erreur_piece(fichier)
+    assert time.perf_counter() - debut < 0.3
+
+
+def test_F22_pdf_controle_une_seule_fois_par_envoi(monkeypatch, jeu):
+    from coptapp import validators
+    appels = []
+    vrai = validators._INTERDIT_EXACT.search
+    monkeypatch.setattr(validators, '_INTERDIT_EXACT', type('R', (), {'search': staticmethod(lambda c: appels.append(1) or vrai(c))})())
+    membre = jeu['membre']
+    membre.fiche_id = SimpleUploadedFile('a.pdf', PDF)
+    membre.full_clean(exclude=['password'])  # validateur du champ
+    membre.save()  # récepteur pre_save
+    assert len(appels) == 1
+
+
+def test_F22_pdf_plein_de_noms_distincts_reste_rapide():
+    import time
+    corps = b'%PDF-1.4\n' + b'/'.join(b'k%d' % i for i in range(300_000)) + b'\n%%EOF\n'
+    debut = time.perf_counter()
+    erreur_piece(SimpleUploadedFile('a.pdf', corps))
+    assert time.perf_counter() - debut < 0.3
+
+
+@pytest.mark.parametrize('nom', [b'/AAAAAA+Arial', b'/JSON', b'/AAPL', b'/JavaScriptX', b'/Launcher'])
+def test_F22_pdf_noms_proches_acceptes(nom):
+    pdf = b'%PDF-1.4\n1 0 obj<< /BaseFont ' + nom + b' >>endobj\n%%EOF\n'
+    assert erreur_piece(SimpleUploadedFile('a.pdf', pdf)) is None
+
+
+def test_F22_pdf_eof_tolere_espaces_et_retours_en_fin():
+    pdf = b'%PDF-1.4\n1 0 obj<<>>endobj\n%%EOF' + b'\r\n \n' * 100
+    assert erreur_piece(SimpleUploadedFile('a.pdf', pdf)) is None

@@ -11,6 +11,7 @@
 Réglage : ``UPLOAD_IMAGE_MAX_MO`` (variable d'environnement, 3 par défaut).
 """
 import io
+import re
 import uuid
 
 from django.conf import settings
@@ -215,28 +216,57 @@ def taille_max_piece_octets():
     return int(float(getattr(settings, 'UPLOAD_PIECE_MAX_MO', 3)) * 1024 * 1024)
 
 
-# Éléments actifs d'un PDF refusés (recherche binaire dans le fichier entier, plafonné par la taille maximale).
-PDF_INTERDITS = (b'/JavaScript', b'/JS', b'/Launch', b'/OpenAction', b'/EmbeddedFile', b'/AA')
+# Éléments actifs d'un PDF refusés : noms PDF comparés EN ENTIER (``/AA`` et ``/JS`` exacts : une police ``/AAAAAA+Arial``
+# ou une clé ``/JSON`` ne sont pas touchées).
+_FIN_NOM = r'(?![^\s/<>\[\](){}%])'  # le nom se termine ici : on compare le nom ENTIER, pas un préfixe
+_INTERDIT_EXACT = re.compile(rb'/(?:JavaScript|JS|Launch|OpenAction|EmbeddedFile|AA)' + _FIN_NOM.encode())
+_NOM_AVEC_CODE = re.compile(rb'/[^\s/<>\[\](){}%]*#[^\s/<>\[\](){}%]*')
+_CODE_HEXA = re.compile(rb'#([0-9A-Fa-f]{2})')
+PDF_INTERDITS = frozenset({b'/JavaScript', b'/JS', b'/Launch', b'/OpenAction', b'/EmbeddedFile', b'/AA'})
+PDF_CODES_PAR_NOM_MAX = 64      # un vrai nom contient quelques codes #xx : au-delà, fichier hostile
+PDF_CODES_TOTAL_MAX = 50_000    # nombre de « # » toléré dans tout le fichier (les flux compressés en contiennent un peu)
+PDF_FIN_MAX = 2048              # %%EOF doit apparaître dans les derniers octets
 
 
 def controler_pdf(fichier):
     """Refuse un PDF qui contient du script, un lancement, une action à l'ouverture ou un fichier embarqué, ou qui est
-    tronqué (pas de ``%%EOF`` en fin de fichier).
+    tronqué (pas de ``%%EOF`` dans les 2048 derniers octets, espaces et retours tolérés).
 
-    LIMITES : recherche textuelle simple (les noms écrits avec des codes ``#xx`` sont décodés d'abord), mais les objets
-    compressés (flux ``/ObjStm``) ne sont pas ouverts. La vraie protection est de servir les pièces par une vue
-    contrôlée (droits, ``Content-Type`` fixe, ``X-Content-Type-Options: nosniff``, ``Content-Disposition``) : sous-lot 2c.
+    Seuls les NOMS PDF sont comparés, en entier (``/AA`` et ``/JS`` exacts : ``/AAAAAA+Arial`` ou ``/JSON`` passent).
+    Les noms écrits avec des codes ``#xx`` (``/Java#53cript``) sont décodés, avec un plafond par nom et sur le nombre
+    total de ``#`` (au-delà : refus, contre les fichiers piégés). Le travail est linéaire (expressions régulières, pas de
+    boucle sur chaque nom). Le résultat est mémorisé sur l'objet fichier : UN seul contrôle par envoi.
+
+    LIMITES : recherche sur les noms en clair ; les objets compressés (flux ``/ObjStm``) ne sont pas ouverts. La vraie
+    protection est de servir les pièces par une vue contrôlée (droits, ``Content-Type`` fixe,
+    ``X-Content-Type-Options: nosniff``, ``Content-Disposition``) : sous-lot 2c.
     """
-    import re
+    cible = getattr(fichier, 'file', fichier)
+    if getattr(cible, '_pdf_controle', False):
+        return
     fichier.seek(0)
     contenu = fichier.read(taille_max_piece_octets() + 1)
     fichier.seek(0)
-    if b'%%EOF' not in contenu[-1024:]:
+    if b'%%EOF' not in contenu[-PDF_FIN_MAX:]:
         raise ValidationError(_("PDF incomplet ou endommagé."), code='pdf_tronque')
-    nettoye = re.sub(rb'#([0-9A-Fa-f]{2})', lambda m: bytes([int(m.group(1), 16)]), contenu)
-    if any(motif in nettoye for motif in PDF_INTERDITS):
+    if contenu.count(b'#') > PDF_CODES_TOTAL_MAX:
+        raise ValidationError(_("PDF refusé : structure suspecte."), code='pdf_suspect')
+    actif = _INTERDIT_EXACT.search(contenu) is not None
+    if not actif:
+        for trouve in _NOM_AVEC_CODE.finditer(contenu):
+            nom = trouve.group()
+            if nom.count(b'#') > PDF_CODES_PAR_NOM_MAX:
+                raise ValidationError(_("PDF refusé : structure suspecte."), code='pdf_suspect')
+            if _CODE_HEXA.sub(lambda m: bytes([int(m.group(1), 16)]), nom) in PDF_INTERDITS:
+                actif = True
+                break
+    if actif:
         raise ValidationError(_("PDF refusé : il contient des éléments actifs (script, lancement, fichier joint)."),
                               code='pdf_actif')
+    try:
+        cible._pdf_controle = True
+    except AttributeError:
+        pass  # objet sans __dict__ : le contrôle sera simplement refait
 
 
 def type_reel_piece(fichier):
