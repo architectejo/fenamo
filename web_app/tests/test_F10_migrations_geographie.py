@@ -99,7 +99,7 @@ def base(tmp_path):
     return tmp_path / 'migration.sqlite3'
 
 
-def test_2d_constantes_27_codes_uniques_et_ordre():
+def test_F10_constantes_27_codes_uniques_et_ordre():
     assert len(M0057.COORDINATIONS) == 27
     assert len({code for _, _, code in M0057.COORDINATIONS}) == 27
     assert len({nom for _, nom, _ in M0057.COORDINATIONS}) == 27
@@ -107,14 +107,14 @@ def test_2d_constantes_27_codes_uniques_et_ordre():
     assert {'KN-E', 'KN-O', 'LW', 'MD'} <= {code for _, _, code in M0057.COORDINATIONS}
 
 
-def test_2d_base_vide_27_coordinations_et_makemigrations_check(base, tmp_path):
+def test_F10_base_vide_27_coordinations_et_makemigrations_check(base, tmp_path):
     _manage(base, 'migrate', '--noinput')
     assert 'No changes detected' in _manage(base, 'makemigrations', '--check', '--dry-run').stdout
     lignes = _script(base, LISTER_PROVINCES, tmp_path)
     assert len(lignes) == 27 and len({code for _, code, _ in lignes}) == 27
 
 
-def test_2d_0057_ne_touche_pas_l_existant_rejeu_et_retour(base, tmp_path):
+def test_F10_0057_ne_touche_pas_l_existant_rejeu_et_retour(base, tmp_path):
     _etat_0056(base, tmp_path)
     _manage(base, 'migrate', 'coptapp', '0057', '--noinput')
     lignes = _script(base, LISTER_PROVINCES, tmp_path)
@@ -135,7 +135,7 @@ def test_2d_0057_ne_touche_pas_l_existant_rejeu_et_retour(base, tmp_path):
     assert [n for n, _, _ in _script(base, LISTER_PROVINCES, tmp_path)] == ['Kinshasa fictive', 'Nom local fictif']
 
 
-def test_2d_0057_retour_arriere_garde_une_coordination_referencee(base, tmp_path):
+def test_F10_0057_retour_arriere_garde_une_coordination_referencee(base, tmp_path):
     _manage(base, 'migrate', 'coptapp', '0057', '--noinput')
     _script(base, """
         from coptapp.models import Province, Ville
@@ -146,7 +146,7 @@ def test_2d_0057_retour_arriere_garde_une_coordination_referencee(base, tmp_path
     assert _script(base, LISTER_PROVINCES, tmp_path) == [['Haut-Katanga', 'HK', 3]]
 
 
-def test_2d_0058_conversion_non_ecrasement_aller_retour_et_rejeu(base, tmp_path):
+def test_F11_0058_conversion_non_ecrasement_aller_retour_et_rejeu(base, tmp_path):
     _etat_0056(base, tmp_path)
     _manage(base, 'migrate', 'coptapp', '0058', '--noinput')
     r = _script(base, VERIFIER_0058, tmp_path)
