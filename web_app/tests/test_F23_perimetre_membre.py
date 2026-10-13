@@ -240,9 +240,14 @@ def test_F23_valider_exige_l_etape_precedente_et_pas_sa_propre_fiche(client, jeu
     client.post(url_valider(suivant))
     suivant.refresh_from_db()
     assert suivant.is_validate2 and not suivant.is_validate3  # une seule étape par action
-    client.post(url_valider(suivant))
+    client.post(url_valider(suivant))  # le même compte ne valide pas V2 puis V3 : réservé à privilege5 et SU
+    suivant.refresh_from_db()
+    assert not suivant.is_validate3
+    client.force_login(_compte('p3seul', privilege3=True))
+    client.post(url_valider(suivant))  # un autre compte (privilege3) pose l'étape finale
     suivant.refresh_from_db()
     assert suivant.is_validate3
+    client.force_login(p23)
     # propre fiche et propres saisies
     propre = _membre(jeu, 'Ma fiche')
     saisie = _membre(jeu, 'Ma saisie', user=p23)

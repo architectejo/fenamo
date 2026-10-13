@@ -177,7 +177,7 @@ def test_F23_retour_refuse_une_adresse_externe(client, acteurs):
 
 def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, monkeypatch):
     """Simule deux p2 qui lisent le membre avant que l'autre écrive : l'état final est correct (is_validate2 posé)."""
-    import coptapp.views as vues
+    import coptapp.services.droits_provisoires as vues
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2bis', password='x', privilege2=True)
     acteurs['comptes']['p2bis'] = second
@@ -202,7 +202,7 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
     "BUG a corriger (backend-django) : la vue validate lit puis écrit sans transaction ni verrou "
     "(select_for_update) : deux validateurs simultanés journalisent DEUX validations pour une seule étape posée."))
 def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(client, acteurs, monkeypatch):
-    import coptapp.views as vues
+    import coptapp.services.droits_provisoires as vues
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2ter', password='x', privilege2=True)
     original = vues.etapes_a_valider
@@ -224,7 +224,7 @@ def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(client, acte
 
 def test_F23_validation_n_ecrase_pas_une_modification_concurrente(client, acteurs, monkeypatch):
     """La validation n'enregistre que les drapeaux (update_fields) : un changement de nom survenu entre-temps survit."""
-    import coptapp.views as vues
+    import coptapp.services.droits_provisoires as vues
     m = _membre(acteurs)
     original = vues.etapes_a_valider
 

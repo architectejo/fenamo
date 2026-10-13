@@ -7,7 +7,7 @@ from compte.services.comptes import compte_du_membre
 from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
 from coptapp.services.actions import (
-    changer_suppression, drapeaux_validation, journaliser_validation, rattacher, traiter_suppression_membre,
+    changer_suppression, rattacher, traiter_suppression_membre, valider_membre,
     ACTIONS_SUPPRESSION, EtatIncoherent,
 )
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
@@ -20,7 +20,7 @@ from coptapp.validators import erreur_image
 from compte.permissions import editeur_requis, referentiel_ecriture_requis
 from coptapp.services.droits_provisoires import (
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
-    etapes_a_valider, membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
+    membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
 from coptapp.services.historique import historique_objet
 from coptapp.services.membres import (
@@ -137,14 +137,7 @@ def validate(request, id):
     membre = get_object_or_404(membres_du_perimetre(user), id=id)
     if not droits_membre(user)['peut_valider']:
         raise PermissionDenied
-    etapes = etapes_a_valider(user, membre)
-    if etapes:
-        avant_validation = drapeaux_validation(membre)
-        for etape in etapes:
-            setattr(membre, etape, True)
-        membre.save(update_fields=etapes)
-        journaliser_validation(user, membre, avant_validation)
-    else:
+    if not valider_membre(user, membre):
         contrib_messages.info(request, _("Rien à valider pour vous sur ce membre."))
     return _retour(request, 'liste-membre')
 

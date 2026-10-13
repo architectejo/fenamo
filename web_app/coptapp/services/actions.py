@@ -22,6 +22,29 @@ def journaliser_validation(auteur, membre, avant, motif=''):
     return journaliser(auteur, action, membre, avant=avant, apres=apres, motif=motif)
 
 
+@transaction.atomic
+def valider_membre(auteur, membre):
+    """Valide `membre` pour `auteur` (F-23) et retourne la liste des drapeaux posés (vide : rien à valider).
+
+    Règles de `droits_provisoires.etapes_a_valider` (étape précédente exigée, jamais sa propre fiche ni ses saisies,
+    une seule étape pour privilege2 / privilege3, jamais V2 puis V3 par un compte qui cumule les deux ; plusieurs
+    niveaux d'un coup pour SU et privilege5 seulement). Idempotente : ne dévalide jamais. L'état est relu sous
+    verrou ; seules les colonnes de validation sont écrites ; chaque validation est journalisée.
+    """
+    from coptapp.models import Membre
+    from coptapp.services.droits_provisoires import etapes_a_valider
+    membre = Membre.objects.select_for_update().get(pk=membre.pk)
+    etapes = etapes_a_valider(auteur, membre)
+    if not etapes:
+        return []
+    avant = drapeaux_validation(membre)
+    for etape in etapes:
+        setattr(membre, etape, True)
+    membre.save(update_fields=etapes + ['mise_a_jour'])
+    journaliser_validation(auteur, membre, avant)
+    return etapes
+
+
 def changer_suppression(auteur, objet, supprime, motif=''):
     """Suppression logique (ou annulation) d'un membre ou d'un engin ; journalisée. Ne contrôle aucun droit :
     pour un membre, passer par `traiter_suppression_membre`. N'écrit que les colonnes concernées."""

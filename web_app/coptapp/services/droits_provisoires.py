@@ -135,6 +135,17 @@ def droits_membre(user, membre=None):
     }
 
 
+def _a_deja_valide(user, membre):
+    """Vrai si `user` a déjà validé une étape de ce dossier (lecture du journal des validations)."""
+    from django.contrib.contenttypes.models import ContentType
+
+    from compte.models import JournalAction
+    return JournalAction.objects.filter(
+        action=JournalAction.Action.VALIDATION, auteur=user, objet_id=membre.pk,
+        objet_type=ContentType.objects.get_for_model(Membre, for_concrete_model=False),
+    ).exists()
+
+
 def _etapes(user, membre):
     """Drapeaux que `user` peut poser sur `membre` maintenant (voir `etapes_a_valider`)."""
     if not _actif(user) or est_visiteur(user):
@@ -146,6 +157,8 @@ def _etapes(user, membre):
         return manquantes  # SU et privilege5 : plusieurs niveaux d'un coup, chacun reste tracé
     if not manquantes:
         return []
+    if user.privilege2 and user.privilege3 and _a_deja_valide(user, membre):
+        return []  # cumul des privilèges 2 et 3 : jamais V2 puis V3 sur le même dossier (réservé à privilege5 et SU)
     suivante = manquantes[0]  # une seule étape à la fois, dans l'ordre : l'étape précédente est exigée
     if suivante == 'is_validate2' and user.privilege2:
         return [suivante]
@@ -157,7 +170,8 @@ def _etapes(user, membre):
 def etapes_a_valider(user, membre):
     """Drapeaux de validation que `user` pose sur `membre` (idempotent : jamais de retrait).
 
-    Règles (M2) : l'étape précédente est exigée (privilege2 pose is_validate2 si is_validate1 ; privilege3 pose
+    Règles (M2) : un compte qui cumule privilege2 et privilege3 ne valide qu'UNE étape par dossier (jamais V2 puis V3 :
+    plusieurs niveaux sont réservés à privilege5 et SU) ; l'étape précédente est exigée (privilege2 pose is_validate2 si is_validate1 ; privilege3 pose
     is_validate3 si is_validate2) et une seule étape par action ; SU et privilege5 posent toutes les étapes
     manquantes ; personne ne valide sa propre fiche (membreId) ni ses propres saisies (Membre.user), sauf le
     super-utilisateur (compte technique du prestataire) ; privilege4 (lecture seule) ne valide jamais.
