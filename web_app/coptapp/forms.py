@@ -199,6 +199,15 @@ class AntenneForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
 
+    def clean(self):
+        """Une antenne issue d'une ville héritée reste dans la coordination de cette ville."""
+        donnees = super().clean()
+        origine = self.instance.ville_origine if self.instance.pk else None
+        coordination = donnees.get('coordination')
+        if origine is not None and origine.province_id and coordination and coordination.pk != origine.province_id:
+            self.add_error('coordination', "Cette antenne est issue d'une ville de la coordination « %s » : elle ne peut pas en changer." % origine.province)
+        return donnees
+
 
 # Modification d'un membre depuis la fiche (F-21) : liste blanche, `nom` et la date de naissance obligatoires.
 CHAMPS_MODIFIABLES = (
