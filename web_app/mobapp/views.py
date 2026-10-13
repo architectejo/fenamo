@@ -13,7 +13,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from compte.services.mobile import (
     connexion_bloquee, effacer_echecs, inscriptions_trop_nombreuses, noter_echec, noter_inscription,
@@ -179,3 +179,13 @@ def attribut_str(request, id, id_str):
     membre.structure = structure
     membre.save(update_fields=['structure', 'mise_a_jour'])
     return redirect('data', id=id)
+
+
+@require_GET
+@membre_connecte
+def photo_membre(request, id):
+    """Photo (ou vignette avec ``?vignette=1``) du membre connecté : l'espace mobile n'a pas de compte Django, il ne peut
+    donc pas utiliser la vue /fichiers/… ; mêmes protections (type réel, nosniff, Content-Disposition neutre)."""
+    from coptapp.views.fichiers import _reponse
+    membre = get_object_or_404(Membre, id=id, is_delete=False)
+    return _reponse(request, membre, 'photo', piece=False, vignette=request.GET.get('vignette') == '1')

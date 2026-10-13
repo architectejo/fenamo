@@ -220,3 +220,23 @@ def test_F20_mob_inscription_antirobot_champ_piege_et_limite_par_adresse(client,
         assert client.post(reverse('register'), _donnees_inscription(mob, nom=f'Robot {i}')).status_code == 302
     r = client.post(reverse('register'), _donnees_inscription(mob, nom='Robot de trop'))
     assert r.status_code == 429 and not Membre.objects.filter(nom='Robot de trop').exists()
+
+
+def test_F20_mob_photo_du_membre_connecte_seulement(client, mob):
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+    tampon = io.BytesIO()
+    Image.new('RGB', (40, 40)).save(tampon, 'JPEG')
+    mob['avec_mdp'].photo = SimpleUploadedFile('p.jpg', tampon.getvalue())
+    mob['avec_mdp'].save()
+    url = reverse('photo-mob', kwargs={'id': mob['avec_mdp'].id})
+    assert client.get(url).status_code == 403  # anonyme
+    connecter(client, mob['membre'])
+    assert client.get(url).status_code == 403  # un autre membre
+    connecter(client, mob['avec_mdp'])
+    r = client.get(url)
+    assert r.status_code == 200 and r['Content-Type'] == 'image/jpeg' and r['X-Content-Type-Options'] == 'nosniff'
+    assert client.get(url, {'vignette': '1'}).status_code == 200
+    assert client.post(url).status_code == 405

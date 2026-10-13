@@ -8,6 +8,7 @@ urlpatterns = [
     path('', login_not_required(home), name="home-mob"),
     path('espace/<int:id>', login_not_required(session), name="session"),
     path('register/', login_not_required(register), name="register"),
+    path('photo/<int:id>', login_not_required(photo_membre), name="photo-mob"),
     path('data/<int:id>', login_not_required(data_membre), name="data"),
     path('attribut-str/<int:id>/<int:id_str>', login_not_required(attribut_str), name="attribut-str"),
     path('attribut-ville/<int:id>/<int:id_ville>', login_not_required(attribut_ville), name="attribut-ville"),
