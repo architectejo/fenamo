@@ -149,7 +149,7 @@ def test_F28_403_page_propre(prod, jeu):
     actif = _m(jeu, 'Actif', is_validate2=True, is_validate3=True)
     c = _client_sans_exception()
     c.force_login(visiteur)
-    r = c.post(reverse('delete-membre', args=[actif.id]))
+    r = c.post(reverse('delete-membre', args=[actif.id]), {'action': 'demander', 'motif': 'x'})
     corps = r.content.decode()
     assert r.status_code == 403 and 'Traceback' not in corps and '403' in corps
 

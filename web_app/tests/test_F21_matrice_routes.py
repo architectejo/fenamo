@@ -76,7 +76,7 @@ ROUTES = [
     ('edit-moto', 'get', lambda a: {'id': a['moto'].id}, None, S(200, p1=403, **VISIBLES)),
     ('edit-moto', 'post', lambda a: {'id': a['moto'].id}, ENGIN, S(200, p1=403, **VISIBLES)),
     ('delete-moto', 'post', lambda a: {'id': a['moto'].id}, None, S(302, p1=403, **VISIBLES)),
-    ('moto-attribution', 'post', M, {'numero': '001PF'}, S(302, **VISIBLES)),
+    ('moto-attribution', 'post', M, {'numero': '001PF'}, S(302, p1=403, **VISIBLES)),  # agent seul : refusé après V1
     ('add-membre', 'get', lambda a: {'id': a['association'].id}, None, S(200, nu=404, p4=404, ed=404)),
     ('add-membre', 'get', lambda a: {'id': a['autre'].id}, None, S(404, p5=200, su=200)),
     ('add-fenamo-membre', 'get', {}, None, S(403, p5=200, su=200)),
@@ -157,7 +157,7 @@ def test_F21_privilege4_cumule_est_en_lecture_seule_sur_toutes_les_ecritures(cli
         ('post', reverse('membre-view', kwargs={'id': m}), {'modifier': '1'}),
         ('post', reverse('membre-view', kwargs={'id': m}), {'privilege': '1'}),
         ('post', reverse('validate', kwargs={'id': m}), {}),
-        ('post', reverse('delete-membre', kwargs={'id': m}), {}),
+        ('post', reverse('delete-membre', kwargs={'id': m}), {'action': 'demander', 'motif': 'x'}),
         ('post', reverse('structure-attribution', kwargs={'idM': m, 'id': a}), {}),
         ('post', reverse('antenne-attribution', kwargs={'idM': m, 'id': acteurs['antenne'].id}), {}),
         ('post', reverse('ville-attribution', kwargs={'idM': m, 'id': acteurs['ville'].id}), {}),

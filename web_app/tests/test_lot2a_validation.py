@@ -92,6 +92,8 @@ def test_F01_route_post_seulement_fonctionne_avec_csrf(jeu, nom):
     donnees = {'csrfmiddlewaretoken': jeton}
     if nom == 'moto-attribution':
         donnees['numero'] = jeu['moto'].numero
+    if nom == 'delete-membre':
+        donnees.update({'action': 'executer', 'motif': 'Test CSRF'})
     r = c.post(_cible(jeu, nom), donnees)
     assert r.status_code in (200, 302), (nom, r.status_code)
 

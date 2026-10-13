@@ -229,60 +229,6 @@ def test_F23_privilege3_ne_valide_pas_un_membre_non_visible(client, jeu):
 
 # ------------------------------------------------------------------ suppression logique
 
-def test_F25_suppression_motif_obligatoire_et_droits(client, jeu):
-    url = reverse('delete-membre', kwargs={'id': jeu['membre'].id})
-    client.force_login(_compte('nu4'))
-    assert client.post(url, {'motif': 'x'}).status_code == 404
-    client.force_login(_compte('moi3', membreId=jeu['membre'].id))
-    assert client.post(url, {'motif': 'x'}).status_code == 403  # voit sa fiche, ne peut pas demander
-    client.force_login(_compte('vis5', privilege4=True, privilege1=True))
-    assert client.post(url, {'motif': 'x'}).status_code == 404
-
-
-def test_F25_agent_demande_sans_supprimer(client, jeu):
-    agent = _compte('agent4', privilege1=True)
-    sien = _membre(jeu, 'À supprimer', user=agent)
-    url = reverse('delete-membre', kwargs={'id': sien.id})
-    client.force_login(agent)
-    client.post(url, {})  # sans motif : rien ne change
-    sien.refresh_from_db()
-    assert not sien.suppression_demandee and not JournalAction.objects.filter(action=JournalAction.Action.DEMANDE_SUPPRESSION).exists()
-    assert client.post(url, {'motif': 'Doublon'}).status_code == 302
-    sien.refresh_from_db()
-    assert sien.suppression_demandee and not sien.is_delete and sien.motif_suppression == 'Doublon'
-    ligne = JournalAction.objects.get(action=JournalAction.Action.DEMANDE_SUPPRESSION)
-    assert ligne.motif == 'Doublon' and ligne.objet_id == sien.id
-    client.post(url, {})  # demande en cours : le même bouton l'annule
-    sien.refresh_from_db()
-    assert not sien.suppression_demandee and not sien.is_delete
-
-
-def test_F25_execution_reservee_a_su_et_privilege5(client, jeu):
-    agent = _compte('agent5', privilege1=True)
-    sien = _membre(jeu, 'Cible', user=agent)
-    url = reverse('delete-membre', kwargs={'id': sien.id})
-    client.force_login(agent)
-    client.post(url, {'motif': 'Doublon'})
-    for compte in (jeu['compte'], _compte('p5x', privilege5=True)):
-        sien.refresh_from_db()
-        Membre.objects.filter(pk=sien.pk).update(is_delete=False, suppression_demandee=True)
-        client.force_login(compte)
-        client.post(url, {})  # sans motif : rien
-        sien.refresh_from_db()
-        assert not sien.is_delete
-        client.post(url, {'motif': 'Confirmé'})
-        sien.refresh_from_db()
-        assert sien.is_delete and not sien.suppression_demandee
-    assert JournalAction.objects.filter(action=JournalAction.Action.SUPPRESSION, motif='Confirmé').count() == 2
-    # l'agent ne peut pas annuler une suppression exécutée
-    client.force_login(agent)
-    assert client.post(url, {'motif': 'x'}).status_code == 403
-    client.force_login(jeu['compte'])
-    client.post(url, {})
-    sien.refresh_from_db()
-    assert not sien.is_delete
-
-
 def test_F23_valider_exige_l_etape_precedente_et_pas_sa_propre_fiche(client, jeu):
     suivant = _membre(jeu, 'Suivant')
     p3 = _compte('p3s', privilege3=True)

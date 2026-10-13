@@ -20,6 +20,7 @@ membre.html / _fiche_entete.html) :
 Ambiguïtés, appliquées dans le sens le plus restrictif et à confirmer par la FENAMO : voir le rapport du lot.
 """
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -170,12 +171,24 @@ def etapes_a_valider(user, membre):
 
 # ---------------------------------------------------------------- accès par identifiant (404 hors périmètre, 403 sans droit)
 
-def membre_pour(user, id, droit=None, avec_supprimes=False):
-    """Membre `id` visible par `user` (404 sinon) ; 403 si `droit` (clé de `droits_membre`) n'est pas accordé."""
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=avec_supprimes), id=id)
-    if droit and not droits_membre(user, membre)[droit]:
+def membre_et_droits(user, id, droit=None, supprimes_visibles=False):
+    """(membre, droits) : membre `id` visible par `user` (404 sinon) et ses droits ; 403 si `droit` manque.
+
+    Un membre supprimé logiquement n'est visible que si `supprimes_visibles` ET si `user` peut le restaurer
+    (``peut_restaurer``) : pour tout autre compte, agent compris, il est introuvable (404).
+    """
+    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=supprimes_visibles), id=id)
+    droits = droits_membre(user, membre)
+    if membre.is_delete and not droits['peut_restaurer']:
+        raise Http404
+    if droit and not droits[droit]:
         raise PermissionDenied
-    return membre
+    return membre, droits
+
+
+def membre_pour(user, id, droit=None, supprimes_visibles=False):
+    """Membre `id` visible par `user` (404 sinon) ; 403 si `droit` (clé de `droits_membre`) n'est pas accordé."""
+    return membre_et_droits(user, id, droit, supprimes_visibles)[0]
 
 
 def engins_visibles(user):

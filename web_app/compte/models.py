@@ -34,6 +34,7 @@ class JournalAction(models.Model):
         VALIDATION = 'validation', _('Validation')
         RENVOI = 'renvoi', _('Renvoi au niveau inférieur')
         DEMANDE_SUPPRESSION = 'demande_suppression', _('Demande de suppression')
+        ANNULATION_DEMANDE_SUPPRESSION = 'annulation_demande_suppression', _('Annulation de demande de suppression')
         SUPPRESSION = 'suppression', _('Suppression logique')
         RESTAURATION = 'restauration', _('Annulation de suppression')
         MODIFICATION = 'modification', _('Modification')

@@ -8,8 +8,9 @@ from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
 from coptapp.services.actions import (
     changer_suppression, drapeaux_validation, journaliser_validation, rattacher, traiter_suppression_membre,
+    ACTIONS_SUPPRESSION, EtatIncoherent,
 )
-from django.http import Http404
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
@@ -19,7 +20,7 @@ from coptapp.validators import erreur_image
 from compte.permissions import editeur_requis, referentiel_ecriture_requis
 from coptapp.services.droits_provisoires import (
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
-    etapes_a_valider, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
+    etapes_a_valider, membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
 from coptapp.services.historique import historique_objet
 from coptapp.services.membres import (
@@ -47,22 +48,26 @@ def provinceSelector():
 
 @require_POST
 def demandeSuppression(request, id):
-    """Demande de suppression logique d'un membre, exécution ou annulation (F-25). Motif obligatoire (champ ``motif``).
+    """Suppression logique d'un membre (F-25), par action explicite (champ ``action``) et motif (champ ``motif``).
 
-    SU et privilege5 exécutent la suppression (ou la restaurent) ; les autres (agent, validateurs) déposent une
-    demande, ou l'annulent. 404 hors périmètre (un membre déjà supprimé n'est visible que de qui peut demander la
-    suppression), 403 sans droit. Sans motif : rien ne change, un message l'indique.
+    ``action`` : ``demander`` (dépose une demande), ``annuler`` (annule la demande en cours), ``executer`` (SU et
+    privilege5 : suppression logique), ``restaurer`` (SU et privilege5 : annule une suppression). Motif obligatoire
+    sauf pour ``annuler`` (500 caractères au plus). 400 si l'action manque ou est inconnue ; 404 hors périmètre (un
+    membre supprimé n'est visible que de qui peut le restaurer) ; 403 sans droit ; 409 si l'action ne correspond pas
+    à l'état courant du membre (déjà supprimé, demande déjà faite…) ; sinon message et retour à la fiche.
     """
     user = request.user
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=True), id=id)
-    droits = droits_membre(user, membre)
-    if membre.is_delete and not droits['peut_demander_suppression']:
-        raise Http404  # supprimé : hors périmètre pour qui ne peut pas l'annuler
-    if not droits['peut_demander_suppression']:
-        raise PermissionDenied
-    resultat = traiter_suppression_membre(user, membre, request.POST.get('motif'))
+    action = request.POST.get('action')
+    if action not in ACTIONS_SUPPRESSION:
+        return HttpResponseBadRequest(_("Action de suppression manquante ou inconnue."))
+    membre = membre_pour(user, id, 'peut_demander_suppression', supprimes_visibles=True)
+    try:
+        resultat = traiter_suppression_membre(user, membre, action, request.POST.get('motif'))
+    except EtatIncoherent:
+        return HttpResponse(_("L'état du membre a changé : rechargez la fiche."), status=409)
     messages_resultat = {
         'motif_requis': (contrib_messages.error, _("Indiquez le motif de la suppression.")),
+        'motif_trop_long': (contrib_messages.error, _("Le motif est limité à 500 caractères.")),
         'supprime': (contrib_messages.success, _("Membre supprimé.")),
         'restaure': (contrib_messages.success, _("Suppression annulée.")),
         'demande': (contrib_messages.success, _("Demande de suppression envoyée.")),
@@ -70,7 +75,7 @@ def demandeSuppression(request, id):
     }
     ajouter, texte = messages_resultat[resultat]
     ajouter(request, texte)
-    if resultat != 'motif_requis':
+    if resultat not in ('motif_requis', 'motif_trop_long'):
         notify(user=user, membre=membre, titre=str(texte))
     return redirect("membre-view", id=id)
 
@@ -743,10 +748,7 @@ def membre_view(request, id):
     peut_demander_modification).
     """
     user = request.user
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=True), id=id)
-    droits = droits_membre(user, membre)
-    if membre.is_delete and not droits['peut_demander_suppression']:
-        raise Http404  # un membre supprimé n'est visible que de qui peut annuler la suppression
+    membre, droits = membre_et_droits(user, id, supprimes_visibles=True)  # supprimé : visible de qui peut le restaurer
 
     structure = AssociationMembre.objects.filter(users=user).first()
     verify = User.objects.filter(membreId=id)

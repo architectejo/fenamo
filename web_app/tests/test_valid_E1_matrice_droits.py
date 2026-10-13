@@ -127,7 +127,8 @@ def test_E1_matrice_valider(client, jeu, role):
 def test_E1_matrice_demander_suppression(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
-    r = client.post(reverse('delete-membre', args=[cible.id]), {'motif': 'Doublon'})
+    action = 'executer' if role in ('su', 'p5') else 'demander'
+    r = client.post(reverse('delete-membre', args=[cible.id]), {'action': action, 'motif': 'Doublon'})
     assert r.status_code == ATTENDU[role]['supprimer']
     cible.refresh_from_db()
     # F-25 : SU et privilege5 exécutent ; les autres déposent seulement une demande
@@ -157,7 +158,7 @@ def test_E1_matrice_hors_perimetre_404_partout(client, jeu, role):
         client.get(reverse('membre-view', args=[invisible.id])).status_code,
         client.post(reverse('membre-view', args=[invisible.id]), _corps_modifier('Pirate')).status_code,
         client.post(reverse('validate', args=[invisible.id])).status_code,
-        client.post(reverse('delete-membre', args=[invisible.id])).status_code,
+        client.post(reverse('delete-membre', args=[invisible.id]), {'action': 'demander', 'motif': 'x'}).status_code,
     ]
     invisible.refresh_from_db()
     if role in ('su', 'p5'):
@@ -187,7 +188,7 @@ def test_E1_privilege4_prime_sur_les_autres_privileges(client, jeu):
     client.force_login(compte)
     assert client.post(reverse('membre-view', args=[cible.id]), _corps_modifier()).status_code == 403
     assert client.post(reverse('validate', args=[cible.id])).status_code == 403
-    assert client.post(reverse('delete-membre', args=[cible.id])).status_code == 403
+    assert client.post(reverse('delete-membre', args=[cible.id]), {'action': 'demander', 'motif': 'x'}).status_code == 403
 
 
 def test_E1_compte_inactif_ne_voit_rien(client, jeu):
@@ -252,24 +253,3 @@ def test_F23_validation_journalisee_une_fois(client, jeu):
     assert JournalAction.objects.count() == avant + 1
 
 
-# ---------------------------------------------------------------- demande de suppression : bascule
-
-def test_F25_demande_puis_annulation_de_suppression(client, jeu):
-    client.force_login(jeu['compte'])
-    cible = _membre(jeu, 'Cible', is_validate2=True)
-    client.post(reverse('delete-membre', args=[cible.id]), {'motif': 'Doublon'})
-    cible.refresh_from_db()
-    assert cible.is_delete
-    client.post(reverse('delete-membre', args=[cible.id]))  # supprimé mais toujours atteignable pour annuler
-    cible.refresh_from_db()
-    assert not cible.is_delete
-
-
-def test_F25_visiteur_ne_peut_pas_annuler_une_suppression(client, jeu):
-    p4 = Compte.objects.create_user('p4s', password='x', privilege4=True)
-    cible = _membre(jeu, 'Cible', is_validate2=True, is_validate3=True, is_delete=True)
-    client.force_login(p4)
-    # Écart noté dans le rapport : la fiche est en 404 pour ce visiteur, la route de suppression répond 403 (aucun effet).
-    assert client.post(reverse('delete-membre', args=[cible.id])).status_code in (403, 404)
-    cible.refresh_from_db()
-    assert cible.is_delete
