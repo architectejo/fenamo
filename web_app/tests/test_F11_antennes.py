@@ -53,9 +53,9 @@ def test_F11_suppression_de_la_ville_ou_de_l_antenne_ne_supprime_pas_les_membres
 # ---------------------------------------------------------------- service
 
 def test_F11_coordination_par_code(db):
-    p = Province.objects.create(nom='Kongo-Central', code='KC')
-    assert coordination_par_code(' kc ') == p
-    assert coordination_par_code('ZZ') is None and coordination_par_code('') is None and coordination_par_code(None) is None
+    p = Province.objects.create(nom='Fictive', code='ZZ1')
+    assert coordination_par_code(' zz1 ') == p
+    assert coordination_par_code('ZZ9') is None and coordination_par_code('') is None and coordination_par_code(None) is None
 
 
 def test_F11_antenne_depuis_ville_lecture_et_creation(jeu):

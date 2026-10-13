@@ -93,8 +93,8 @@ VERIFIER = """
 """
 
 ATTENDU = {
-    'comptes': 1, 'membres': 3, 'motos': 1, 'familles': 1, 'notifications': 1, 'associations': 1, 'antennes': 1,
-    'provinces': 1, 'villes': 1, 'telephone_un': '+243000000001', 'supprime_deux': True,
+    'comptes': 1, 'membres': 3, 'motos': 1, 'familles': 1, 'notifications': 1, 'associations': 1, 'antennes': 2,
+    'provinces': 28, 'villes': 1, 'telephone_un': '+243000000001', 'supprime_deux': True,
     'valides_trois': [True, True], 'fiche_trois': 'fiche_id/ancien.pdf', 'demandes': 0, 'motifs_non_vides': 0,
     'auteurs_demande': 0, 'asso_users': 1,
 }

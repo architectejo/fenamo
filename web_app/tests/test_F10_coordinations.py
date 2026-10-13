@@ -32,18 +32,19 @@ def test_F10_plusieurs_coordinations_sans_code_permises(db):
 
 
 def test_F10_code_normalise_en_majuscules_sans_espaces(db):
-    p = Province.objects.create(nom='Kongo-Central', code=' kc ')
+    p = Province.objects.create(nom='Fictive', code=' zz ')
     p.refresh_from_db()
-    assert p.code == 'KC'
+    assert p.code == 'ZZ'
     with pytest.raises(IntegrityError), transaction.atomic():
-        Province.objects.create(nom='Doublon', code='kc')
+        Province.objects.create(nom='Doublon', code='zz')
 
 
 def test_F10_ordre_d_affichage_puis_nom(db):
     Province.objects.create(nom='Zeta', ordre=1)
     Province.objects.create(nom='Alpha', ordre=2)
     Province.objects.create(nom='Beta', ordre=2)
-    assert [p.nom for p in Province.objects.all()] == ['Zeta', 'Alpha', 'Beta']
+    # les 27 coordinations préchargées (0057) ont leur propre ordre : on ne compare que les trois créées ici
+    assert [p.nom for p in Province.objects.filter(nom__in=['Zeta', 'Alpha', 'Beta'])] == ['Zeta', 'Alpha', 'Beta']
 
 
 def test_F10_code_fige_apres_un_engin_de_la_coordination(jeu):
