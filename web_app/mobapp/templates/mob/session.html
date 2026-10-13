@@ -1,103 +1,32 @@
-{% extends 'base-site.html' %}
-{% load static %}
-
-{% block 'title' %}Accueil{% endblock 'title' %}
-
-{% block bodysite %}
-
-{% include './header.html' %}
-
-<!-- Back to top button -->
-<div class="back-to-top"></div>
-
-<div class="page-section bg-light">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-
-                <div class="row">
-
-                    <div class="col-12 py-3 wow zoomIn m-0">
-                        <div class="card-doctor">
-                            <div class="header">
-                                {% if membre.photo %}
-                                <img src="{{membre.photo.url}}" alt="">
-                                {% else %}
-                                <img src="../assets/img/doctors/doctor_2.jpg" alt="">
-                                {% endif %}
-                                <div class="meta">
-                                    <a href="tel:{{membre.telephone}}"><span class="mai-call"></span></a>
-                                    <a href="#"><span class="mai-logo-whatsapp"></span></a>
-                                </div>
-                            </div>
-                            <div class="body">
-                                <p class="text-xl mb-0">{{membre.nom}}</p>
-                                <span class="text-sm text-grey">[{{membre.qualite}}]</span><br>
-                                <span class="text-sm text-grey">IDF: {{membre.idf}}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 py-3 wow zoomIn m-0">
-                        <div class="card">
-                            <div class="body">
-                                {% if message %}
-                                <p class="text-xl mb-0 {{classe}}">
-                                    <strong>{{message}}</strong>
-                                </p>
-                                {% else %}
-                                <p class="text-xl mb-0 text-center">
-                                    <strong>AJOUTER UNE MOTO</strong>
-                                </p>
-                                {% endif %}
-                            </div>
-                            <div class="body text-center">
-                                <form action="" method="post" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{form.as_p}}
-                                    <button class="m-1 btn btn-primary">Ajouter</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="col-12 py-3 wow zoomIn m-0">
-                        <div class="card">
-                            <div class="body">
-                                <p class="text-xl mb-0 text-center">
-                                    <strong>MES MOTOS</strong>
-                                </p>
-                            </div>
-                            {% for moto in motos %}
-                            <div class="body">
-                                <div class="row">
-                                    <div class="col-4">
-                                        {% if moto.photo %}
-                                        <img style="width: 80px;" src="{{moto.photo.url}}" alt="">
-                                        {% else %}
-                                        <img style="width: 80px;" src="{% static 'img/logo-48.webp' %}" alt="">
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-8">
-                                        <h3>Numéro: {{moto.numero}}</h3>
-                                        <p class="text-xl mb-0">Plaque: {{moto.num_plaque}}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    </div> <!-- .container -->
-</div> <!-- .page-section -->
-
-
-{% comment %}
-{% include './footer.html' %}
-{% endcomment %}
-{% endblock bodysite %}
+{% extends 'mob/base-mob.html' %}
+{% load i18n static %}
+{% block titre %}{% translate "Mon espace" %}{% endblock %}
+{% block corps %}
+{% include "mob/_membre.html" %}
+<section class="panneau u-mt-4">
+  <div class="panneau-tete"><h2>{% translate "Ajouter un engin" %}</h2></div>
+  <div class="panneau-corps">
+    <div class="u-mb-4">{% include "mob/_message.html" %}</div>
+    <form class="formulaire" method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+      <button class="bouton bouton--principal bouton--bloc" type="submit"><span class="roue" aria-hidden="true"></span><span>{% translate "Ajouter l'engin" %}</span></button>
+    </form>
+  </div>
+</section>
+<section class="panneau u-mt-4">
+  <div class="panneau-tete"><h2>{% translate "Mes engins" %}</h2></div>
+  <div class="panneau-corps pile">
+    {% for moto in motos %}
+    <div class="cellule-personne">
+      {% if moto.photo %}<span class="avatar avatar--grand"><img src="{{ moto.photo.url }}" alt="" width="88" height="88" loading="lazy"></span>
+      {% else %}<span class="avatar avatar--grand" aria-hidden="true">{% include "components/_icone.html" with nom="motorbike" classe="ic--grande" %}</span>{% endif %}
+      <div><span class="plaque" aria-label="{% blocktranslate with n=moto.numero %}Engin n° {{ n }}{% endblocktranslate %}"><span class="plaque-numero">{{ moto.numero }}</span></span>
+        <p class="u-mb-0 u-mt-2">{% translate "Plaque" %} <span class="ident">{{ moto.num_plaque|default:"—" }}</span></p></div>
+    </div>
+    {% empty %}
+    <p class="doux u-mb-0">{% translate "Aucun engin enregistré." %}</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

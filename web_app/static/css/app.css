@@ -794,6 +794,14 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .liste-nombre { margin-left: auto; }
 .a-traiter h2 { font-size: var(--t-4); margin-top: var(--e-2); }
 
+/* Espace mobile du membre (pages /mob/ : une colonne, gros boutons) */
+.mob { max-width: 520px; margin: 0 auto; padding: var(--e-4) var(--e-4) var(--e-8); }
+.mob-tete { display: flex; align-items: center; gap: var(--e-3); margin-bottom: var(--e-6); }
+.mob-membre { display: flex; align-items: center; gap: var(--e-4); }
+.mob .bouton, .mob form .bouton { min-height: var(--cible-confort); }
+/* Champ piège antirobot : hors écran et hors navigation, jamais display:none seul */
+.piege { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
 /* =========================================================
    17. Animations (toutes neutralisées par prefers-reduced-motion via les jetons de durée)
    ========================================================= */

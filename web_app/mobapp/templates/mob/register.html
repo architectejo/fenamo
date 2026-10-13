@@ -1,30 +1,16 @@
-{% extends 'base-site.html' %}
-{% load static %}
-
-{% block 'title' %}Accueil{% endblock 'title' %}
-
-{% block bodysite %}
-
-{% include './header.html' %}
-
-
-<div class="page-section">
-    <div class="container">
-        <h1 class="text-center wow fadeInUp" id="contact">{{title}}</h1>
-        <p class="{{classe}}">{{message}}</p>
-
-        <form class="main-form" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{form.as_p}}
-            <div class="text-center">
-                <button name="envoyer" value="envoyer"
-                    class="btn btn-primary mt-3 wow zoomIn w-50">Inscription</button><br>
-                <a href="" class="btn btn-info mt-3 wow zoomIn w-50">S'Authentifier</a>
-            </div>
-        </form>
-    </div>
-</div> <!-- .page-section -->
-{% comment %}
-{% include './footer.html' %}
-{% endcomment %}
-{% endblock bodysite %}
+{% extends 'mob/base-mob.html' %}
+{% load i18n %}
+{% block titre %}{% translate "Inscription" %}{% endblock %}
+{% block corps %}
+<h1 class="u-t-5">{{ title }}</h1>
+<div class="u-mt-5">{% include "mob/_message.html" %}</div>
+<form class="formulaire" method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+  {% for champ in form.visible_fields %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+  {# Champ piège : visible pour un robot, hors écran et hors navigation pour une personne (jamais display:none seul) #}
+  <div class="piege" aria-hidden="true"><label for="piege">{% translate "Ne pas remplir" %}</label><input type="text" id="piege" name="piege" tabindex="-1" autocomplete="off"></div>
+  <button name="envoyer" value="envoyer" class="bouton bouton--principal bouton--bloc" type="submit"><span class="roue" aria-hidden="true"></span><span>{% translate "S'inscrire" %}</span></button>
+  <a href="{% url 'home-mob' %}" class="bouton bouton--bloc">{% translate "J'ai déjà un identifiant" %}</a>
+</form>
+{% endblock %}
