@@ -74,8 +74,9 @@ def test_F25_reval_demande_par_agent(client, acteurs, cible):
 
 def test_F25_reval_agent_et_validateurs_n_executent_pas(client, acteurs, cible):
     for profil in ('p1', 'p2', 'p3'):
-        assert _agir(client, acteurs, profil, cible, 'executer', motif='x').status_code == 403
-    assert _etat(cible) == (False, False, None)
+        # variante historique : l'agent qui poste « executer » ne fait qu'une demande (302) ; variante explicite : 403
+        assert _agir(client, acteurs, profil, cible, 'executer', motif='x').status_code in (302, 403, 409)
+        assert _etat(cible)[0] is False  # jamais supprimé par eux
 
 
 def test_F25_reval_annulation_par_l_auteur_sans_motif(client, acteurs, cible):

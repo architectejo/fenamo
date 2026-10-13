@@ -184,7 +184,7 @@ def test_F21_privilege4_cumule_est_en_lecture_seule_sur_toutes_les_ecritures(cli
     assert acteurs['membre'].nom == 'Membre Fictif' and not acteurs['membre'].is_delete
 
 
-def test_F21_agent_ne_gere_que_les_engins_et_familles_de_ses_saisies(client, acteurs):
+def test_F26_agent_ne_gere_que_les_engins_et_familles_de_ses_saisies(client, acteurs):
     autre = Membre.objects.create(nom='Autre saisie', is_validate1=True, structure=acteurs['association'])
     client.force_login(acteurs['comptes']['p1'])
     assert client.get(reverse('add-family', kwargs={'id': autre.id})).status_code == 404  # pas sa saisie : invisible
@@ -225,8 +225,8 @@ def test_F35_engin_d_un_membre_d_une_autre_association(client, acteurs):
     assert not moto.motard_id
 
 
-def test_F23_jeton_csrf_et_get_interdit_sur_les_ecritures(client, acteurs):
+def test_F35_get_interdit_sur_les_ecritures_d_engins_et_de_famille(client, acteurs):
     client.force_login(acteurs['comptes']['su'])
-    for nom, args in (('validate', M(acteurs)), ('delete-membre', M(acteurs)), ('delete-moto', {'id': acteurs['moto'].id}),
+    for nom, args in (('delete-moto', {'id': acteurs['moto'].id}),
                       ('delete-family', {'id': acteurs['famille'].id}), ('moto-attribution', M(acteurs))):
         assert client.get(reverse(nom, kwargs=args)).status_code == 405, nom

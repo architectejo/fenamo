@@ -32,7 +32,7 @@ def _fiche(client, role, jeu, **etat):
 
 @pytest.mark.parametrize('role', ROLES)
 @pytest.mark.parametrize('etat', [{}, {'suppression_demandee': True, 'motif_suppression': 'Doublon'}])
-def test_boutons_de_suppression_suivent_les_droits(client, jeu, role, etat):
+def test_F25_boutons_de_suppression_suivent_les_droits(client, jeu, role, etat):
     r, cible = _fiche(client, role, jeu, **etat)
     if r.status_code != 200:
         return
@@ -43,21 +43,21 @@ def test_boutons_de_suppression_suivent_les_droits(client, jeu, role, etat):
         assert 'Suppression demandée' in html and 'Doublon' in html
 
 
-def test_restaurer_sur_membre_supprime(client, jeu):
+def test_F25_restaurer_sur_membre_supprime(client, jeu):
     r, cible = _fiche(client, 'su', jeu, is_delete=True)
     html = r.content.decode()
     assert r.context['peut_restaurer'] and '<span>Restaurer</span>' in html
     assert '<span>Supprimer le membre</span>' not in html
 
 
-def test_suppression_executee_demande_un_motif_obligatoire(client, jeu):
+def test_F25_suppression_executee_demande_un_motif_obligatoire(client, jeu):
     r, _ = _fiche(client, 'su', jeu)
     html = r.content.decode()
     assert 'name="motif"' in html and 'required' in html and 'data-motif-requis' in html
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_actions_engins_et_famille_suivent_les_droits(client, jeu, role):
+def test_F35_actions_engins_et_famille_suivent_les_droits(client, jeu, role):
     r, _ = _fiche(client, role, jeu)
     if r.status_code != 200:
         return
@@ -68,7 +68,7 @@ def test_actions_engins_et_famille_suivent_les_droits(client, jeu, role):
         assert bool(re.search(motif, html)) == bool(ctx[droit]), (role, droit)
 
 
-def test_valider_par_ligne_dans_la_liste(client, jeu):
+def test_F23_valider_par_ligne_dans_la_liste(client, jeu):
     compte, cible = _acteur_et_cible('p2', jeu)
     client.force_login(compte)
     r = client.get(reverse('liste-membre'))
@@ -77,7 +77,7 @@ def test_valider_par_ligne_dans_la_liste(client, jeu):
     assert r.content.decode().count('Valider le membre') == attendus
 
 
-def test_aucun_test_de_privilege_dans_les_gabarits():
+def test_F23_aucun_test_de_privilege_dans_les_gabarits():
     racine = Path(settings.BASE_DIR)
     fautifs = []
     for f in racine.rglob('*.html'):

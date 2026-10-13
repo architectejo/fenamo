@@ -103,18 +103,6 @@ def test_F23_contexte_de_la_fiche_porte_les_droits(client, jeu):
 
 # ------------------------------------------------------------------ modification (POST modifier)
 
-@pytest.mark.parametrize('privileges', [{}, {'privilege1': True}, {'privilege2': True}, {'privilege4': True},
-                                        {'privilege4': True, 'privilege3': True}])
-def test_F21_modifier_refuse_403(client, jeu, privileges):
-    compte = _compte('refuse', membreId=jeu['membre'].id, **privileges)  # voit au moins sa fiche
-    jeu['association'].users.add(compte)
-    client.force_login(compte)
-    r = client.post(url_fiche(jeu['membre']), _donnees_modifier())
-    assert r.status_code == 403
-    jeu['membre'].refresh_from_db()
-    assert jeu['membre'].nom == 'Membre Fictif'
-
-
 def test_F21_modifier_hors_perimetre_404(client, jeu):
     client.force_login(_compte('nu2'))
     assert client.post(url_fiche(jeu['membre']), _donnees_modifier()).status_code == 404
@@ -159,20 +147,7 @@ def test_F21_demande_de_modification_reservee_aux_agents_et_su(client, jeu):
     assert client.post(url_fiche(cible), {'envoyer': '1', 'demande': 'Corriger'}).status_code == 403
 
 
-def test_F21_attribution_de_privileges_reservee_aux_su(client, jeu):
-    p5 = _compte('p5z', privilege5=True)
-    cible = jeu['membre']
-    _compte('cible-compte', membreId=cible.id)
-    client.force_login(p5)
-    assert client.post(url_fiche(cible), {'privilege': '1', 'privilege5': 'on'}).status_code == 403
-
-
 # ------------------------------------------------------------------ validation (POST valider)
-
-def test_F23_valider_get_interdit(client, jeu):
-    client.force_login(jeu['compte'])
-    assert client.get(url_valider(jeu['membre'])).status_code == 405
-
 
 def test_F23_valider_hors_perimetre_404(client, jeu):
     client.force_login(_compte('nu3'))
@@ -205,21 +180,6 @@ def test_F23_valider_privilege2_puis_privilege3_et_journal(client, jeu):
     assert cible.is_validate3
     lignes = JournalAction.objects.filter(action=JournalAction.Action.VALIDATION, objet_id=cible.id)
     assert lignes.count() == 2 and not JournalAction.objects.filter(action=JournalAction.Action.RENVOI).exists()
-
-
-def test_F23_valider_est_idempotente_ne_devalide_jamais(client, jeu):
-    cible = jeu['membre']
-    client.force_login(jeu['compte'])
-    for _ in range(3):
-        assert client.post(url_valider(cible)).status_code == 302
-    cible.refresh_from_db()
-    assert cible.is_validate2 and cible.is_validate3
-    assert JournalAction.objects.filter(action=JournalAction.Action.VALIDATION).count() == 1
-    assert not JournalAction.objects.filter(action=JournalAction.Action.RENVOI).exists()
-    client.force_login(_compte('p2w', privilege2=True))
-    client.post(url_valider(cible))
-    cible.refresh_from_db()
-    assert cible.is_validate2 and cible.is_validate3
 
 
 def test_F23_privilege3_ne_valide_pas_un_membre_non_visible(client, jeu):

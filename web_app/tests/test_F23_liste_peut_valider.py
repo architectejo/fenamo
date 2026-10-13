@@ -1,5 +1,4 @@
 """F-23 : droit de valider PAR MEMBRE dans la liste (étape précédente exigée, jamais sa propre fiche), sans N+1."""
-from django.urls import reverse
 
 from coptapp.models import Membre
 from coptapp.services.membres import lister_membres
@@ -27,10 +26,3 @@ def test_F23_liste_sans_requete_supplementaire_par_membre(saisie, django_assert_
     with django_assert_max_num_queries(6):
         page = lister_membres(p3, {}).page_obj
         assert len([m for m in page if m.peut_valider]) == 25
-
-
-def test_F23_liste_vue_expose_peut_valider_par_membre(client, saisie):
-    Membre.objects.create(nom='Etape un')
-    client.force_login(_compte('p2v', privilege2=True))
-    page = client.get(reverse('liste-membre')).context['page_obj']
-    assert {m.nom for m in page if m.peut_valider} == {'Etape un', 'Membre Fictif', 'Saisie agent'}

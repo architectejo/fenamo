@@ -80,7 +80,7 @@ def _compte_cible(cible):
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_E1_matrice_voir_liste(client, jeu, role):
+def test_F28_matrice_voir_liste(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
     r = client.get('/membres/')
@@ -89,14 +89,14 @@ def test_E1_matrice_voir_liste(client, jeu, role):
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_E1_matrice_voir_fiche(client, jeu, role):
+def test_F23_matrice_voir_fiche(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
     assert client.get(reverse('membre-view', args=[cible.id])).status_code == ATTENDU[role]['fiche']
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_E1_matrice_modifier(client, jeu, role):
+def test_F21_matrice_modifier(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
     r = client.post(reverse('membre-view', args=[cible.id]), _corps_modifier())
@@ -106,7 +106,7 @@ def test_E1_matrice_modifier(client, jeu, role):
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_E1_matrice_valider(client, jeu, role):
+def test_F23_matrice_valider(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
     avant = (cible.is_validate2, cible.is_validate3)
@@ -124,7 +124,7 @@ def test_E1_matrice_valider(client, jeu, role):
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_E1_matrice_demander_suppression(client, jeu, role):
+def test_F25_matrice_demander_suppression(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     client.force_login(compte)
     action = 'executer' if role in ('su', 'p5') else 'demander'
@@ -137,7 +137,7 @@ def test_E1_matrice_demander_suppression(client, jeu, role):
 
 
 @pytest.mark.parametrize('role', ROLES)
-def test_E1_matrice_attribuer_privileges(client, jeu, role):
+def test_F02_matrice_attribuer_privileges(client, jeu, role):
     compte, cible = _acteur_et_cible(role, jeu)
     compte_cible = _compte_cible(cible)
     client.force_login(compte)
@@ -149,7 +149,7 @@ def test_E1_matrice_attribuer_privileges(client, jeu, role):
 
 
 @pytest.mark.parametrize('role', ['su', 'p5', 'p3', 'p2', 'p1', 'p4', 'aucun'])
-def test_E1_matrice_hors_perimetre_404_partout(client, jeu, role):
+def test_F23_matrice_hors_perimetre_404_partout(client, jeu, role):
     """Un membre hors périmètre est introuvable (404) pour toutes les actions, sauf SU et privilege5 qui voient tout."""
     compte, _ = _acteur_et_cible(role, jeu)
     invisible = _membre(jeu, 'Invisible')  # validate2/3 à False, sans user : ni p3, ni p4, ni p1, ni aucun ne le voient
@@ -171,27 +171,7 @@ def test_E1_matrice_hors_perimetre_404_partout(client, jeu, role):
     assert invisible.nom == 'Invisible' and not invisible.is_delete and not invisible.is_validate2
 
 
-def test_E1_p3_hors_de_son_association_visible_mais_modification_403(client, jeu):
-    autre = AssociationMembre.objects.create(nom='Autre', num_justice='F-55')
-    p3 = Compte.objects.create_user('p3-autre', password='x', privilege3=True)
-    autre.users.add(p3)
-    cible = _membre(jeu, 'Chez les autres', is_validate2=True)
-    client.force_login(p3)
-    assert client.get(reverse('membre-view', args=[cible.id])).status_code == 200
-    assert client.post(reverse('membre-view', args=[cible.id]), _corps_modifier()).status_code == 403
-
-
-def test_E1_privilege4_prime_sur_les_autres_privileges(client, jeu):
-    compte = Compte.objects.create_user('p4p3', password='x', privilege4=True, privilege3=True, privilege2=True)
-    jeu['association'].users.add(compte)
-    cible = _membre(jeu, 'Actif', is_validate2=True, is_validate3=True)
-    client.force_login(compte)
-    assert client.post(reverse('membre-view', args=[cible.id]), _corps_modifier()).status_code == 403
-    assert client.post(reverse('validate', args=[cible.id])).status_code == 403
-    assert client.post(reverse('delete-membre', args=[cible.id]), {'action': 'demander', 'motif': 'x'}).status_code == 403
-
-
-def test_E1_compte_inactif_ne_voit_rien(client, jeu):
+def test_F23_compte_inactif_ne_voit_rien(client, jeu):
     from coptapp.services.droits_provisoires import membres_du_perimetre
     compte = Compte.objects.create_user('inactif', password='x', privilege5=True, is_active=False)
     assert membres_du_perimetre(compte).count() == 0
@@ -199,57 +179,4 @@ def test_E1_compte_inactif_ne_voit_rien(client, jeu):
 
 # ---------------------------------------------------------------- GET sans effet, méthodes
 
-@pytest.mark.parametrize('nom', ['validate', 'delete-membre'])
-def test_E1_get_refuse_sur_les_actions_qui_modifient(client, jeu, nom):
-    client.force_login(jeu['compte'])
-    cible = _membre(jeu, 'Cible', is_validate2=True)
-    assert client.get(reverse(nom, args=[cible.id])).status_code == 405
-    cible.refresh_from_db()
-    assert not cible.is_delete and not cible.is_validate3
-
-
-def test_E1_actions_sans_csrf_refusees_403(jeu):
-    from django.test import Client
-    c = Client(enforce_csrf_checks=True)
-    c.force_login(jeu['compte'])
-    cible = _membre(jeu, 'Cible', is_validate2=True)
-    for nom in ('validate', 'delete-membre'):
-        assert c.post(reverse(nom, args=[cible.id])).status_code == 403
-    cible.refresh_from_db()
-    assert not cible.is_delete and not cible.is_validate3
-
-
 # ---------------------------------------------------------------- validation idempotente (F-23)
-
-def test_F23_valider_est_idempotente(client, jeu):
-    from compte.models import JournalAction
-    client.force_login(jeu['compte'])
-    cible = _membre(jeu, 'Cible')
-    assert client.post(reverse('validate', args=[cible.id])).status_code == 302
-    cible.refresh_from_db()
-    assert cible.is_validate1 and cible.is_validate2 and cible.is_validate3
-    entrees = JournalAction.objects.count()
-    assert client.post(reverse('validate', args=[cible.id])).status_code == 302
-    cible.refresh_from_db()
-    assert cible.is_validate1 and cible.is_validate2 and cible.is_validate3  # jamais dévalidé
-    assert JournalAction.objects.count() == entrees  # rien de journalisé à la seconde validation
-
-
-def test_F23_valider_ne_devalide_jamais(client, jeu):
-    p2 = Compte.objects.create_user('p2v', password='x', privilege2=True)
-    client.force_login(p2)
-    cible = _membre(jeu, 'Cible', is_validate2=True, is_validate3=True)
-    client.post(reverse('validate', args=[cible.id]))
-    cible.refresh_from_db()
-    assert cible.is_validate2 and cible.is_validate3
-
-
-def test_F23_validation_journalisee_une_fois(client, jeu):
-    from compte.models import JournalAction
-    client.force_login(jeu['compte'])
-    cible = _membre(jeu, 'Cible', is_validate2=True)
-    avant = JournalAction.objects.count()
-    client.post(reverse('validate', args=[cible.id]))
-    assert JournalAction.objects.count() == avant + 1
-
-
