@@ -36,7 +36,7 @@ Contexte : membre, user, villes, antennes, structures, age, nbrMoto.
       <div><dt>{% translate "Genre" %}</dt><dd>{{ membre.genre|default:"—" }}</dd></div>
       <div><dt>{% translate "Nationalité" %}</dt><dd>{{ membre.nation|default:"—" }}</dd></div>
       <div><dt>{% translate "État civil" %}</dt><dd>{{ membre.etat_civil|default:"—" }}</dd></div>
-      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.epouse|default:"—" }}</dd></div>
+      <div><dt>{% translate "Époux / épouse" %}</dt><dd>{{ membre.nom_epouse|default:"—" }}</dd></div>
       <div><dt>{% translate "Nom du père" %}</dt><dd>{{ membre.nom_pere|default:"—" }}</dd></div>
       <div><dt>{% translate "Nom de la mère" %}</dt><dd>{{ membre.nom_mere|default:"—" }}</dd></div>
     </dl>
@@ -55,7 +55,7 @@ Contexte : membre, user, villes, antennes, structures, age, nbrMoto.
       <div><dt>{% translate "Fonction" %}</dt><dd>{{ membre.fonction|default:"—" }}</dd></div>
       <div><dt>{% translate "Comité" %}</dt><dd>{{ membre.comite|default:"—" }}</dd></div>
       <div><dt>{% translate "Qualité" %}</dt><dd>{{ membre.qualite|libelle_qualite }}</dd></div>
-      <div><dt>{% translate "Autre association" %}</dt><dd>{{ membre.autre_asbl|default:"—" }}</dd></div>
+      <div><dt>{% translate "Autre association" %}</dt><dd>{{ membre.autre_asb|default:"—" }}</dd></div>
     </dl>
   </div>
 </section>

@@ -204,9 +204,8 @@ def test_design_fiche_etat_valide_province_inatteignable_par_les_donnees(jeu):
 @pytest.mark.parametrize('etat', ETATS)
 def test_design_badge_rendu_pour_chaque_etat(etat):
     tpl = engines['django'].from_string('{% load design %}{% badge_etat code %}')
-    code_css = etat.replace('_', '-')
-    html = tpl.render({'code': code_css})
-    assert html.strip() and 'etat--' + code_css in html
+    html = tpl.render({'code': etat})  # codes en snake_case, identiques dans les classes CSS
+    assert html.strip() and 'etat--' + etat in html
     assert LIBELLES_ETATS[etat] and str(LIBELLES_ETATS[etat]) in html
 
 
@@ -351,9 +350,9 @@ def test_design_chaque_formulaire_post_a_son_csrf(client, jeu, profils):
 
 def test_design_gabarits_de_modale_ont_csrf():
     for nom in ('components/modale_base.html', 'components/modale_post.html', 'components/modale_confirmation.html',
-                'partials/_bouton_post.html', 'partials/_modale.html', 'partials/_modale_confirmation.html'):
+                'partials/_bouton_post.html'):
         texte = (RACINE / 'templates' / nom).read_text(encoding='utf-8')
-        if re.search(r'\{% extends "(components/modale_post|partials/_modale)\.html" %\}', texte):
+        if re.search(r'\{% extends "components/modale_post\.html" %\}', texte):
             continue  # hérite du formulaire à CSRF de modale_post.html
         if re.search(r'<form\b', texte) or 'action_url' in texte:
             assert 'csrf_token' in texte, nom

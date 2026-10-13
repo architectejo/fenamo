@@ -23,7 +23,7 @@
     var li = b.closest('.dossier');
     occuper(b, 700).then(function () {
       var badge = li.querySelector('.etat');
-      badge.className = 'etat etat--valide-province change';
+      badge.className = 'etat etat--valide_province change';
       badge.innerHTML = '<span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i></i></span>Validé province';
       D.retirerDossier(li, 'traite');
       decrementer();
@@ -72,7 +72,7 @@
     vf.addEventListener('click', function () {
       occuper(vf, 700).then(function () {
         var zone = document.querySelector('[data-demo-etat-fiche]');
-        zone.innerHTML = '<span class="etat etat--valide-province change"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i></i></span>Validé province</span>';
+        zone.innerHTML = '<span class="etat etat--valide_province change"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i></i></span>Validé province</span>';
         var c = document.querySelectorAll('[data-demo-circuit] li');
         c[2].className = 'fait'; c[2].querySelector('.quand').textContent = '12/10 · vous'; c[3].className = 'courant';
         var h = document.querySelector('[data-demo-historique]');

@@ -58,18 +58,18 @@
 
   /* ---------- États du circuit (texte / fond / pastilles) ---------- */
   --etat-saisi-fg: #3e4756;           --etat-saisi-bg: #e9e6df;
-  --etat-valide-antenne-fg: #0a4f8f;  --etat-valide-antenne-bg: #e3eef8;
-  --etat-valide-province-fg: #0a4f8f; --etat-valide-province-bg: #cfe2f5;
+  --etat-valide_antenne-fg: #0a4f8f;  --etat-valide_antenne-bg: #e3eef8;
+  --etat-valide_province-fg: #0a4f8f; --etat-valide_province-bg: #cfe2f5;
   --etat-actif-fg: #0b5e33;           --etat-actif-bg: #ddf2e5;
   --etat-renvoye-fg: #a3102a;         --etat-renvoye-bg: #fbe3e6;
-  --etat-a-renouveler-fg: #6b4f00;    --etat-a-renouveler-bg: #ffedb0;
+  --etat-a_renouveler-fg: #6b4f00;    --etat-a_renouveler-bg: #ffedb0;
   --etat-supprime-fg: #4f5868;        --etat-supprime-bg: transparent;
 
   /* Retours de messages (toasts, alertes) */
   --succes-fg: var(--etat-actif-fg);       --succes-bg: var(--etat-actif-bg);
   --danger-fg: var(--etat-renvoye-fg);     --danger-bg: var(--etat-renvoye-bg);
-  --alerte-fg: var(--etat-a-renouveler-fg); --alerte-bg: var(--etat-a-renouveler-bg);
-  --info-fg: var(--etat-valide-antenne-fg); --info-bg: var(--etat-valide-antenne-bg);
+  --alerte-fg: var(--etat-a_renouveler-fg); --alerte-bg: var(--etat-a_renouveler-bg);
+  --info-fg: var(--etat-valide_antenne-fg); --info-bg: var(--etat-valide_antenne-bg);
 
   /* ---------- Typographie ---------- */
   --police-texte: "Atkinson Hyperlegible Next", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
@@ -149,11 +149,11 @@
   --selection: #5c4a00;
   --squelette-reflet: rgba(255, 255, 255, .07);
   --etat-saisi-fg: #c9d0da;           --etat-saisi-bg: #273242;
-  --etat-valide-antenne-fg: #a9d2fa;  --etat-valide-antenne-bg: #14324f;
-  --etat-valide-province-fg: #a9d2fa; --etat-valide-province-bg: #1b4268;
+  --etat-valide_antenne-fg: #a9d2fa;  --etat-valide_antenne-bg: #14324f;
+  --etat-valide_province-fg: #a9d2fa; --etat-valide_province-bg: #1b4268;
   --etat-actif-fg: #8fe3b3;           --etat-actif-bg: #123a27;
   --etat-renvoye-fg: #ffa3af;         --etat-renvoye-bg: #45161f;
-  --etat-a-renouveler-fg: #ffd65c;    --etat-a-renouveler-bg: #3b300b;
+  --etat-a_renouveler-fg: #ffd65c;    --etat-a_renouveler-bg: #3b300b;
   --etat-supprime-fg: #a9b3c1;
   --o-1: 0 1px 2px rgba(0, 0, 0, .4);
   --o-2: 0 8px 24px rgba(0, 0, 0, .45);

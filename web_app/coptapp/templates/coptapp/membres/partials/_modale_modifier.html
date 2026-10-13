@@ -87,7 +87,7 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
   </div>
   <div class="champ">
     <label class="champ-libelle" for="mm-epouse">{% translate "Époux / épouse" %}</label>
-    <input name="epouse"{% invalide 'epouse' %} type="text" id="mm-epouse" value="{% saisie 'epouse' membre.epouse %}">
+    <input name="epouse"{% invalide 'epouse' %} type="text" id="mm-epouse" value="{% saisie 'epouse' membre.nom_epouse %}">
     {% erreur_modifier 'epouse' %}
   </div>
   <div class="champ champ--plein">
@@ -131,7 +131,7 @@ Contexte : membre, request ; envoi par POST ordinaire avec CSRF (post_classique 
   </div>
   <div class="champ">
     <label class="champ-libelle" for="mm-autre">{% translate "Autre association" %}</label>
-    <input name="autre_asbl"{% invalide 'autre_asbl' %} type="text" id="mm-autre" value="{% saisie 'autre_asbl' membre.autre_asbl %}">
+    <input name="autre_asbl"{% invalide 'autre_asbl' %} type="text" id="mm-autre" value="{% saisie 'autre_asbl' membre.autre_asb %}">
     {% erreur_modifier 'autre_asbl' %}
   </div>
   <div class="champ">

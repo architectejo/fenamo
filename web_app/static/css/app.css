@@ -353,11 +353,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .etat-pastilles i { width: 6px; height: 10px; border-radius: 1px; border: 1.5px solid currentColor; transition: background var(--d-long) var(--courbe-sortie); }
 .etat-pastilles i.plein { background: currentColor; }
 .etat--saisi { --etat-fg: var(--etat-saisi-fg); --etat-bg: var(--etat-saisi-bg); }
-.etat--valide-antenne { --etat-fg: var(--etat-valide-antenne-fg); --etat-bg: var(--etat-valide-antenne-bg); }
-.etat--valide-province { --etat-fg: var(--etat-valide-province-fg); --etat-bg: var(--etat-valide-province-bg); }
+.etat--valide_antenne { --etat-fg: var(--etat-valide_antenne-fg); --etat-bg: var(--etat-valide_antenne-bg); }
+.etat--valide_province { --etat-fg: var(--etat-valide_province-fg); --etat-bg: var(--etat-valide_province-bg); }
 .etat--actif { --etat-fg: var(--etat-actif-fg); --etat-bg: var(--etat-actif-bg); }
 .etat--renvoye { --etat-fg: var(--etat-renvoye-fg); --etat-bg: var(--etat-renvoye-bg); }
-.etat--a-renouveler { --etat-fg: var(--etat-a-renouveler-fg); --etat-bg: var(--etat-a-renouveler-bg); }
+.etat--a_renouveler { --etat-fg: var(--etat-a_renouveler-fg); --etat-bg: var(--etat-a_renouveler-bg); }
 .etat--supprime { --etat-fg: var(--etat-supprime-fg); --etat-bg: var(--etat-supprime-bg); border: 1px dashed var(--trait-fort); }
 .etat.change { animation: tampon var(--d-long) var(--courbe-sortie); }
 
@@ -543,7 +543,7 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .bulle--succes > .ic { color: var(--etat-actif-bg); }
 .bulle--danger > .ic { color: var(--etat-renvoye-bg); }
 .bulle--alerte > .ic { color: var(--jaune); }
-.bulle--info > .ic { color: var(--etat-valide-antenne-bg); }
+.bulle--info > .ic { color: var(--etat-valide_antenne-bg); }
 :root[data-theme="sombre"] .bulle--succes > .ic { color: var(--vert); }
 :root[data-theme="sombre"] .bulle--danger > .ic { color: var(--rouge); }
 :root[data-theme="sombre"] .bulle--info > .ic { color: var(--ciel); }
@@ -682,7 +682,7 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .historique .point .ic { width: 15px; height: 15px; }
 .historique .point--vert { background: var(--etat-actif-bg); color: var(--etat-actif-fg); }
 .historique .point--rouge { background: var(--etat-renvoye-bg); color: var(--etat-renvoye-fg); }
-.historique .point--ciel { background: var(--etat-valide-antenne-bg); color: var(--etat-valide-antenne-fg); }
+.historique .point--ciel { background: var(--etat-valide_antenne-bg); color: var(--etat-valide_antenne-fg); }
 .historique p { margin: 0; }
 .historique .apparait { animation: page-entree var(--d-long) var(--courbe-sortie); }
 

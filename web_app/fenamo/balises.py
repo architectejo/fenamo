@@ -31,8 +31,8 @@ def icone(nom, classe=''):
 
 @register.filter
 def etat_membre(objet):
-    """Code d'état (forme des classes CSS, avec tirets) d'un membre ou d'un engin, lu par le service etat_de."""
-    return etat_de(objet).replace('_', '-')
+    """Code d'état (snake_case : saisi, valide_antenne, actif…) d'un membre ou d'un engin, lu par le service etat_de."""
+    return etat_de(objet)
 
 # Qualités enregistrées en majuscules par l'écran hérité : libellés affichés en casse de phrase.
 QUALITES = {
@@ -107,7 +107,7 @@ def palier_5(valeur):
 @register.filter
 def libelle_code_etat(code):
     """Libellé d'un code d'état du service (``valide_antenne``) : « Validé antenne »."""
-    return LIBELLES.get(str(code).replace('-', '_'), code)
+    return LIBELLES.get(code, code)
 
 
 @register.filter
@@ -117,7 +117,7 @@ def veut_fragment(request):
 
 
 # Noms envoyés par la modale « Modifier » -> champs du modèle (voir coptapp.services.membres.ALIAS_POST).
-ALIAS_MODIFIER = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb'}
+ALIAS_MODIFIER = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb', 'epouse': 'nom_epouse'}
 
 
 def _saisie_refusee(context):
@@ -159,4 +159,12 @@ def invalide(context, nom):
     erreurs = context.get('erreurs_modifier') or {}
     if erreurs.get(ALIAS_MODIFIER.get(nom, nom)):
         return format_html(' aria-invalid="true" aria-describedby="mm-{}-erreur"', nom)
+    return ''
+
+
+@register.filter
+def motif_a_reprendre(membre):
+    """Motif proposé à la suppression : celui de la demande en cours ; jamais celui d'une ancienne suppression restaurée."""
+    if getattr(membre, 'suppression_demandee', False) and not getattr(membre, 'is_delete', False):
+        return membre.motif_suppression
     return ''
