@@ -47,7 +47,8 @@ class AssociationMembreIdentifyForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
 
-# Form of membre
+# Formulaires de membre : LISTE BLANCHE de champs (jamais d'exclude : un champ ajouté au modèle ne doit pas devenir
+# modifiable par un POST forgé).
 class MembreForm(forms.ModelForm):
     genre_liste = [('HOMME','HOMME'),('FEMME','FEMME')]
     qualites_liste = [('PROPRIETAIRE','PROPRIETAIRE'),('MOTARD ET PROPRIETAIRE','MOTARD ET PROPRIETAIRE')]
@@ -66,7 +67,37 @@ class MembreForm(forms.ModelForm):
     date_naissance = forms.DateField(widget=forms.DateInput)
     class Meta:
         model = Membre
-        exclude = ['user','structure','province','antenne','idf','password','is_delete','is_validate1','is_validate2','is_validate3','is_membre','is_user','a_propos','autre_asb']
+        fields = (
+            'fiche_id',
+            'ville',
+            'code_parking',
+            'nom',
+            'date_naissance',
+            'lieux_naissance',
+            'genre',
+            'titre',
+            'fonction',
+            'comite',
+            'brevet',
+            'etat_civil',
+            'nom_epouse',
+            'nation',
+            'numero_carte_d_electeur',
+            'numero_carte_de_membre',
+            'nom_pere',
+            'nom_mere',
+            'village',
+            'chefferie',
+            'territoire',
+            'province_origine',
+            'photo',
+            'adresse',
+            'telephone',
+            'mail',
+            'categorie',
+            'permis',
+            'qualite',
+        )
         labels = {
             'nom':"Nom complet",
             'date_naissance':"Date de naissance",
@@ -107,7 +138,37 @@ class MembreFenamoForm(forms.ModelForm):
     date_naissance = forms.DateField(widget=forms.DateInput)
     class Meta:
         model = Membre
-        exclude = ['user','structure','idf','password','ville','antenne','is_delete','is_validate1','is_validate2','is_validate3','is_membre','is_user','a_propos','autre_asb']
+        fields = (
+            'fiche_id',
+            'province',
+            'code_parking',
+            'nom',
+            'date_naissance',
+            'lieux_naissance',
+            'genre',
+            'titre',
+            'fonction',
+            'comite',
+            'brevet',
+            'etat_civil',
+            'nom_epouse',
+            'nation',
+            'numero_carte_d_electeur',
+            'numero_carte_de_membre',
+            'nom_pere',
+            'nom_mere',
+            'village',
+            'chefferie',
+            'territoire',
+            'province_origine',
+            'photo',
+            'adresse',
+            'telephone',
+            'mail',
+            'categorie',
+            'permis',
+            'qualite',
+        )
         labels = {
             'nom':"Nom complet",
             'date_naissance':"Date de naissance",

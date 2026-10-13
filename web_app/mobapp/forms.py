@@ -28,7 +28,36 @@ class MembreFormRegister(forms.ModelForm):
     province = forms.ModelChoiceField(queryset=Province.objects.order_by('nom').exclude(nom=None), label='Province', required=True)
     class Meta:
         model = Membre
-        exclude = ['idf','fiche_id','password','user','antenne','ville','structure','code_parking','is_user','is_delete','is_validate1','is_validate2','is_validate3','is_membre','a_propos','autre_asb']
+        # Liste blanche (jamais d'exclude : formulaire public anonyme)
+        fields = (
+            'province',
+            'nom',
+            'date_naissance',
+            'lieux_naissance',
+            'genre',
+            'titre',
+            'fonction',
+            'comite',
+            'brevet',
+            'etat_civil',
+            'nom_epouse',
+            'nation',
+            'numero_carte_d_electeur',
+            'numero_carte_de_membre',
+            'nom_pere',
+            'nom_mere',
+            'village',
+            'chefferie',
+            'territoire',
+            'province_origine',
+            'photo',
+            'adresse',
+            'telephone',
+            'mail',
+            'categorie',
+            'permis',
+            'qualite',
+        )
         labels = {
             'nom':"Nom complet",
             'date_naissance':"Date de naissance",
