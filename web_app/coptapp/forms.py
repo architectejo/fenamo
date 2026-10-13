@@ -3,12 +3,12 @@ from coptapp.models import *
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-# Formulaires de l association membre
+# Formulaires de l'association membre et de l'antenne : LISTE BLANCHE de champs (jamais d'exclude).
 class AssociationMembreForm(forms.ModelForm):
     ville = forms.ModelChoiceField(queryset=Ville.objects.order_by('nom').exclude(nom=None), label='Antenne', empty_label='Selectionnez une antenne')
     class Meta:
         model = AssociationMembre
-        exclude = ['users','province']
+        fields = ('ville', 'type_de_structure', 'num_justice', 'capture_justice', 'nom', 'nom_responsable', 'sigle', 'logo', 'adresse', 'phone', 'email', 'preuve_de_paiement', 'twitter', 'facebook', 'instagram', 'linkedin')
         labels = {
             'nom':'Dénomination',
             'ville':'Antenne',
@@ -31,7 +31,7 @@ class AssociationMembreIdentifyForm(forms.ModelForm):
     type_de_structure = forms.ChoiceField(choices=types, label="Type d'association")
     class Meta:
         model = AssociationMembre
-        exclude = ['users','ville']
+        fields = ('province', 'type_de_structure', 'num_justice', 'capture_justice', 'nom', 'nom_responsable', 'sigle', 'logo', 'adresse', 'phone', 'email', 'preuve_de_paiement', 'twitter', 'facebook', 'instagram', 'linkedin')
         labels = {
             'nom':'Dénomination',
             'type_de_structure':"Type d'association",
@@ -188,7 +188,7 @@ class MembreFenamoForm(forms.ModelForm):
 class AntenneForm(forms.ModelForm):
     class Meta:
         model = Antenne
-        exclude = ['user','structure']
+        fields = ('nom', 'zone', 'code')
         labels = {
             'nom':"Nom de l'antenne",
             'zone':"Zone opérationnelle"
@@ -233,3 +233,42 @@ class MembreModificationForm(forms.ModelForm):
                     data[champ] = '' if valeur is None else str(valeur)
         super().__init__(data, files, instance=instance, **kwargs)
         self.fields['nom'].required = True
+
+
+# ---------------------------------------------------------------- proche et engin (F-26, F-35)
+
+class FamilleForm(forms.Form):
+    """Proche d'un membre. Longueurs maximales alignées sur le modèle `Famille` (une valeur trop longue est une erreur
+    de formulaire, jamais une DataError de la base) ; année entière."""
+
+    nom = forms.CharField(max_length=Famille._meta.get_field('beneficiere').max_length)
+    qualite = forms.CharField(max_length=Famille._meta.get_field('qualite').max_length)
+    genre = forms.CharField(max_length=Famille._meta.get_field('genre').max_length)
+    annee = forms.IntegerField(min_value=1, max_value=9999)
+
+
+class EnginForm(forms.Form):
+    """Engin (plaque, marque, couleur, châssis, moteur). Longueurs maximales alignées sur le modèle `Moto` ; les
+    champs doivent être envoyés (ils peuvent rester vides, comme dans l'écran hérité)."""
+
+    plaque = forms.CharField(max_length=Moto._meta.get_field('num_plaque').max_length, required=False)
+    marque = forms.CharField(max_length=Moto._meta.get_field('marque').max_length, required=False)
+    couleur = forms.CharField(max_length=Moto._meta.get_field('couleur').max_length, required=False)
+    chassie = forms.CharField(max_length=Moto._meta.get_field('num_chassie').max_length, required=False)
+    moteur = forms.CharField(max_length=Moto._meta.get_field('num_moteur').max_length, required=False)
+
+    def clean(self):
+        donnees = super().clean()
+        absents = [nom for nom in self.fields if nom not in self.data]
+        if absents:
+            raise forms.ValidationError(MESSAGE_CHAMPS_MANQUANTS)
+        return donnees
+
+
+MESSAGE_CHAMPS_MANQUANTS = "Renseignez tous les champs du formulaire."
+
+
+def erreurs_en_texte(formulaire):
+    """Texte unique des erreurs d'un formulaire (champ : message), pour le message d'une vue."""
+    return ' '.join(f"{champ} : {' '.join(messages)}" if champ != '__all__' else ' '.join(messages)
+                    for champ, messages in formulaire.errors.items())

@@ -7,7 +7,8 @@ class MotoFormRegister(forms.ModelForm):
     couleur = forms.ChoiceField(choices=couleur_liste)
     class Meta:
         model = Moto
-        exclude = ['user', 'structure', 'proprietaire','antenne','ville','province','is_delete','abonnement','numero','motard_id']
+        # Liste blanche (jamais d'exclude : formulaire public)
+        fields = ('photo', 'num_plaque', 'num_moteur', 'num_chassie', 'marque', 'couleur')
         labels = {
             'photo':"Image",
             'num_plaque':"Numéro Plaque",

@@ -61,3 +61,21 @@ def test_F20_formulaires_herites_ignorent_les_champs_forges(client, jeu):
     membre = Membre.objects.filter(nom='Forgé 2').first()
     if membre is not None:
         assert not membre.suppression_demandee and not membre.is_validate3
+
+
+def test_F12_listes_blanches_association_antenne_engin_mobile():
+    from coptapp.forms import AntenneForm, AssociationMembreForm, AssociationMembreIdentifyForm
+    from mobapp.forms import MotoFormRegister
+    communs = ['type_de_structure', 'num_justice', 'capture_justice', 'nom', 'nom_responsable', 'sigle', 'logo', 'adresse',
+               'phone', 'email', 'preuve_de_paiement', 'twitter', 'facebook', 'instagram', 'linkedin']
+    attendus = {
+        AssociationMembreForm: ['ville'] + communs,
+        AssociationMembreIdentifyForm: ['province'] + communs,
+        AntenneForm: ['nom', 'zone', 'code'],
+        MotoFormRegister: ['photo', 'num_plaque', 'num_moteur', 'num_chassie', 'marque', 'couleur'],
+    }
+    for formulaire, champs in attendus.items():
+        assert list(formulaire.base_fields) == champs, formulaire.__name__
+        assert formulaire._meta.exclude is None, formulaire.__name__
+        assert not {'users', 'user', 'structure', 'is_delete', 'abonnement', 'numero', 'motard_id', 'proprietaire'} & set(
+            formulaire.base_fields), formulaire.__name__
