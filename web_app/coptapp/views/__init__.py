@@ -193,8 +193,9 @@ def ville_select(request, id):
 def ville_attr(request, id, sid):
     """Rattache l'association membre `sid` (de son périmètre : 404 sinon) à la ville `id` de SA coordination (404 sinon)."""
     structure = get_object_or_404(associations_du_compte(request.user), id=sid)
-    villes = Ville.objects.filter(province=structure.province) if structure.province_id else Ville.objects.all()
-    rattacher_ville(request.user, structure, get_object_or_404(villes, id=id))
+    if structure.province_id is None:
+        raise Http404  # sans coordination, aucune ville ne lui est rattachable
+    rattacher_ville(request.user, structure, get_object_or_404(Ville.objects.filter(province=structure.province), id=id))
     return redirect('ville-select', id=structure.id)
 
 def _rattacher_membre(request, idM, champ, modele, id_cible):
@@ -850,6 +851,8 @@ def ville_view(request, id):
     antennes = Antenne.objects.filter(structure=structure).order_by('nom')
     ville = get_object_or_404(villes_du_perimetre(user), id=id)
     membres = membres_du_perimetre(user).filter(ville=ville).order_by('nom', 'antenne')
+    # les boutons « Ajout antenne » / « Ajout membre » visent une association membre de cette ville (jamais la ville elle-même)
+    association_de_la_ville = associations_du_compte(user).filter(ville=ville).first()
     return render(request, 'app/ville-view.html', locals())
 
 #Afficher la liste des membres

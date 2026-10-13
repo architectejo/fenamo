@@ -21,13 +21,16 @@
       </div><!-- End Page Title -->
     </div>
     <div class="col-8">
+      {# add-antenne et add-membre prennent l'identifiant d'une ASSOCIATION MEMBRE (jamais celui de la ville) #}
+      {% if association_de_la_ville %}
       {% if user.is_superuser or user.privilege5 %}
-      <a href="{% url 'add-antenne' ville.id %}"><button class="btn btn-primary">Ajout antenne</button></a>
+      <a href="{% url 'add-antenne' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout antenne</button></a>
       {% endif %}
       {% if user.is_superuser or user.privilege5 %}
-        <a href="{% url 'add-membre' ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
+        <a href="{% url 'add-membre' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
       {% elif user.privilege1 and userMembre.ville.id == ville.id %}
-        <a href="{% url 'add-membre' ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
+        <a href="{% url 'add-membre' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
+      {% endif %}
       {% endif %}
     </div>
   </div>
