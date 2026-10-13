@@ -12,7 +12,12 @@ def nom_utilisateur_normalise(request, credentials=None):
 
 
 def ip_bloquee(request):
-    """Vrai si l'adresse IP a cumulé IP_ECHECS_MAX échecs (tous pseudos confondus) pendant la durée de blocage."""
+    """Vrai si l'adresse IP a cumulé IP_ECHECS_MAX échecs de CONNEXION WEB (tous pseudos confondus) pendant la durée de blocage.
+
+    Les lignes de l'espace mobile (pseudos ``mob:…`` et ``mob-inscription``) sont exclues : les échecs et les inscriptions
+    de /mob/ ne bloquent pas /connexion/. /mob/ a son propre compteur (``compte.services.mobile``).
+    """
     depuis = timezone.now() - settings.AXES_COOLOFF_TIME
-    echecs = AccessFailureLog.objects.filter(ip_address=get_client_ip_address(request), attempt_time__gte=depuis)
+    echecs = AccessFailureLog.objects.filter(
+        ip_address=get_client_ip_address(request), attempt_time__gte=depuis).exclude(username__startswith='mob')
     return echecs.count() >= settings.IP_ECHECS_MAX
