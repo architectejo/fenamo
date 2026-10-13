@@ -3,6 +3,7 @@ from datetime import date
 
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.db.models import Q
 
 from compte.models import JournalAction
 from compte.services.journal import journaliser
@@ -57,39 +58,46 @@ def un_an_apres(jour):
         return jour.replace(year=jour.year + 1, day=28)
 
 
-def numero_suivant(province):
-    """Numéro suivant : compteur (plus grand numéro attribué + 1) suivi du code officiel (sigle) : ``003PF``.
+def code_de_numerotation(province):
+    """Code qui termine les numéros d'engins de `province` : son code officiel (``Province.code``), à défaut l'ancien sigle
+    (les engins existants et les coordinations pas encore codifiées continuent de fonctionner). None si ni l'un ni l'autre."""
+    return (province.code or province.sigle or '').strip() or None
 
-    Le compteur est calculé sur TOUS les engins dont le numéro se termine par ce sigle, quelle que soit leur coordination :
-    deux coordinations qui auraient (par erreur) le même sigle ne peuvent donc jamais produire le même numéro.
-    PROVISOIRE (F-31) : le code officiel est `Province.sigle` ; l'annexe C et la contrainte d'unicité viendront avec le lot
-    Engins. À appeler sous le verrou des coordinations de ce sigle (voir `enregistrer_engin`).
+
+def numero_suivant(province):
+    """Numéro suivant : compteur (plus grand numéro attribué + 1) suivi du code de la coordination : ``003KN``.
+
+    Le compteur est calculé sur TOUS les engins dont le numéro se termine par ce code, quelle que soit leur coordination :
+    deux coordinations qui partageraient le même code (un sigle hérité identique à un code) ne peuvent donc jamais produire le
+    même numéro. Les anciens numéros ne sont jamais modifiés. À appeler sous le verrou de la coordination (voir
+    `enregistrer_engin`).
     """
-    sigle = province.sigle
+    code = code_de_numerotation(province)
     plus_grand = 0
-    for numero in Moto.objects.filter(numero__endswith=sigle).values_list('numero', flat=True):
-        debut = numero[:-len(sigle)]
+    for numero in Moto.objects.filter(numero__endswith=code).values_list('numero', flat=True):
+        debut = numero[:-len(code)]
         if debut.isdigit():
             plus_grand = max(plus_grand, int(debut))
-    return f'{plus_grand + 1:03d}{sigle}'
+    return f'{plus_grand + 1:03d}{code}'
 
 
 @transaction.atomic
 def enregistrer_engin(membre, auteur, donnees, photo=None):
     """Crée l'engin de `membre` (``donnees`` : num_plaque, num_moteur, num_chassie, marque, couleur) avec son numéro.
 
-    Le numéro est attribué SOUS VERROU : les lignes des coordinations portant ce sigle sont verrouillées
-    (``select_for_update``) dans la transaction, deux enregistrements simultanés ne peuvent donc pas recevoir le même
-    numéro. Lève CoordinationInconnue si le membre n'a pas de coordination avec un code, EnginDejaEnregistre si un engin
-    (de n'importe quel propriétaire, supprimé ou non) porte déjà ce numéro de châssis ET ce numéro de moteur.
-    Aucun état de validation n'est créé ici (lot Engins).
+    Le numéro est attribué SOUS VERROU : la ligne de la coordination (et celles qui partagent son code de numérotation) est
+    verrouillée (``select_for_update``) dans la transaction, deux enregistrements simultanés ne peuvent donc pas recevoir le même
+    numéro. Lève CoordinationInconnue si le membre n'a pas de coordination, ou si elle n'a ni code officiel ni sigle ;
+    EnginDejaEnregistre si un engin (de n'importe quel propriétaire, supprimé ou non) porte déjà ce numéro de châssis ET ce
+    numéro de moteur. Aucun état de validation n'est créé ici (lot Engins).
     """
     if membre.province_id is None:
         raise CoordinationInconnue
     province = Province.objects.get(pk=membre.province_id)
-    if not province.sigle:
+    code = code_de_numerotation(province)
+    if not code:
         raise CoordinationInconnue
-    list(Province.objects.select_for_update().filter(sigle=province.sigle).values_list('pk', flat=True))  # verrou
+    list(Province.objects.select_for_update().filter(Q(code=code) | Q(code__isnull=True, sigle=code)).values_list('pk', flat=True))
     chassis, moteur = donnees.get('num_chassie'), donnees.get('num_moteur')
     if chassis and moteur and Moto.objects.filter(num_chassie=chassis, num_moteur=moteur).exists():
         raise EnginDejaEnregistre
