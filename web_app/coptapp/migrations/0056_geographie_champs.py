@@ -10,18 +10,23 @@ def normaliser_codes_d_antenne(apps, schema_editor):
     Retour arrière : aucune action (les codes déjà normalisés restent valides pour l'ancien schéma)."""
     Antenne = apps.get_model('coptapp', 'Antenne')
     vus = set()
+    renommes = []
     for antenne in Antenne.objects.order_by('pk').iterator():
         code = (antenne.code or '').strip()
         if not code:
             nouveau = None
         elif code in vus:
             nouveau = f'{code}-{antenne.pk}'[:20]
+            renommes.append((antenne.pk, code, nouveau))
         else:
             nouveau = code
         if nouveau:
             vus.add(nouveau)
         if nouveau != antenne.code:
             Antenne.objects.filter(pk=antenne.pk).update(code=nouveau)
+    if renommes:  # à signaler : ces codes en double ont été renommés pour pouvoir rendre le code unique
+        print(f"\n  AVERTISSEMENT 0056 : {len(renommes)} code(s) d'antenne en double renommé(s) (antenne, ancien, nouveau) : "
+              + ', '.join(f'#{pk} {ancien} -> {nouveau}' for pk, ancien, nouveau in renommes))
 
 
 class Migration(migrations.Migration):

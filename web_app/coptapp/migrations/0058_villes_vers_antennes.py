@@ -5,8 +5,10 @@
   coordination telle quelle ; ils sont à examiner par l'utilisateur.
 - Membre.antenne, Moto.antenne, AssociationMembre.antenne ne sont remplis que s'ils sont vides et si la ville est
   renseignée ; un rattachement existant n'est jamais remplacé.
-- Rejouable. Retour arrière : remet à NULL les rattachements pointant vers une antenne issue d'une ville, puis supprime
-  ces antennes.
+- Rejouable. Retour arrière : remet à NULL TOUS les rattachements (Membre.antenne, Moto.antenne, AssociationMembre.antenne)
+  qui pointent vers une antenne issue d'une ville, puis supprime ces antennes. Sa portée est donc plus large que l'aller :
+  il efface aussi les rattachements faits À LA MAIN après la migration vers ces antennes (par l'application, par `mobapp`).
+  Les membres gardent leur `ville` : seule l'information « antenne » est perdue. À éviter une fois l'application en usage.
 """
 from django.db import migrations
 
