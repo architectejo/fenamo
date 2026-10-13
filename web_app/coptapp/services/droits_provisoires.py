@@ -95,19 +95,20 @@ def droits_membre(user, membre=None):
     lecture_seule = est_visiteur(user)
     ecriture = not lecture_seule and (maitre or any((user.privilege1, user.privilege2, user.privilege3)))
 
+    supprime = membre is not None and membre.is_delete  # un membre supprimé n'est plus modifiable : seule la restauration reste
     saisie_perso = bool(membre is not None and user.privilege1 and membre.user_id == user.pk)
     chez_lui = False  # le membre appartient à une association membre du compte
     if membre is not None and membre.structure_id:
         chez_lui = _associations_de(user).filter(pk=membre.structure_id).exists()
 
-    peut_modifier = not lecture_seule and (maitre or (bool(user.privilege3) and (membre is None or chez_lui)))
+    peut_modifier = not lecture_seule and not supprime and (maitre or (bool(user.privilege3) and (membre is None or chez_lui)))
 
     if membre is None:
         peut_valider = not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3))
     else:
         peut_valider = bool(_etapes(user, membre))
 
-    gerer = ecriture and (maitre or membre is None or chez_lui or saisie_perso)
+    gerer = ecriture and not supprime and (maitre or membre is None or chez_lui or saisie_perso)
     # F-35 / F-26 « AT avant V1, ensuite rôles supérieurs » : un agent seul (privilege1 sans privilege2, 3 ni 5) modifie
     # et supprime engins et famille tant que le propriétaire n'a pas passé la 1re validation (is_validate2). L'engin n'a
     # pas de drapeau de validation : l'état du propriétaire en tient lieu (limite à lever avec le champ d'état unique).
@@ -138,7 +139,7 @@ def droits_membre(user, membre=None):
         'peut_gerer_engins': gerer,
         'peut_gerer_famille': gerer,
         'peut_voir_historique': not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3)),
-        'peut_demander_modification': su or bool(user.privilege1 and not lecture_seule),
+        'peut_demander_modification': not supprime and (su or bool(user.privilege1 and not lecture_seule)),
     }
 
 
@@ -155,7 +156,7 @@ def _a_deja_valide(user, membre):
 
 def _etapes(user, membre):
     """Drapeaux que `user` peut poser sur `membre` maintenant (voir `etapes_a_valider`)."""
-    if not _actif(user) or est_visiteur(user):
+    if not _actif(user) or est_visiteur(user) or membre.is_delete:
         return []
     if not user.is_superuser and (membre.pk == user.membreId or membre.user_id == user.pk):
         return []  # jamais sa propre fiche ni ses propres saisies (séparation des tâches)

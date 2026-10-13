@@ -77,3 +77,15 @@ def test_F26_agent_supprime_le_proche_de_sa_saisie_avant_validation(client, sais
     client.force_login(saisie['agent'])
     assert client.post(reverse('delete-family', args=[saisie['famille'].id])).status_code == 302
     assert not Famille.objects.filter(pk=saisie['famille'].pk).exists()
+
+
+def test_F35_membre_supprime_ni_ajout_ni_modification_ni_suppression(saisie):
+    from coptapp.services.droits_provisoires import etapes_a_valider
+    Membre.objects.filter(pk=saisie['membre'].pk).update(is_delete=True)
+    membre = Membre.objects.get(pk=saisie['membre'].pk)
+    cles = CLES + ('peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier', 'peut_valider', 'peut_demander_modification')
+    for compte in (saisie['compte'], _compte('p5d', privilege5=True), saisie['agent']):
+        droits = droits_membre(compte, membre)
+        assert not any(droits[c] for c in cles), compte.username
+        assert etapes_a_valider(compte, membre) == []
+    assert droits_membre(saisie['compte'], membre)['peut_restaurer']  # seule la restauration reste
