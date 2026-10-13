@@ -89,7 +89,7 @@ def droits_membre(user, membre=None):
         'peut_annuler_demande_suppression': False,
     }
     if not _actif(user):
-        return {**nul, 'peut_gerer_engins': False, 'peut_gerer_famille': False}
+        return nul
     su = user.is_superuser
     maitre = voit_tout(user)
     lecture_seule = est_visiteur(user)
@@ -135,9 +135,6 @@ def droits_membre(user, membre=None):
         # F-26 : l'agent gère la famille de ses saisies comme leurs engins ; privilege2 et 3 dans leur association.
         'peut_ajouter_famille': gerer,
         'peut_ajouter_engin': gerer,
-        # TODO : alias TEMPORAIRES des anciens noms, à supprimer quand les gabarits (frontend) lisent peut_ajouter_*.
-        'peut_gerer_engins': gerer,
-        'peut_gerer_famille': gerer,
         'peut_voir_historique': not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3)),
         'peut_demander_modification': not supprime and (su or bool(user.privilege1 and not lecture_seule)),
     }
