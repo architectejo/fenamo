@@ -201,11 +201,7 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
 def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(acteurs):
     """Deux validateurs dont la lecture du membre est PÉRIMÉE (chacun a chargé l'instance avant l'écriture de l'autre) :
     l'état est relu sous verrou, une seule étape est posée et une seule ligne est journalisée."""
-    try:
-        from coptapp.services.actions import valider_membre
-    except ImportError:
-        pytest.xfail("BUG de 322e2da (backend-django) : la vue validate lit puis écrit sans transaction ni verrou ; "
-                     "deux validateurs simultanés journalisent deux validations pour une seule étape.")
+    from coptapp.services.actions import valider_membre
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2ter', password='x', privilege2=True)
     lecture_a, lecture_b = Membre.objects.get(pk=m.pk), Membre.objects.get(pk=m.pk)  # deux lectures avant toute écriture
