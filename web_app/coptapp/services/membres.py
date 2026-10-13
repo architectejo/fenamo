@@ -105,11 +105,11 @@ def choix_filtres(user):
 
 CHAMPS_MODIFIABLES = (
     'nom', 'a_propos', 'date_naissance', 'genre', 'titre', 'fonction', 'comite', 'nation', 'brevet', 'etat_civil',
-    'adresse', 'telephone', 'mail', 'categorie', 'permis', 'qualite', 'autre_asb', 'numero_carte_d_electeur',
+    'adresse', 'telephone', 'mail', 'categorie', 'permis', 'qualite', 'autre_asb', 'nom_epouse', 'numero_carte_d_electeur',
     'numero_carte_de_membre', 'nom_pere', 'nom_mere', 'village', 'chefferie', 'territoire', 'province_origine',
 )
 # Noms envoyés par la modale de la fiche -> champs du modèle.
-ALIAS_POST = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb'}
+ALIAS_POST = {'about': 'a_propos', 'date': 'date_naissance', 'autre_asbl': 'autre_asb', 'epouse': 'nom_epouse'}
 OBLIGATOIRES = ('nom', 'date_naissance')
 # Le journal garde l'existence du changement mais pas la valeur de ces champs d'identité.
 MASQUES_AU_JOURNAL = ('numero_carte_d_electeur', 'permis', 'brevet')

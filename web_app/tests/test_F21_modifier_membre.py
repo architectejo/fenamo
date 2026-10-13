@@ -65,3 +65,18 @@ def test_F23_une_seule_table_de_libelles_d_etat(jeu):
     assert set(LIBELLES) == set(ETATS)
     ind = indicateurs_tableau_bord(jeu['compte'])
     assert ind['graphique']['libelles'] == [str(LIBELLES['saisi']), str(LIBELLES['valide_antenne']), str(LIBELLES['actif'])]
+
+
+def test_F21_champ_absent_du_post_garde_sa_valeur_dont_epouse_et_autre_asbl(client, jeu):
+    Membre.objects.filter(pk=jeu['membre'].pk).update(
+        nom_epouse='Marie', autre_asb='ASBL voisine', village='Mbanza', permis='P-1')
+    _poster(client, jeu)  # seuls nom et date : rien d'autre n'est effacé
+    jeu['membre'].refresh_from_db()
+    assert (jeu['membre'].nom_epouse, jeu['membre'].autre_asb, jeu['membre'].village, jeu['membre'].permis) == (
+        'Marie', 'ASBL voisine', 'Mbanza', 'P-1')
+
+
+def test_F21_noms_post_de_la_modale_epouse_et_autre_asbl_sont_enregistres(client, jeu):
+    _poster(client, jeu, epouse='Anne', autre_asbl='ASBL B')
+    jeu['membre'].refresh_from_db()
+    assert jeu['membre'].nom_epouse == 'Anne' and jeu['membre'].autre_asb == 'ASBL B'
