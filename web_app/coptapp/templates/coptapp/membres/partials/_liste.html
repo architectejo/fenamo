@@ -1,7 +1,7 @@
 {% load i18n design %}{% comment %}
 Zone des résultats de la liste des membres (maquette liste-membres.html) : tableau devenu cartes sous 576 px, pagination de 25 lignes.
 Servie seule par la vue (membreListe) pour une requête HTMX, et incluse dans la page complète : une seule source de HTML.
-Contexte : page_obj, filtres (q, etat, qualite, antenne, association), filtres_actifs, filtres_url, choix, peut_valider.
+Contexte : page_obj, filtres (q, etat, qualite, antenne, association), filtres_actifs, choix, peut_valider.
 Les puces, la recherche et les filtres sont dans le formulaire #filtres-liste (page membre-list.html), hors de cette zone ; la pagination garde les filtres ({% querystring %}).
 Cette zone n'est pas une région vivante : le résumé annoncé est #liste-resume (copie hors bande dans la réponse).
 {% endcomment %}
