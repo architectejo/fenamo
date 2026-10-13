@@ -564,7 +564,7 @@ def addMoto(request, id):
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
         except EnginDejaEnregistre:
-            message = _("Cet engin est déjà enregistré pour ce membre.")
+            message = _("Cet engin est déjà enregistré (même numéro de châssis et de moteur).")
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
         numero = engin.numero

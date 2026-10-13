@@ -1,10 +1,12 @@
 """Engins : attribution d'un motard à un engin (F-33, journalisée)."""
+from datetime import date
+
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 
 from compte.models import JournalAction
 from compte.services.journal import journaliser
-from coptapp.models import Moto
+from coptapp.models import Moto, Province
 from coptapp.services.droits_provisoires import droits_membre, engins_visibles
 
 
@@ -56,14 +58,16 @@ def un_an_apres(jour):
 
 
 def numero_suivant(province):
-    """Numéro suivant de la coordination : compteur (plus grand numéro attribué + 1) suivi du code officiel (sigle).
+    """Numéro suivant : compteur (plus grand numéro attribué + 1) suivi du code officiel (sigle) : ``003PF``.
 
-    PROVISOIRE (F-31) : le code officiel est `Province.sigle` ; l'annexe C et la contrainte d'unicité viendront avec
-    le lot Engins. À appeler sous le verrou de la coordination (voir `enregistrer_engin`).
+    Le compteur est calculé sur TOUS les engins dont le numéro se termine par ce sigle, quelle que soit leur coordination :
+    deux coordinations qui auraient (par erreur) le même sigle ne peuvent donc jamais produire le même numéro.
+    PROVISOIRE (F-31) : le code officiel est `Province.sigle` ; l'annexe C et la contrainte d'unicité viendront avec le lot
+    Engins. À appeler sous le verrou des coordinations de ce sigle (voir `enregistrer_engin`).
     """
     sigle = province.sigle
     plus_grand = 0
-    for numero in Moto.objects.filter(province=province, numero__endswith=sigle).values_list('numero', flat=True):
+    for numero in Moto.objects.filter(numero__endswith=sigle).values_list('numero', flat=True):
         debut = numero[:-len(sigle)]
         if debut.isdigit():
             plus_grand = max(plus_grand, int(debut))
@@ -74,20 +78,20 @@ def numero_suivant(province):
 def enregistrer_engin(membre, auteur, donnees, photo=None):
     """Crée l'engin de `membre` (``donnees`` : num_plaque, num_moteur, num_chassie, marque, couleur) avec son numéro.
 
-    Le numéro est attribué SOUS VERROU : la ligne de la coordination est verrouillée (``select_for_update``) dans la
-    transaction, deux enregistrements simultanés ne peuvent donc pas recevoir le même numéro. Lève CoordinationInconnue
-    si le membre n'a pas de coordination avec un code, EnginDejaEnregistre si le châssis et le moteur existent déjà.
+    Le numéro est attribué SOUS VERROU : les lignes des coordinations portant ce sigle sont verrouillées
+    (``select_for_update``) dans la transaction, deux enregistrements simultanés ne peuvent donc pas recevoir le même
+    numéro. Lève CoordinationInconnue si le membre n'a pas de coordination avec un code, EnginDejaEnregistre si un engin
+    (de n'importe quel propriétaire, supprimé ou non) porte déjà ce numéro de châssis ET ce numéro de moteur.
+    Aucun état de validation n'est créé ici (lot Engins).
     """
-    from datetime import date
-
-    from coptapp.models import Province
     if membre.province_id is None:
         raise CoordinationInconnue
-    province = Province.objects.select_for_update().get(pk=membre.province_id)
+    province = Province.objects.get(pk=membre.province_id)
     if not province.sigle:
         raise CoordinationInconnue
-    if Moto.objects.filter(proprietaire=membre, num_chassie=donnees.get('num_chassie'),
-                           num_moteur=donnees.get('num_moteur')).exists():
+    list(Province.objects.select_for_update().filter(sigle=province.sigle).values_list('pk', flat=True))  # verrou
+    chassis, moteur = donnees.get('num_chassie'), donnees.get('num_moteur')
+    if chassis and moteur and Moto.objects.filter(num_chassie=chassis, num_moteur=moteur).exists():
         raise EnginDejaEnregistre
     return Moto.objects.create(
         user=auteur if getattr(auteur, 'pk', None) else None, structure=membre.structure, proprietaire=membre,

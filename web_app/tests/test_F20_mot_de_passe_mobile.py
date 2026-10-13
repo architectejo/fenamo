@@ -133,3 +133,44 @@ def test_F31_ajout_web_utilise_le_meme_service(client, jeu):
     sans = Membre.objects.create(nom='Sans coordination', is_validate2=True, user=jeu['compte'])
     r = client.post(reverse('add-moto', kwargs={'id': sans.id}), {k: 'y' for k in ('plaque', 'chassie', 'moteur', 'marque', 'couleur')})
     assert r.status_code == 400 and 'coordination provinciale' in r.content.decode()
+
+
+def test_F31_doublon_d_engin_global_chassis_et_moteur_tous_proprietaires(jeu):
+    from coptapp.services.engins import EnginDejaEnregistre
+    donnees = {'num_plaque': 'P', 'num_moteur': 'MOT-1', 'num_chassie': 'CHA-1', 'marque': 'X', 'couleur': 'ROUGE'}
+    enregistrer_engin(jeu['membre'], jeu['compte'], donnees)
+    autre = Membre.objects.create(nom='Autre propriétaire', province=jeu['province'])
+    with pytest.raises(EnginDejaEnregistre):
+        enregistrer_engin(autre, jeu['compte'], donnees)  # même engin, autre propriétaire : refusé
+    enregistrer_engin(autre, jeu['compte'], {**donnees, 'num_moteur': 'MOT-2'})  # moteur différent : accepté
+    enregistrer_engin(autre, jeu['compte'], {**donnees, 'num_moteur': '', 'num_chassie': ''})
+    enregistrer_engin(autre, jeu['compte'], {**donnees, 'num_moteur': '', 'num_chassie': ''})  # champs vides : pas un doublon
+
+
+def test_F31_message_clair_de_doublon_sur_mobile_et_sur_le_web(client, jeu):
+    from django.contrib.auth.hashers import make_password
+
+    from compte.services.mobile import empreinte_session
+    donnees = {'num_plaque': 'P', 'num_moteur': 'MOT-9', 'num_chassie': 'CHA-9', 'marque': 'X', 'couleur': 'ROUGE'}
+    enregistrer_engin(jeu['membre'], jeu['compte'], donnees)
+    m = Membre.objects.create(nom='Mob', idf='MBR0000055', password=make_password('x'), province=jeu['province'])
+    s = client.session
+    s['mob_membre_id'] = m.id
+    s['mob_empreinte'] = empreinte_session(m)
+    s.save()
+    r = client.post(reverse('session', kwargs={'id': m.id}), donnees)
+    assert 'déjà enregistré' in r.content.decode() and 'châssis' in r.content.decode()
+    client.force_login(jeu['compte'])
+    r = client.post(reverse('add-moto', kwargs={'id': jeu['membre'].id}),
+                    {'plaque': 'P', 'moteur': 'MOT-9', 'chassie': 'CHA-9', 'marque': 'X', 'couleur': 'ROUGE'})
+    assert r.status_code == 400 and 'déjà enregistré' in r.content.decode()
+
+
+def test_F31_deux_coordinations_au_meme_sigle_ne_produisent_jamais_le_meme_numero(jeu):
+    autre = Province.objects.create(nom='Doublon de sigle', sigle=jeu['province'].sigle)
+    membre_autre = Membre.objects.create(nom='Autre', province=autre)
+    donnees = {'num_plaque': 'P', 'num_moteur': 'M1', 'num_chassie': 'C1', 'marque': 'X', 'couleur': 'ROUGE'}
+    a = enregistrer_engin(jeu['membre'], jeu['compte'], donnees)
+    b = enregistrer_engin(membre_autre, jeu['compte'], {**donnees, 'num_moteur': 'M2', 'num_chassie': 'C2'})
+    c = enregistrer_engin(jeu['membre'], jeu['compte'], {**donnees, 'num_moteur': 'M3', 'num_chassie': 'C3'})
+    assert len({a.numero, b.numero, c.numero}) == 3

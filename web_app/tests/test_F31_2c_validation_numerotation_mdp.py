@@ -15,7 +15,7 @@ from django.db import connection
 from django.urls import reverse
 
 from compte.models import JournalAction
-from compte.services.mobile import definir_mot_de_passe_membre
+from compte.services.mobile import definir_mot_de_passe_membre, empreinte_session
 from coptapp.models import Membre, Moto, Province
 from coptapp.services.engins import CoordinationInconnue, enregistrer_engin
 from tests.test_F21_matrice_routes import acteurs  # noqa: F401
@@ -42,6 +42,7 @@ def test_F31_2c_deux_enregistrements_via_mob_numeros_distincts(client, jeu):
     m = Membre.objects.create(nom='Mob', idf='MBR0000042', password=make_password('x'), province=jeu['province'])
     s = client.session
     s['mob_membre_id'] = m.id
+    s['mob_empreinte'] = empreinte_session(m)
     s.save()
     url = reverse('session', kwargs={'id': m.id})
     for i in (1, 2):
@@ -118,6 +119,7 @@ def test_F31_2c_concurrence_deux_fils_jamais_deux_fois_le_meme_numero(jeu):
     en_base = list(Moto.objects.filter(province_id=province_id).values_list('numero', flat=True))
     assert len(en_base) == len(set(en_base)), en_base
     assert len(resultats) + len(erreurs) == 4
+    assert resultats, "aucun enregistrement n'a réussi : le test ne prouverait rien"
 
 
 def test_F31_2c_coordination_inconnue_ou_sans_code(jeu):
@@ -139,6 +141,7 @@ def test_F31_2c_mob_coordination_inconnue_message_et_rien_cree(client, jeu):
     m = Membre.objects.create(nom='Orphelin', idf='MBR0000077', password=make_password('x'))
     s = client.session
     s['mob_membre_id'] = m.id
+    s['mob_empreinte'] = empreinte_session(m)
     s.save()
     avant = Moto.objects.count()
     r = client.post(reverse('session', kwargs={'id': m.id}), {**_d(1)})
