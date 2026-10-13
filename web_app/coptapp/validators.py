@@ -308,3 +308,18 @@ def traiter_pieces_avant_enregistrement(sender, instance, **kwargs):
     """Récepteur pre_save des FileField qui ne sont pas des images : valide, impose l'extension, nom aléatoire,
     et supprime après validation de la transaction l'ancien fichier remplacé ou retiré."""
     _traiter_fichiers(sender, instance, images=False)
+
+
+def mime_reel(chemin):
+    """Type MIME réel (d'après les premiers octets) d'un fichier stocké : PDF, JPEG, PNG ou WebP ; None sinon."""
+    with open(chemin, 'rb') as f:
+        debut = f.read(16)
+    if debut.lstrip(b'\x00\t\r\n ').startswith(b'%PDF-'):
+        return 'application/pdf'
+    if debut.startswith(b'\xff\xd8\xff'):
+        return 'image/jpeg'
+    if debut.startswith(b'\x89PNG\r\n\x1a\n'):
+        return 'image/png'
+    if debut[:4] == b'RIFF' and debut[8:12] == b'WEBP':
+        return 'image/webp'
+    return None

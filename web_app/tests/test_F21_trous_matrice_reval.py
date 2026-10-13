@@ -35,7 +35,7 @@ def routes_declarees():
 
 
 def adresse_factice(modele):
-    return '/' + re.sub(r'<int:\w+>', '1', modele)
+    return '/' + re.sub(r'<(?:str|path):\w+>', 'x', re.sub(r'<int:\w+>', '1', modele))
 
 
 NOMS_MATRICE_EXISTANTE = {r[0] for r in ROUTES}
@@ -44,7 +44,7 @@ TOUTES = routes_declarees()
 TROUS_CONNUS = {
     # application web
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
-    'delete-membre', 'view-user', 'recherche', 'notifys',
+    'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville',
     'home', 'vue-article', 'about', 'news', 'portail', 'politique',
@@ -133,6 +133,9 @@ COMPLEMENT = [
     ('recherche', 'get', {}, None, S(200)),
     ('recherche', 'post', {}, {'search': '1', 'champ': 'Membre'}, S(200)),
     ('notifys', 'get', {}, None, S(200)),
+    # pièces et photos privées : le membre du jeu n'a aucun fichier (le détail est dans test_F22_fichiers_prives.py)
+    ('fichier', 'get', lambda a: {'type_objet': 'membre', 'id': a['membre'].id, 'champ': 'photo'}, None, S(404)),
+    ('fichier-nom', 'get', {'nom': 'absent.jpg'}, None, S(404)),
     ('securite', 'get', {}, None, S(200)),
     ('view-user', 'get', M, None, S(302)),
     # comptes : super-utilisateur seulement

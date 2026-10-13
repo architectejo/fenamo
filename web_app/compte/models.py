@@ -40,6 +40,7 @@ class JournalAction(models.Model):
         MODIFICATION = 'modification', _('Modification')
         RATTACHEMENT = 'rattachement', _('Rattachement')
         EXPORT = 'export', _('Export')
+        CONSULTATION_PIECE = 'consultation_piece', _("Consultation d'une pièce")
         VERROUILLAGE_APPLICATION = 'verrouillage_application', _("Verrouillage de l'application")
         PAIEMENT = 'paiement', _('Paiement')
 

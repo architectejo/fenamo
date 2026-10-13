@@ -9,6 +9,7 @@ exigée partout par LoginRequiredMiddleware.
 from django.urls import path
 
 from coptapp.views import *
+from coptapp.views.fichiers import fichier_par_nom, fichier_prive
 from coptapp.views.tableau_bord import tableau_bord
 
 urlpatterns = [
@@ -60,6 +61,10 @@ urlpatterns = [
     path('motos/<int:id>/modifier/', editMoto, name="edit-moto"),
     path('motos/<int:id>/supprimer/', deleteMoto, name="delete-moto"),
     path('motos/<int:id>/attribuer/', attributMoto, name="moto-attribution"),  # <id> = membre (POST seulement)
+
+    # Pièces et photos privées (vue contrôlée, jamais /media/)
+    path('fichiers/nom/<path:nom>', fichier_par_nom, name="fichier-nom"),
+    path('fichiers/<str:type_objet>/<int:id>/<str:champ>/', fichier_prive, name="fichier"),
 
     # Compte, recherche, notifications
     path('recherche/', recherche, name="recherche"),
