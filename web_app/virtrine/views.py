@@ -66,7 +66,7 @@ def home(request):
         elif getter:
             message = "Message déjà envoyé"
             classe = 'alert alert-danger text-center'
-    affiche = Config.objects.last() or Config.objects.create()
+    affiche = Config.objects.last()  # None tant que le site n'est pas configuré (jamais de création en GET)
     articles = Article.objects.order_by('-id')[0:12]
     classHome = 'active'
     return render(request, "site/index.html", locals())
@@ -81,7 +81,7 @@ def config(request):
     else:
         affiche = {}
         
-    conf = Config.objects.last() or Config.objects.create()
+    conf = Config.objects.last()  # None : le formulaire crée la configuration à l'enregistrement
 
     if request.method == 'POST':
         form = ConfigForm(request.POST, request.FILES, instance=conf)
@@ -98,7 +98,7 @@ def portail(request):
     else:
         affiche = {}
         
-    conf = Config.objects.last() or Config.objects.create()
+    conf = Config.objects.last()  # None : le formulaire crée la configuration à l'enregistrement
 
     if request.method == 'POST':
         form = AssociationMembreIdentifyForm(request.POST,request.FILES)
