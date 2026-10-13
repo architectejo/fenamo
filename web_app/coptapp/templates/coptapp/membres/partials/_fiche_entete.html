@@ -27,23 +27,22 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     {% include "partials/_bouton_post.html" with url=url_adminer libelle=t_libelle classe="bouton" %}
     {% endif %}
 
-    {% if peut_demander_suppression %}
     {% url 'delete-membre' membre.id as url_suppr %}
-    {% if user.is_superuser or user.privilege5 %}{# exécution : suppression logique, restauration #}
-    {% if membre.is_delete %}
+    {% if peut_restaurer %}
     {% translate "Restaurer" as t_libelle %}{% translate "Restaurer le membre" as t_titre %}{% translate "Restaurer ce membre ? Il réapparaîtra dans les listes ; l'opération est enregistrée au journal." as t_message %}
     {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_libelle icone="rotate-ccw" variante_envoi="principal" %}
-    {% else %}
-    {% translate "Supprimer le membre" as t_libelle %}{% translate "Supprimer le membre" as t_titre %}{% translate "Ce membre disparaîtra des listes. La suppression est enregistrée au journal avec son motif et peut être annulée." as t_message %}
-    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_libelle icone="trash-2" variante="danger" avec_motif=True motif_initial=membre.motif_suppression %}
     {% endif %}
-    {% elif membre.suppression_demandee %}
-    {% translate "Annuler la demande de suppression" as t_libelle %}{% translate "Annuler la demande de suppression" as t_titre %}{% translate "Annuler la demande de suppression de ce membre ?" as t_message %}
-    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_libelle icone="rotate-ccw" variante_envoi="principal" %}
-    {% else %}
+    {% if peut_executer_suppression and not membre.is_delete %}
+    {% translate "Supprimer le membre" as t_libelle %}{% translate "Ce membre disparaîtra des listes. La suppression est enregistrée au journal avec son motif et peut être annulée." as t_message %}
+    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_libelle icone="trash-2" variante="danger" avec_motif=True motif_initial=membre.motif_suppression %}
+    {% endif %}
+    {% if peut_annuler_demande_suppression %}
+    {% translate "Annuler la demande de suppression" as t_libelle %}{% translate "Annuler la demande de suppression de ce membre ?" as t_message %}
+    {% include "components/_confirmer.html" with prefixe="annulation" ident=membre.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_libelle icone="rotate-ccw" variante_envoi="principal" %}
+    {% endif %}
+    {% if peut_demander_suppression and not peut_executer_suppression and not membre.suppression_demandee and not membre.is_delete %}
     {% translate "Demander la suppression" as t_libelle %}{% translate "Demande de suppression du membre" as t_titre %}{% translate "La demande sera examinée par un responsable habilité. Indiquez pourquoi ce membre doit être supprimé." as t_message %}{% translate "Envoyer la demande" as t_envoi %}
-    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_envoi icone="trash-2" variante="danger" variante_envoi="principal" avec_motif=True %}
-    {% endif %}
+    {% include "components/_confirmer.html" with prefixe="demande" ident=membre.id url=url_suppr libelle=t_libelle titre=t_titre message=t_message libelle_envoi=t_envoi icone="trash-2" variante="danger" variante_envoi="principal" avec_motif=True %}
     {% endif %}
   </div>
 </div>

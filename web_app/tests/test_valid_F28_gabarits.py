@@ -38,12 +38,14 @@ def _liens(corps, membre, nom):
 ])
 def test_F28_liste_bouton_valider_selon_peut_valider(client, jeu, privileges, voit_bouton):
     compte = Compte.objects.create_user('lv', password='x', **privileges)
-    cible = _m(jeu, 'Liste Cible', is_validate2=True, user=compte if privileges.get('privilege1') else None)
+    # Le bouton suit le droit de valider CE membre : l'étape précédente est exigée (privilege2 valide un membre non encore validé
+    # par l'antenne ; privilege3 un membre validé par l'antenne) et personne ne valide sa propre fiche.
+    cible = _m(jeu, 'Liste Cible', is_validate2=not privileges.get('privilege2'), user=compte if privileges.get('privilege1') else None)
     if privileges.get('privilege4'):
         cible.is_validate3 = True
         cible.save()
     if not privileges.get('privilege1') and not privileges.get('privilege4'):
-        compte.membreId = cible.id
+        compte.membreId = _m(jeu, 'Fiche du compte').id if voit_bouton else cible.id  # fiche propre distincte de la cible quand elle doit pouvoir valider
         compte.save()
     client.force_login(compte)
     corps = client.get('/membres/').content.decode()

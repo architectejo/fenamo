@@ -31,7 +31,7 @@ Cette zone n'est pas une région vivante : le résumé annoncé est #liste-resum
         <td data-libelle="{% translate 'État' %}">{% badge_etat code %}</td>
         {% if peut_valider %}
         <td data-role="actions">
-          {% if code != "actif" %}
+          {% if membre.peut_valider and code != "actif" %}
           {% url 'validate' membre.id as url_valider %}{% translate "Valider le membre" as t_valider %}
           {% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--petit bouton--valider" %}
           {% endif %}
