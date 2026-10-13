@@ -44,11 +44,16 @@ def home(request):
         nom = (request.POST.get('nom') or '').strip()
         mail = (request.POST.get('mail') or '').strip()
         datePost = request.POST.get('date') or None
+        if datePost:
+            try:
+                datePost = date.fromisoformat(datePost)
+            except ValueError:
+                datePost = False  # date libre invalide : refusée ci-dessous
         raison = request.POST.get('raison') or ''
         phone = request.POST.get('phone') or ''
         description = request.POST.get('description') or ''
-        if not nom or not mail:
-            message = "Indiquez votre nom et votre adresse e-mail."
+        if not nom or not mail or datePost is False:
+            message = "Indiquez votre nom, votre adresse e-mail et une date valide (AAAA-MM-JJ)."
             classe = 'alert alert-danger text-center'
             affiche = Config.objects.last()
             articles = Article.objects.order_by('-id')[0:12]
@@ -59,13 +64,9 @@ def home(request):
             message = "Envoi effectué avec succès"
             classe = 'alert alert-primary text-center'
         elif getter:
-            message = "Message déjà envoyer"
+            message = "Message déjà envoyé"
             classe = 'alert alert-danger text-center'
-    try:
-        affiche = Config.objects.last()
-
-    except:
-        affiche = Config.objects.create()
+    affiche = Config.objects.last() or Config.objects.create()
     articles = Article.objects.order_by('-id')[0:12]
     classHome = 'active'
     return render(request, "site/index.html", locals())
@@ -80,10 +81,7 @@ def config(request):
     else:
         affiche = {}
         
-    try:
-        conf = Config.objects.last()
-    except:
-        conf = Config.objects.create()
+    conf = Config.objects.last() or Config.objects.create()
 
     if request.method == 'POST':
         form = ConfigForm(request.POST, request.FILES, instance=conf)
@@ -100,10 +98,7 @@ def portail(request):
     else:
         affiche = {}
         
-    try:
-        conf = Config.objects.last()
-    except:
-        conf = Config.objects.create()
+    conf = Config.objects.last() or Config.objects.create()
 
     if request.method == 'POST':
         form = AssociationMembreIdentifyForm(request.POST,request.FILES)

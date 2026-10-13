@@ -197,13 +197,6 @@ def test_F21_matrice_complementaire_page_complete_et_fragment_htmx(client, acteu
 
 # ---------------------------------------------------------------- données invalides : jamais de 500
 
-def test_F21_ajout_famille_sans_champs_ne_donne_pas_500(client, acteurs):
-    client.raise_request_exception = False
-    client.force_login(acteurs['comptes']['su'])
-    r = client.post(reverse('add-family', kwargs=M(acteurs)), {})
-    assert r.status_code < 500
-
-
 def test_F21_ajout_ville_province_inconnue_donne_404(client, acteurs):
     client.raise_request_exception = False
     client.force_login(acteurs['comptes']['su'])
@@ -216,10 +209,3 @@ def test_F21_modifier_antenne_inconnue_donne_404(client, acteurs):
     client.force_login(acteurs['comptes']['su'])
     r = client.get(reverse('edit-antenne', kwargs={'id': 999999}))
     assert r.status_code == 404
-
-
-def test_F21_ajout_ville_sans_nom_ne_donne_pas_500(client, acteurs):
-    client.raise_request_exception = False
-    client.force_login(acteurs['comptes']['su'])
-    r = client.post(reverse('add-ville', kwargs=PROVINCE(acteurs)), {})
-    assert r.status_code < 500

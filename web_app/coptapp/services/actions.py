@@ -55,9 +55,8 @@ def changer_suppression(auteur, objet, supprime, motif=''):
         objet.suppression_demandee = False  # la demande est exécutée ou annulée
         objet.suppression_demandee_par = None
         champs += ['suppression_demandee', 'suppression_demandee_par']
-        if supprime:
-            objet.motif_suppression = motif
-            champs.append('motif_suppression')
+        objet.motif_suppression = motif if supprime else ''  # la restauration vide le motif (le journal le garde)
+        champs.append('motif_suppression')
     objet.save(update_fields=champs)
     action = JournalAction.Action.SUPPRESSION if supprime else JournalAction.Action.RESTAURATION
     journaliser(auteur, action, objet, avant=avant, apres={'is_delete': bool(supprime)}, motif=motif)
@@ -107,6 +106,8 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
     if not droits['peut_demander_suppression']:
         raise PermissionDenied
     motif = (motif or '').strip()
+    if len(motif) > MOTIF_MAX:
+        return 'motif_trop_long'  # valable pour toutes les actions, annulation comprise
 
     if action == 'annuler':
         if not membre.suppression_demandee or membre.is_delete:
@@ -120,8 +121,6 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
                     avant={'suppression_demandee': True}, apres={'suppression_demandee': False}, motif=motif)
         return 'demande_annulee'
 
-    if len(motif) > MOTIF_MAX:
-        return 'motif_trop_long'
     if action == 'demander':
         if membre.is_delete or membre.suppression_demandee:
             raise EtatIncoherent('Membre déjà supprimé ou demande déjà en cours.')

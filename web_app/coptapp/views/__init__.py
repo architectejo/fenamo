@@ -36,24 +36,6 @@ from calendar import monthrange
 # Create your views here.
 User = get_user_model()
 
-def champs_manquants(request, *noms):
-    """Noms des champs absents du POST (une clé manquante donne une erreur 400, jamais un KeyError)."""
-    return [nom for nom in noms if nom not in request.POST]
-
-
-def famille_invalide(request):
-    """Message d'erreur si le POST d'un proche est incomplet ou si l'année n'est pas un entier ; None sinon."""
-    if champs_manquants(request, 'nom', 'qualite', 'genre', 'annee'):
-        return _("Renseignez le nom, la qualité, le genre et l'année.")
-    if not request.POST['nom'].strip():
-        return _("Renseignez le nom du proche.")
-    try:
-        int(request.POST['annee'])
-    except ValueError:
-        return _("L'année doit être un nombre.")
-    return None
-
-
 def notify(user=None, membre=None, titre=None, description=None):
     getter, setter = Notification.objects.get_or_create(user=user, membre=membre, titre=titre, description=description)
     if setter: return True
@@ -185,18 +167,20 @@ def add_structure(request):
 
 @referentiel_ecriture_requis
 def ville_select(request, id):
-    try:
-        structure = AssociationMembre.objects.get(id=id)
-        if structure.ville: return redirect('edit-structure', id=structure.id)
-        provinces = Ville.objects.filter(province=structure.province).exclude(nom=None)
-        if request.method == 'POST':
-            try: ville = Ville.objects.get(nom=str(request.POST.get('ville')).upper())
-            except: ville = Ville.objects.create(province=structure.province, nom=str(request.POST.get('ville')).upper())
-            structure.ville = ville
-            structure.save()
-            return redirect("edit-structure", id=structure.id)
-    except Exception as error:
-        print(f"\n\n\n{error}\n\n\n")
+    structure = get_object_or_404(AssociationMembre, id=id)
+    if structure.ville:
+        return redirect('edit-structure', id=structure.id)
+    provinces = Ville.objects.filter(province=structure.province).exclude(nom=None)
+    if request.method == 'POST':
+        nom = str(request.POST.get('ville') or '').strip().upper()
+        if not nom:
+            message = _("Indiquez l'antenne.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/ville-select.html', locals(), status=400)
+        ville = Ville.objects.filter(nom=nom).first() or Ville.objects.create(province=structure.province, nom=nom)
+        structure.ville = ville
+        structure.save(update_fields=['ville'])
+        return redirect("edit-structure", id=structure.id)
     return render(request, 'app/ville-select.html', locals())
 
 
@@ -241,19 +225,19 @@ def structure_attr_membre(request, id, idM):
 def edit_structure(request, id):
     button = 'Modifier'
     activeEdit = 'show active'
-    try:
-        structure = AssociationMembre.objects.get(id=id)
-        if not structure.ville:
-            return redirect('ville-select', id=structure.id)
-        if request.method == 'POST':
-            form = AssociationMembreForm(request.POST, request.FILES, instance=structure)
-            if form.is_valid(): form.save()
-        else: form = AssociationMembreForm(instance=structure)
-
-        structure.membres = len(Membre.objects.filter(structure=structure, is_delete=False))
-        structure.proprietaires = len(Membre.objects.filter(structure=structure, titre='PROPRIETAIRE', is_delete=False))
-        structure.motocyclistes = len(Membre.objects.filter(structure=structure, is_delete=False).exclude(titre='PROPRIETAIRE'))
-    except: return redirect('tableau-bord')
+    structure = get_object_or_404(AssociationMembre, id=id)
+    if not structure.ville:
+        return redirect('ville-select', id=structure.id)
+    if request.method == 'POST':
+        form = AssociationMembreForm(request.POST, request.FILES, instance=structure)
+        if form.is_valid():
+            form.save()
+    else:
+        form = AssociationMembreForm(instance=structure)
+    membres_association = Membre.objects.filter(structure=structure, is_delete=False)
+    structure.membres = membres_association.count()
+    structure.proprietaires = membres_association.filter(titre='PROPRIETAIRE').count()
+    structure.motocyclistes = membres_association.exclude(titre='PROPRIETAIRE').count()
     return render(request, 'app/structure.html', locals())
 
 def structures_liste(request):
@@ -341,7 +325,7 @@ def sessionById(request, id):
             userMbr = Membre.objects.filter(id=user.membreId)
             for us in userMbr:
                 userMembre = us
-            if len(userMbr) != 0:
+            if len(userMbr) != 0 and userMembre.ville:
                 villeId = userMembre.ville.id
 
         notifications = myNotify(request)[0:3]
@@ -412,24 +396,19 @@ def addAntenne(request, id):
     provinces = provinceSelector()
     
     user = request.user
-    try:
-        hello = "Hello !"
-        structure = AssociationMembre.objects.get(id=id)
-        if request.method == 'POST':
-            form = AntenneForm(request.POST)
-            if form.is_valid():
-                antenne = form.save(commit=False)
-                antenne.structure = structure
-                antenne.ville = structure.ville
-                antenne.province = structure.province
-                antenne.user = request.user
-                antenne.save()
-                classe = 'alert alert-info text-center'
-                message = "Ajout d'antenne"
-                return redirect('edit-antenne', id=antenne.id)
-        else: 
-            form = AntenneForm()
-    except Exception as error: print(f"\n\n\n{error}\n\n\n")
+    structure = get_object_or_404(AssociationMembre, id=id)
+    if request.method == 'POST':
+        form = AntenneForm(request.POST)
+        if form.is_valid():
+            antenne = form.save(commit=False)
+            antenne.structure = structure
+            antenne.ville = structure.ville
+            antenne.province = structure.province
+            antenne.user = request.user
+            antenne.save()
+            return redirect('edit-antenne', id=antenne.id)
+    else:
+        form = AntenneForm()
     return render(request, 'app/add-antenne.html', locals())
 
 @referentiel_ecriture_requis
@@ -470,10 +449,10 @@ def addCommunique(request):
             return render(request, 'app/add-communique.html', locals(), status=400)
         getter, setter = Communique.objects.get_or_create(user=user, membre=membre, message=message)
         if setter:
-            message = 'Envoyé !'
+            message = _('Envoyé !')
             classe = 'alert alert-success text-center'
         elif getter:
-            message = 'Vous avez déjà envoyé !'
+            message = _('Vous avez déjà envoyé !')
             classe = 'alert alert-danger text-center'
     return render(request, 'app/add-communique.html', locals())
 
@@ -481,18 +460,19 @@ def addFamily(request,id):
     user = request.user
     membre = membre_pour(user, id, 'peut_ajouter_famille')
     if request.method == 'POST':
-        erreur = famille_invalide(request)
-        if erreur:
-            message = erreur
+        formulaire = FamilleForm(request.POST)
+        if not formulaire.is_valid():
+            message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-family.html', locals(), status=400)
+        donnees = formulaire.cleaned_data
         getter, setter = Famille.objects.get_or_create(
             user=user
             ,membre=membre
-            ,beneficiere=request.POST['nom']
-            ,qualite=request.POST['qualite']
-            ,genre=request.POST['genre']
-            ,annee=request.POST['annee']
+            ,beneficiere=donnees['nom']
+            ,qualite=donnees['qualite']
+            ,genre=donnees['genre']
+            ,annee=donnees['annee']
         )
         if setter:
             message = "Ajout d'un membre de la famille"
@@ -567,10 +547,12 @@ def addMoto(request, id):
             message = erreur_photo
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
-        if champs_manquants(request, 'plaque', 'marque', 'couleur', 'chassie', 'moteur'):
-            message = _("Renseignez la plaque, la marque, la couleur, le châssis et le moteur.")
+        formulaire = EnginForm(request.POST)
+        if not formulaire.is_valid():
+            message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
+        donnees = formulaire.cleaned_data
         debut = datetime.today()
         finAbonnement = debut.replace(year=debut.year+1)
         motosCity = Moto.objects.filter(ville=membre.ville)
@@ -587,8 +569,8 @@ def addMoto(request, id):
             numero = str(numero)+str(membre.province.sigle)
         setter = Moto.objects.create(
             user=user,structure=structure,proprietaire=membre,antenne=membre.antenne,ville=membre.ville,province=membre.province
-            ,numero=numero, photo=photo,num_plaque=request.POST['plaque'],marque=request.POST['marque'],couleur=request.POST['couleur']
-            ,abonnement=finAbonnement,num_chassie=request.POST['chassie'],num_moteur=request.POST['moteur']
+            ,numero=numero, photo=photo,num_plaque=donnees['plaque'],marque=donnees['marque'],couleur=donnees['couleur']
+            ,abonnement=finAbonnement,num_chassie=donnees['chassie'],num_moteur=donnees['moteur']
             )
         notify(user=user, titre="Ajout d'une moto", description=f"Numéro:{numero}")
         message = "Mise à jour !"
@@ -615,7 +597,7 @@ def addProvince(request):
             return render(request, 'app/add-province.html', locals(), status=400)
         getter, setter = Province.objects.get_or_create(nom=nom_province, sigle=request.POST.get('sigle'))
         if setter:
-            message = f"{nom_province} a été ajouté comme province"
+            message = _("%(nom)s a été ajoutée comme coordination provinciale.") % {'nom': nom_province}
             classe = 'alert alert-info text-center'
     return render(request, 'app/add-province.html', locals())
 
@@ -639,13 +621,12 @@ def addVille(request, id):
             message = _("Indiquez le nom de l'antenne.")
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-ville.html', locals(), status=400)
-        getter, setter = Ville.objects.get_or_create(user=user, province=province, nom=nom_ville)
-        if setter:
+        ville, cree = Ville.objects.get_or_create(user=user, province=province, nom=nom_ville)
+        if cree:
             classe = 'alert alert-info text-center'
-            message = 'Ajout d\'une ville dans la base des données'
-            getter = len(Ville.objects.all())
-            setter = Ville.objects.get(id=getter)
-            notify(user=user, titre="Ajout d'une ville", description=f"Province:{setter.province.nom} Ville:{setter.nom}")
+            message = _("Antenne ajoutée à la coordination provinciale.")
+            notify(user=user, titre=_("Ajout d'une antenne"),
+                   description=f"{_('Coordination')} : {ville.province.nom} ; {_('antenne')} : {ville.nom}")
     return render(request, 'app/add-ville.html', locals())
 
 @require_POST
@@ -714,17 +695,18 @@ def editFamily(request,id):
     famille = get_object_or_404(Famille, id=id)
     membre = membre_pour(user, famille.membre_id, 'peut_modifier_famille')
     if request.method == 'POST':
-        erreur = famille_invalide(request)
-        if erreur:
-            message = erreur
+        formulaire = FamilleForm(request.POST)
+        if not formulaire.is_valid():
+            message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-family.html', locals(), status=400)
+        donnees = formulaire.cleaned_data
         famille.user = user
         famille.membre=membre
-        famille.beneficiere=request.POST['nom']
-        famille.qualite=request.POST['qualite']
-        famille.genre=request.POST['genre']
-        famille.annee=request.POST['annee']
+        famille.beneficiere=donnees['nom']
+        famille.qualite=donnees['qualite']
+        famille.genre=donnees['genre']
+        famille.annee=donnees['annee']
         famille.save()
         message = 'Mise à jour !'
         classe = 'alert alert-success text-center'
@@ -749,15 +731,17 @@ def editMoto(request, id):
             message = erreur_photo
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
-        if champs_manquants(request, 'plaque', 'marque', 'couleur', 'chassie', 'moteur'):
-            message = _("Renseignez la plaque, la marque, la couleur, le châssis et le moteur.")
+        formulaire = EnginForm(request.POST)
+        if not formulaire.is_valid():
+            message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
-        moto.num_plaque = request.POST['plaque']
-        moto.num_chassie = request.POST['chassie']
-        moto.num_moteur = request.POST['moteur']
-        moto.marque = request.POST['marque']
-        moto.couleur = request.POST['couleur']
+        donnees = formulaire.cleaned_data
+        moto.num_plaque = donnees['plaque']
+        moto.num_chassie = donnees['chassie']
+        moto.num_moteur = donnees['moteur']
+        moto.marque = donnees['marque']
+        moto.couleur = donnees['couleur']
         if photo:
             moto.photo = photo
         moto.save()
@@ -989,11 +973,7 @@ def site(request):
                 classe = 'alert alert-danger text-center'
                 articles = Article.objects.order_by('-id')
                 return render(request, 'app/site.html', locals(), status=400)
-            try:
-                verify = Article.objects.get(titre=titre)
-                verify = True
-            except:
-                verify = False
+            verify = Article.objects.filter(titre=titre).exists()
 
             if verify == False:
                 galery = Galery.objects.create(image=image, principale=True)

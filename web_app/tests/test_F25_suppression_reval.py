@@ -255,3 +255,18 @@ def test_F25_notification_creee_pour_chaque_action_reussie_mais_pas_pour_un_refu
     assert Notification.objects.count() == 0
     _agir(client, acteurs, 'p1', cible, 'demander', motif='Doublon')
     assert Notification.objects.filter(membre=cible).count() == 1
+
+
+def test_F25_motif_d_annulation_limite_a_500_caracteres(client, acteurs, cible):
+    _agir(client, acteurs, 'p1', cible, 'demander', motif='Doublon')
+    r = _agir(client, acteurs, 'p1', cible, 'annuler', motif='m' * (MOTIF_MAX + 1))
+    assert r.status_code == 302 and _etat(cible) == (False, True, acteurs['comptes']['p1'].pk)
+    assert 'limité à 500' in client.get(r['Location']).content.decode()
+
+
+def test_F25_restauration_vide_le_motif_de_suppression_le_journal_le_garde(client, acteurs, cible):
+    _agir(client, acteurs, 'su', cible, 'executer', motif='Décès')
+    assert Membre.objects.get(pk=cible.pk).motif_suppression == 'Décès'
+    _agir(client, acteurs, 'su', cible, 'restaurer', motif='Erreur')
+    assert Membre.objects.get(pk=cible.pk).motif_suppression == ''
+    assert _journal(cible, A.SUPPRESSION).get().motif == 'Décès'
