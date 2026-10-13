@@ -137,7 +137,7 @@ def test_lot1_mobapp_pages_ouvrent(client, jeu):
         assert client.get(adresse).status_code in (200, 302), adresse
     m = jeu['membre'].id
     for adresse in (f'/mob/espace/{m}', f'/mob/data/{m}'):
-        assert client.get(adresse).status_code in (200, 302), adresse
+        assert client.get(adresse).status_code in (200, 302, 403), adresse  # 403 : espace réservé au membre connecté (2c)
 
 
 def test_lot1_virtrine_gestion_du_contenu_ouvre(client, jeu):

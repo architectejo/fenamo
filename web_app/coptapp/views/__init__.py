@@ -22,7 +22,9 @@ from coptapp.services.droits_provisoires import (
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
     membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
-from coptapp.services.engins import attribuer_engin
+from coptapp.services.engins import (
+    CoordinationInconnue, EnginDejaEnregistre, attribuer_engin, enregistrer_engin,
+)
 from coptapp.services.fiche_membre import contexte_fiche
 from coptapp.services.membres import (
     Q_LONGUEUR_MAX, choix_filtres, demander_modification, lister_membres, membres_filtres, modifier_membre,
@@ -553,25 +555,19 @@ def addMoto(request, id):
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
         donnees = formulaire.cleaned_data
-        debut = datetime.today()
-        finAbonnement = debut.replace(year=debut.year+1)
-        motosCity = Moto.objects.filter(ville=membre.ville)
-        if len(motosCity) == 0:
-            numero = 1
-        else:
-            dernier = motosCity[len(motosCity)-1]
-            numero = dernier.numero.split(str(structure.province.sigle))
-            numero = int(numero[0])+1
-        #numero = str(numero).zfill(4)+'v'+str(membre.ville.id)
-        if numero < 100:
-            numero = str(numero).zfill(3)+str(membre.structure.province.sigle)
-        else:
-            numero = str(numero)+str(membre.province.sigle)
-        setter = Moto.objects.create(
-            user=user,structure=structure,proprietaire=membre,antenne=membre.antenne,ville=membre.ville,province=membre.province
-            ,numero=numero, photo=photo,num_plaque=donnees['plaque'],marque=donnees['marque'],couleur=donnees['couleur']
-            ,abonnement=finAbonnement,num_chassie=donnees['chassie'],num_moteur=donnees['moteur']
-            )
+        try:
+            engin = enregistrer_engin(membre, user, {
+                'num_plaque': donnees['plaque'], 'marque': donnees['marque'], 'couleur': donnees['couleur'],
+                'num_chassie': donnees['chassie'], 'num_moteur': donnees['moteur']}, photo=photo)
+        except CoordinationInconnue:
+            message = _("La coordination provinciale du membre est inconnue : l'engin ne peut pas être numéroté.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-moto.html', locals(), status=400)
+        except EnginDejaEnregistre:
+            message = _("Cet engin est déjà enregistré pour ce membre.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-moto.html', locals(), status=400)
+        numero = engin.numero
         notify(user=user, titre="Ajout d'une moto", description=f"Numéro:{numero}")
         message = "Mise à jour !"
         classe='alert alert-primary text-center'

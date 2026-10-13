@@ -185,7 +185,8 @@ def test_F22_extension_imposee_par_le_format_reel(client, jeu):
 
 def _donnees_inscription(jeu, **extra):
     d = {'nom': 'Inscrit Mobile', 'genre': 'HOMME', 'qualite': 'PROPRIETAIRE', 'province': jeu['province'].id,
-         'date_naissance': '1992-05-06', 'lieux_naissance': 'Kinshasa', 'telephone': '+243800000000'}
+         'date_naissance': '1992-05-06', 'lieux_naissance': 'Kinshasa', 'telephone': '+243800000000',
+         'password1': 'Mot-de-passe-9x', 'password2': 'Mot-de-passe-9x'}
     d.update(extra)
     return d
 

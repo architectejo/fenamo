@@ -35,7 +35,7 @@ def test_F20_inscription_mobile_ignore_les_champs_forges(client, jeu):
     auteur = Compte.objects.create_user('victime', password='x')
     donnees = {'nom': 'Forgé', 'genre': 'HOMME', 'qualite': 'PROPRIETAIRE', 'province': jeu['province'].id,
                'date_naissance': '1992-05-06', 'lieux_naissance': 'Kinshasa',
-               'suppression_demandee': 'on', 'motif_suppression': 'x', 'suppression_demandee_par': auteur.id,
+               'password1': 'Mot-de-passe-9x', 'password2': 'Mot-de-passe-9x', 'suppression_demandee': 'on', 'motif_suppression': 'x', 'suppression_demandee_par': auteur.id,
                'is_validate2': 'on', 'is_validate3': 'on', 'is_delete': 'on', 'user': auteur.id, 'password': 'clair'}
     r = client.post(reverse('register'), donnees)
     assert r.status_code == 302

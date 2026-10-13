@@ -85,3 +85,33 @@ class MembreFormRegister(forms.ModelForm):
         for field_name, field in self.fields.items():
             #self.helper.layout = Layout(Div(field, css_class='col-12 col-sm-6 py-2 wow fadeInRight'))
             field.widget.attrs['class'] = 'form-control text-center'
+
+class InscriptionMobileForm(MembreFormRegister):
+    """Inscription publique /mob/register/ : le formulaire de membre (liste blanche) plus le mot de passe de l'espace mobile
+    (saisi deux fois, règles de mot de passe de Django, enregistré HACHÉ) et un champ piège caché contre les robots :
+    un champ rempli par un robot rejette l'inscription sans rien enregistrer."""
+
+    password1 = forms.CharField(label='Mot de passe', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    password2 = forms.CharField(label='Confirmez le mot de passe', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    piege = forms.CharField(required=False, widget=forms.HiddenInput, label='')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for nom in ('password1', 'password2'):
+            self.fields[nom].widget.attrs['class'] = 'form-control text-center'
+
+    def clean(self):
+        donnees = super().clean()
+        if donnees.get('piege'):
+            raise forms.ValidationError("Inscription refusée.")
+        mot1, mot2 = donnees.get('password1'), donnees.get('password2')
+        if mot1 and mot2 and mot1 != mot2:
+            self.add_error('password2', "Les deux mots de passe ne correspondent pas.")
+        elif mot1:
+            from django.contrib.auth.password_validation import validate_password
+            from django.core.exceptions import ValidationError
+            try:
+                validate_password(mot1)
+            except ValidationError as erreur:
+                self.add_error('password1', erreur)
+        return donnees
