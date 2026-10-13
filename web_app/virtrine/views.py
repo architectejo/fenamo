@@ -41,12 +41,19 @@ def article(request, id):
 
 def home(request):
     if request.method == 'POST':
-        nom = request.POST['nom']
-        mail = request.POST['mail']
-        datePost = request.POST['date']
-        raison = request.POST['raison']
-        phone = request.POST['phone']
-        description = request.POST['description']
+        nom = (request.POST.get('nom') or '').strip()
+        mail = (request.POST.get('mail') or '').strip()
+        datePost = request.POST.get('date') or None
+        raison = request.POST.get('raison') or ''
+        phone = request.POST.get('phone') or ''
+        description = request.POST.get('description') or ''
+        if not nom or not mail:
+            message = "Indiquez votre nom et votre adresse e-mail."
+            classe = 'alert alert-danger text-center'
+            affiche = Config.objects.last()
+            articles = Article.objects.order_by('-id')[0:12]
+            classHome = 'active'
+            return render(request, "site/index.html", locals(), status=400)
         getter, setter = Contact.objects.get_or_create(nom=nom, mail=mail, date=datePost, raison=raison, phone=phone,description=description)
         if setter:
             message = "Envoi effectué avec succès"

@@ -35,6 +35,24 @@ from calendar import monthrange
 # Create your views here.
 User = get_user_model()
 
+def champs_manquants(request, *noms):
+    """Noms des champs absents du POST (une clé manquante donne une erreur 400, jamais un KeyError)."""
+    return [nom for nom in noms if nom not in request.POST]
+
+
+def famille_invalide(request):
+    """Message d'erreur si le POST d'un proche est incomplet ou si l'année n'est pas un entier ; None sinon."""
+    if champs_manquants(request, 'nom', 'qualite', 'genre', 'annee'):
+        return _("Renseignez le nom, la qualité, le genre et l'année.")
+    if not request.POST['nom'].strip():
+        return _("Renseignez le nom du proche.")
+    try:
+        int(request.POST['annee'])
+    except ValueError:
+        return _("L'année doit être un nombre.")
+    return None
+
+
 def notify(user=None, membre=None, titre=None, description=None):
     getter, setter = Notification.objects.get_or_create(user=user, membre=membre, titre=titre, description=description)
     if setter: return True
@@ -444,7 +462,11 @@ def addCommunique(request):
     if user.membreId:
         membre = Membre.objects.filter(id=user.membreId).first()
     if request.method == 'POST':
-        message = request.POST['message']
+        message = (request.POST.get('message') or '').strip()
+        if not message:
+            message = _("Écrivez le communiqué.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-communique.html', locals(), status=400)
         getter, setter = Communique.objects.get_or_create(user=user, membre=membre, message=message)
         if setter:
             message = 'Envoyé !'
@@ -458,6 +480,11 @@ def addFamily(request,id):
     user = request.user
     membre = membre_pour(user, id, 'peut_ajouter_famille')
     if request.method == 'POST':
+        erreur = famille_invalide(request)
+        if erreur:
+            message = erreur
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-family.html', locals(), status=400)
         getter, setter = Famille.objects.get_or_create(
             user=user
             ,membre=membre
@@ -539,6 +566,10 @@ def addMoto(request, id):
             message = erreur_photo
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
+        if champs_manquants(request, 'plaque', 'marque', 'couleur', 'chassie', 'moteur'):
+            message = _("Renseignez la plaque, la marque, la couleur, le châssis et le moteur.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-moto.html', locals(), status=400)
         debut = datetime.today()
         finAbonnement = debut.replace(year=debut.year+1)
         motosCity = Moto.objects.filter(ville=membre.ville)
@@ -576,9 +607,14 @@ def addProvince(request):
     provinces = provinceSelector()
     
     if request.method == 'POST':
-        getter, setter = Province.objects.get_or_create(nom=request.POST.get('nom'), sigle=request.POST.get('sigle'))
+        nom_province = (request.POST.get('nom') or '').strip()
+        if not nom_province:
+            message = _("Indiquez le nom de la coordination provinciale.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-province.html', locals(), status=400)
+        getter, setter = Province.objects.get_or_create(nom=nom_province, sigle=request.POST.get('sigle'))
         if setter:
-            message = f"{request.POST['nom']} a été ajouté comme province"
+            message = f"{nom_province} a été ajouté comme province"
             classe = 'alert alert-info text-center'
     return render(request, 'app/add-province.html', locals())
 
@@ -597,7 +633,12 @@ def addVille(request, id):
     user = request.user
     province = get_object_or_404(Province, id=id)
     if request.method == 'POST':
-        getter, setter = Ville.objects.get_or_create(user=user, province=province, nom=request.POST['nom'])
+        nom_ville = (request.POST.get('nom') or '').strip()
+        if not nom_ville:
+            message = _("Indiquez le nom de l'antenne.")
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-ville.html', locals(), status=400)
+        getter, setter = Ville.objects.get_or_create(user=user, province=province, nom=nom_ville)
         if setter:
             classe = 'alert alert-info text-center'
             message = 'Ajout d\'une ville dans la base des données'
@@ -682,6 +723,11 @@ def editFamily(request,id):
     famille = get_object_or_404(Famille, id=id)
     membre = membre_pour(user, famille.membre_id, 'peut_modifier_famille')
     if request.method == 'POST':
+        erreur = famille_invalide(request)
+        if erreur:
+            message = erreur
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-family.html', locals(), status=400)
         famille.user = user
         famille.membre=membre
         famille.beneficiere=request.POST['nom']
@@ -710,6 +756,10 @@ def editMoto(request, id):
         erreur_photo = erreur_image(photo) if photo else None
         if erreur_photo:
             message = erreur_photo
+            classe = 'alert alert-danger text-center'
+            return render(request, 'app/add-moto.html', locals(), status=400)
+        if champs_manquants(request, 'plaque', 'marque', 'couleur', 'chassie', 'moteur'):
+            message = _("Renseignez la plaque, la marque, la couleur, le châssis et le moteur.")
             classe = 'alert alert-danger text-center'
             return render(request, 'app/add-moto.html', locals(), status=400)
         moto.num_plaque = request.POST['plaque']

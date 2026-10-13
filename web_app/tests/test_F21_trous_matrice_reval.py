@@ -197,7 +197,6 @@ def test_F21_matrice_complementaire_page_complete_et_fragment_htmx(client, acteu
 
 # ---------------------------------------------------------------- données invalides : jamais de 500
 
-@pytest.mark.xfail(reason='BUG a corriger (backend-django) : KeyError -> 500 quand un champ du POST manque (addFamily).', strict=False)
 def test_F21_ajout_famille_sans_champs_ne_donne_pas_500(client, acteurs):
     client.raise_request_exception = False
     client.force_login(acteurs['comptes']['su'])
@@ -219,7 +218,6 @@ def test_F21_modifier_antenne_inconnue_donne_404(client, acteurs):
     assert r.status_code == 404
 
 
-@pytest.mark.xfail(reason='BUG a corriger (backend-django) : KeyError sur request.POST["nom"] -> 500 (addVille).', strict=False)
 def test_F21_ajout_ville_sans_nom_ne_donne_pas_500(client, acteurs):
     client.raise_request_exception = False
     client.force_login(acteurs['comptes']['su'])
