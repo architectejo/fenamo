@@ -1,8 +1,11 @@
 """Actions d'état sur les membres et les engins, avec écriture au journal d'activités (F-70)."""
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 
 from compte.models import JournalAction
 from compte.services.journal import instantane, journaliser
+from coptapp.models import Membre
+from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider
 
 DRAPEAUX_VALIDATION = ('is_validate1', 'is_validate2', 'is_validate3')
 
@@ -31,8 +34,6 @@ def valider_membre(auteur, membre):
     niveaux d'un coup pour SU et privilege5 seulement). Idempotente : ne dévalide jamais. L'état est relu sous
     verrou ; seules les colonnes de validation sont écrites ; chaque validation est journalisée.
     """
-    from coptapp.models import Membre
-    from coptapp.services.droits_provisoires import etapes_a_valider
     membre = Membre.objects.select_for_update().get(pk=membre.pk)
     etapes = etapes_a_valider(auteur, membre)
     if not etapes:
@@ -95,10 +96,6 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
     MOTIF_MAX caractères. Retourne 'motif_requis' ou 'motif_trop_long' sans rien changer. Seules les colonnes
     concernées sont écrites (une modification concurrente d'une autre colonne n'est pas écrasée).
     """
-    from django.core.exceptions import PermissionDenied
-
-    from coptapp.models import Membre
-    from coptapp.services.droits_provisoires import droits_membre
     if action not in ACTIONS_SUPPRESSION:
         raise ValueError(f'Action de suppression inconnue : {action}')
     membre = Membre.objects.select_for_update().get(pk=membre.pk)

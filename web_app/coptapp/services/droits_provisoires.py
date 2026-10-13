@@ -19,11 +19,13 @@ membre.html / _fiche_entete.html) :
 
 Ambiguïtés, appliquées dans le sens le plus restrictif et à confirmer par la FENAMO : voir le rapport du lot.
 """
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
+from compte.models import JournalAction
 from coptapp.models import Antenne, AssociationMembre, Membre, Moto, Province, Ville
 
 
@@ -142,9 +144,6 @@ def droits_membre(user, membre=None):
 
 def _a_deja_valide(user, membre):
     """Vrai si `user` a déjà validé une étape de ce dossier (lecture du journal des validations)."""
-    from django.contrib.contenttypes.models import ContentType
-
-    from compte.models import JournalAction
     return JournalAction.objects.filter(
         action=JournalAction.Action.VALIDATION, auteur=user, objet_id=membre.pk,
         objet_type=ContentType.objects.get_for_model(Membre, for_concrete_model=False),

@@ -60,7 +60,7 @@ def test_F20_2c_migrations_0053_a_0055_depuis_0052_resultat_exact_et_rejouable(r
 
 
 @pytest.mark.django_db(transaction=True)
-def test_F20_2c_migration_compte_0012_ajoute_et_retire_l_action_mot_de_passe_mobile_sans_perte(retour_au_sommet):
+def test_F20_2c_migration_compte_0012_ajoute_et_retire_l_action_consultation_de_piece_sans_perte(retour_au_sommet):
     apps = _migrer(ETAT_APRES)
     Journal = apps.get_model('compte', 'JournalAction')
     champ = Journal._meta.get_field('action')
