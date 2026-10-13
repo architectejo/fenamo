@@ -12,6 +12,7 @@ import pytest
 from django.apps import apps
 from django.urls import URLResolver, get_resolver, reverse
 
+from virtrine.models import Config
 from tests.test_F21_matrice_routes import FAMILLE, ENGIN, M, PROFILS, ROUTES, S, _reponse, acteurs  # noqa: F401
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
@@ -101,6 +102,9 @@ def test_F21_aucune_route_ne_modifie_de_donnees_en_get(client, acteurs, profil):
     client.raise_request_exception = False
     client.force_login(acteurs['comptes'][profil])
     ids = {'id': 0, 'idM': acteurs['membre'].id, 'sid': acteurs['association'].id}
+    # Config est un singleton créé à la demande par des GET (voir le test xfail ci-dessous) : on l'installe d'avance
+    # pour que ce balayage ne dépende pas de l'ordre d'exécution des tests.
+    Config.objects.get_or_create()
     avant = _instantane()
     for nom, _modele in ROUTES_GET_A_PARCOURIR:
         # identifiant plausible selon la route, sinon 1
@@ -209,3 +213,13 @@ def test_F21_modifier_antenne_inconnue_donne_404(client, acteurs):
     client.force_login(acteurs['comptes']['su'])
     r = client.get(reverse('edit-antenne', kwargs={'id': 999999}))
     assert r.status_code == 404
+
+
+def test_F21_get_public_ne_cree_pas_de_ligne_config(client, db):
+    assert Config.objects.count() == 0
+    client.get(reverse('portail'))
+    assert Config.objects.count() == 0
+
+
+def test_F21_accueil_ancien_site_sans_image_de_fond_ne_donne_pas_500(client, db):
+    assert client.get(reverse('home')).status_code == 200
