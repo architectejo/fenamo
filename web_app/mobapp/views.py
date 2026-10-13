@@ -29,7 +29,7 @@ from compte.services.mobile import (
 from coptapp.models import Antenne, AssociationMembre, Membre, Ville
 from coptapp.services.engins import CoordinationInconnue, EnginDejaEnregistre, enregistrer_engin
 from coptapp.services.fichiers_prives import reponse_fichier
-from coptapp.services.geographie import rattacher_antenne, rattacher_ville
+from coptapp.services.geographie import rattacher_antenne, rattacher_association, rattacher_ville
 from mobapp.forms import InscriptionMobileForm, MotoFormRegister
 
 CLES_SESSION = ('mob_membre_id', 'mob_empreinte')
@@ -148,6 +148,12 @@ def session(request, id):
     return render(request, 'mob/session.html', contexte)
 
 
+def _deja_valide(membre):
+    """Vrai si le dossier a passé une validation (is_validate2 ou is_validate3) : le membre ne change plus seul ses rattachements
+    (``is_validate1`` vaut True dès la création, il ne signifie pas « validé »)."""
+    return bool(membre.is_validate2 or membre.is_validate3)
+
+
 def _choix_du_membre(membre):
     """Associations membres, antennes héritées (« villes ») et antennes proposées : celles de la coordination du membre.
 
@@ -168,18 +174,12 @@ def _choix_du_membre(membre):
 def data_membre(request, id):
     membre = get_object_or_404(Membre, id=id, is_delete=False)
     associations, villes, antennes = _choix_du_membre(membre)
-    if membre.ville or membre.antenne:
+    if membre.ville or membre.antenne or _deja_valide(membre):
         return redirect('session', id=membre.id)
     if request.method == 'POST':
         with transaction.atomic():  # association + ville + antenne : tout ou rien
             if request.POST.get('structure'):
-                association = get_object_or_404(associations, id=_entier(request.POST['structure']))
-                membre.structure = association
-                membre.save(update_fields=['structure', 'mise_a_jour'])
-                if association.ville_id:
-                    rattacher_ville(None, membre, association.ville)  # ville ET antenne
-                elif association.antenne_id:
-                    rattacher_antenne(None, membre, association.antenne)
+                rattacher_association(None, membre, get_object_or_404(associations, id=_entier(request.POST['structure'])))
             if request.POST.get('ville'):
                 rattacher_ville(None, membre, get_object_or_404(villes, id=_entier(request.POST['ville'])))
             if request.POST.get('antenne'):
@@ -203,6 +203,8 @@ def _entier(texte):
 def attribut_ville(request, id, id_ville):
     """POST seulement (jeton CSRF) : rattache le membre connecté à une antenne de sa coordination."""
     membre = get_object_or_404(Membre, id=id, is_delete=False)
+    if membre.ville_id or membre.antenne_id or _deja_valide(membre):
+        raise PermissionDenied  # déjà rattaché, ou dossier déjà validé : seul un agent le change
     rattacher_ville(None, membre, get_object_or_404(_choix_du_membre(membre)[1], id=id_ville))
     return redirect('data', id=id)
 
@@ -213,8 +215,9 @@ def attribut_ville(request, id, id_ville):
 def attribut_str(request, id, id_str):
     """POST seulement (jeton CSRF) : rattache le membre connecté à une association membre de sa coordination."""
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    membre.structure = get_object_or_404(_choix_du_membre(membre)[0], id=id_str)
-    membre.save(update_fields=['structure', 'mise_a_jour'])
+    if membre.structure_id or _deja_valide(membre):
+        raise PermissionDenied  # déjà rattaché à une association, ou dossier déjà validé : seul un agent le change
+    rattacher_association(None, membre, get_object_or_404(_choix_du_membre(membre)[0], id=id_str))  # + ville et antenne cohérentes
     return redirect('data', id=id)
 
 

@@ -81,3 +81,33 @@ def rattacher_antenne(auteur, objet, antenne):
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, objet, avant=avant,
                 apres={'ville': objet.ville_id, 'antenne': objet.antenne_id})
     return objet
+
+
+@transaction.atomic
+def rattacher_association(auteur, membre, association):
+    """Rattache `membre` à l'association membre `association` ET met sa ville et son antenne en cohérence avec elle (une transaction).
+
+    - association avec une ville : la ville du membre devient cette ville, son antenne celle de l'association (à défaut, l'antenne
+      issue de la ville, créée au besoin) ;
+    - association avec seulement une antenne : l'antenne du membre devient celle-ci, la ville celle d'origine de l'antenne si elle
+      en a une (sinon la ville actuelle est conservée) ;
+    - association sans ville ni antenne : seule l'association est écrite.
+    Écrit seulement les colonnes concernées et journalise l'avant / après (association, ville, antenne).
+    """
+    avant = {'structure': membre.structure_id, 'ville': membre.ville_id, 'antenne': membre.antenne_id}
+    membre.structure = association
+    champs = ['structure']
+    if association.ville_id:
+        membre.ville = association.ville
+        membre.antenne = association.antenne or antenne_depuis_ville(association.ville, creer=True)
+        champs += ['ville', 'antenne']
+    elif association.antenne_id:
+        membre.antenne = association.antenne
+        champs.append('antenne')
+        if association.antenne.ville_origine_id:
+            membre.ville = association.antenne.ville_origine
+            champs.append('ville')
+    membre.save(update_fields=_colonnes(membre, *champs))
+    journaliser(auteur, JournalAction.Action.RATTACHEMENT, membre, avant=avant,
+                apres={'structure': membre.structure_id, 'ville': membre.ville_id, 'antenne': membre.antenne_id})
+    return membre
