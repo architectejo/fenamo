@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from compte.models import Compte
 from coptapp.validators import valider_image, valider_piece
+from fenamo.storage import stockage_prive
 from datetime import date
 
 # Create your models here.
@@ -39,7 +40,7 @@ class AssociationMembre(models.Model):
     province = models.ForeignKey(Province, on_delete=models.SET_NULL, null=True, blank=True)
     type_de_structure = models.CharField(max_length=50, null=True,blank=True, verbose_name=_("type d'association"))
     num_justice = models.CharField(max_length=50, null=True, blank=True, unique=True)
-    capture_justice = models.ImageField(upload_to='./F92/', null=True, blank=True, validators=[valider_image])
+    capture_justice = models.ImageField(upload_to='./F92/', null=True, blank=True, validators=[valider_image], storage=stockage_prive)
     nom = models.CharField(max_length=255, null=True, blank=True)
     nom_responsable = models.CharField(max_length=255, null=True, blank=True)
     sigle = models.CharField(max_length=50, null=True, blank=True)
@@ -47,7 +48,7 @@ class AssociationMembre(models.Model):
     adresse = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=25, default='+243...', null=True, blank=True)
     email = models.EmailField(max_length=100, default='@', null=True, blank=True)
-    preuve_de_paiement = models.ImageField(upload_to='./frais/', null=True, blank=True, validators=[valider_image])
+    preuve_de_paiement = models.ImageField(upload_to='./frais/', null=True, blank=True, validators=[valider_image], storage=stockage_prive)
     twitter = models.CharField(max_length=500, null=True, blank=True)
     facebook = models.CharField(max_length=500, null=True, blank=True)
     instagram = models.CharField(max_length=500, null=True, blank=True)
@@ -72,7 +73,7 @@ class Antenne(models.Model):
 class Membre(models.Model):
     idf = models.CharField(max_length=50, null=True, blank=True)
     password = models.CharField(max_length=100, null=True, blank=True)
-    fiche_id = models.FileField(upload_to="./fiche_id/", null=True, blank=True, validators=[valider_piece])
+    fiche_id = models.FileField(upload_to="./fiche_id/", null=True, blank=True, validators=[valider_piece], storage=stockage_prive)
     user = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True)
     antenne = models.ForeignKey(Antenne, on_delete=models.SET_NULL, null=True, blank=True)
     ville = models.ForeignKey(Ville, on_delete=models.SET_NULL, null=True, blank=True)
@@ -98,7 +99,7 @@ class Membre(models.Model):
     chefferie = models.CharField(max_length=30, null=True, blank=True)
     territoire = models.CharField(max_length=30, null=True, blank=True)
     province_origine = models.CharField(max_length=20, null=True, blank=True)
-    photo = models.ImageField(upload_to='./', null=True, blank=True, validators=[valider_image])
+    photo = models.ImageField(upload_to='./', null=True, blank=True, validators=[valider_image], storage=stockage_prive)
     adresse = models.CharField(max_length=255, null=True, blank=True)
     telephone = models.CharField(max_length=20, null=True, blank=True)
     mail = models.EmailField(max_length=100, null=True, blank=True)

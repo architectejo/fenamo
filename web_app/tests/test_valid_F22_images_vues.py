@@ -23,6 +23,7 @@ CHAMPS = ('nom about genre titre fonction comite nation brevet etat_civil epouse
 @pytest.fixture(autouse=True)
 def media_temporaire(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
+    settings.PRIVATE_MEDIA_ROOT = tmp_path  # même dossier : les tests lisent les fichiers à un seul endroit
     return tmp_path
 
 

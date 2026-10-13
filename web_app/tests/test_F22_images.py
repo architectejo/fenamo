@@ -26,6 +26,7 @@ def _image(format_, taille=(10, 10), nom='photo.jpg', mode='RGB'):
 @pytest.fixture(autouse=True)
 def media_temporaire(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
+    settings.PRIVATE_MEDIA_ROOT = tmp_path  # même dossier : les tests lisent les fichiers à un seul endroit
     return tmp_path
 
 

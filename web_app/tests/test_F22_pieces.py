@@ -20,6 +20,7 @@ HTML = b'<html><script>alert(1)</script></html>'
 @pytest.fixture(autouse=True)
 def media_temporaire(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
+    settings.PRIVATE_MEDIA_ROOT = tmp_path  # même dossier : les tests lisent les fichiers à un seul endroit
 
 
 def _image(format_):

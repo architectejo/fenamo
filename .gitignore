@@ -39,3 +39,4 @@ website/var/
 
 # Sauvegardes locales des bases de développement
 *.sqlite3.*
+media_prive/

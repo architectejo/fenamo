@@ -30,6 +30,7 @@ HTML_AVEC_ENTETE_TARDIF = b'<html>' + b'x' * 2000 + b'%PDF-1.4'  # « %PDF- » a
 @pytest.fixture(autouse=True)
 def media_temporaire(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path / 'media'
+    settings.PRIVATE_MEDIA_ROOT = tmp_path / 'media'
     (tmp_path / 'media').mkdir()
     return tmp_path
 
