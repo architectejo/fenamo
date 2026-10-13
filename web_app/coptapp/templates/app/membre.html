@@ -78,7 +78,7 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
 {% if peut_attribuer_privileges %}{% if membre.is_user %}
 <template id="modale-privileges">{% include "coptapp/membres/partials/_modale_privileges.html" with action_url=request.path libelle_envoi=_("Enregistrer les privilèges") nom_envoi="privilege" %}</template>
 {% endif %}{% endif %}
-{% if peut_ajouter_engin and not membre.is_delete  %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
+{% if peut_ajouter_engin %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
 {% url 'moto-attribution' membre.id as url_attribution %}
 <template id="modale-attribuer">{% include "coptapp/membres/partials/_modale_attribuer.html" with action_url=url_attribution libelle_envoi=_("Attribuer l'engin") nom_envoi="moto" %}</template>
 {% endif %}{% endif %}

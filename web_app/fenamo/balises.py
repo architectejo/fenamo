@@ -15,7 +15,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from coptapp.forms import ALIAS_POST
-from coptapp.services.etats import LIBELLES, etat_de
+from coptapp.services.etats import ETATS, LIBELLES, etat_de
 from fenamo.htmx import veut_fragment as _veut_fragment
 
 register = template.Library()
@@ -163,9 +163,20 @@ def invalide(context, nom):
     return ''
 
 
+# Libellés au pluriel des puces de filtre (« Saisis », « Actifs »…) : mêmes codes que coptapp.services.etats.ETATS.
+LIBELLES_PLURIELS = {
+    'saisi': _('Saisis'),
+    'valide_antenne': _('Validés antenne'),
+    'valide_province': _('Validés province'),
+    'actif': _('Actifs'),
+    'renvoye': _('Renvoyés'),
+    'a_renouveler': _('À renouveler'),
+    'supprime': _('Supprimés'),
+}
+assert set(LIBELLES_PLURIELS) == set(ETATS), 'LIBELLES_PLURIELS doit couvrir exactement les codes de coptapp.services.etats.ETATS'
+
+
 @register.filter
-def motif_a_reprendre(membre):
-    """Motif proposé à la suppression : celui de la demande en cours ; jamais celui d'une ancienne suppression restaurée."""
-    if getattr(membre, 'suppression_demandee', False) and not getattr(membre, 'is_delete', False):
-        return membre.motif_suppression
-    return ''
+def libelle_pluriel_etat(code):
+    """Libellé d'un code d'état au pluriel (puces de filtre) ; à défaut, le libellé au singulier de la table unique."""
+    return LIBELLES_PLURIELS.get(code) or LIBELLES.get(code, code)

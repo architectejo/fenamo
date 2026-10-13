@@ -52,10 +52,10 @@ def test_F25_modales_de_suppression_postent_action_et_motif(client, jeu):
     assert 'Ancien motif' not in html.split('name="action" value="restaurer"')[1].split('</template>')[0]
 
 
-def test_F28_badge_et_puces_utilisent_la_table_unique_des_libelles(client, jeu):
-    from coptapp.services.etats import LIBELLES
+def test_F28_puces_utilisent_les_codes_et_pluriels_du_service(client, jeu):
+    from fenamo.balises import libelle_pluriel_etat
     client.force_login(jeu['compte'])
     html = client.get(reverse('liste-membre')).content.decode()
     assert 'valide-antenne' not in html  # une seule forme de code d'état : snake_case
     for code in ('saisi', 'valide_antenne', 'actif'):
-        assert f'value="{code}"' in html and str(LIBELLES[code]) in html
+        assert f'value="{code}"' in html and str(libelle_pluriel_etat(code)) in html

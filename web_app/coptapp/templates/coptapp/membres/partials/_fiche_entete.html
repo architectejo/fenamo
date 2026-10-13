@@ -34,7 +34,7 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     {% endif %}
     {% if peut_executer_suppression and not membre.is_delete %}
     {% translate "Supprimer le membre" as t_libelle %}{% translate "Ce membre disparaîtra des listes. La suppression est enregistrée au journal avec son motif et peut être annulée." as t_message %}
-    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_libelle icone="trash-2" variante="danger" action_post="executer" avec_motif=True motif_initial=membre|motif_a_reprendre %}
+    {% include "components/_confirmer.html" with prefixe="suppression" ident=membre.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_libelle icone="trash-2" variante="danger" action_post="executer" avec_motif=True motif_initial=membre.motif_suppression %}
     {% endif %}
     {% if peut_annuler_demande_suppression %}
     {% translate "Annuler la demande de suppression" as t_libelle %}{% translate "Annuler la demande de suppression de ce membre ?" as t_message %}

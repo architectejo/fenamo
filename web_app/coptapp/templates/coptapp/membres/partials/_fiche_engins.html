@@ -7,7 +7,7 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
 {% if membre.qualite == 'PROPRIETAIRE' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
 <section class="panneau">
   <div class="panneau-tete"><h2>{% translate "Engins du membre" %} <span class="ident doux">{{ nbrMoto }}</span></h2>
-    {% if peut_ajouter_engin and not membre.is_delete  %}<a href="{% url 'add-moto' membre.id %}" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un engin" %}</span></a>{% endif %}
+    {% if peut_ajouter_engin %}<a href="{% url 'add-moto' membre.id %}" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un engin" %}</span></a>{% endif %}
   </div>
   <div class="panneau-corps">
   {% if motos %}
@@ -22,10 +22,10 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
           <td data-libelle="{% translate 'Antenne' %}">{{ moto.antenne.nom|default:"—" }}</td>
           <td data-libelle="{% translate 'Fin d’identification' %}" class="chiffres">{{ moto.abonnement|default:"—" }}</td>
           <td data-role="actions">
-          {% if peut_modifier_engin and not membre.is_delete  %}
+          {% if peut_modifier_engin %}
             <a href="{% url 'edit-moto' moto.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
           {% endif %}
-          {% if peut_supprimer_engin and not membre.is_delete  %}
+          {% if peut_supprimer_engin %}
             {% url 'delete-moto' moto.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Il disparaîtra des listes ; la suppression est enregistrée dans le journal." as t_message %}
             {% include "components/_confirmer.html" with prefixe="moto" ident=moto.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message icone="trash-2" icone_seule=True %}
           {% endif %}
@@ -42,7 +42,7 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
 </section>
 {% endif %}
 
-{% if peut_ajouter_engin and not membre.is_delete  %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
+{% if peut_ajouter_engin %}{% if membre.qualite == 'MOTARD' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
 <section class="panneau u-mt-4">
   <div class="panneau-tete"><h2>{% translate "Engin attribué" %}</h2>
     <button type="button" class="bouton bouton--petit pousse" data-modale-locale="#modale-attribuer">{% icone "plus" %}<span>{% translate "Attribuer un engin" %}</span></button>
@@ -59,10 +59,10 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
           <td data-libelle="{% translate 'Antenne' %}">{{ motoAttr.antenne.nom|default:"—" }}</td>
           <td data-libelle="{% translate 'Propriétaire' %}">{{ motoAttr.proprietaire.nom|default:"—" }}</td>
           <td data-role="actions">
-          {% if peut_modifier_engin and not membre.is_delete  %}
+          {% if peut_modifier_engin %}
             <a href="{% url 'edit-moto' motoAttr.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
           {% endif %}
-          {% if peut_supprimer_engin and not membre.is_delete  %}
+          {% if peut_supprimer_engin %}
             {% url 'delete-moto' motoAttr.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Il disparaîtra des listes ; la suppression est enregistrée dans le journal." as t_message %}
             {% include "components/_confirmer.html" with prefixe="moto-attribue" ident=motoAttr.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message icone="trash-2" icone_seule=True %}
           {% endif %}

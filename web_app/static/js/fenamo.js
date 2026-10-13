@@ -116,7 +116,7 @@
   document.addEventListener('submit', function (e) {
     var champ = e.target.querySelector && e.target.querySelector('[data-motif-requis] textarea');
     if (!champ) { return; }
-    var erreur = document.getElementById(champ.getAttribute('aria-describedby'));
+    var erreur = champ.closest('[data-motif-requis]').querySelector('.champ-erreur');
     if (!champ.value.trim()) {
       e.preventDefault();
       if (erreur) { erreur.hidden = false; }
@@ -173,7 +173,8 @@
       .then(function (r) {
         if (r.status === 409) {
           libere(); D.fermerModale('#modale'); viderApresFermeture();
-          D.bulle({ message: f.dataset.texte409 || T().erreurServeur, niveau: 'danger' });
+          // un seul texte : celui du serveur (réponse 409), à défaut le message d'erreur générique
+          r.text().then(function (texte) { D.bulle({ message: (texte || '').trim().slice(0, 200) || T().erreurServeur, niveau: 'danger' }); });
         } else if (r.type === 'opaqueredirect' || r.ok) {
           window.location.reload();
         } else {

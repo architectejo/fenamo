@@ -33,7 +33,7 @@ Données personnelles : hx-history="false" (pas de copie de la page dans le stoc
   <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
     <label class="puce"><input type="radio" name="etat" value=""{% if not filtres.etat %} checked{% endif %}><span>{% translate "Tous" %}</span></label>
     {% for e in choix.etats %}
-    <label class="puce"><input type="radio" name="etat" value="{{ e }}"{% if filtres.etat == e %} checked{% endif %}><span>{{ e|libelle_code_etat }}</span></label>
+    <label class="puce"><input type="radio" name="etat" value="{{ e }}"{% if filtres.etat == e %} checked{% endif %}><span>{{ e|libelle_pluriel_etat }}</span></label>
     {% endfor %}
   </div>
 </form>
