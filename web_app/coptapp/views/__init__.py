@@ -621,6 +621,9 @@ def attributMoto(request, id):
         contrib_messages.error(request, _("Plusieurs engins portent ce numéro : attribution impossible."))
     else:
         moto = motos[0]
+        # Il faut aussi le droit de modifier l'engin (F-35) : son propriétaire peut être un autre membre.
+        if moto.proprietaire is None or not droits_membre(request.user, moto.proprietaire)['peut_modifier_engin']:
+            raise PermissionDenied
         avant = {'motard_id': moto.motard_id}
         moto.motard_id = str(membre.id)
         moto.save()
