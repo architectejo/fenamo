@@ -22,7 +22,8 @@ from coptapp.services.droits_provisoires import (
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
     membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
-from coptapp.services.historique import historique_objet
+from coptapp.services.engins import attribuer_engin
+from coptapp.services.fiche_membre import contexte_fiche
 from coptapp.services.membres import (
     Q_LONGUEUR_MAX, choix_filtres, demander_modification, lister_membres, membres_filtres, modifier_membre,
 )
@@ -649,28 +650,18 @@ def addVille(request, id):
 
 @require_POST
 def attributMoto(request, id):
+    """Attribue un motard (le membre `id`) à l'engin dont le numéro est envoyé (F-33) : voir `attribuer_engin`."""
     membre = membre_pour(request.user, id, 'peut_ajouter_engin')
-    numero = (request.POST.get('numero') or '').strip()
-    if not numero:
-        contrib_messages.error(request, _("Indiquez le numéro de l'engin."))
-        return redirect("membre-view", id=id)
-    motos = list(engins_visibles(request.user).filter(numero=numero)[:2])
-    if not motos:
-        contrib_messages.error(request, _("Aucun engin ne porte ce numéro."))
-    elif len(motos) > 1:
-        contrib_messages.error(request, _("Plusieurs engins portent ce numéro : attribution impossible."))
-    else:
-        moto = motos[0]
-        # Il faut aussi le droit de modifier l'engin (F-35) : son propriétaire peut être un autre membre.
-        if moto.proprietaire is None or not droits_membre(request.user, moto.proprietaire)['peut_modifier_engin']:
-            raise PermissionDenied
-        avant = {'motard_id': moto.motard_id}
-        moto.motard_id = str(membre.id)
-        moto.save()
-        journaliser(request.user, JournalAction.Action.RATTACHEMENT, moto, avant=avant,
-                    apres={'motard_id': moto.motard_id}, libelle=f"Engin {moto.numero}")
-        contrib_messages.success(request, _("Engin attribué."))
+    resultat = attribuer_engin(request.user, membre, request.POST.get('numero'))
+    ajouter, texte = {
+        'numero_requis': (contrib_messages.error, _("Indiquez le numéro de l'engin.")),
+        'introuvable': (contrib_messages.error, _("Aucun engin ne porte ce numéro.")),
+        'ambigu': (contrib_messages.error, _("Plusieurs engins portent ce numéro : attribution impossible.")),
+        'attribue': (contrib_messages.success, _("Engin attribué.")),
+    }[resultat]
+    ajouter(request, texte)
     return redirect("membre-view", id=id)
+
 
 @editeur_requis
 def contact(request):
@@ -792,57 +783,35 @@ def membre_view(request, id):
     user = request.user
     membre, droits = membre_et_droits(user, id, supprimes_visibles=True)  # supprimé : visible de qui peut le restaurer
 
-    structure = AssociationMembre.objects.filter(users=user).first()
-    verify = User.objects.filter(membreId=id)
-    if verify:
-        membreUser = verify[0]
-    villes = Ville.objects.filter(province=membre.province).exclude(nom=None)
-    structures = AssociationMembre.objects.filter(province=membre.province)
-    if membre.ville:
-        antennes = Antenne.objects.filter(structure__ville=membre.ville).exclude(nom=None)
-    else:
-        antennes = Antenne.objects.order_by('nom')
-    familles = Famille.objects.filter(membre=membre)
-
-    verifyMoto = Moto.objects.filter(motard_id=membre.id)
-    if len(verifyMoto) != 0:
-        motoAttr = verifyMoto.first()
-
     erreurs_modifier = None
+    message = None
     statut = 200
     if request.method == 'POST':
         if 'modifier' in request.POST:
-            formulaire, _modifie = modifier_membre(user, membre, request.POST, request.FILES)  # 403 sans droit
+            formulaire, modifie = modifier_membre(user, membre, request.POST, request.FILES)  # 403 sans droit
             if formulaire.errors:
                 erreurs_modifier = formulaire.errors
                 statut = 400
                 membre = Membre.objects.get(pk=membre.pk)  # l'instance du formulaire porte des valeurs refusées
-            elif _modifie:
+            elif modifie:
                 notify(user=membre.user, membre=membre, titre=_("Modification d'un membre"))
         elif 'envoyer' in request.POST:
             resultat = demander_modification(user, membre, request.POST.get('demande'))  # 403 sans droit
             message = {'creee': _("Votre demande a été envoyée"), 'existante': _("Votre demande a déjà été envoyée"),
                        'vide': _("Indiquez votre demande.")}[resultat]
-            classMessage = 'alert alert-info'
         elif 'privilege' in request.POST:
             # Réservé aux super-utilisateurs (403 sinon) : correctif minimal avant les rôles (sous-lot 2e).
             if not droits['peut_attribuer_privileges']:
                 raise PermissionDenied
-            if verify:
-                attribuer_privileges(request.user, membreUser, membre, request.POST)
-    naissance = membre.date_naissance
-    age = datetime.today().year - naissance.year if naissance else None
-    if verify:
-        if membreUser.privilege1: checked1 = 'checked'
-        if membreUser.privilege2: checked2 = 'checked'
-        if membreUser.privilege3: checked3 = 'checked'
-        if membreUser.privilege4: checked4 = 'checked'
-        if membreUser.privilege5: checked5 = 'checked'
-    motos = Moto.objects.filter(proprietaire=membre, is_delete=False)
-    nbrMoto = len(motos)
-    # Dernières lignes du journal (action, auteur, date, motif ; jamais avant/après) : seulement pour qui voit l'onglet.
-    historique = historique_objet(membre) if droits['peut_voir_historique'] else []
-    return render(request, 'app/membre.html', {**locals(), **droits, 'droits': droits}, status=statut)
+            compte = compte_du_membre(membre.id)
+            if compte is not None:
+                attribuer_privileges(user, compte, membre, request.POST)
+    contexte = {
+        'user': user, 'membre': membre, 'droits': droits, **droits,
+        'erreurs_modifier': erreurs_modifier, 'message': message,
+        **contexte_fiche(user, membre, droits),
+    }
+    return render(request, 'app/membre.html', contexte, status=statut)
 
 
 #Vue de la moto

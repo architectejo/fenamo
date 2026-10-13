@@ -49,3 +49,27 @@ def test_F33_super_utilisateur_attribue(client, jeu):
     assert _attribuer(client, jeu['membre'], '001PF').status_code == 302
     jeu['moto'].refresh_from_db()
     assert jeu['moto'].motard_id == str(jeu['membre'].id)
+
+
+def test_F33_service_attribuer_engin_codes_et_journal(jeu):
+    from compte.models import JournalAction
+    from coptapp.services.engins import attribuer_engin
+    su = jeu['compte']
+    assert attribuer_engin(su, jeu['membre'], '  ') == 'numero_requis'
+    assert attribuer_engin(su, jeu['membre'], 'INCONNU') == 'introuvable'
+    Moto.objects.create(proprietaire=jeu['membre'], abonnement=date(2030, 1, 1), numero='001PF')  # doublon de numéro
+    assert attribuer_engin(su, jeu['membre'], '001PF') == 'ambigu'
+    Moto.objects.filter(pk=jeu['moto'].pk).update(numero='777QQ')
+    assert attribuer_engin(su, jeu['membre'], '777QQ') == 'attribue'
+    jeu['moto'].refresh_from_db()
+    assert jeu['moto'].motard_id == str(jeu['membre'].id)
+    ligne = JournalAction.objects.get(action=JournalAction.Action.RATTACHEMENT)
+    assert ligne.avant == {'motard_id': None} and ligne.apres == {'motard_id': str(jeu['membre'].id)}
+
+
+def test_F33_service_ecrit_par_colonnes(jeu):
+    from coptapp.services.engins import attribuer_engin
+    Moto.objects.filter(pk=jeu['moto'].pk).update(marque='Concurrente')
+    attribuer_engin(jeu['compte'], jeu['membre'], '001PF')
+    jeu['moto'].refresh_from_db()
+    assert jeu['moto'].marque == 'Concurrente' and jeu['moto'].motard_id

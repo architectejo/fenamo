@@ -65,10 +65,12 @@ def changer_suppression(auteur, objet, supprime, motif=''):
 
 
 def rattacher(auteur, objet, champ, cible):
-    """Rattache `objet` à `cible` par la clé étrangère `champ` ; journalise l'ancien et le nouveau rattachement."""
+    """Rattache `objet` à `cible` par la clé étrangère `champ` ; journalise l'ancien et le nouveau rattachement.
+    N'écrit que la colonne du rattachement (et la date de mise à jour si l'objet en a une)."""
     ancien = getattr(objet, champ)
     setattr(objet, champ, cible)
-    objet.save()
+    champs = [champ] + (['mise_a_jour'] if any(f.name == 'mise_a_jour' for f in objet._meta.concrete_fields) else [])
+    objet.save(update_fields=champs)
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, objet,
                 avant={champ: getattr(ancien, 'pk', None), f'{champ}_libelle': str(ancien) if ancien else None},
                 apres={champ: getattr(cible, 'pk', None), f'{champ}_libelle': str(cible) if cible else None})
