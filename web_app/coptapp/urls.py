@@ -9,6 +9,7 @@ exigée partout par LoginRequiredMiddleware.
 from django.urls import path
 
 from coptapp.views import *
+from coptapp.views.mobile import definir_mot_de_passe_mobile
 from coptapp.views.fichiers import fichier_par_nom, fichier_prive
 from coptapp.views.tableau_bord import tableau_bord
 
@@ -49,6 +50,7 @@ urlpatterns = [
     path('membres/<int:idM>/rattachement/ville/<int:id>/', ville_attr_membre, name="ville-attribution"),
     path('membres/<int:idM>/rattachement/antenne/<int:id>/', antenne_attr_membre, name="antenne-attribution"),
     path('membres/<int:id>/compte/', viewUser, name="view-user"),
+    path('membres/<int:id>/mot-de-passe-mobile/', definir_mot_de_passe_mobile, name="mot-de-passe-mobile"),
     path('membres/<int:id>/famille/ajouter/', addFamily, name="add-family"),
     path('membres/<int:id>/motos/ajouter/', addMoto, name="add-moto"),
 

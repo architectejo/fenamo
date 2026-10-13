@@ -44,7 +44,7 @@ TOUTES = routes_declarees()
 TROUS_CONNUS = {
     # application web
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
-    'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom',
+    'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom', 'mot-de-passe-mobile',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville',
     'home', 'vue-article', 'about', 'news', 'portail', 'politique',
@@ -136,6 +136,9 @@ COMPLEMENT = [
     # pièces et photos privées : le membre du jeu n'a aucun fichier (le détail est dans test_F22_fichiers_prives.py)
     ('fichier', 'get', lambda a: {'type_objet': 'membre', 'id': a['membre'].id, 'champ': 'photo'}, None, S(404)),
     ('fichier-nom', 'get', {'nom': 'absent.jpg'}, None, S(404)),
+    # mot de passe mobile : POST seulement ; le membre du jeu n'a pas d'identifiant mobile (message d'erreur, 302)
+    ('mot-de-passe-mobile', 'get', M, None, S(405)),
+    ('mot-de-passe-mobile', 'post', M, None, S(302, **VISIBLES)),
     ('securite', 'get', {}, None, S(200)),
     ('view-user', 'get', M, None, S(302)),
     # comptes : super-utilisateur seulement

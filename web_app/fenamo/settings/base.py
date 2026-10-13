@@ -164,6 +164,8 @@ MEDIA_ROOT = Path(env('MEDIA_ROOT', default='') or BASE_DIR / 'media')
 PRIVATE_MEDIA_ROOT = Path(env('PRIVATE_MEDIA_ROOT', default='') or BASE_DIR / 'media_prive')
 # Taille maximale d'une image téléversée, en Mo (coptapp.validators, § 9.2).
 UPLOAD_IMAGE_MAX_MO = env.float('UPLOAD_IMAGE_MAX_MO', default=3)
+# Antirobot de l'inscription mobile (/mob/register/) : inscriptions par heure et par adresse IP.
+MOB_INSCRIPTIONS_PAR_HEURE = env.int('MOB_INSCRIPTIONS_PAR_HEURE', default=5)
 # Taille maximale d'une pièce jointe (PDF, JPEG, PNG), en Mo.
 UPLOAD_PIECE_MAX_MO = env.float('UPLOAD_PIECE_MAX_MO', default=3)
 

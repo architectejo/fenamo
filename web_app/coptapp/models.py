@@ -72,7 +72,8 @@ class Antenne(models.Model):
 #Démande du client
 class Membre(models.Model):
     idf = models.CharField(max_length=50, null=True, blank=True)
-    password = models.CharField(max_length=100, null=True, blank=True)
+    # Mot de passe de l'espace mobile /mob/ : TOUJOURS un hachage Django (128 caractères), jamais le texte en clair.
+    password = models.CharField(max_length=128, null=True, blank=True)
     fiche_id = models.FileField(upload_to="./fiche_id/", null=True, blank=True, validators=[valider_piece], storage=stockage_prive)
     user = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True)
     antenne = models.ForeignKey(Antenne, on_delete=models.SET_NULL, null=True, blank=True)
