@@ -21,7 +21,7 @@
   </div>
 </section>
 
-{% if not membre.ville or not membre.structure %}
+{% if not membre.structure or not membre.ville and not membre.antenne %}
 <div class="u-mt-4">{% include "components/_erreur.html" with niveau="alerte" titre=_("Complétez les informations manquantes.") %}</div>
 {% endif %}
 {% if not membre.structure %}
@@ -34,13 +34,16 @@
   </div>
 </section>
 {% endif %}
-{% if not membre.ville %}
+{% if not membre.ville and not membre.antenne %}
 <section class="panneau u-mt-4">
   <div class="panneau-tete"><h2>{% translate "Votre antenne" %}</h2></div>
   <div class="panneau-corps pile">
     {% for ville in villes %}
     <form method="post" action="{% url 'attribut-ville' membre.id ville.id %}">{% csrf_token %}<button type="submit" class="bouton bouton--bloc"><span class="roue" aria-hidden="true"></span><span>{{ ville.nom }}</span></button></form>
     {% endfor %}
+    {% for antenne in antennes %}{% if not antenne.ville_origine_id %}
+    <form method="post" action="{% url 'data' membre.id %}">{% csrf_token %}<input type="hidden" name="antenne" value="{{ antenne.id }}"><button type="submit" class="bouton bouton--bloc"><span class="roue" aria-hidden="true"></span><span>{{ antenne.nom }}</span></button></form>
+    {% endif %}{% endfor %}
   </div>
 </section>
 {% endif %}

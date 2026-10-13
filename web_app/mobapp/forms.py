@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from coptapp.models import Membre, Moto, Province
@@ -30,7 +31,13 @@ class MembreFormRegister(forms.ModelForm):
     qualites_liste = [('PROPRIETAIRE','PROPRIETAIRE'),('MOTARD ET PROPRIETAIRE','MOTARD ET PROPRIETAIRE')]
     genre = forms.ChoiceField(choices=genre_liste)
     qualite = forms.ChoiceField(choices=qualites_liste)
-    province = forms.ModelChoiceField(queryset=Province.objects.order_by('nom').exclude(nom=None), label=_('Province'), required=True)
+    # Coordinations proposées : celles qui ont un code officiel ou une existence réelle (villes, antennes, membres). Les doublons de
+    # coordination entre anciennes et nouvelles lignes ne sont PAS fusionnés ici (décision de l'utilisateur en attente).
+    province = forms.ModelChoiceField(
+        queryset=Province.objects.exclude(nom=None).filter(
+            Q(code__isnull=False) | Q(ville__isnull=False) | Q(antennes__isnull=False) | Q(membre__isnull=False)
+        ).distinct().order_by('ordre', 'nom'),
+        label=_('Coordination provinciale'), required=True)
     class Meta:
         model = Membre
         # Liste blanche (jamais d'exclude : formulaire public anonyme)

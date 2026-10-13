@@ -188,7 +188,7 @@ class MembreFenamoForm(forms.ModelForm):
 class AntenneForm(forms.ModelForm):
     class Meta:
         model = Antenne
-        fields = ('nom', 'zone', 'code')
+        fields = ('nom', 'zone', 'code', 'type', 'coordination')
         labels = {
             'nom':"Nom de l'antenne",
             'zone':"Zone opérationnelle"

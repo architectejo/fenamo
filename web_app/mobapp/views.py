@@ -16,6 +16,7 @@ from functools import wraps
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.cache import add_never_cache_headers
 from django.utils.translation import gettext as _
@@ -25,10 +26,10 @@ from compte.services.mobile import (
     connexion_bloquee, effacer_echecs, empreinte_session, inscriptions_trop_nombreuses, noter_echec, noter_inscription,
     session_valide, verifier_mot_de_passe,
 )
-from coptapp.models import AssociationMembre, Membre, Ville
+from coptapp.models import Antenne, AssociationMembre, Membre, Ville
 from coptapp.services.engins import CoordinationInconnue, EnginDejaEnregistre, enregistrer_engin
 from coptapp.services.fichiers_prives import reponse_fichier
-from coptapp.services.geographie import rattacher_ville
+from coptapp.services.geographie import rattacher_antenne, rattacher_ville
 from mobapp.forms import InscriptionMobileForm, MotoFormRegister
 
 CLES_SESSION = ('mob_membre_id', 'mob_empreinte')
@@ -148,29 +149,44 @@ def session(request, id):
 
 
 def _choix_du_membre(membre):
-    """Associations membres et antennes proposées : celles de la coordination du membre."""
-    associations = AssociationMembre.objects.filter(province=membre.province).exclude(ville=None)
+    """Associations membres, antennes héritées (« villes ») et antennes proposées : celles de la coordination du membre.
+
+    Une coordination récente peut n'avoir que des antennes (aucune ville héritée) : le membre doit pouvoir terminer l'étape
+    « données » avec ce qui existe. Une association est proposée dès qu'elle a une ville OU une antenne.
+    """
+    if membre.province_id is None:  # coordination inconnue : rien à proposer (jamais « toutes les associations sans province »)
+        return AssociationMembre.objects.none(), Ville.objects.none(), Antenne.objects.none()
+    associations = (AssociationMembre.objects.filter(Q(province=membre.province) | Q(antenne__coordination=membre.province))
+                    .exclude(ville=None, antenne=None).distinct())
     villes = Ville.objects.filter(province=membre.province).exclude(nom=None)
-    return associations, villes
+    antennes = Antenne.objects.filter(coordination=membre.province).exclude(nom=None)
+    return associations, villes, antennes
 
 
 @sans_cache
 @membre_connecte
 def data_membre(request, id):
     membre = get_object_or_404(Membre, id=id, is_delete=False)
-    associations, villes = _choix_du_membre(membre)
-    if membre.ville:
+    associations, villes, antennes = _choix_du_membre(membre)
+    if membre.ville or membre.antenne:
         return redirect('session', id=membre.id)
     if request.method == 'POST':
-        if request.POST.get('structure'):
-            association = get_object_or_404(associations, id=_entier(request.POST['structure']))
-            membre.structure = association
-            membre.save(update_fields=['structure', 'mise_a_jour'])
-            rattacher_ville(None, membre, association.ville)  # ville ET antenne
-        if request.POST.get('ville'):
-            rattacher_ville(None, membre, get_object_or_404(villes, id=_entier(request.POST['ville'])))
+        with transaction.atomic():  # association + ville + antenne : tout ou rien
+            if request.POST.get('structure'):
+                association = get_object_or_404(associations, id=_entier(request.POST['structure']))
+                membre.structure = association
+                membre.save(update_fields=['structure', 'mise_a_jour'])
+                if association.ville_id:
+                    rattacher_ville(None, membre, association.ville)  # ville ET antenne
+                elif association.antenne_id:
+                    rattacher_antenne(None, membre, association.antenne)
+            if request.POST.get('ville'):
+                rattacher_ville(None, membre, get_object_or_404(villes, id=_entier(request.POST['ville'])))
+            if request.POST.get('antenne'):
+                rattacher_antenne(None, membre, get_object_or_404(antennes, id=_entier(request.POST['antenne'])))
         return redirect('session', id=membre.id)
-    return render(request, 'mob/data.html', {'membre': membre, 'associations': associations, 'villes': villes})
+    return render(request, 'mob/data.html', {'membre': membre, 'associations': associations, 'villes': villes,
+                                             'antennes': antennes})
 
 
 def _entier(texte):

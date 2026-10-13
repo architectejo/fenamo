@@ -72,7 +72,7 @@ def test_F12_listes_blanches_association_antenne_engin_mobile():
     attendus = {
         AssociationMembreForm: ['ville'] + communs,
         AssociationMembreIdentifyForm: ['province'] + communs,
-        AntenneForm: ['nom', 'zone', 'code'],
+        AntenneForm: ['nom', 'zone', 'code', 'type', 'coordination'],
         MotoFormRegister: ['photo', 'num_plaque', 'num_moteur', 'num_chassie', 'marque', 'couleur'],
     }
     for formulaire, champs in attendus.items():
