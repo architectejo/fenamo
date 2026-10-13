@@ -8,6 +8,8 @@ lien protégé, jamais un lien public. Les gabarits neufs utilisent la balise ``
 """
 from urllib.parse import quote
 
+import os
+
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
@@ -22,7 +24,6 @@ class StockagePrive(FileSystemStorage):
 
     @property
     def location(self):
-        import os
         return os.path.abspath(self.base_location)
 
     @property
@@ -30,7 +31,7 @@ class StockagePrive(FileSystemStorage):
         return None
 
     def url(self, name):
-        return reverse('fichier-nom', kwargs={'nom': quote(str(name).lstrip('./'))})  # vue contrôlée, jamais /media/
+        return reverse('fichier-nom', kwargs={'nom': quote(str(name).removeprefix('./'))})  # vue contrôlée, jamais /media/
 
 
 def stockage_prive():

@@ -14,44 +14,18 @@ Droits :
 from urllib.parse import unquote
 
 from django.core.exceptions import PermissionDenied
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
-from compte.models import JournalAction
-from compte.services.journal import journaliser
 from coptapp.models import AssociationMembre, Membre
 from coptapp.services.droits_provisoires import associations_du_compte, droits_membre, membre_pour
-from coptapp.validators import mime_reel, nom_vignette
+from coptapp.services.fichiers_prives import reponse_fichier
 
 CHAMPS = {
     'membre': {'photo': False, 'fiche_id': True},  # champ -> est une pièce (journalisée, droit renforcé)
     'association': {'capture_justice': True, 'preuve_de_paiement': True},
 }
-EXTENSIONS = {'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}
-
-
-def _reponse(request, objet, champ, piece, vignette):
-    fichier = getattr(objet, champ)
-    if not fichier:
-        raise Http404
-    nom = fichier.name
-    if vignette and not piece:
-        candidate = nom_vignette(nom)
-        if fichier.storage.exists(candidate):
-            nom = candidate
-    if not fichier.storage.exists(nom):
-        raise Http404
-    mime = mime_reel(fichier.storage.path(nom))
-    if mime is None:
-        raise Http404  # contenu non reconnu : jamais servi
-    if piece:
-        journaliser(request.user, JournalAction.Action.CONSULTATION_PIECE, objet, libelle=champ)
-    reponse = FileResponse(fichier.storage.open(nom, 'rb'), content_type=mime)
-    reponse['Content-Disposition'] = f'inline; filename="{champ}.{EXTENSIONS[mime]}"'  # nom neutre : jamais celui de l'envoi
-    reponse['X-Content-Type-Options'] = 'nosniff'
-    reponse['Cache-Control'] = 'private, no-store' if piece else 'private, max-age=600'
-    return reponse
 
 
 def servir(request, type_objet, id, champ, vignette=False):
@@ -68,7 +42,7 @@ def servir(request, type_objet, id, champ, vignette=False):
         objet = get_object_or_404(associations_du_compte(user), id=id)
         if not droits_membre(user)['peut_creer_membre']:
             raise PermissionDenied
-    return _reponse(request, objet, champ, piece, vignette)
+    return reponse_fichier(request.user, objet, champ, piece, vignette)
 
 
 @require_GET
@@ -80,7 +54,7 @@ def fichier_prive(request, type_objet, id, champ):
 @require_GET
 def fichier_par_nom(request, nom):
     """/fichiers/nom/<nom stocké> : adresse renvoyée par ``champ.url`` (gabarits hérités) ; mêmes contrôles que ci-dessus."""
-    nom = unquote(nom).lstrip('./')
+    nom = unquote(nom).removeprefix('./')
     candidats = [(False, nom)]
     if '_vignette.' in nom:
         candidats.append((True, nom.replace('_vignette.', '.')))

@@ -12,9 +12,12 @@ import shutil
 from pathlib import Path
 
 from django.conf import settings
+from django.http import FileResponse, Http404
 
+from compte.models import JournalAction
+from compte.services.journal import journaliser
 from coptapp.models import AssociationMembre, Membre
-from coptapp.validators import nom_vignette
+from coptapp.validators import mime_reel, nom_vignette
 
 CHAMPS_PRIVES = (
     (Membre, 'fiche_id', False),
@@ -71,3 +74,36 @@ def deplacer_fichiers_prives(dry_run=False, source=None, destination=None):
             origine.unlink()  # copie vérifiée (ou déjà identique) : la source peut disparaître
         rapport['deplaces'].append((champ, nom))
     return rapport
+
+
+EXTENSIONS = {'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}
+
+
+def reponse_fichier(auteur, objet, champ, piece, vignette=False):
+    """Réponse HTTP qui sert le fichier privé `champ` de `objet` (Membre ou AssociationMembre) : à n'appeler qu'APRÈS les
+    contrôles de droit et de périmètre de la vue.
+
+    Content-Type fixé d'après le contenu réel (PDF, JPEG, PNG, WebP ; autre : 404), ``X-Content-Type-Options: nosniff``,
+    ``Content-Disposition: inline`` au nom neutre (jamais celui de l'envoi), ``Cache-Control: private, no-store``.
+    La consultation d'une PIÈCE (``piece`` vrai) est journalisée ; celle d'une photo ne l'est pas.
+    """
+    fichier = getattr(objet, champ)
+    if not fichier:
+        raise Http404
+    nom = fichier.name
+    if vignette and not piece:
+        candidate = nom_vignette(nom)
+        if fichier.storage.exists(candidate):
+            nom = candidate
+    if not fichier.storage.exists(nom):
+        raise Http404
+    mime = mime_reel(fichier.storage.path(nom))
+    if mime is None:
+        raise Http404  # contenu non reconnu : jamais servi
+    if piece:
+        journaliser(auteur, JournalAction.Action.CONSULTATION_PIECE, objet, libelle=champ)
+    reponse = FileResponse(fichier.storage.open(nom, 'rb'), content_type=mime)
+    reponse['Content-Disposition'] = f'inline; filename="{champ}.{EXTENSIONS[mime]}"'
+    reponse['X-Content-Type-Options'] = 'nosniff'
+    reponse['Cache-Control'] = 'private, no-store'
+    return reponse
