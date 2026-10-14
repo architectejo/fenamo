@@ -1,66 +1,10 @@
-{% extends 'base-app.html' %}
-
-{% load static %}{% load fichiers %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-  <div class="pagetitle">
-    <h1>Cards</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-        <li class="breadcrumb-item">Components</li>
-        <li class="breadcrumb-item active">Cards</li>
-      </ol>
-    </nav>
-  </div><!-- End Page Title -->
-
-  <section class="section">
-    <div class="row align-items-top">
-      <div class="col-lg-12">
-        <!-- Card with an image on left -->
-        <div class="card mb-3">
-          <div class="row g-0">
-            <div class="col-md-4">
-              {% if message.membre.photo %}
-              <img src="{% url_fichier message.membre "photo" vignette=True %}" class="img-fluid rounded-start" alt="...">
-              {% endif %}
-            </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <h5 class="card-title">{{message.membre.nom}}</h5>
-                <p class="card-text">{{message.message}}</p>
-                <p class="card-text">{{message.mise_a_jour}}</p>
-              </div>
-            </div>
-          </div>
-        </div><!-- End Card with an image on left -->
-
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Réactions</h5>
-            {% comment %}{%for react in reactions%}
-            <div class="alert alert-dark  alert-dismissible fade show" role="alert">
-              <h4 class="alert-heading">{{react.membre.nom}}</h4>
-              <p>{{react.reaction}}</p>
-              <hr>
-              <p class="mb-0">{{react.mise_a_jour}}</p>
-            </div>
-            {% endfor %} {% endcomment %}
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-</main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n design fichiers %}{% comment %}Lecture d'un communiqué (écran migré). La vue fournit `message` (communiqué).{% endcomment %}
+{% block titre %}{% translate "Communiqué" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'list-message' %}">{% translate "Communiqués" %}</a><span aria-hidden="true">/</span><span>{% translate "Lecture" %}</span></nav>
+<section class="panneau panneau--etroit"><div class="panneau-corps pile">
+  <div class="cellule-personne">{% avatar message.membre.nom message.membre.photo 40 %}<div><strong>{{ message.membre.nom|default:"—" }}</strong><span class="meta">{{ message.mise_a_jour|date:"d/m/Y · H:i" }}</span></div></div>
+  <p class="u-mb-0">{{ message.message|linebreaksbr }}</p>
+</div></section>
+{% endblock %}

@@ -21,6 +21,7 @@ Le formulaire d'édition reste sur la page (la vue répond par un rendu de cette
   {% translate "Motocyclistes" as t3 %}{% include "components/_chiffre.html" with valeur=structure.motocyclistes libelle=t3 %}
 </div>
 {% endif %}
+{% if not structure %}<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une association membre" %}</h1><p class="page-contexte">{% icone "building-2" %}{% translate "Référentiel des associations de la fédération" %}</p></div></div>{% endif %}
 {% if msg %}<div class="u-mt-4">{% include "components/_erreur.html" with niveau="info" titre=msg %}</div>{% endif %}
 <div class="grille grille--principale u-mt-6">
   {% if structure %}

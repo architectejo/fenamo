@@ -1,68 +1,16 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Province</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
-          <li class="breadcrumb-item">Formulair</li>
-          <li class="breadcrumb-item active">Ajout d'une province</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section">
-      <div class="row">
-        <div class="col-lg-12">
-
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Ajouter une province</h5>
-              <p class="{{classe}}">{{message}}</p>
-
-              <!-- General Form Elements -->
-              <form method="post">
-                {% csrf_token %}
-                <div class="row mb-3">
-                  <label for="inputText" class="col-sm-2 col-form-label">Province:</label>
-                  <div class="col-sm-10">
-                    <input type="text" name="nom" class="form-control">
-                  </div>
-                </div>
-
-                <div class="row mb-3">
-                  <label for="inputText" class="col-sm-2 col-form-label">Sigle:</label>
-                  <div class="col-sm-10">
-                    <input type="text" name="sigle" class="form-control">
-                  </div>
-                </div>
-
-                <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label">Sauvegarder:</label>
-                  <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                  </div>
-                </div>
-
-              </form><!-- End General Form Elements -->
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n design %}
+{% block titre %}Ajouter une coordination - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><span>{% translate "Coordination provinciale" %}</span></nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une coordination provinciale" %}</h1><p class="page-contexte">{% icone "map" %}{% translate "Référentiel géographique" %}</p></div></div>
+{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+<section class="panneau panneau--etroit" hx-history="false">
+  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+    {% csrf_token %}
+    <div class="champ"><label class="champ-libelle" for="p-nom">{% translate "Nom" %}</label><input type="text" name="nom" id="p-nom" required></div>
+    <div class="champ"><label class="champ-libelle" for="p-sigle">{% translate "Sigle" %}</label><input type="text" name="sigle" id="p-sigle"></div>
+    <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Ajouter" %}</span></button>
+  </form>
+</section>
+{% endblock %}

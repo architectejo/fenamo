@@ -1,86 +1,20 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
-          <li class="breadcrumb-item">Formulair</li>
-          <li class="breadcrumb-item active">Ajout ou modification d'une moto</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section">
-      <div class="row">
-        <div class="col-lg-12">
-
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Ajout ou modification d'un(e) beneficiaire de {{membre.nom}}</h5>
-              <p class="{{classe}}">{{message}}</p>
-
-              <!-- General Form Elements -->
-              <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="row mb-3">
-                    <label for="inputText" class="col-sm-3 col-form-label">Nom complet :</label>
-                    <div class="col-sm-8">
-                      <input type="text" name="nom" value="{{famille.beneficiere}}" class="form-control">
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <label for="inputText" class="col-sm-3 col-form-label">Qualité: {{famille.qualite}}/Genre: {{famille.genre}}</label>
-                    <div class="col-sm-4">
-                        <select type="text" name="qualite" placeholder="Qualité" value="{{famille.qualite}}" class="form-control">
-                            <option value="L">L</option>
-                            <option value="R">R</option>
-                            <option value="L/R">L/R</option>
-                        </select>
-                    </div>
-                    <div class="col-sm-4">
-                      <select type="text" name="genre" placeholder="Genre" value="{{famille.genre}}" class="form-control">
-                        <option value="HOMME">HOMME</option>
-                        <option value="FEMME">FEMME</option>
-                      </select>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <label for="inputText" class="col-sm-3 col-form-label">Année de naissance :</label>
-                    <div class="col-sm-8">
-                      <input type="text" name="annee" value="{{famille.annee}}" class="form-control">
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                  <label class="col-sm-3 col-form-label"></label>
-                  <div class="col-sm-8">
-                    <button name="add" value="add" class="btn btn-primary">Sauvegarder</button>
-                  </div>
-                </div>
-
-              </form><!-- End General Form Elements -->
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n design %}
+{% block titre %}Bénéficiaire - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "membre-view" membre.id %}">{{ membre.nom }}</a><span aria-hidden="true">/</span><span>{% translate "Famille" %}</span></nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter ou modifier un bénéficiaire" %}</h1><p class="page-contexte">{% icone "heart-handshake" %}{{ membre.nom }}</p></div></div>
+{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+<section class="panneau panneau--etroit" hx-history="false">
+  <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
+    {% csrf_token %}
+    <div class="champ"><label class="champ-libelle" for="f-nom">{% translate "Nom complet" %}</label><input type="text" name="nom" id="f-nom" value="{{ famille.beneficiere|default_if_none:'' }}" required></div>
+    <div class="formulaire-ligne">
+      <div class="champ"><label class="champ-libelle" for="f-qualite">{% translate "Lien" %}</label><select name="qualite" id="f-qualite"><option value="L"{% if famille.qualite == 'L' %} selected{% endif %}>L</option><option value="R"{% if famille.qualite == 'R' %} selected{% endif %}>R</option><option value="L/R"{% if famille.qualite == 'L/R' %} selected{% endif %}>L/R</option></select></div>
+      <div class="champ"><label class="champ-libelle" for="f-genre">{% translate "Genre" %}</label><select name="genre" id="f-genre"><option value="HOMME"{% if famille.genre == 'HOMME' %} selected{% endif %}>{% translate "Homme" %}</option><option value="FEMME"{% if famille.genre == 'FEMME' %} selected{% endif %}>{% translate "Femme" %}</option></select></div>
+    </div>
+    <div class="champ"><label class="champ-libelle" for="f-annee">{% translate "Année de naissance" %}</label><input type="text" name="annee" id="f-annee" inputmode="numeric" value="{{ famille.annee|default_if_none:'' }}"></div>
+    <button type="submit" name="add" value="add" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Enregistrer" %}</span></button>
+  </form>
+</section>
+{% endblock %}

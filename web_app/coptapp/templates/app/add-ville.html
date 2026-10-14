@@ -1,69 +1,15 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1><a href="{% url 'province-view' province.id %}">{{province.nom}}</a></h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
-          <li class="breadcrumb-item">Formulair</li>
-          <li class="breadcrumb-item active">Ajout d'une antenne</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section">
-      <div class="row">
-        <div class="col-lg-12">
-
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Ajouter une antenne dans {{province.nom}} </h5>
-              <p class="{{classe}}">{{message}}</p>
-
-              <!-- General Form Elements -->
-              <form method="post">
-                {% csrf_token %}
-                <div class="row mb-3">
-                  <label for="inputText" class="col-sm-2 col-form-label">Antenne :</label>
-                  <div class="col-sm-10">
-                    <input type="text" name="nom" class="form-control">
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="inputEmail" class="col-sm-2 col-form-label">Province:</label>
-                  <div class="col-sm-10">
-                    <select type="email" class="form-control">
-                        <option>{{province.nom}}</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label">Sauvegarder:</label>
-                  <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                  </div>
-                </div>
-
-              </form><!-- End General Form Elements -->
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n design %}
+{% block titre %}Ajouter une antenne - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "province-view" province.id %}">{{ province.nom }}</a><span aria-hidden="true">/</span><span>{% translate "Nouvelle antenne" %}</span></nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une antenne" %}</h1><p class="page-contexte">{% icone "radio-tower" %}{{ province.nom }}</p></div></div>
+{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+<section class="panneau panneau--etroit" hx-history="false">
+  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+    {% csrf_token %}
+    <div class="champ"><label class="champ-libelle" for="v-nom">{% translate "Nom de l’antenne" %}</label><input type="text" name="nom" id="v-nom" required></div>
+    <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Ajouter" %}</span></button>
+  </form>
+</section>
+{% endblock %}

@@ -1,59 +1,22 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-        <h1><a href="{% url 'home' %}">{{structure.nom}}</a></h1>
-        <nav>
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
-                <li class="breadcrumb-item">Formulair</li>
-                <li class="breadcrumb-item active">Ajout de membre</li>
-            </ol>
-        </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section" hx-history="false">
-        <div class="row">
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Ajouter d'un membre dans {{structure.sigle}}/{{structure.ville.nom}}
-                        </h5>
-                        <p class="{{classe}}">{{message}}</p>
-
-                        <!-- General Form Elements -->
-                        <form method="post" enctype="multipart/form-data">
-
-                            {% csrf_token %}
-
-                            {{form.as_p}}
-
-                            <div class="row mb-3">
-                                <label class="col-sm-4 col-form-label"></label>
-                                <div class="col-sm-8">
-                                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                                </div>
-                            </div>
-
-                        </form><!-- End General Form Elements -->
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-</main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n design %}{% comment %}
+Création d'un compte (super-utilisateur). La vue add_user génère le mot de passe temporaire et l'affiche UNE fois dans `message` : la page n'est jamais mise en cache
+(hx-history="false" ; la réponse est en no-store côté vue). Contexte : form, message, classe.
+{% endcomment %}
+{% block titre %}{% translate "Créer un compte" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div hidden hx-history="false"></div>
+<div class="page-tete"><div class="page-tete-texte">
+  <h1 class="page-titre">{% translate "Créer un compte" %}</h1>
+  <p class="page-contexte">{% icone "user-plus" %}{% translate "Un mot de passe temporaire est généré et affiché une seule fois." %}</p>
+</div></div>
+{% if message %}<div class="u-mb-4" role="status">{% include "components/_erreur.html" with niveau="succes" titre=message %}</div>{% endif %}
+<section class="panneau panneau--etroit">
+  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+    {% csrf_token %}
+    {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+    {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+    <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Créer le compte" %}</span></button>
+  </form>
+</section>
+{% endblock %}

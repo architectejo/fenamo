@@ -1,166 +1,52 @@
-{% extends 'base-app.html' %}
-
-{% load static i18n %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-  <div class="row">
-    <div class="col-4">
-      <div class="pagetitle">
-        <h1><a href="">Site web admin</a></h1>
-        <nav>
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-            <li class="breadcrumb-item active">Site</li>
-          </ol>
-        </nav>
-      </div><!-- End Page Title -->
-    </div>
-  </div>
-
-
-
-
-
-
-  <section class="section">
-    <div class="row">
-      <div class="col-lg-12">
-
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">{{intit}}</h5>
-            <p class="{{classe}}">{{message}}</p>
-
-            <!-- General Form Elements -->
-            <form method="post" enctype="multipart/form-data">
-              {% csrf_token %}
-
-              <div class="row mb-3">
-                  <label for="inputText" class="col-sm-2 col-form-label">Titre:</label>
-                  <div class="col-sm-10">
-                    <input type="text" name="titre" value="{{article.titre}}" class="form-control">
-                  </div>
-              </div>
-                
-              <div class="row mb-3">
-                  <label for="inputText" class="col-sm-2 col-form-label">Image:</label>
-                  <div class="col-sm-10">
-                      <input type="file" name="image" class="form-control">
-                  </div>
-              </div>
-
-              <div class="row mb-3">
-                <label for="inputText" class="col-sm-2 col-form-label">Description:</label>
-                <div class="col-sm-10">
-                  <textarea rows="5"  name="description" class="form-control">{{article.description}}</textarea>
-                </div>
-              </div>
-
-              <div class="row mb-3">
-                <label class="col-sm-2 col-form-label"></label>
-                <div class="col-sm-10">
-                  <button name="add" value="add" class="btn btn-primary">Poster</button>
-                </div>
-              </div>
-
-            </form><!-- End General Form Elements -->
-
-          </div>
-        </div>
-
-      </div>
+{% extends "base.html" %}
+{% load i18n design %}{% comment %}
+Contenu du site public (écran migré) : formulaire d'article (nouveau, ou modification quand `article` est fourni) puis liste des articles.
+La suppression d'un article passe par la modale commune de confirmation (définitive : « irréversible » est exact). Contexte : intit, article, articles, message/classe.
+{% endcomment %}
+{% block titre %}{% translate "Contenu du site" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete">
+  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Contenu du site" %}</h1><p class="page-contexte">{% icone "globe" %}{% translate "Articles du site public" %}</p></div>
+  <div class="page-actions"><a class="bouton" href="{% url 'contact' %}">{% icone "mail" %}<span>{% translate "Messages reçus" %}</span></a></div>
+</div>
+{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+<div class="grille grille--principale">
+  <section class="panneau" aria-labelledby="titre-liste-articles">
+    <div class="panneau-tete"><h2 id="titre-liste-articles">{% translate "Articles" %}</h2></div>
+    <div class="panneau-corps">
+    {% if articles %}
+      <table class="liste">
+        <caption class="lecteur">{% translate "Articles publiés" %}</caption>
+        <thead><tr><th scope="col">{% translate "Article" %}</th><th scope="col">{% translate "Mis à jour" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th></tr></thead>
+        <tbody>
+        {% for a in articles %}
+          <tr>
+            <td data-role="titre"><div class="cellule-personne"><span class="avatar">{% if a.image %}<img src="{{ a.image.url }}" alt="" width="40" height="40" loading="lazy">{% else %}{% icone "file-text" %}{% endif %}</span><div><a class="lien-ligne" href="{% url 'article' a.id %}">{{ a.titre }}</a></div></div></td>
+            <td data-libelle="{% translate 'Mis à jour' %}" class="chiffres">{{ a.mise_a_jour|date:"d/m/Y" }}</td>
+            <td data-role="actions">
+              <a href="{% url 'article' a.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’article' %}" title="{% translate 'Modifier l’article' %}">{% icone "pencil" %}</a>
+              {% url 'delete-article' a.id as url_suppr %}{% translate "Supprimer l'article" as t_libelle %}{% translate "Supprimer définitivement cet article ? Cette action est irréversible." as t_message %}
+              {% include "components/_confirmer.html" with prefixe="article" ident=a.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_libelle icone="trash-2" icone_seule=True %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      {% translate "Aucun article" as t_vide %}{% translate "Publiez le premier article avec le formulaire." as t_msg %}
+      {% include "components/_etat_vide.html" with icone="file-text" titre=t_vide texte=t_msg %}
+    {% endif %}
     </div>
   </section>
-
-
-
-
-
-
-  <section class="section dashboard">
-    <div class="row">
-
-      <!-- Recent Sales -->
-      <div class="col-12">
-        <div class="card recent-sales top-selling overflow-auto">
-
-          <div class="filter">
-            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li class="dropdown-header text-start">
-                <h6>Liste d'articles</h6>
-              </li>
-            </ul>
-          </div>
-
-          <div class="card-body pb-0">
-            <h5 class="card-title"><a href="{% url 'site' %}">Liste d'articles</a> <span>| recents</span></h5>
-
-            <table class="table table-borderless datatable">
-              <thead>
-                <tr>
-                  <th scope="col">Image</th>
-                  <th scope="col">Titre</th>
-                  <th scope="col">Mise à jour</th>
-                  <th scope="col">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-
-                {% for article in articles %}
-                    <tr>
-                        <th scope="row">
-                          {% if article.image %}
-                          <a href="{% url 'article' article.id %}"><img src="{{article.image.url}}" alt=""></a>
-                          {% endif %}
-                        </th>
-                        <td>
-                            <a href="{% url 'article' article.id %}">
-                                {{article.titre}}
-                            </a>
-                        </td>
-                        <td>{{article.mise_a_jour}}</td>
-                        <td>
-                            {% url 'delete-article' article.id as url_suppr %}
-                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#suppr-article-{{ article.id }}">{% translate "Supprimer" %}</button>
-                            <div class="modal fade text-start" id="suppr-article-{{ article.id }}" tabindex="-1" aria-labelledby="suppr-article-{{ article.id }}-titre" aria-hidden="true">
-                              <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down"><div class="modal-content">
-                                <form method="post" action="{{ url_suppr }}" hx-boost="false">
-                                  {% csrf_token %}
-                                  <div class="modal-header"><h2 class="modal-title h5" id="suppr-article-{{ article.id }}-titre">{% translate "Supprimer l'article" %}</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Fermer' %}"></button></div>
-                                  <div class="modal-body">{% translate "Supprimer définitivement cet article ? Cette action est irréversible." %}</div>
-                                  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Annuler" %}</button><button type="submit" class="btn btn-danger" style="min-height:44px">{% translate "Supprimer" %}</button></div>
-                                </form>
-                              </div></div>
-                            </div>
-                            <a href="{% url 'article' article.id %}">
-                                <span class="badge bg-primary">Modifier</span>
-                            </a>
-                        </td>
-                    </tr>
-                {% endfor %}
-
-              </tbody>
-            </table>
-
-          </div>
-
-        </div>
-      </div><!-- End Recent Sales -->
-
-    </div>
-    </div><!-- End Left side columns -->
-
-    </div>
+  <section class="panneau" aria-labelledby="titre-form-article">
+    <div class="panneau-tete"><h2 id="titre-form-article">{% if article %}{% translate "Modifier l’article" %}{% else %}{% translate "Nouvel article" %}{% endif %}</h2></div>
+    <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
+      {% csrf_token %}
+      <div class="champ"><label class="champ-libelle" for="a-titre">{% translate "Titre" %}</label><input type="text" name="titre" id="a-titre" value="{{ article.titre|default_if_none:'' }}" required></div>
+      <div class="champ"><label class="champ-libelle" for="a-image">{% translate "Image" %}</label><input type="file" name="image" id="a-image" accept="image/*"></div>
+      <div class="champ"><label class="champ-libelle" for="a-desc">{% translate "Description" %}</label><textarea name="description" id="a-desc" rows="6">{{ article.description|default_if_none:'' }}</textarea></div>
+      <button type="submit" name="add" value="add" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Publier" %}</span></button>
+    </form>
   </section>
-
-</main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+</div>
+{% endblock %}
