@@ -23,12 +23,10 @@
     <div class="col-8">
       {# add-antenne et add-membre prennent l'identifiant d'une ASSOCIATION MEMBRE (jamais celui de la ville) #}
       {% if association_de_la_ville %}
-      {% if user.is_superuser or user.privilege5 %}
+      {% if fn_droits.peut_ecrire_referentiel %}
       <a href="{% url 'add-antenne' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout antenne</button></a>
       {% endif %}
-      {% if user.is_superuser or user.privilege5 %}
-        <a href="{% url 'add-membre' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
-      {% elif user.privilege1 and userMembre.ville.id == ville.id %}
+      {% if fn_droits.peut_creer_membre %}
         <a href="{% url 'add-membre' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
       {% endif %}
       {% endif %}
@@ -60,12 +58,12 @@
                 <tr>
                   <th scope="col">#</th>
                   <th scope="col">Nom</th>
-                  {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
+                  {% if fn_droits.peut_creer_membre %}
                     <th scope="col">Association membre</th>
                   {% endif %}
                   <th scope="col">Antenne</th>
                   <th scope="col">Status</th>
-                  {% if user.privilege3 or user.privilege5 or user.is_superuser %}
+                  {% if fn_droits|peut_nommer %}
                     <th scope="col">Utilisateur</th>
                   {% endif %}
                 </tr>
@@ -80,9 +78,9 @@
                           {% endif %}
                         </th>
                         <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>
-                        {% if not user.privilege4 or not user.privilege1 %}
+                        {% if fn_droits.peut_creer_membre %}
 
-                          {% if user.privilege2 or user.privilege3 or user.privilege5 or user.is_superuser %}
+                          {% if fn_droits.peut_creer_membre %}
                             <td scope="col">
                                 {{membre.structure.nom}}
                             </td>
@@ -98,7 +96,7 @@
                           <td><span class="badge bg-danger">Non validé</span></td>
                         {% endif %}
 
-                        {% if user.privilege3 or user.privilege5 or user.is_superuser %}
+                        {% if fn_droits|peut_nommer %}
                           <td scope="col">
                             <p class="alert alert-warning text-secondary">
                               {{membre.user.username}}

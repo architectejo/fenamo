@@ -20,7 +20,7 @@
           <i class="bi bi-search"></i>
         </a>
       </li><!-- End Search Icon-->
-      {% if user.is_superuser or user.privilege5 or user.privilege3 or user.privilege2 or user.privilege1%}
+      {% if fn_droits.peut_creer_membre or fn_droits.est_su %}
       <li class="nav-item dropdown">
 
         <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
@@ -38,7 +38,7 @@
           </li>
 
           {% for notify in notifications %}
-          {% if user.is_superuser or user.privilege5 %}
+          {% if fn_droits.peut_ecrire_referentiel %}
           {% if notify.membre %}
           <li class="notification-item">
             {% if notify.user.membreId %}
@@ -242,7 +242,7 @@
         <i class="bi bi-menu-button-wide"></i><span>Provinces</span><i class="bi bi-chevron-down ms-auto"></i>
       </a>
       <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        {% if user.is_superuser or user.privilege5 %}
+        {% if fn_droits.peut_ecrire_referentiel %}
         <li>
           <a href="{% url 'add-province' %}">
             <i class="bi bi-circle"></i><span>Ajouter</span>
@@ -284,7 +284,7 @@
 
 
     <li class="nav-heading"><!--Pages--></li>
-    {% if user.is_superuser or user.privilege5 %}
+    {% if fn_droits.peut_ecrire_referentiel %}
     <li class="nav-item">
       <a class="nav-link collapsed" href="{% url 'message' %}">
         <i class="bi bi-envelope"></i>
@@ -293,7 +293,7 @@
     </li><!-- End Contact Page Nav -->
     {% endif %}
 
-    {% if user.is_superuser or user.privilege5 %}
+    {% if fn_droits.peut_ecrire_referentiel %}
     <li class="nav-item">
       <a class="nav-link collapsed" href="{% url 'add-fenamo-membre' %}">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -340,7 +340,7 @@
     </li><!-- End Profile Page Nav -->
     {% endif %}
 
-    {% if not user.privilege4 and structure %}
+    {% if fn_droits.peut_creer_membre and structure %}
     <li class="nav-item">
       <a class="nav-link collapsed" href="{% url 'add-membre' structure.id %}">
         <i class="bi bi-card-list"></i>
@@ -359,7 +359,7 @@
     {% endif %}
 
 
-    {% if user.is_superuser or user.privilege5 or user.privilege4 %}
+    {% if fn_droits.voit_associations %}
     <li class="nav-item">
       <a class="nav-link collapsed" href="{% url 'str-list' %}">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist"

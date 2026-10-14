@@ -20,7 +20,7 @@
           </nav>
         </div><!-- End Page Title -->
       </div>
-      {% if user.is_superuser or user.privilege5 %}
+      {% if fn_droits.peut_ecrire_referentiel %}
         <div class="col-6">
           <a href="{% url 'add-ville' province.id %}"><button class="btn btn-primary">Ajouter une antenne</button></a>
         </div>
