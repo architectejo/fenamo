@@ -89,14 +89,32 @@ def test_F20_mob_inscription_page_creation_et_session(client, mob):
 
 
 def test_F20_mob_attribution_par_post_du_membre_connecte(client, mob):
+    # association : rattache aussi la ville et l'antenne de l'association (service de géographie)
     sans = Membre.objects.create(nom='Sans rattachement', province=mob['province'])
     connecter(client, sans)
     r = client.post(reverse('attribut-str', kwargs={'id': sans.id, 'id_str': mob['association'].id}))
     assert r.status_code == 302 and r['Location'] == reverse('data', kwargs={'id': sans.id})
-    r = client.post(reverse('attribut-ville', kwargs={'id': sans.id, 'id_ville': mob['ville'].id}))
-    assert r.status_code == 302 and r['Location'] == reverse('data', kwargs={'id': sans.id})
     sans.refresh_from_db()
-    assert sans.structure_id == mob['association'].id and sans.ville_id == mob['ville'].id
+    assert sans.structure_id == mob['association'].id and sans.ville_id == mob['association'].ville_id
+    # antenne (ville) : pour un autre membre encore sans rattachement
+    autre = Membre.objects.create(nom='Sans antenne', province=mob['province'])
+    connecter(client, autre)
+    r = client.post(reverse('attribut-ville', kwargs={'id': autre.id, 'id_ville': mob['ville'].id}))
+    assert r.status_code == 302 and r['Location'] == reverse('data', kwargs={'id': autre.id})
+    autre.refresh_from_db()
+    assert autre.ville_id == mob['ville'].id and autre.antenne_id
+
+
+def test_F20_mob_attribution_refusee_si_deja_rattache_ou_valide(client, mob):
+    rattache = Membre.objects.create(nom='Déjà rattaché', province=mob['province'], ville=mob['ville'], structure=mob['association'])
+    connecter(client, rattache)
+    assert client.post(reverse('attribut-str', kwargs={'id': rattache.id, 'id_str': mob['association'].id})).status_code == 403
+    assert client.post(reverse('attribut-ville', kwargs={'id': rattache.id, 'id_ville': mob['ville'].id})).status_code == 403
+    valide = Membre.objects.create(nom='Validé', province=mob['province'], is_validate2=True)
+    connecter(client, valide)
+    assert client.post(reverse('attribut-str', kwargs={'id': valide.id, 'id_str': mob['association'].id})).status_code == 403
+    valide.refresh_from_db()
+    assert valide.structure_id is None and valide.ville_id is None
 
 
 @pytest.mark.parametrize('route, kwargs', [('home-mob', {}), ('register', {})])
