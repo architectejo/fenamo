@@ -35,7 +35,7 @@ def test_F28_recherche_sans_privilege_ne_trouve_rien(client, jeu):
     _donnees(jeu)
     client.force_login(Compte.objects.create_user('nu', password='x'))
     corps = _chercher(client, 'Dupont').content.decode()
-    assert 'Dupont Actif' not in corps and 'Dupont Saisi' not in corps and 'Aucun resultat' in corps
+    assert 'Dupont Actif' not in corps and 'Dupont Saisi' not in corps and 'Aucun résultat' in corps
     corps = _chercher(client, '777').content.decode()
     assert '777AA' not in corps and '777BB' not in corps
 
@@ -51,5 +51,5 @@ def test_F28_recherche_su_voit_tout_sauf_les_supprimes(client, jeu):
 
 def test_F28_recherche_vide_et_get(client, jeu):
     client.force_login(jeu['compte'])
-    assert 'Aucun resultat' in _chercher(client, '').content.decode()
+    assert 'Aucun résultat' in _chercher(client, '').content.decode()
     assert client.get(reverse('recherche')).status_code == 200

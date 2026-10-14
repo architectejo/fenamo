@@ -1,151 +1,40 @@
-{% extends 'base-app.html' %}
-
-{% load static i18n %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-        <h1>{{structure.nom}}</h1>
-        <nav>
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'tableau-bord' %}">Accueil</a></li>
-                <li class="breadcrumb-item">Association membre</li>
-                <li class="breadcrumb-item active">{{structure.sigle}}</li>
-            </ol>
-        </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section profile">
-        <div class="row">
-
-            {% if structure %}
-            <div class="col-xl-12 col-lg-12">
-
-                <div class="row">
-                    <div class="col-6">
-                        <div class="card">
-                            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-
-                                {% if structure.logo %}
-                                <img src="{{structure.logo.url}}" alt="FENAMO LOGO DE {{structure.sigle|upper}}"
-                                    class="rounded-circle">
-                                {% endif %}
-                                <h2>{{structure.sigle|upper}}</h2>
-                                <!--<h3>association membre</h3 -->
-                                <div class="social-links mt-2">
-                                    {% if structure.twitter %}
-                                    <a href="{{structure.twitter}}" target="_blank" class="twitter"><i
-                                            class="bi bi-twitter"></i></a>
-                                    {% endif %}
-                                    {% if structure.facebook %}
-                                    <a href="{{structure.facebook}}" target="_blank" class="facebook"><i
-                                            class="bi bi-facebook"></i></a>
-                                    {% endif %}
-                                    {% if structure.instagram %}
-                                    <a href="{{structure.instagram}}" target="_blank" class="instagram"><i
-                                            class="bi bi-instagram"></i></a>
-                                    {% endif %}
-                                    {% if structure.linkedin %}
-                                    <a href="{{structure.linkedin}}" target="_blank" class="linkedin"><i
-                                            class="bi bi-linkedin"></i></a>
-                                    {% endif %}
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    <!--Partie deux -->
-                    <div class="col-6">
-                        <div class="card">
-                            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-
-                                <h2>Total membre: {{structure.membres}}</h2>
-                                <h3>Propriètaire: {{structure.proprietaires}}</h3>
-                                <h3>Motocycliste: {{structure.motocyclistes}}</h3>
-                                {% if user.is_authenticated %}
-                                {% if user.is_superuser %}
-                                <a href="" class="btn btn-primary">Nommer un administrateur</a>
-                                <a href="{% url 'structure-admin' structure.id %}"
-                                    class="btn btn-primary mt-2">Administration</a>
-                                {% else %}
-                                <a href="" class="btn btn-primary">Liste des membres</a>
-                                {% endif %}
-                                {% endif %}
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-            {% endif %}
-
-            <div class="col-xl-12 col-lg-12">
-
-                <div class="card">
-                    <div class="card-body pt-3">
-                        <!-- Bordered Tabs -->
-                        <ul class="nav nav-tabs nav-tabs-bordered">
-
-                            {% if user.is_superuser %}
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab"
-                                    data-bs-target="#profile-edit">{{button}}</button>
-                            </li>
-                            {% endif %}
-
-                            {% if structure %}
-                            <li class="nav-item">
-                                <button class="nav-link active {{activeEdit}}" data-bs-toggle="tab"
-                                    data-bs-target="#profile-overview">Sélection de l'antenne</button>
-                            </li>
-                            {% endif %}
-
-                        </ul>
-                        <div class="tab-content pt-2">
-
-                            <!-- Profile Edit Form -->
-                            <div class="row">
-                                {% for ville in provinces %}
-                                <div class="col-6">
-                                    <h5 class="fst-italic">
-                                        {% url 'ville-attr' ville.id structure.id as url_attr %}
-                                        {% include "partials/_bouton_post.html" with url=url_attr libelle=ville.nom classe="btn btn-outline-danger" %}
-                                    </h5>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <form method="post" enctype="multipart/form-data">
-                                {% csrf_token %}
-
-                                <h5>
-                                    Renseigner votre antenne si elle n'est pas répertoriée
-                                </h5>
-                                <input type="text" name="ville" id="ville" class="form-control"
-                                    placeholder="Votre antenne">
-
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-primary mt-1">RECHERCHE</button>
-                                </div>
-                            </form><!-- End Profile Edit Form -->
-
-                        </div><!-- End Bordered Tabs -->
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-</main><!-- End #main -->
-
-<!-- ======= Footer ======= -->
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design %}{% comment %}
+Rattachement d'une association membre à son antenne (écran migré). Contexte : structure, provinces (antennes proposées), message/classe.
+Les boutons postent vers ville-attr (POST + CSRF) ; le formulaire crée l'antenne saisie si elle n'existe pas dans la coordination.
+{% endcomment %}
+{% block titre %}{{ structure.nom }} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'str-list' %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{{ structure.sigle|default:structure.nom }}</span></nav>
+<div class="page-tete page-tete--haut">
+  <span class="avatar avatar--grand">{% if structure.logo %}<img src="{{ structure.logo.url }}" alt="" width="88" height="88">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="88" height="88">{% endif %}</span>
+  <div class="page-tete-texte">
+    <h1 class="page-titre">{{ structure.nom }}</h1>
+    <p class="page-contexte"><span class="ident texte-plein">{{ structure.sigle|upper }}</span>{% if structure.province.nom %} · {{ structure.province.nom }}{% endif %}</p>
+  </div>
+  {% if user.is_superuser %}<div class="page-actions"><a class="bouton" href="{% url 'structure-admin' structure.id %}">{% icone "settings" %}<span>{% translate "Administration" %}</span></a></div>{% endif %}
+</div>
+{% if message %}<div class="u-mt-4">{% include "components/_erreur.html" with niveau="danger" titre=message %}</div>{% endif %}
+<div class="u-mt-4">{% translate "Cette association n'est pas encore rattachée à une antenne." as t_alerte %}{% translate "Choisissez son antenne ci-dessous, ou saisissez-en une nouvelle." as t_texte %}{% include "components/_erreur.html" with niveau="alerte" titre=t_alerte texte=t_texte %}</div>
+<div class="grille grille--2 u-mt-5">
+  <section class="panneau">
+    <div class="panneau-tete"><h2>{% translate "Antennes de la coordination" %}</h2></div>
+    <div class="panneau-corps pile">
+      {% for ville in provinces %}
+      {% url 'ville-attr' ville.id structure.id as url_attr %}
+      {% include "partials/_bouton_post.html" with url=url_attr libelle=ville.nom classe="bouton bouton--bloc" %}
+      {% empty %}
+      {% translate "Aucune antenne répertoriée" as t_vide %}{% include "components/_etat_vide.html" with icone="map-pin" titre=t_vide %}
+      {% endfor %}
+    </div>
+  </section>
+  <section class="panneau">
+    <div class="panneau-tete"><h2>{% translate "Antenne non répertoriée" %}</h2></div>
+    <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+      {% csrf_token %}
+      <div class="champ"><label class="champ-libelle" for="ville">{% translate "Nom de l'antenne" %}</label><input type="text" name="ville" id="ville" placeholder="{% translate 'Votre antenne' %}" required></div>
+      {% include "components/_bouton.html" with libelle=_("Rattacher l'antenne") variante="principal" type="submit" icone="check" %}
+    </form>
+  </section>
+</div>
+{% endblock %}

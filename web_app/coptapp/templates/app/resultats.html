@@ -20,7 +20,7 @@
   </div></section>
 </div>
 {% else %}
-{% translate "Aucun résultat" as t_defaut %}{% firstof message t_defaut as t_vide %}{% translate "Vérifiez l'orthographe ou cherchez un numéro d'engin ou de carte." as t_msg %}
+{% translate "Aucun résultat" as t_defaut %}{% firstof t_defaut as t_vide %}{% translate "Vérifiez l'orthographe ou cherchez un numéro d'engin ou de carte." as t_msg %}
 {% include "components/_etat_vide.html" with icone="search" titre=t_vide texte=t_msg %}
 {% endif %}
 {% endblock %}
