@@ -161,7 +161,8 @@ def test_F70_rattachements(client, jeu):
     client.post(reverse('ville-attr', kwargs={'sid': jeu['association'].id, 'id': jeu['ville'].id}))
     # un rattachement à une ville ou à une antenne journalise ville ET antenne (service de géographie, 2d)
     champs = sorted(tuple(sorted(k for k in ligne.apres if not k.endswith('_libelle'))) for ligne in lignes(A.RATTACHEMENT))
-    assert champs == sorted([('structure',)] + [('antenne', 'ville')] * 3)
+    # la coordination (province) suit le rattachement quand l'antenne ou la ville en porte une
+    assert [tuple(c for c in champ if c != 'province') for champ in champs] == sorted([('structure',)] + [('antenne', 'ville')] * 3)
 
 
 def test_F70_attribution_d_un_engin_a_un_membre(client, jeu):

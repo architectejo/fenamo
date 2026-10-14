@@ -13,7 +13,7 @@ def _lancer(*args):
 
 
 @pytest.mark.django_db
-def test_demo_refuse_hors_debug(settings):
+def test_F02_demo_refuse_hors_debug(settings):
     settings.DEBUG = False
     with pytest.raises(CommandError):
         _lancer()
@@ -21,7 +21,7 @@ def test_demo_refuse_hors_debug(settings):
 
 
 @pytest.mark.django_db
-def test_demo_charge_les_roles_les_etats_et_le_journal(settings):
+def test_F02_demo_charge_les_roles_les_etats_et_le_journal(settings):
     settings.DEBUG = True
     _lancer('--mot-de-passe', 'Secret-Demo-1')
     assert {n.role for n in Nomination.objects.filter(active=True, compte__username__startswith='demo.')} == {'PR', 'VN', 'VP', 'VA', 'AT', 'VI', 'ED'}
@@ -46,7 +46,7 @@ def test_demo_charge_les_roles_les_etats_et_le_journal(settings):
 
 
 @pytest.mark.django_db
-def test_demo_idempotente_et_reinitialisation_ne_touche_que_la_demo(settings):
+def test_F02_demo_idempotente_et_reinitialisation_ne_touche_que_la_demo(settings):
     settings.DEBUG = True
     reel = Membre.objects.create(nom='Fiche non démo', idf='MBR0000001')
     _lancer()

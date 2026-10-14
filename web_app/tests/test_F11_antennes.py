@@ -75,7 +75,7 @@ def test_F11_rattacher_ville_ecrit_ville_et_antenne_et_journalise(jeu):
     membre.refresh_from_db()
     assert membre.ville_id == ville.id and membre.antenne_id == ville.antenne_issue.id
     ligne = JournalAction.objects.filter(action=JournalAction.Action.RATTACHEMENT, objet_id=membre.id).latest('id')
-    assert ligne.apres == {'ville': ville.id, 'antenne': ville.antenne_issue.id} and ligne.avant['ville'] == jeu['ville'].id
+    assert ligne.apres == {'ville': ville.id, 'antenne': ville.antenne_issue.id, 'province': jeu['province'].id} and ligne.avant['ville'] == jeu['ville'].id
     rattacher_ville(jeu['compte'], membre, None)  # détacher les deux
     membre.refresh_from_db()
     assert membre.ville_id is None and membre.antenne_id is None

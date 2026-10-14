@@ -1,7 +1,6 @@
 """Validation indépendante 2e (testeur) : critères de fin du sous-lot « rôles, nominations, écran Utilisateurs » (F-02, F-03, F-05, F-06).
 
-Les tests marqués ``CONSTAT`` sont des défauts OUVERTS (xfail strict) : ils échouent tant que le code n'est pas corrigé et feront
-échouer la suite (XPASS strict) le jour où il le sera : retirer alors le marqueur.
+Les défauts relevés par ce lot ont tous été corrigés : plus aucun test n'est marqué en échec attendu.
 """
 import io
 import json
@@ -25,7 +24,6 @@ from compte.services.nominations import creer_nomination
 from coptapp.models import Antenne, Membre, Notification, Province, Ville
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
-CONSTAT = lambda raison: pytest.mark.xfail(strict=True, reason='DEFAUT OUVERT : ' + raison)  # noqa: E731
 
 
 @pytest.fixture
@@ -160,7 +158,7 @@ def test_F02_2e_herites_faux_aucun_privilege_ne_s_ajoute_a_une_nomination(monde,
         at = Compte.objects.get(username='at')
         Compte.objects.filter(pk=at.pk).update(privilege5=True, privilege3=True, editor=True)
         at = Compte.objects.get(pk=at.pk)
-        assert _noms(membres_du_perimetre(at)) == []  # AT : ses propres saisies seulement (aucune ici)
+        assert 'Actif Q' not in _noms(membres_du_perimetre(at))  # AT : lit son antenne seulement (jamais une autre coordination)
         assert not droits_membre(at, monde['m']['actif_a'])['peut_valider']
         from compte.services.droits import est_editeur, peut_ecrire_referentiel
         assert not est_editeur(at) and not peut_ecrire_referentiel(at)

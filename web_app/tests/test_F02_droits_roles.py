@@ -11,7 +11,7 @@ from django.utils import timezone
 from compte import roles
 from compte.models import Compte, JournalAction, Nomination
 from compte.services import droits, droits_herites
-from compte.services.nominations import creer_nomination, synchroniser_groupe, terminer_nomination, valider_coherence
+from compte.services.nominations import RegleMetier, creer_nomination, synchroniser_groupe, terminer_nomination, valider_coherence
 from coptapp.models import Antenne, AssociationMembre, Membre, Province, Ville
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
@@ -64,14 +64,13 @@ def _nommer_agent(monde):
 
 # ---------------------------------------------------------------- interface identique à l'ancien module
 
-def test_F02_interface_16_cles_et_renvoi_de_l_ancien_module(monde):
-    assert len(D.CLES_DROITS) == 17 and set(D.CLES_DROITS) == set(droits_herites.droits_membre(monde['compte']).keys())
+def test_F02_interface_19_cles_identiques_pour_les_roles_et_les_droits_herites(monde):
+    assert len(D.CLES_DROITS) == 19 and set(D.CLES_DROITS) == set(droits_herites.droits_membre(monde['compte']).keys())
     for compte in (monde['compte'], _compte('sans')):
         assert set(D.droits_membre(compte, monde['M']).keys()) == set(D.CLES_DROITS)
         assert set(D.droits_membre(compte).keys()) == set(D.CLES_DROITS)
-    from coptapp.services import droits_provisoires as ancien
-    for nom in ('droits_membre', 'membres_du_perimetre', 'etapes_a_valider', 'membre_pour', 'cible_rattachable', 'voit_tout'):
-        assert getattr(ancien, nom) is getattr(D, nom)
+    with pytest.raises(ImportError):  # l'ancien module de renvoi est supprimé : un seul point d'entrée, compte.services.droits
+        from coptapp.services import droits_provisoires  # noqa: F401
 
 
 # ---------------------------------------------------------------- profil effectif
@@ -199,20 +198,20 @@ def test_F02_membres_supprimes_exclus_sauf_demande_et_propre_fiche_toujours_lisi
 
 VRAIS = {
     # rôle : clés vraies sur le membre M « saisi » (is_validate2 faux), dans la portée du rôle
-    'PR': {'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
+    'PR': {'peut_creer_membre', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
            'peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille',
            'peut_supprimer_famille', 'peut_executer_suppression'},
     'VN': set(),  # rempli ci-dessous
-    'VP': {'peut_creer_membre', 'peut_modifier', 'peut_demander_suppression', 'peut_voir_historique', 'peut_ajouter_engin',
+    'VP': {'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_demander_suppression', 'peut_voir_historique', 'peut_ajouter_engin',
            'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille'},
-    'VA': {'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
+    'VA': {'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
            'peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille',
            'peut_supprimer_famille'},
-    'AT': {'peut_creer_membre', 'peut_modifier', 'peut_demander_suppression', 'peut_demander_modification', 'peut_ajouter_engin',
+    'AT': {'peut_creer_membre', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_demander_suppression', 'peut_demander_modification', 'peut_ajouter_engin',
            'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille'},
     'VI': set(), 'ED': set(),
 }
-VRAIS['VN'] = (VRAIS['PR'] - {'peut_valider', 'peut_renvoyer'}) | set()  # VN ne pose pas la 1re validation : is_validate2 manque, sa étape est la 3e
+VRAIS['VN'] = VRAIS['PR'] - {'peut_valider', 'peut_renvoyer', 'peut_creer_membre'}  # VN : ni 1re validation ni création (matrice § 4.3)  # VN ne pose pas la 1re validation : is_validate2 manque, sa étape est la 3e
 
 
 def _vrais(d):
@@ -518,7 +517,7 @@ def test_F02_durees_de_mandat_de_la_charte(monde):
 def test_F02_une_seule_nomination_active_par_compte(monde):
     compte = _compte('unique')
     creer_nomination(monde['compte'], compte, roles.PR)
-    with pytest.raises(ValidationError):
+    with pytest.raises(RegleMetier):
         creer_nomination(monde['compte'], compte, roles.VN)
     with pytest.raises(IntegrityError), transaction.atomic():  # la base le garantit aussi (SQLite)
         Nomination.objects.create(compte=compte, role='VN')
@@ -562,7 +561,7 @@ def test_F02_admin_des_nominations_reserve_au_su(client, monde):
         def __init__(self, user):
             self.user = user
     simple = _compte('staff', is_staff=True)
-    assert admin.has_module_permission(R(monde['compte'])) and admin.has_add_permission(R(monde['compte']))
+    assert admin.has_module_permission(R(monde['compte'])) and not admin.has_add_permission(R(monde['compte']))  # lecture seule
     assert not admin.has_module_permission(R(simple)) and not admin.has_view_permission(R(simple)) and not admin.has_change_permission(R(simple))
     assert not admin.has_delete_permission(R(monde['compte']))  # une nomination se conserve
     client.force_login(monde['compte'])
@@ -572,5 +571,4 @@ def test_F02_admin_des_nominations_reserve_au_su(client, monde):
 def test_F02_roles_constantes_et_libelles():
     assert roles.ROLES == ('SU', 'PR', 'VN', 'VP', 'VA', 'AT', 'VI', 'ED') and set(roles.LIBELLES) == set(roles.ROLES)
     assert roles.nom_du_groupe('PR') == 'role_PR' and roles.duree_par_defaut('VI') is None
-    assert roles.RANG['SU'] < roles.RANG['PR'] < roles.RANG['VN'] < roles.RANG['VP'] < roles.RANG['VA'] < roles.RANG['AT']
-    assert {c for c, _ in Nomination.Role.choices} == set(roles.ROLES)
+    assert {c for c, _ in Nomination._meta.get_field('role').choices} == set(roles.ROLES)

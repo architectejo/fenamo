@@ -68,8 +68,9 @@ def test_M1_attribut_str_journalise_et_met_ville_et_antenne_en_coherence(client,
     assert libre.antenne_id == ville_assoc.antenne_issue.id
     ligne = JournalAction.objects.filter(action=JournalAction.Action.RATTACHEMENT, objet_id=libre.id).latest('id')
     assert JournalAction.objects.filter(action=JournalAction.Action.RATTACHEMENT).count() == avant + 1
-    assert ligne.avant == {'structure': None, 'ville': None, 'antenne': None}
-    assert ligne.apres == {'structure': jeu['association'].id, 'ville': ville_assoc.id, 'antenne': libre.antenne_id}
+    assert {k: v for k, v in ligne.avant.items() if k != 'province'} == {'structure': None, 'ville': None, 'antenne': None}
+    assert {k: v for k, v in ligne.apres.items() if k != 'province'} == {
+        'structure': jeu['association'].id, 'ville': ville_assoc.id, 'antenne': libre.antenne_id}
 
 
 def test_M1_rattacher_association_avec_antenne_seule_et_sans_rien(jeu, libre):
