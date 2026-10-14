@@ -19,6 +19,8 @@
     <a class="menu-lien" href="{% url 'utilisateurs' %}" data-prefixe="/utilisateurs/"{% if nom == 'utilisateurs' %} aria-current="page"{% endif %}>{% icone "user-check" %}<span>{% translate "Utilisateurs" %}</span></a>
     {% endif %}
 
+    {% if fn_droits.voit_journal %}<a class="menu-lien" href="{% url 'journal' %}" data-prefixe="/journal/"{% if nom == 'journal' %} aria-current="page"{% endif %}>{% icone "history" %}<span>{% translate "Journal d'activités" %}</span></a>{% endif %}
+
     <p class="menu-groupe">{% translate "Communication" %}</p>
     <a class="menu-lien" hx-boost="false" href="{% url 'list-message' %}" data-prefixe="/communiques/">{% icone "megaphone" %}<span>{% translate "Communiqués" %}</span></a>
     <a class="menu-lien" hx-boost="false" href="{% url 'notifys' %}">{% icone "bell" %}<span>{% translate "Notifications" %}</span>{% if fn_notifs_total %}<span class="nombre">{{ fn_notifs_total }}</span>{% endif %}</a>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n design %}{% comment %}Journal d'activités (F-71, super-utilisateur, lecture seule). Contexte : page_obj, filtres, actions.{% endcomment %}
+{% block titre %}{% translate "Journal d'activités" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete"><div class="page-tete-texte">
+  <h1 class="page-titre">{% translate "Journal d'activités" %}</h1>
+  <p class="page-contexte">{% icone "history" %}{% translate "Qui a fait quoi, quand. Lecture seule : aucune entrée ne se modifie." %}</p>
+</div></div>
+<form id="filtres-journal" method="get" action="{% url 'journal' %}" role="search" hx-boost="false" hx-get="{% url 'journal' %}"
+      hx-trigger="input changed delay:300ms from:#j-q, change, submit" hx-target="#journal-zone" hx-push-url="true" hx-indicator="#journal-zone" hx-sync="this:replace">
+  <div class="filtres">
+    <div class="recherche">{% icone "search" %}<label class="lecteur" for="j-q">{% translate "Rechercher" %}</label><input id="j-q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Auteur, objet ou motif' %}" autocomplete="off"></div>
+    <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus">{% icone "sliders-horizontal" %}<span>{% translate "Filtres" %}</span></button>
+  </div>
+  <div class="filtres-plus" id="filtres-plus">
+    <div class="champ"><label class="champ-libelle" for="j-action">{% translate "Type d'action" %}</label><select id="j-action" name="action"><option value="">{% translate "Toutes" %}</option>{% for code, libelle in actions %}<option value="{{ code }}"{% if filtres.action == code %} selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+    <div class="champ"><label class="champ-libelle" for="j-du">{% translate "Du" %}</label><input id="j-du" type="date" name="du" value="{{ filtres.du }}"></div>
+    <div class="champ"><label class="champ-libelle" for="j-au">{% translate "Au" %}</label><input id="j-au" type="date" name="au" value="{{ filtres.au }}"></div>
+  </div>
+</form>
+<div id="journal-zone" class="zone-rafraichie">{% include "compte/journal/partials/_zone.html" %}</div>
+{% endblock %}

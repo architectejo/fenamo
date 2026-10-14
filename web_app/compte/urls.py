@@ -1,6 +1,6 @@
 from django.urls import path
 
-from compte import views_utilisateurs as vu
+from compte import views_journal, views_utilisateurs as vu
 from compte.views import add_user, adminer, connexion, deconnexion, securite
 
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     path('membres/<int:id>/creer-compte/', adminer, name="adminer"),  # POST seulement, super-utilisateur
     path('comptes/ajouter/', add_user, name="add-user"),  # super-utilisateur
     path('mon-compte/securite/', securite, name="securite"),
+    path('journal/', views_journal.journal, name="journal"),  # F-71, super-utilisateur, lecture seule
     # Utilisateurs : nominations, comptes externes, mots de passe temporaires, mandats (F-02, F-03, F-05, F-06)
     path('utilisateurs/', vu.utilisateurs, name="utilisateurs"),
     path('utilisateurs/nommer/', vu.nommer, name="utilisateurs-nommer"),
