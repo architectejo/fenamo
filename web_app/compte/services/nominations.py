@@ -60,6 +60,13 @@ def synchroniser_groupe(compte):
         compte.groups.add(groupe)
 
 
+def _ajouter_annees(jour, annees):
+    try:
+        return jour.replace(year=jour.year + annees)
+    except ValueError:  # 29 février
+        return date(jour.year + annees, 3, 1)
+
+
 @transaction.atomic
 def creer_nomination(auteur, compte, role, *, membre=None, coordination=None, antenne=None, association=None,
                      debut=None, fin=None, duree_mandat_ans=None):
@@ -73,11 +80,14 @@ def creer_nomination(auteur, compte, role, *, membre=None, coordination=None, an
         raise ValidationError(_("Ce compte a déjà une nomination active : terminez-la d'abord."))
     debut = debut or timezone.localdate()
     duree = duree_mandat_ans if duree_mandat_ans is not None else roles.duree_par_defaut(role)
+    if fin is not None:
+        if fin < debut:
+            raise RegleMetier(_("La fin du mandat ne peut pas précéder son début."))
+        maximum = roles.duree_par_defaut(role)  # durée fixée par la charte pour ce rôle (antenne 3 ans, coordination 4, national 5)
+        if maximum and fin > _ajouter_annees(debut, maximum):
+            raise RegleMetier(_("La fin du mandat dépasse la durée prévue par la charte pour ce rôle (%(ans)s ans).") % {'ans': maximum})
     if fin is None and duree:
-        try:
-            fin = debut.replace(year=debut.year + duree)
-        except ValueError:  # 29 février
-            fin = date(debut.year + duree, 3, 1)
+        fin = _ajouter_annees(debut, duree)
     nomination = Nomination.objects.create(
         compte=compte, membre=membre, role=role, coordination=coordination, antenne=antenne, association=association,
         debut=debut, fin=fin, duree_mandat_ans=duree, nomme_par=auteur if getattr(auteur, 'pk', None) else None)
@@ -204,8 +214,8 @@ def _verifier_gestion(auteur, compte):
     nomination = _nomination_active(compte)
     if nomination is None:
         raise HorsPerimetre(_("Compte introuvable."))  # compte sans nomination : réservé au SU
-    if nomination.nomme_par_id == auteur.pk and _role_de(auteur):
-        return
+    # « celui qui a nommé » n'a PAS de droit propre : le rôle visé doit rester nommable par l'auteur dans son périmètre ACTUEL
+    # (un président rétrogradé perd la main sur ceux qu'il avait nommés).
     if _dans_portee_auteur(auteur, nomination.coordination, nomination.antenne, nomination.association):
         if nomination.role in roles_nommables(auteur):
             return
@@ -232,8 +242,7 @@ def comptes_gerables(auteur):
         return base
     ids = set()
     for nomination in Nomination.objects.filter(active=True).exclude(compte=auteur).select_related('coordination', 'antenne', 'association'):
-        if nomination.nomme_par_id == auteur.pk or (
-                nomination.role in roles_nommables(auteur)
+        if (nomination.role in roles_nommables(auteur)
                 and _dans_portee_auteur(auteur, nomination.coordination, nomination.antenne, nomination.association)):
             ids.add(nomination.compte_id)
     return base.filter(pk__in=ids)

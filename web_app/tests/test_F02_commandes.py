@@ -65,7 +65,7 @@ def test_F02_roles_initiaux_rejouable_et_refus(monde):
 
 def _nomination_fin(monde, nom, fin, nomme_par=None, **kw):
     compte = _compte(nom)
-    n = N.creer_nomination(nomme_par or monde['compte'], compte, roles.VA, antenne=monde['antenne_p'], debut=date(2020, 1, 1), fin=fin, **kw)
+    n = N.creer_nomination(nomme_par or monde['compte'], compte, roles.VA, antenne=monde['antenne_p'], debut=date(fin.year - 1, fin.month, 1), fin=fin, **kw)
     return n
 
 
