@@ -8,14 +8,14 @@
 </div></div>
 {% if membres or motos %}
 <div class="grille grille--2">
-  <section class="panneau"><div class="panneau-tete"><h2>{% translate "Membres" %}</h2></div><div class="panneau-corps pile-serree">
+  <section class="panneau"><div class="panneau-tete"><h2>{% translate "Membres" %}</h2></div><div class="panneau-corps">
     {% for membre in membres %}
-    <div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a><span class="meta">{{ membre.qualite|default:"" }}</span></div></div>
+    <div class="resultat"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a><span class="meta">{% if membre.numero_carte_de_membre %}<span class="ident">{{ membre.numero_carte_de_membre }}</span> · {% endif %}{% if membre.antenne.nom %}{% blocktranslate with nom=membre.antenne.nom %}Antenne de {{ nom }}{% endblocktranslate %}{% endif %}</span></div></div>{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</div>
     {% empty %}<p class="doux u-mb-0">{% translate "Aucun membre." %}</p>{% endfor %}
   </div></section>
-  <section class="panneau"><div class="panneau-tete"><h2>{% translate "Engins" %}</h2></div><div class="panneau-corps pile-serree">
+  <section class="panneau"><div class="panneau-tete"><h2>{% translate "Engins" %}</h2></div><div class="panneau-corps">
     {% for moto in motos %}
-    <div class="cellule-personne"><span class="avatar">{% icone "motorbike" %}</span><div><a href="{% url 'view-moto' moto.id %}">{% include "components/_plaque.html" with numero=moto.numero code="" %}</a><span class="meta">{% translate "propriétaire" %} : {{ moto.proprietaire.nom|default:"—" }}</span></div></div>
+    <div class="resultat"><div class="cellule-personne"><span class="avatar">{% icone "motorbike" %}</span><div><a class="lien-plaque" href="{% url 'view-moto' moto.id %}">{% include "components/_plaque.html" with numero=moto.numero code="" %}</a><span class="meta">{% translate "propriétaire" %} : {{ moto.proprietaire.nom|default:"—" }}</span></div></div></div>
     {% empty %}<p class="doux u-mb-0">{% translate "Aucun engin." %}</p>{% endfor %}
   </div></section>
 </div>
