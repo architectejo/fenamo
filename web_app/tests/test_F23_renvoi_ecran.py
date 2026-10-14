@@ -30,6 +30,7 @@ def test_F23_fiche_propose_renvoyer_avec_motif_obligatoire(client, jeu):
 
 def test_F23_renvoi_puis_motif_affiche_sur_la_fiche(client, jeu):
     membre = _saisi(jeu)
+    Membre.objects.filter(pk=membre.pk).update(etat='saisi')  # le renvoi à l'agent se fait depuis « saisi » ; plus haut, il recule d'un cran
     client.force_login(jeu['compte'])
     r = client.post(reverse('renvoyer-membre', kwargs={'id': membre.id}), {'motif': 'Photo illisible'}, follow=True)
     assert r.status_code == 200

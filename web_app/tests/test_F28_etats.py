@@ -18,21 +18,21 @@ def test_F28_etat_saisi_par_defaut_meme_si_is_validate1_vrai():
 
 
 def test_F28_etat_valide_antenne_puis_actif():
-    assert etat_de(membre(is_validate2=True)) == 'valide_antenne'
-    assert etat_de(membre(is_validate2=True, is_validate3=True)) == 'actif'
-    assert etat_de(membre(is_validate3=True)) == 'actif'
+    assert etat_de(membre(etat='valide_antenne')) == 'valide_antenne'
+    assert etat_de(membre(etat='valide_province')) == 'valide_province'
+    assert etat_de(membre(etat='actif')) == 'actif'
 
 
 def test_F28_etat_supprime_prioritaire():
-    assert etat_de(membre(is_validate2=True, is_validate3=True, is_delete=True)) == 'supprime'
+    assert etat_de(membre(etat='supprime', etat_precedent='actif')) == 'supprime'
 
 
 def test_F28_etat_explicite_prioritaire_quand_le_champ_existera():
-    m = membre(is_validate3=True)
+    m = membre(etat='actif')
     m.etat = 'renvoye'
     assert etat_de(m) == 'renvoye'
     m.etat = 'inconnu'
-    assert etat_de(m) == 'actif'
+    assert etat_de(m) == 'saisi'  # état inconnu : valeur de repli
 
 
 def test_F28_etat_engin(jeu):

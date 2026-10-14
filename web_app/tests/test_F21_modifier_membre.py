@@ -84,7 +84,7 @@ def test_F21_demande_de_modification_service(jeu):
 def test_F23_une_seule_table_de_libelles_d_etat(jeu):
     assert set(LIBELLES) == set(ETATS)
     ind = indicateurs_tableau_bord(jeu['compte'])
-    assert ind['graphique']['libelles'] == [str(LIBELLES['saisi']), str(LIBELLES['valide_antenne']), str(LIBELLES['actif'])]
+    assert ind['graphique']['libelles'] == [str(LIBELLES[e]) for e in ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye')]
 
 
 def test_F21_champ_absent_du_post_garde_sa_valeur_dont_epouse_et_autre_asbl(client, jeu):

@@ -155,7 +155,7 @@ def test_F25_execution_par_su_ou_privilege5_puis_restauration(client, acteurs, c
     assert cible.motif_suppression == 'Décès confirmé'
     suppression = _journal(cible, A.SUPPRESSION).get()
     assert suppression.auteur == acteurs['comptes'][profil] and suppression.motif == 'Décès confirmé'
-    assert suppression.avant == {'is_delete': False} and suppression.apres == {'is_delete': True}
+    assert suppression.avant == {'etat': cible.etat_precedent} and suppression.apres == {'etat': 'supprime'}
     client.force_login(acteurs['comptes']['p2'])  # disparu des listes d'un validateur
     assert cible.nom not in client.get(reverse('liste-membre')).content.decode()
     r = _agir(client, acteurs, profil, cible, 'restaurer', motif='Erreur')

@@ -39,12 +39,12 @@ def test_F23_renvoi_motif_obligatoire_et_etat_renvoye(monde, equipe):
 
 
 def test_F23_renvoi_journal_notification_et_retrait_de_l_etape(monde, equipe):
-    m = _saisi(monde, equipe, is_validate2=True)
+    m = _saisi(monde, equipe, etat='valide_province')
     assert renvoyer_membre(equipe['VN'], m, 'Pièce manquante') == 'renvoye'
     m.refresh_from_db()
-    assert not m.is_validate2 and m.renvoye  # niveau juste en dessous
+    assert m.etat == 'valide_antenne' and not m.renvoye and m.motif_renvoi == 'Pièce manquante'  # recul d'un cran, motif affiché
     ligne = JournalAction.objects.get(action=JournalAction.Action.RENVOI)
-    assert ligne.auteur == equipe['VN'] and ligne.motif == 'Pièce manquante' and ligne.apres['renvoye'] is True and ligne.avant['is_validate2'] is True
+    assert ligne.auteur == equipe['VN'] and ligne.motif == 'Pièce manquante' and ligne.apres == {'etat': 'valide_antenne'} and ligne.avant == {'etat': 'valide_province'}
     notif = Notification.objects.get(user=equipe['AT'], membre=m)
     assert 'Pièce manquante' in notif.description
 

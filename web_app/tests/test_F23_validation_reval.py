@@ -48,8 +48,7 @@ def test_F23_ordre_des_etapes_p2_puis_p3(client, acteurs):
     assert _drapeaux(m) == (True, True, False)
     ligne = _lignes(m, 'validation').get()
     assert ligne.auteur == acteurs['comptes']['p2']
-    assert ligne.avant == {'is_validate1': True, 'is_validate2': False, 'is_validate3': False}
-    assert ligne.apres == {'is_validate1': True, 'is_validate2': True, 'is_validate3': False}
+    assert ligne.avant == {'etat': 'saisi'} and ligne.apres == {'etat': 'valide_antenne'}
     # p2 ne pose pas l'étape finale
     _valider(client, acteurs, 'p2', m)
     assert _drapeaux(m) == (True, True, False) and _lignes(m).count() == 1
@@ -62,10 +61,10 @@ def test_F23_ordre_des_etapes_p2_puis_p3(client, acteurs):
 def test_F23_aucune_etape_sautee_pour_p2_et_p3(acteurs):
     sans_v2 = _membre(acteurs)
     assert etapes_a_valider(acteurs['comptes']['p3'], sans_v2) == []  # étape précédente exigée
-    assert etapes_a_valider(acteurs['comptes']['p2'], sans_v2) == ['is_validate2']
+    assert etapes_a_valider(acteurs['comptes']['p2'], sans_v2) == ['valide_antenne']
     avec_v2 = _membre(acteurs, 'Deux', is_validate2=True)
     assert etapes_a_valider(acteurs['comptes']['p2'], avec_v2) == []
-    assert etapes_a_valider(acteurs['comptes']['p3'], avec_v2) == ['is_validate3']
+    assert etapes_a_valider(acteurs['comptes']['p3'], avec_v2) == ['actif']
     termine = _membre(acteurs, 'Fini', is_validate2=True, is_validate3=True)
     for profil in ('p2', 'p3', 'p5', 'su'):
         assert etapes_a_valider(acteurs['comptes'][profil], termine) == []
@@ -83,10 +82,12 @@ def test_F23_su_pose_toutes_les_etapes_d_un_coup_puis_ne_refait_rien(client, act
     m = _membre(acteurs)
     _valider(client, acteurs, 'su', m)
     assert _drapeaux(m) == (True, True, True)
-    ligne = _lignes(m).get()
-    assert ligne.action == 'validation' and ligne.apres['is_validate3'] is True and ligne.avant['is_validate2'] is False
+    lignes = list(_lignes(m).order_by('id'))  # une ligne par étape franchie
+    assert [(l.avant['etat'], l.apres['etat']) for l in lignes] == [
+        ('saisi', 'valide_antenne'), ('valide_antenne', 'valide_province'), ('valide_province', 'actif')]
+    assert all(l.action == 'validation' for l in lignes)
     _valider(client, acteurs, 'su', m)
-    assert _lignes(m).count() == 1
+    assert _lignes(m).count() == 3
 
 
 def test_F23_privilege5_pose_toutes_les_etapes(client, acteurs):
@@ -177,11 +178,11 @@ def test_F23_retour_refuse_une_adresse_externe(client, acteurs):
 
 def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, monkeypatch):
     """Simule deux p2 qui lisent le membre avant que l'autre écrive : l'état final est correct (is_validate2 posé)."""
-    import coptapp.services.actions as vues
+    import coptapp.services.transitions as vues
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2bis', password='x', privilege2=True)
     acteurs['comptes']['p2bis'] = second
-    original = vues.etapes_a_valider
+    original = vues.etapes_possibles
     deja = {'fait': False}
 
     def entrelace(user, membre):
@@ -193,7 +194,7 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
             assert autre.post(reverse('validate', kwargs={'id': m.id})).status_code == 302  # l'autre écrit en premier
         return calcule
 
-    monkeypatch.setattr(vues, 'etapes_a_valider', entrelace)
+    monkeypatch.setattr(vues, 'etapes_possibles', entrelace)
     assert _valider(client, acteurs, 'p2', m).status_code == 302
     assert _drapeaux(m) == (True, True, False)
 
@@ -213,16 +214,16 @@ def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(acteurs):
 
 def test_F23_validation_n_ecrase_pas_une_modification_concurrente(client, acteurs, monkeypatch):
     """La validation n'enregistre que les drapeaux (update_fields) : un changement de nom survenu entre-temps survit."""
-    import coptapp.services.actions as vues
+    import coptapp.services.transitions as vues
     m = _membre(acteurs)
-    original = vues.etapes_a_valider
+    original = vues.etapes_possibles
 
     def entrelace(user, membre):
         calcule = original(user, membre)
         Membre.objects.filter(pk=membre.pk).update(nom='Nom corrigé ailleurs')
         return calcule
 
-    monkeypatch.setattr(vues, 'etapes_a_valider', entrelace)
+    monkeypatch.setattr(vues, 'etapes_possibles', entrelace)
     _valider(client, acteurs, 'p2', m)
     m.refresh_from_db()
     assert m.nom == 'Nom corrigé ailleurs' and m.is_validate2

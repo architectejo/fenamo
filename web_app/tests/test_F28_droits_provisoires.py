@@ -86,12 +86,12 @@ def test_F28_peut_valider_faux_quand_rien_a_valider(jeu):
 
 def test_F28_etapes_a_valider(jeu):
     membre = jeu['membre']
-    assert etapes_a_valider(jeu['compte'], membre) == ['is_validate2', 'is_validate3']
-    assert etapes_a_valider(_compte('p2c', privilege2=True), membre) == ['is_validate2']
-    assert etapes_a_valider(_compte('p3c', privilege3=True), membre) == []  # étape 2 exigée avant l'étape 3
-    Membre.objects.filter(pk=membre.pk).update(is_validate2=True)
+    assert etapes_a_valider(jeu['compte'], membre) == ['valide_antenne', 'valide_province', 'actif']
+    assert etapes_a_valider(_compte('p2c', privilege2=True), membre) == ['valide_antenne']
+    assert etapes_a_valider(_compte('p3c', privilege3=True), membre) == []  # étape d'antenne exigée avant l'étape nationale
+    Membre.objects.filter(pk=membre.pk).update(etat='valide_antenne')
     membre.refresh_from_db()
-    assert etapes_a_valider(_compte('p3d', privilege3=True), membre) == ['is_validate3']
+    assert etapes_a_valider(_compte('p3d', privilege3=True), membre) == ['actif']
     assert etapes_a_valider(_compte('p2d', privilege2=True), membre) == []
     assert etapes_a_valider(_compte('p1c', privilege1=True), membre) == []
     assert etapes_a_valider(_compte('p4c', privilege4=True, privilege2=True), membre) == []

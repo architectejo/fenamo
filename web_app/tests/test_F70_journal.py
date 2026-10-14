@@ -130,9 +130,10 @@ def test_F70_validation_d_un_membre_journalisee_une_seule_fois(client, jeu):
     url = reverse('validate', kwargs={'id': jeu['membre'].id})
     client.post(url)
     client.post(url)  # idempotent : pas de dévalidation, pas de seconde ligne
-    v = lignes(A.VALIDATION).get()
-    assert not lignes(A.RENVOI).exists()
-    assert v.avant['is_validate3'] is False and v.apres['is_validate3'] is True
+    toutes = list(lignes(A.VALIDATION).order_by('id'))  # le SU enchaîne trois étapes : une ligne par étape, pas de seconde série au 2e clic
+    assert not lignes(A.RENVOI).exists() and [(v.avant['etat'], v.apres['etat']) for v in toutes] == [
+        ('saisi', 'valide_antenne'), ('valide_antenne', 'valide_province'), ('valide_province', 'actif')]
+    v = toutes[-1]
     assert v.objet_id == jeu['membre'].id and v.antenne == jeu['antenne']
 
 
@@ -141,8 +142,8 @@ def test_F70_suppression_logique_et_annulation_membre(client, jeu):
     url = reverse('delete-membre', kwargs={'id': jeu['membre'].id})
     client.post(url, {'action': 'executer', 'motif': 'Doublon'})
     client.post(url, {'action': 'restaurer', 'motif': 'Erreur'})
-    assert lignes(A.SUPPRESSION).get().apres == {'is_delete': True}
-    assert lignes(A.RESTAURATION).get().apres == {'is_delete': False}
+    assert lignes(A.SUPPRESSION).get().apres == {'etat': 'supprime'}
+    assert lignes(A.RESTAURATION).get().avant == {'etat': 'supprime'}
 
 
 def test_F70_suppression_logique_d_un_engin(client, jeu):

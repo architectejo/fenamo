@@ -405,12 +405,13 @@ def test_F02_2e_le_su_valide_ses_propres_saisies(client, monde):
 def test_F02_2e_les_autres_membres_restent_validables_par_leur_role(monde):
     c = monde['comptes']
     m = monde['m']['saisi_a']
-    assert etapes_a_valider(c['va'], m) == ['is_validate2']
-    assert etapes_a_valider(c['pr'], m) == ['is_validate2', 'is_validate3']
-    assert etapes_a_valider(c['vn'], m) == []  # VN : 3e validation, après la 2e
+    assert etapes_a_valider(c['va'], m) == ['valide_antenne']
+    assert etapes_a_valider(c['pr'], m) == ['valide_antenne', 'valide_province', 'actif']
+    assert etapes_a_valider(c['vn'], m) == []  # VN : étape nationale, après l'antenne et la province
+    assert etapes_a_valider(c['vp'], m) == []  # VP : étape province, après l'antenne
     for profil in ('at', 'vi', 'ed', 'vi_a'):
         assert etapes_a_valider(c[profil], m) == [], profil
-    assert etapes_a_valider(c['vn'], monde['m']['v2_a']) == ['is_validate3']
+    assert etapes_a_valider(c['vp'], monde['m']['v2_a']) == ['valide_province']  # validé antenne : c'est au tour du VP
 
 
 # ================================================================ 6. visiteur : membres actifs seulement
@@ -452,7 +453,7 @@ def test_F02_2e_nomination_echue_reste_valable_partout(client, monde):
     va = Compte.objects.get(pk=va.pk)
     assert profil_de(va).mode == 'nomination' and profil_de(va).role == 'VA'
     assert 'Actif A' in _noms(membres_du_perimetre(va))
-    assert etapes_a_valider(va, monde['m']['saisi_a']) == ['is_validate2']
+    assert etapes_a_valider(va, monde['m']['saisi_a']) == ['valide_antenne']
     client.force_login(va)
     assert client.get(reverse('liste-membre')).status_code == 200
     assert client.get(reverse('utilisateurs')).status_code == 200

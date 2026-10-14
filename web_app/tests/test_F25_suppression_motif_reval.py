@@ -122,7 +122,7 @@ def test_F25_reval_execution_puis_restauration(client, acteurs, cible, profil):
     assert _etat(cible) == (True, False, None) and cible.motif_suppression == 'Décès confirmé'
     ligne = _journal(cible, 'suppression').get()
     assert ligne.auteur == acteurs['comptes'][profil] and ligne.motif == 'Décès confirmé'
-    assert ligne.avant == {'is_delete': False} and ligne.apres == {'is_delete': True}
+    assert ligne.avant == {'etat': cible.etat_precedent} and ligne.apres == {'etat': 'supprime'}  # l'état d'avant est gardé pour la restauration
     client.force_login(acteurs['comptes']['p2'])
     assert cible.nom not in client.get(reverse('liste-membre')).content.decode()
     assert _agir(client, acteurs, profil, cible, 'restaurer', motif='Erreur').status_code == 302

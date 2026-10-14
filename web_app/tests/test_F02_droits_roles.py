@@ -64,8 +64,8 @@ def _nommer_agent(monde):
 
 # ---------------------------------------------------------------- interface identique à l'ancien module
 
-def test_F02_interface_19_cles_identiques_pour_les_roles_et_les_droits_herites(monde):
-    assert len(D.CLES_DROITS) == 19 and set(D.CLES_DROITS) == set(droits_herites.droits_membre(monde['compte']).keys())
+def test_F02_interface_20_cles_identiques_pour_les_roles_et_les_droits_herites(monde):
+    assert len(D.CLES_DROITS) == 20 and set(D.CLES_DROITS) == set(droits_herites.droits_membre(monde['compte']).keys())
     for compte in (monde['compte'], _compte('sans')):
         assert set(D.droits_membre(compte, monde['M']).keys()) == set(D.CLES_DROITS)
         assert set(D.droits_membre(compte).keys()) == set(D.CLES_DROITS)
@@ -198,13 +198,13 @@ def test_F02_membres_supprimes_exclus_sauf_demande_et_propre_fiche_toujours_lisi
 
 VRAIS = {
     # rôle : clés vraies sur le membre M « saisi » (is_validate2 faux), dans la portée du rôle
-    'PR': {'peut_creer_membre', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
+    'PR': {'peut_valider_tous', 'peut_creer_membre', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
            'peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille',
            'peut_supprimer_famille', 'peut_executer_suppression'},
     'VN': set(),  # rempli ci-dessous
-    'VP': {'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_demander_suppression', 'peut_voir_historique', 'peut_ajouter_engin',
+    'VP': {'peut_valider_tous', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_demander_suppression', 'peut_voir_historique', 'peut_ajouter_engin',
            'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille'},
-    'VA': {'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
+    'VA': {'peut_valider_tous', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
            'peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille',
            'peut_supprimer_famille'},
     'AT': {'peut_creer_membre', 'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_modifier', 'peut_demander_suppression', 'peut_demander_modification', 'peut_ajouter_engin',
@@ -267,29 +267,31 @@ def test_F02_historique_pour_va_vp_vn_pr_seulement(monde, acteurs_roles):
 
 # ---------------------------------------------------------------- validations
 
-def test_F02_va_pose_is_validate2_vn_pose_is_validate3(monde, acteurs_roles):
+def test_F02_chaque_validateur_a_son_etape_du_circuit(monde, acteurs_roles):
     membre = Membre.objects.get(pk=monde['M'].pk)
-    assert D.etapes_a_valider(acteurs_roles['VA'], membre) == ['is_validate2']
-    assert D.etapes_a_valider(acteurs_roles['VN'], membre) == []  # l'étape précédente est exigée
-    Membre.objects.filter(pk=membre.pk).update(is_validate2=True)
+    assert D.etapes_a_valider(acteurs_roles['VA'], membre) == ['valide_antenne']
+    assert D.etapes_a_valider(acteurs_roles['VP'], membre) == [] and D.etapes_a_valider(acteurs_roles['VN'], membre) == []  # étape précédente exigée
+    Membre.objects.filter(pk=membre.pk).update(etat='valide_antenne')
     membre = Membre.objects.get(pk=membre.pk)
-    assert D.etapes_a_valider(acteurs_roles['VN'], membre) == ['is_validate3']
-    assert D.etapes_a_valider(acteurs_roles['VA'], membre) == []  # déjà posée : idempotent
-    Membre.objects.filter(pk=membre.pk).update(is_validate3=True)
+    assert D.etapes_a_valider(acteurs_roles['VP'], membre) == ['valide_province']
+    assert D.etapes_a_valider(acteurs_roles['VN'], membre) == [] and D.etapes_a_valider(acteurs_roles['VA'], membre) == []  # idempotent
+    Membre.objects.filter(pk=membre.pk).update(etat='valide_province')
+    membre = Membre.objects.get(pk=membre.pk)
+    assert D.etapes_a_valider(acteurs_roles['VN'], membre) == ['actif']
+    assert D.etapes_a_valider(acteurs_roles['VP'], membre) == []
+    Membre.objects.filter(pk=membre.pk).update(etat='actif')
     membre = Membre.objects.get(pk=membre.pk)
     assert all(D.etapes_a_valider(c, membre) == [] for c in acteurs_roles.values())
 
 
 def test_F02_pr_pose_toutes_les_etapes_d_un_coup(monde, acteurs_roles):
     membre = Membre.objects.get(pk=monde['M'].pk)
-    assert D.etapes_a_valider(acteurs_roles['PR'], membre) == ['is_validate2', 'is_validate3']
+    assert D.etapes_a_valider(acteurs_roles['PR'], membre) == ['valide_antenne', 'valide_province', 'actif']
 
 
-def test_F02_vp_sans_etape_propre_pour_l_instant_point_d_extension_documente(monde, acteurs_roles):
-    for etat in ({}, {'is_validate2': True}):
-        Membre.objects.filter(pk=monde['M'].pk).update(**etat)
-        assert D.etapes_a_valider(acteurs_roles['VP'], Membre.objects.get(pk=monde['M'].pk)) == []
-    assert D.ETAPES_PAR_ROLE[roles.VP] is None and 'province' in D.__doc__.lower()
+def test_F02_les_etapes_par_role_suivent_le_circuit_de_la_charte():
+    assert D.ETAPES_PAR_ROLE == {roles.VA: ('saisi', 'valide_antenne'), roles.VP: ('valide_antenne', 'valide_province'),
+                                 roles.VN: ('valide_province', 'actif')}
 
 
 @pytest.mark.parametrize('role', ['VI', 'ED', 'AT'])
@@ -311,8 +313,8 @@ def test_F02_personne_ne_valide_ses_propres_saisies_ni_sa_fiche_sauf_le_su(monde
     # le SU garde l'exception (décision de la FENAMO) : sa propre fiche et ses saisies restent validables
     su = monde['compte']
     assert su.membreId == monde['M'].id
-    Membre.objects.filter(pk=monde['M'].pk).update(user=su, is_validate2=False, is_validate3=False)
-    assert D.etapes_a_valider(su, Membre.objects.get(pk=monde['M'].pk)) == ['is_validate2', 'is_validate3']
+    Membre.objects.filter(pk=monde['M'].pk).update(user=su, etat='saisi')
+    assert D.etapes_a_valider(su, Membre.objects.get(pk=monde['M'].pk)) == ['valide_antenne', 'valide_province', 'actif']
 
 
 def test_F02_membre_supprime_non_validable_et_sans_droits_d_ecriture(monde, acteurs_roles):

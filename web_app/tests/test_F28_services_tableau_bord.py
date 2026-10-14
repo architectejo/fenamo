@@ -18,11 +18,11 @@ def _membres(jeu):
 def test_F28_indicateurs_comptent_par_etat(jeu):
     _membres(jeu)
     ind = indicateurs_tableau_bord(jeu['compte'])
-    assert (ind['saisis'], ind['valides_antenne'], ind['actifs']) == (1, 1, 1)  # le membre du jeu est « saisi »
+    assert (ind['saisis'], ind['valides_antenne'], ind['actifs'], ind['valides_province'], ind['renvoyes']) == (1, 1, 1, 0, 0)  # le membre du jeu est « saisi »
     assert ind['en_attente_total'] == 2 and ind['engins'] == 1 and ind['associations'] == 1
-    assert ind['graphique']['valeurs'] == [1, 1, 1]
-    assert ind['graphique']['libelles'] == ['Saisi', 'Validé antenne', 'Actif']
-    assert [m.nom for m in ind['en_attente']] and all(not m.is_validate3 for m in ind['en_attente'])
+    assert ind['graphique']['valeurs'] == [1, 1, 0, 1, 0]
+    assert ind['graphique']['libelles'] == ['Saisi', 'Validé antenne', 'Validé province', 'Actif', 'Renvoyé']
+    assert [m.nom for m in ind['en_attente']] and all(m.etat != 'actif' for m in ind['en_attente'])
 
 
 def test_F28_perimetre_des_indicateurs_suit_les_privileges(jeu):
