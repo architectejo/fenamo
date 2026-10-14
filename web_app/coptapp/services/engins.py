@@ -8,7 +8,7 @@ from django.db.models import Q
 from compte.models import JournalAction
 from compte.services.journal import journaliser
 from coptapp.models import Moto, Province
-from coptapp.services.droits_provisoires import droits_membre, engins_visibles
+from compte.services.droits import droits_membre, engins_visibles
 
 
 @transaction.atomic

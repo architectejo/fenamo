@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from compte.services.mobile import definir_mot_de_passe_membre
-from coptapp.services.droits_provisoires import membre_pour
+from compte.services.droits import membre_pour
 from fenamo.htmx import veut_fragment
 
 

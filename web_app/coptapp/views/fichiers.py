@@ -19,7 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 
 from coptapp.models import AssociationMembre, Membre
-from coptapp.services.droits_provisoires import associations_du_compte, droits_membre, membre_pour
+from compte.services.droits import associations_du_compte, droits_membre, membre_pour
 from coptapp.services.fichiers_prives import reponse_fichier
 
 CHAMPS = {

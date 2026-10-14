@@ -5,7 +5,7 @@ from django.db import transaction
 from compte.models import JournalAction
 from compte.services.journal import instantane, journaliser
 from coptapp.models import Membre
-from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider
+from compte.services.droits import droits_membre, etapes_a_valider
 
 DRAPEAUX_VALIDATION = ('is_validate1', 'is_validate2', 'is_validate3')
 
@@ -29,7 +29,7 @@ def journaliser_validation(auteur, membre, avant, motif=''):
 def valider_membre(auteur, membre):
     """Valide `membre` pour `auteur` (F-23) et retourne la liste des drapeaux posés (vide : rien à valider).
 
-    Règles de `droits_provisoires.etapes_a_valider` (étape précédente exigée, jamais sa propre fiche ni ses saisies,
+    Règles de `compte.services.droits.etapes_a_valider` (étape précédente exigée, jamais sa propre fiche ni ses saisies,
     une seule étape pour privilege2 / privilege3, jamais V2 puis V3 par un compte qui cumule les deux ; plusieurs
     niveaux d'un coup pour SU et privilege5 seulement). Idempotente : ne dévalide jamais. L'état est relu sous
     verrou ; seules les colonnes de validation sont écrites ; chaque validation est journalisée.

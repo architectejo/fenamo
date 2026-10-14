@@ -15,24 +15,16 @@ def superuser_requis(vue):
     return enveloppe
 
 
-def _actif(user):
-    return bool(user is not None and user.is_authenticated and user.is_active)
-
-
 def est_editeur(user):
-    """Éditeur du contenu du site (champ `editor`) ou super-utilisateur. Un visiteur (privilege4) n'écrit jamais.
-
-    PROVISOIRE : remplacé par le rôle ED au sous-lot 2e.
-    """
-    return _actif(user) and (user.is_superuser or (bool(user.editor) and not user.privilege4))
+    """Éditeur du contenu du site : SU, rôle ED, ou champ hérité ``editor`` (compte sans nomination). Voir compte/services/droits.py."""
+    from compte.services.droits import est_editeur as regle
+    return regle(user)
 
 
 def peut_ecrire_referentiel(user):
-    """Écriture sur la géographie et les associations membres : SU ou privilege5, jamais en lecture seule (privilege4).
-
-    PROVISOIRE : remplacé par les droits des rôles au sous-lot 2e.
-    """
-    return _actif(user) and (user.is_superuser or (bool(user.privilege5) and not user.privilege4))
+    """Écriture sur la géographie et les associations membres : SU, PR, VN (ou privilege5 hérité). Voir compte/services/droits.py."""
+    from compte.services.droits import peut_ecrire_referentiel as regle
+    return regle(user)
 
 
 def editeur_requis(vue):

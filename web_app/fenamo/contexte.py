@@ -33,3 +33,18 @@ def coque(request):
         (donnees['fn_notifs_total'], donnees['fn_notifs'],
          donnees['fn_role'], donnees['fn_perimetre']) = donnees_coque(user)
     return donnees
+
+
+def droits_menu(request):
+    """Droits du compte pour le menu et la coque (variable ``fn_droits``) : rôle, libellé, ce qu'il peut ouvrir.
+
+    Clés : role, role_libelle, est_su, voit_membres, voit_associations, voit_geographie, peut_creer_membre,
+    peut_ecrire_referentiel, est_editeur, voit_journal (voir compte.services.droits.droits_menu). Aucune requête pour les requêtes
+    HTMX qui ne rendent pas la coque, ni pour un anonyme."""
+    from fenamo.htmx import veut_fragment
+
+    user = getattr(request, 'user', None)
+    if user is None or not user.is_authenticated or veut_fragment(request):
+        return {}
+    from compte.services.droits import droits_menu as calcul
+    return {'fn_droits': calcul(user)}

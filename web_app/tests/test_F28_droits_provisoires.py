@@ -5,7 +5,7 @@ import pytest
 
 from compte.models import Compte
 from coptapp.models import AssociationMembre, Membre
-from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
+from compte.services.droits import droits_membre, etapes_a_valider, membres_du_perimetre
 from coptapp.services.tableau_bord import indicateurs_tableau_bord
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 

@@ -1,7 +1,7 @@
 """Indicateurs du tableau de bord (agrégats seulement, aucune donnée personnelle).
 
 PROVISOIRE : membres, engins et associations membres sont comptés dans le MÊME périmètre, celui de
-`droits_provisoires.membres_du_perimetre` (privilèges hérités) :
+`compte.services.droits.membres_du_perimetre` (privilèges hérités) :
 - membres : ceux du périmètre ;
 - engins : engins non supprimés dont le propriétaire est dans le périmètre (tous pour SU / privilege5) ;
 - associations membres : celles des membres du périmètre et celles du compte (tous pour SU / privilege5).
@@ -9,7 +9,7 @@ TODO : remplacé par le périmètre des rôles (F-16, F-51) au sous-lot 2e.
 """
 from coptapp.models import AssociationMembre, Moto
 from coptapp.services.etats import LIBELLES
-from coptapp.services.droits_provisoires import membres_du_perimetre, voit_tout  # noqa: F401 (membres_du_perimetre réexporté)
+from compte.services.droits import membres_du_perimetre, voit_tout  # noqa: F401 (membres_du_perimetre réexporté)
 
 def engins_du_perimetre(user):
     """Engins non supprimés dont le propriétaire est visible par `user`."""

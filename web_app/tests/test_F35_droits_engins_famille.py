@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from compte.models import Compte
 from coptapp.models import Famille, Membre, Moto
-from coptapp.services.droits_provisoires import droits_membre
+from compte.services.droits import droits_membre
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 
 CLES = ('peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille')
@@ -80,7 +80,7 @@ def test_F26_agent_supprime_le_proche_de_sa_saisie_avant_validation(client, sais
 
 
 def test_F35_membre_supprime_ni_ajout_ni_modification_ni_suppression(saisie):
-    from coptapp.services.droits_provisoires import etapes_a_valider
+    from compte.services.droits import etapes_a_valider
     Membre.objects.filter(pk=saisie['membre'].pk).update(is_delete=True)
     membre = Membre.objects.get(pk=saisie['membre'].pk)
     cles = CLES + ('peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier', 'peut_valider', 'peut_demander_modification')

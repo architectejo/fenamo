@@ -18,7 +18,7 @@ from virtrine.models import Article, Contact, Galery
 from coptapp.forms import *
 from coptapp.validators import erreur_image
 from compte.permissions import editeur_requis, referentiel_ecriture_requis
-from coptapp.services.droits_provisoires import (
+from compte.services.droits import (
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
     membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
@@ -763,10 +763,10 @@ def viewUser(request, id):
 def membre_view(request, id):
     """Fiche d'un membre : lecture et actions « modifier », « envoyer » (demande de modification), « privilege ».
 
-    404 si le membre est hors du périmètre du compte (voir coptapp.services.droits_provisoires) ; 403 si l'action
+    404 si le membre est hors du périmètre du compte (voir compte.services.droits) ; 403 si l'action
     POST demandée est interdite ; 400 si le formulaire « modifier » est invalide (la fiche est réaffichée avec
     ``erreurs_modifier``). Contexte : membre, historique (lignes du journal, vide sans le droit), droits (dictionnaire) et
-    chacune de ses clés à plat : voir `coptapp.services.droits_provisoires.droits_membre`.
+    chacune de ses clés à plat : voir `compte.services.droits.droits_membre`.
     """
     user = request.user
     membre, droits = membre_et_droits(user, id, supprimes_visibles=True)  # supprimé : visible de qui peut le restaurer
@@ -875,7 +875,7 @@ def membreListe(request):
     - ``choix`` : ``antennes``, ``associations`` (du périmètre), ``qualites``, ``etats`` (codes) pour les listes
       déroulantes ;
     - les droits « en général » (``peut_creer_membre``, ``peut_valider``…, voir
-      `coptapp.services.droits_provisoires.droits_membre`) à plat, ``droits`` (le même dictionnaire) et ``user`` ;
+      `compte.services.droits.droits_membre`) à plat, ``droits`` (le même dictionnaire) et ``user`` ;
     - sur chaque membre de ``page_obj`` : ``peut_valider`` (droit de valider CE membre, calculé sans requête).
     """
     user = request.user

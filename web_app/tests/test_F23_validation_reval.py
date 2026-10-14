@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from compte.models import Compte, JournalAction
 from coptapp.models import Membre
-from coptapp.services.droits_provisoires import etapes_a_valider
+from compte.services.droits import etapes_a_valider
 from tests.test_F21_matrice_routes import acteurs  # noqa: F401
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 

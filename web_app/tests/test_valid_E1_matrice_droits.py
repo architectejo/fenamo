@@ -172,7 +172,7 @@ def test_F23_matrice_hors_perimetre_404_partout(client, jeu, role):
 
 
 def test_F23_compte_inactif_ne_voit_rien(client, jeu):
-    from coptapp.services.droits_provisoires import membres_du_perimetre
+    from compte.services.droits import membres_du_perimetre
     compte = Compte.objects.create_user('inactif', password='x', privilege5=True, is_active=False)
     assert membres_du_perimetre(compte).count() == 0
 

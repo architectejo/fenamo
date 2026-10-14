@@ -1,6 +1,6 @@
 """Liste des membres : recherche, filtres et pagination (F-28). Règle métier testable, appelée par la vue.
 
-Le périmètre vient de `droits_provisoires.membres_du_perimetre` (provisoire, remplacé au sous-lot 2e) ; les
+Le périmètre vient de `compte.services.droits.membres_du_perimetre` (provisoire, remplacé au sous-lot 2e) ; les
 membres sans nom (fiches vides héritées) sont exclus ici, au niveau du queryset.
 """
 from dataclasses import dataclass
@@ -13,7 +13,7 @@ from compte.models import JournalAction
 from compte.services.journal import instantane, journaliser
 from coptapp.forms import CHAMPS_MODIFIABLES, MembreModificationForm
 from coptapp.models import Antenne, AssociationMembre, Membre, Notification
-from coptapp.services.droits_provisoires import droits_membre, etapes_a_valider, membres_du_perimetre
+from compte.services.droits import droits_membre, etapes_a_valider, membres_du_perimetre
 from coptapp.services.etats import ETATS, filtrer_membres_par_etat
 
 PAR_PAGE = 25

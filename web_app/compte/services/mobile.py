@@ -20,7 +20,7 @@ from django.utils.crypto import constant_time_compare, salted_hmac
 from compte.models import JournalAction
 from compte.services.journal import journaliser
 from coptapp.models import Membre
-from coptapp.services.droits_provisoires import droits_membre, membres_du_perimetre
+from compte.services.droits import droits_membre, membres_du_perimetre
 
 PREFIXE = 'mob:'
 INSCRIPTION = 'mob-inscription'

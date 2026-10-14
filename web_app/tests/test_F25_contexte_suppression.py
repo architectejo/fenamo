@@ -1,7 +1,7 @@
 """F-25 : clés de droits de suppression dans le contexte de la fiche (exécuter, restaurer, annuler une demande)."""
 from django.urls import reverse
 
-from coptapp.services.droits_provisoires import droits_membre
+from compte.services.droits import droits_membre
 from tests.test_F35_droits_engins_famille import _compte, saisie  # noqa: F401
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 

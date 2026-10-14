@@ -7,7 +7,7 @@ from django.urls import reverse
 from compte.models import Compte, JournalAction
 from coptapp.models import Antenne, AssociationMembre, Membre, Province, Ville
 from coptapp.services import geographie
-from coptapp.services.droits_provisoires import (
+from compte.services.droits import (
     antennes_du_perimetre, cible_rattachable, provinces_du_perimetre, villes_du_perimetre,
 )
 from coptapp.services.geographie import (

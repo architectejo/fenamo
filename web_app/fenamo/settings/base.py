@@ -79,6 +79,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'fenamo.contexte.textes_interface',
                 'fenamo.contexte.coque',
+                'fenamo.contexte.droits_menu',
             ],
             'libraries': {'design': 'fenamo.balises'},
         },
