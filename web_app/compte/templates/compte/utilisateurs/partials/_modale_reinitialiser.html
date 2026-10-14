@@ -7,4 +7,4 @@
 {% include "components/_erreur.html" with niveau="alerte" titre=_("Le mot de passe actuel sera remplacé.") texte=t_msg %}
 <p class="meta">{% translate "L'opération est inscrite au journal, sans le mot de passe." %}</p>
 {% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "key-round" %}<span>{% translate "Réinitialiser le mot de passe" %}</span></button>{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Réinitialiser le mot de passe" %}</span></button>{% endblock %}

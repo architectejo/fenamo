@@ -4,7 +4,7 @@ Modale « Nommer un membre » (maquette modale-nommer, F-02) : 2 étapes dans un
 Ouverte sur l'étape 2 quand membre_retenu est fourni (bouton « Nommer » de la fiche). Erreur de règle : statut 422, saisie conservée.
 Contexte : action, roles_choix, coordinations, antennes, associations, durees, membre_retenu, saisie, erreur.
 {% endcomment %}
-<form class="feuille feuille--large" method="post" action="{{ action }}" hx-post="{{ action }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find [type=submit]" novalidate
+<form class="feuille feuille--large" method="post" action="{{ action }}" hx-post="{{ action }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find [type=submit]" hx-disinherit="hx-target hx-swap hx-disabled-elt" novalidate
       x-data="nommer({ etape: {% if membre_retenu %}2{% else %}1{% endif %}, role: '{{ saisie.role|default:roles_choix.0.0 }}', durees: { {% for code, d in durees.items %}{% if d %}{{ code }}: {{ d }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %} }, debut: '{{ debut_texte }}', fin: '{{ saisie.fin }}', nom: '{{ membre_retenu.nom|escapejs }}' })">
   {% csrf_token %}
   <div class="feuille-tete">
@@ -20,7 +20,7 @@ Contexte : action, roles_choix, coordinations, antennes, associations, durees, m
         <div class="champ">
           <label class="champ-libelle" for="cherche-membre">{% translate "Rechercher un membre actif" %}</label>
           <div class="recherche">{% icone "search" %}<input id="cherche-membre" type="search" name="q" placeholder="{% translate 'Nom, MBR ou téléphone' %}" autocomplete="off" aria-describedby="cherche-membre-aide"
-               hx-get="{% url 'utilisateurs-membres-nommables' %}" hx-trigger="input changed delay:300ms, search" hx-target="#resultats-membres-zone" hx-indicator="#resultats-membres-zone" hx-sync="this:replace"></div>
+               hx-get="{% url 'utilisateurs-membres-nommables' %}" hx-trigger="input changed delay:300ms, search" hx-target="#resultats-membres-zone" hx-indicator="#resultats-membres-zone" hx-sync="this:replace" hx-swap="innerHTML"></div>
           <p class="champ-aide" id="cherche-membre-aide">{% translate "Seul un membre actif, sans nomination en cours, peut être nommé." %}</p>
         </div>
         <fieldset>

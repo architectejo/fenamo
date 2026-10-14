@@ -138,11 +138,15 @@ def _ligne(auteur, compte, nomination=None, aujourdhui=None):
     else:
         nomme_par = ''
     peut = False if soi else noms.peut_gerer(auteur, compte)
+    super_utilisateur = nomination is None and compte.is_superuser
     return {
-        'compte': compte, 'nom': nom, 'membre': membre, 'externe': not compte.membreId, 'soi': soi,
-        'nomination': nomination, 'role': nomination.role if nomination else '',
-        'role_libelle': nomination.get_role_display() if nomination else '', 'lieu': lieu_de(nomination), 'nomme_par': nomme_par,
-        'mandat': mandat_de(nomination, aujourdhui), 'etat': etat_du_compte(compte),
+        'compte': compte, 'nom': nom, 'membre': membre, 'externe': not compte.membreId and not compte.is_superuser, 'soi': soi,
+        'nomination': nomination or ({'role': 'SU'} if super_utilisateur else None),
+        'role': nomination.role if nomination else ('SU' if super_utilisateur else ''),
+        'role_libelle': nomination.get_role_display() if nomination else (str(roles.LIBELLES[roles.SU]) if super_utilisateur else ''),
+        'lieu': lieu_de(nomination) if nomination else (_("National") if super_utilisateur else ''), 'nomme_par': nomme_par,
+        'mandat': mandat_de(nomination, aujourdhui) if nomination or not super_utilisateur else
+        {'variante': 'sans', 'fin': _("Sans date de fin"), 'reste': _("compte technique"), 'part': 0}, 'etat': etat_du_compte(compte),
         'peut_gerer': peut, 'peut_renouveler': bool(peut and nomination and roles.duree_par_defaut(nomination.role)),
     }
 
