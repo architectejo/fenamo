@@ -2,8 +2,8 @@
 {% load i18n design %}
 {% block titre %}Ajouter une antenne - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "str-list" %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{{ structure.sigle|default:structure.nom }}</span></nav>
-<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une antenne" %}</h1><p class="page-contexte">{% icone "radio-tower" %}{{ structure.nom }}</p></div></div>
+<nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "str-list" %}">{% translate "Associations membres" %}</a>{% if structure %}<span aria-hidden="true">/</span><span>{{ structure.sigle|default:structure.nom }}</span>{% endif %}</nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une antenne" %}</h1><p class="page-contexte">{% icone "radio-tower" %}{% if structure %}{{ structure.nom }}{% endif %}</p></div></div>
 {% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
 <section class="panneau panneau--etroit" hx-history="false">
   <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>

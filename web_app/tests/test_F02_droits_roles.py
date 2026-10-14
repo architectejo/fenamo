@@ -199,20 +199,20 @@ def test_F02_membres_supprimes_exclus_sauf_demande_et_propre_fiche_toujours_lisi
 
 VRAIS = {
     # rôle : clés vraies sur le membre M « saisi » (is_validate2 faux), dans la portée du rôle
-    'PR': {'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_voir_historique',
+    'PR': {'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
            'peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille',
            'peut_supprimer_famille', 'peut_executer_suppression'},
     'VN': set(),  # rempli ci-dessous
     'VP': {'peut_creer_membre', 'peut_modifier', 'peut_demander_suppression', 'peut_voir_historique', 'peut_ajouter_engin',
            'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille'},
-    'VA': {'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_voir_historique',
+    'VA': {'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_renvoyer', 'peut_demander_suppression', 'peut_voir_historique',
            'peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille',
            'peut_supprimer_famille'},
     'AT': {'peut_creer_membre', 'peut_modifier', 'peut_demander_suppression', 'peut_demander_modification', 'peut_ajouter_engin',
            'peut_ajouter_famille', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille'},
     'VI': set(), 'ED': set(),
 }
-VRAIS['VN'] = (VRAIS['PR'] - {'peut_valider'}) | set()  # VN ne pose pas la 1re validation : is_validate2 manque, sa étape est la 3e
+VRAIS['VN'] = (VRAIS['PR'] - {'peut_valider', 'peut_renvoyer'}) | set()  # VN ne pose pas la 1re validation : is_validate2 manque, sa étape est la 3e
 
 
 def _vrais(d):

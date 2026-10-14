@@ -82,7 +82,7 @@ VERIFIER_0058 = """
         'coord_kin': issues.get(nom='Ville Kin').coordination.nom,
         'coord_orpheline': issues.get(nom='Ville orpheline').coordination_id,
         'types_remplis': issues.exclude(type='').count(), 'codes_remplis': issues.exclude(code=None).count(),
-        'membres': {m.nom: nom(m) for m in Membre.objects.all()},
+        'membres': dict(Membre.objects.values_list('nom', 'antenne__nom')),  # colonnes nommées : le modèle courant a des champs plus récents que cette cible
         'motos': {m.numero: nom(m) for m in Moto.objects.all()},
         'assos': {a.nom: nom(a) for a in AssociationMembre.objects.all()},
     }))
@@ -171,7 +171,7 @@ def test_F11_0058_conversion_non_ecrasement_aller_retour_et_rejeu(base, tmp_path
     r3 = _script(base, """
         from coptapp.models import Antenne, Membre, Moto, AssociationMembre
         print(json.dumps({'antennes': sorted(Antenne.objects.values_list('nom', flat=True)),
-                          'membres': {m.nom: (m.antenne.nom if m.antenne_id else None) for m in Membre.objects.all()},
+                          'membres': dict(Membre.objects.values_list('nom', 'antenne__nom')),
                           'motos': Moto.objects.exclude(antenne=None).count(),
                           'assos': {a.nom: (a.antenne.nom if a.antenne_id else None) for a in AssociationMembre.objects.all()}}))
     """, tmp_path)
