@@ -1,13 +1,15 @@
 """Engins : attribution d'un motard à un engin (F-33, journalisée)."""
+from dataclasses import dataclass
 from datetime import date
 
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.core.paginator import Paginator
 from django.db.models import Q
 
 from compte.models import JournalAction
 from compte.services.journal import journaliser
-from coptapp.models import Moto, Province
+from coptapp.models import Antenne, Moto, Province
 from compte.services.droits import droits_membre, engins_visibles
 
 
@@ -105,3 +107,60 @@ def enregistrer_engin(membre, auteur, donnees, photo=None):
         user=auteur if getattr(auteur, 'pk', None) else None, structure=membre.structure, proprietaire=membre,
         antenne=membre.antenne, ville=membre.ville, province=province, numero=numero_suivant(province), photo=photo,
         abonnement=un_an_apres(date.today()), **donnees)
+
+
+# ---------------------------------------------------------------- liste des engins (F-30)
+
+PAR_PAGE = 25
+Q_LONGUEUR_MAX = 100
+ENTIER_MAX = 2**31 - 1
+
+
+@dataclass
+class ResultatListeEngins:
+    """Résultat de `lister_engins` : page Django d'engins, filtres normalisés, indicateur, choix des listes déroulantes."""
+    page_obj: object
+    filtres: dict
+    filtres_actifs: bool
+    choix: dict
+
+
+def _entier_borne(valeur):
+    try:
+        nombre = int(valeur)
+    except (TypeError, ValueError):
+        return None
+    return nombre if 0 < nombre <= ENTIER_MAX else None
+
+
+def normaliser_filtres_engins(params):
+    """q (numéro, plaque, châssis, moteur, nom ou identifiant du propriétaire), coordination, antenne (identifiants) ; invalides ignorés."""
+    return {
+        'q': (params.get('q') or '').strip()[:Q_LONGUEUR_MAX],
+        'coordination': _entier_borne(params.get('coordination')) or '',
+        'antenne': _entier_borne(params.get('antenne')) or '',
+    }
+
+
+def lister_engins(user, filtres, numero_page=None, par_page=PAR_PAGE):
+    """Page d'engins visibles par `user` (``droits.engins_visibles`` : périmètre du compte, engins supprimés exclus), filtrés, triés
+    par numéro. `filtres` : dict ou QueryDict (q, coordination, antenne). Page illisible ou hors bornes : dernière ou première page.
+    Retourne un `ResultatListeEngins` ; ``select_related`` du propriétaire, de l'antenne et de la coordination (pas de requête par ligne)."""
+    filtres = normaliser_filtres_engins(filtres)
+    engins = engins_visibles(user).select_related('proprietaire', 'antenne', 'province')
+    if filtres['q']:
+        q = filtres['q']
+        engins = engins.filter(
+            Q(numero__icontains=q) | Q(num_plaque__icontains=q) | Q(num_chassie__icontains=q) | Q(num_moteur__icontains=q)
+            | Q(proprietaire__nom__icontains=q) | Q(proprietaire__idf__icontains=q))
+    if filtres['coordination']:
+        engins = engins.filter(province_id=filtres['coordination'])
+    if filtres['antenne']:
+        engins = engins.filter(antenne_id=filtres['antenne'])
+    page_obj = Paginator(engins.order_by('numero', 'id'), par_page).get_page(numero_page)
+    visibles = engins_visibles(user)
+    choix = {
+        'coordinations': Province.objects.filter(pk__in=visibles.exclude(province=None).values('province')).order_by('ordre', 'nom'),
+        'antennes': Antenne.objects.filter(pk__in=visibles.exclude(antenne=None).values('antenne')).exclude(nom=None).order_by('nom'),
+    }
+    return ResultatListeEngins(page_obj=page_obj, filtres=filtres, filtres_actifs=any(filtres.values()), choix=choix)

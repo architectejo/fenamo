@@ -46,7 +46,7 @@ TROUS_CONNUS = {
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
     'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom', 'mot-de-passe-mobile',
     # écran Utilisateurs (2e) : matrice détaillée par rôle dans test_F21_matrice_roles.py ; ici, profils hérités (sans nomination)
-    'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
+    'engin-liste', 'renvoyer-membre', 'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
     'utilisateurs-desactiver', 'utilisateurs-reactiver', 'utilisateurs-role', 'utilisateurs-renouveler',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
@@ -133,6 +133,9 @@ COMPLEMENT = [
     ('tableau-bord', 'get', {}, None, S(200)),
     ('home-session', 'get', {}, None, S(200)),
     ('liste-membre', 'get', {}, None, S(200)),
+    ('engin-liste', 'get', {}, None, S(200)),
+    ('renvoyer-membre', 'get', M, None, S(405)),
+    ('renvoyer-membre', 'post', M, {'motif': 'Photo illisible'}, S(302, nu=404, p4=404, ed=404, p1=403, p2=(302, 403), p3=(302, 403))),
     ('recherche', 'get', {}, None, S(200)),
     ('recherche', 'post', {}, {'search': '1', 'champ': 'Membre'}, S(200)),
     ('notifys', 'get', {}, None, S(200)),

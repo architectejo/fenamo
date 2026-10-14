@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}{% comment %}Liste des engins (F-30) : gabarit provisoire, à remplacer par la version du design (frontend-htmx).{% endcomment %}
+{% block titre %}{% translate "Engins" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<h1 class="page-titre">{% translate "Engins" %}</h1>
+<form method="get" action="{% url 'engin-liste' %}" role="search">
+  <input type="search" name="q" value="{{ filtres.q }}" maxlength="100" aria-label="{% translate 'Rechercher un engin' %}">
+  <button type="submit">{% translate "Rechercher" %}</button>
+</form>
+<div id="liste-zone">{% include "coptapp/engins/partials/_liste.html" %}</div>
+{% endblock %}
