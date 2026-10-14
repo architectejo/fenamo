@@ -7,7 +7,7 @@ from compte.services.comptes import compte_du_membre
 from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
 from coptapp.services.actions import (
-    changer_suppression, rattacher, traiter_suppression_membre, valider_membre,
+    changer_suppression, rattacher, renvoyer_membre, traiter_suppression_membre, valider_membre,
     ACTIONS_SUPPRESSION, EtatIncoherent,
 )
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
@@ -24,7 +24,7 @@ from compte.services.droits import (
 )
 from coptapp.services.geographie import antenne_depuis_ville, completer_antenne, rattacher_antenne, rattacher_ville
 from coptapp.services.engins import (
-    CoordinationInconnue, EnginDejaEnregistre, attribuer_engin, enregistrer_engin,
+    CoordinationInconnue, EnginDejaEnregistre, attribuer_engin, enregistrer_engin, lister_engins,
 )
 from coptapp.services.fiche_membre import contexte_fiche
 from coptapp.services.membres import (
@@ -144,6 +144,19 @@ def validate(request, id):
         raise PermissionDenied
     if not valider_membre(user, membre):
         contrib_messages.info(request, _("Rien à valider pour vous sur ce membre."))
+    return _retour(request, 'liste-membre')
+
+@require_POST
+def renvoyer(request, id):
+    """Renvoie un membre à l'auteur de la saisie avec un motif obligatoire (F-23). POST + CSRF ; 404 hors périmètre, 403 sans droit
+    de validateur sur ce membre ; motif vide : message d'erreur, rien ne change. Retour à la page d'origine."""
+    user = request.user
+    membre = get_object_or_404(membres_du_perimetre(user), id=id)
+    resultat = renvoyer_membre(user, membre, request.POST.get('motif', ''))
+    if resultat == 'renvoye':
+        contrib_messages.success(request, _("Fiche renvoyée à son auteur avec le motif."))
+    else:
+        contrib_messages.error(request, _("Indiquez le motif du renvoi (500 caractères au plus)."))
     return _retour(request, 'liste-membre')
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -892,6 +905,21 @@ def membreListe(request):
         **droits,
     }
     modele = 'coptapp/membres/partials/_liste.html' if veut_fragment(request) else 'app/membre-list.html'
+    return render(request, modele, contexte)
+
+
+def enginListe(request):
+    """Liste des engins (F-30) : GET seulement, dans le périmètre du compte (404 jamais : une liste vide si rien n'est visible).
+
+    Paramètres : ``q`` (numéro, plaque, châssis, moteur, propriétaire), ``coordination`` (id), ``antenne`` (id), ``page`` (25 par page).
+    Fragment ``coptapp/engins/partials/_liste.html`` pour une requête HTMX, page complète ``coptapp/engins/liste.html`` sinon
+    (gabarits à écrire par frontend-htmx). Contexte : ``page_obj``, ``filtres``, ``filtres_actifs``, ``choix`` (coordinations,
+    antennes), ``droits`` et ``user``."""
+    user = request.user
+    resultat = lister_engins(user, request.GET, request.GET.get('page'))
+    contexte = {'user': user, 'page_obj': resultat.page_obj, 'filtres': resultat.filtres, 'filtres_actifs': resultat.filtres_actifs,
+                'choix': resultat.choix, 'droits': droits_membre(user)}
+    modele = 'coptapp/engins/partials/_liste.html' if veut_fragment(request) else 'coptapp/engins/liste.html'
     return render(request, modele, contexte)
 
 

@@ -10,7 +10,7 @@ Correspondance héritière retenue, d'après coptapp.views.validate et les liste
 - is_validate2 = première validation (privilege2) -> 'valide_antenne' ;
 - is_validate3 = validation finale (privilege3), seule visible du public et comptée dans les effectifs -> 'actif' ;
 - 'valide_province' n'est pas produit par les booléens hérités (une seule validation intermédiaire existe) ;
-- 'renvoye' n'a aucun support hérité (ni drapeau ni motif) ;
+- 'renvoye' : drapeau Membre.renvoye + motif_renvoi (service renvoyer_membre) ; la modification par l'auteur le remet dans le circuit ;
 - Moto n'a aucun drapeau de validation : un engin non supprimé est 'actif' ; 'a_renouveler' s'il est échu
   (Moto.abonnement < aujourd'hui, à confirmer comme « identification annuelle échue »).
 """
@@ -40,6 +40,8 @@ def etat_de(objet, aujourdhui=None):
         return explicite
     if getattr(objet, 'is_delete', False):
         return 'supprime'
+    if getattr(objet, 'renvoye', False):
+        return 'renvoye'
     if hasattr(objet, 'abonnement') and not hasattr(objet, 'is_validate3'):  # engin
         echeance = objet.abonnement
         if echeance and echeance < (aujourdhui or date.today()):
@@ -61,6 +63,9 @@ def filtrer_membres_par_etat(membres, etat):
     """
     if etat not in ETATS:
         return membres
+    if etat == 'renvoye':
+        return membres.filter(renvoye=True, is_delete=False)
+    membres = membres.filter(renvoye=False)  # un membre renvoyé n'est dans aucun autre état tant qu'il n'est pas repris
     if etat == 'actif':
         return membres.filter(is_validate3=True, is_delete=False)
     if etat == 'valide_antenne':

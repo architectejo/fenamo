@@ -45,6 +45,7 @@ urlpatterns = [
     path('membres/ajouter/association/<int:id>/', addMembre, name="add-membre"),
     path('membres/<int:id>/', membre_view, name="membre-view"),
     path('membres/<int:id>/valider/', validate, name="validate"),
+    path('membres/<int:id>/renvoyer/', renvoyer, name="renvoyer-membre"),  # POST : motif obligatoire (F-23)
     path('membres/<int:id>/supprimer/', demandeSuppression, name="delete-membre"),
     path('membres/<int:idM>/rattachement/association/<int:id>/', structure_attr_membre, name="structure-attribution"),
     path('membres/<int:idM>/rattachement/ville/<int:id>/', ville_attr_membre, name="ville-attribution"),
@@ -59,6 +60,7 @@ urlpatterns = [
     path('famille/<int:id>/supprimer/', deleteFamily, name="delete-family"),
 
     # Engins (motos et tricycles)
+    path('engins/', enginListe, name="engin-liste"),
     path('motos/<int:id>/', moto_view, name="view-moto"),
     path('motos/<int:id>/modifier/', editMoto, name="edit-moto"),
     path('motos/<int:id>/supprimer/', deleteMoto, name="delete-moto"),

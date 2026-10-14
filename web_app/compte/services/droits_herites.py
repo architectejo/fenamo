@@ -89,7 +89,7 @@ def droits_membre(user, membre=None):
         'peut_voir_historique': False, 'peut_demander_modification': False,
         'peut_modifier_engin': False, 'peut_supprimer_engin': False, 'peut_modifier_famille': False,
         'peut_supprimer_famille': False, 'peut_executer_suppression': False, 'peut_restaurer': False,
-        'peut_annuler_demande_suppression': False,
+        'peut_annuler_demande_suppression': False, 'peut_renvoyer': False,
     }
     if not _actif(user):
         return nul
@@ -132,6 +132,7 @@ def droits_membre(user, membre=None):
         'peut_creer_membre': ecriture,
         'peut_modifier': peut_modifier,
         'peut_valider': peut_valider,
+        'peut_renvoyer': peut_valider,  # renvoyer = refuser à son niveau : mêmes conditions que valider
         'peut_demander_suppression': ecriture,
         # Réservé aux SU (correctif C1) : le privilege5 hérité ne suffit pas.
         'peut_attribuer_privileges': su,
@@ -153,8 +154,8 @@ def _a_deja_valide(user, membre):
 
 def _etapes(user, membre):
     """Drapeaux que `user` peut poser sur `membre` maintenant (voir `etapes_a_valider`)."""
-    if not _actif(user) or est_visiteur(user) or membre.is_delete:
-        return []
+    if not _actif(user) or est_visiteur(user) or membre.is_delete or membre.renvoye:
+        return []  # un membre renvoyé attend sa reprise par l'auteur de la saisie
     if not user.is_superuser and (membre.pk == user.membreId or membre.user_id == user.pk):
         return []  # jamais sa propre fiche ni ses propres saisies (séparation des tâches)
     manquantes = [c for c in ('is_validate1', 'is_validate2', 'is_validate3') if not getattr(membre, c)]

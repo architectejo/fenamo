@@ -173,6 +173,9 @@ class Membre(models.Model):
     motif_suppression = models.TextField(blank=True, default='')
     # Auteur de la demande en cours : lui (ou qui exécute) peut l'annuler.
     suppression_demandee_par = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    # Renvoi avec motif (F-23) : le validateur refuse la fiche ; la modification par l'auteur de la saisie la remet dans le circuit.
+    renvoye = models.BooleanField(default=False)
+    motif_renvoi = models.TextField(blank=True, default='')
     is_validate1 = models.BooleanField(default=True)
     is_validate2 = models.BooleanField(default=False)
     is_validate3 = models.BooleanField(default=False)

@@ -65,7 +65,7 @@ def _nommer_agent(monde):
 # ---------------------------------------------------------------- interface identique à l'ancien module
 
 def test_F02_interface_16_cles_et_renvoi_de_l_ancien_module(monde):
-    assert len(D.CLES_DROITS) == 16 and set(D.CLES_DROITS) == set(droits_herites.droits_membre(monde['compte']).keys())
+    assert len(D.CLES_DROITS) == 17 and set(D.CLES_DROITS) == set(droits_herites.droits_membre(monde['compte']).keys())
     for compte in (monde['compte'], _compte('sans')):
         assert set(D.droits_membre(compte, monde['M']).keys()) == set(D.CLES_DROITS)
         assert set(D.droits_membre(compte).keys()) == set(D.CLES_DROITS)

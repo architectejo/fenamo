@@ -41,7 +41,7 @@ CLES_DROITS = (
     'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
     'peut_voir_historique', 'peut_demander_modification', 'peut_ajouter_engin', 'peut_ajouter_famille',
     'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille',
-    'peut_executer_suppression', 'peut_restaurer', 'peut_annuler_demande_suppression',
+    'peut_executer_suppression', 'peut_restaurer', 'peut_annuler_demande_suppression', 'peut_renvoyer',
 )
 
 # Drapeaux de validation posés par chaque rôle, dans l'ordre du circuit (§ 4.4). POINT D'EXTENSION : quand le champ d'état unique
@@ -218,8 +218,8 @@ def _etapes_role(user, profil, membre):
     représentable (point d'extension ``ETAPES_PAR_ROLE``). Jamais sur un membre supprimé, ni sur sa propre fiche ou ses propres
     saisies. Le SU, qui a l'exception, est traité par les droits hérités."""
     nomination, role = profil.nomination, profil.role
-    if membre.is_delete or membre.pk == user.membreId or membre.user_id == user.pk:
-        return []
+    if membre.is_delete or membre.renvoye or membre.pk == user.membreId or membre.user_id == user.pk:
+        return []  # un membre renvoyé attend sa reprise par l'auteur de la saisie
     if role not in (roles.PR, roles.VA, roles.VP, roles.VN) or not _dans_portee(user, nomination, membre):
         return []
     manquantes = [c for c in ('is_validate1', 'is_validate2', 'is_validate3') if not getattr(membre, c)]
@@ -263,6 +263,7 @@ def droits_membre(user, membre=None):
         'peut_creer_membre': ecriture_role,
         'peut_modifier': gerer_apres_saisie,
         'peut_valider': (role in (roles.PR, roles.VA, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
+        'peut_renvoyer': (role in (roles.PR, roles.VA, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
         'peut_demander_suppression': ecriture,
         'peut_attribuer_privileges': False,  # réservé au SU (correctif C1)
         'peut_voir_historique': role in ROLES_VOIENT_HISTORIQUE and portee,

@@ -46,6 +46,40 @@ def valider_membre(auteur, membre):
     return etapes
 
 
+@transaction.atomic
+def renvoyer_membre(auteur, membre, motif):
+    """Renvoie `membre` à l'auteur de la saisie avec un motif (F-23) ; retourne 'renvoye', 'motif_requis' ou 'motif_trop_long'.
+
+    Droits : ceux de validateur sur CE membre (``droits_membre(...)['peut_renvoyer']`` : c'est son tour de valider, jamais sa propre
+    fiche ni ses saisies) ; PermissionDenied sinon. L'état est relu sous verrou. Le renvoi retire la dernière étape franchie
+    (is_validate3 puis is_validate2 : « niveau juste en dessous »), pose ``renvoye`` et le motif, journalise RENVOI (avant / après,
+    motif) et notifie l'auteur de la saisie. La modification de la fiche par son auteur la remet dans le circuit.
+    """
+    from coptapp.models import Notification
+    membre = Membre.objects.select_for_update().get(pk=membre.pk)
+    if not droits_membre(auteur, membre)['peut_renvoyer']:
+        raise PermissionDenied
+    motif = (motif or '').strip()
+    if not motif:
+        return 'motif_requis'
+    if len(motif) > MOTIF_MAX:
+        return 'motif_trop_long'
+    avant = {**drapeaux_validation(membre), 'renvoye': False}
+    champs = ['renvoye', 'motif_renvoi', 'mise_a_jour']
+    for etape in ('is_validate3', 'is_validate2'):
+        if getattr(membre, etape):
+            setattr(membre, etape, False)
+            champs.append(etape)
+            break
+    membre.renvoye, membre.motif_renvoi = True, motif
+    membre.save(update_fields=champs)
+    journaliser(auteur, JournalAction.Action.RENVOI, membre, avant=avant, apres={**drapeaux_validation(membre), 'renvoye': True}, motif=motif)
+    if membre.user_id:
+        Notification.objects.create(user_id=membre.user_id, membre=membre, titre=f'Fiche renvoyée : {membre.nom or membre.idf}',
+                                    description=motif)
+    return 'renvoye'
+
+
 def changer_suppression(auteur, objet, supprime, motif=''):
     """Suppression logique (ou annulation) d'un membre ou d'un engin ; journalisée. Ne contrôle aucun droit :
     pour un membre, passer par `traiter_suppression_membre`. N'écrit que les colonnes concernées."""
@@ -77,8 +111,8 @@ def rattacher(auteur, objet, champ, cible):
     return objet
 
 
-ACTIONS_SUPPRESSION = ('demander', 'annuler', 'executer', 'restaurer')
 MOTIF_MAX = 500
+ACTIONS_SUPPRESSION = ('demander', 'annuler', 'executer', 'restaurer')
 
 
 class EtatIncoherent(Exception):

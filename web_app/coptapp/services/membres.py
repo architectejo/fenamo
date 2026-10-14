@@ -86,7 +86,7 @@ def lister_membres(user, params, numero_page=None, par_page=PAR_PAGE):
     # Droit de valider PAR MEMBRE (étape précédente exigée, jamais sa propre fiche) : calcul en mémoire, sans requête.
     page_obj.object_list = list(page_obj.object_list)
     for membre in page_obj.object_list:
-        membre.peut_valider = bool(etapes_a_valider(user, membre))
+        membre.peut_valider = membre.peut_renvoyer = bool(etapes_a_valider(user, membre))
     return ResultatListe(page_obj=page_obj, filtres=filtres, filtres_actifs=any(filtres.values()))
 
 
@@ -125,12 +125,17 @@ def modifier_membre(auteur, membre, donnees, fichiers=None):
     if not formulaire.changed_data:
         return formulaire, False
     formulaire.save()
+    remis = membre.renvoye
+    if remis:  # la reprise de la fiche par son auteur la remet dans le circuit
+        membre.renvoye, membre.motif_renvoi = False, ''
+        membre.save(update_fields=['renvoye', 'motif_renvoi', 'mise_a_jour'])
     apres = instantane(membre, CHAMPS_MODIFIABLES)
     modifies = [c for c in formulaire.changed_data if c in CHAMPS_MODIFIABLES or c == 'photo']
     visibles = [c for c in modifies if c in CHAMPS_JOURNALISABLES]
     journaliser(auteur, JournalAction.Action.MODIFICATION, membre,
                 avant={c: avant[c] for c in visibles},
-                apres={**{c: apres[c] for c in visibles}, 'champs_modifies': modifies})
+                apres={**{c: apres[c] for c in visibles}, 'champs_modifies': modifies, **({'renvoye': False} if remis else {})},
+                motif='Fiche reprise après renvoi : remise dans le circuit.' if remis else '')
     return formulaire, True
 
 
