@@ -36,6 +36,7 @@ def test_demo_charge_les_roles_les_etats_et_le_journal(settings):
     assert membres.filter(is_validate2=True, is_validate3=False, is_delete=False).exists()  # validé antenne / renvoyé
     assert membres.filter(is_validate3=True, is_delete=False).exists()  # actif
     assert membres.filter(suppression_demandee=True).exists() and membres.filter(is_delete=True).exists()
+    assert membres.filter(renvoye=True).count() == 2 and Notification.objects.filter(titre__startswith='Fiche renvoyée').count() == 2
     assert Moto.objects.filter(num_chassie__startswith='DEMO').count() >= 5
     assert Notification.objects.filter(titre__startswith='[DEMO]').count() == 3
     actions = set(JournalAction.objects.values_list('action', flat=True))

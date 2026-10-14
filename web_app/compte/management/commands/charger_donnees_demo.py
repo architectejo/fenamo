@@ -18,13 +18,13 @@ from django.contrib.auth.hashers import make_password
 from django.core.exceptions import PermissionDenied
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.models import Q
 
 from compte import roles
 from compte.models import JournalAction, Nomination
 from compte.services import nominations as noms
 from coptapp.models import Antenne, AssociationMembre, Membre, Moto, Notification, Province
-from coptapp.services.actions import (EtatIncoherent, drapeaux_validation, journaliser_validation, traiter_suppression_membre,
-                                      valider_membre)
+from coptapp.services.actions import EtatIncoherent, renvoyer_membre, traiter_suppression_membre, valider_membre
 from coptapp.services.engins import enregistrer_engin
 
 PREFIXE = 'DEMO'
@@ -76,7 +76,7 @@ class Command(BaseCommand):
         Compte = get_user_model()
         comptes = Compte.objects.filter(username__startswith='demo.')
         membres = Membre.objects.filter(idf__startswith=PREFIXE)
-        Notification.objects.filter(titre__startswith='[DEMO]').delete()
+        Notification.objects.filter(Q(titre__startswith='[DEMO]') | Q(membre__idf__startswith=PREFIXE) | Q(user__in=comptes)).delete()
         Moto.objects.filter(num_chassie__startswith=PREFIXE).delete()
         JournalAction.objects.filter(auteur__in=comptes).delete()
         Nomination.objects.filter(compte__in=comptes).delete()
@@ -199,17 +199,16 @@ class Command(BaseCommand):
                 self._valider_par(va, m, 1, (True, False))
             elif 12 <= j <= 23:
                 self._valider_par(va, m, 1, (True, False))
-                self._valider_par(vn, m, 1, (True, True))
+                if j not in (21, 22):  # ces deux-là seront renvoyés par le validateur national
+                    self._valider_par(vn, m, 1, (True, True))
         actifs_a1 = self.membres[12:24]
         for m in actifs_a1[6:8]:  # suppression demandée
             self._essayer(f'demande de suppression de {m.nom}', traiter_suppression_membre, va, m, 'demander', 'Fiche en double (démo)')
         m = actifs_a1[8]  # supprimé (demande puis exécution par le SU)
         self._essayer(f'demande de suppression de {m.nom}', traiter_suppression_membre, va, m, 'demander', 'Membre décédé (démo)')
         self._essayer(f'suppression de {m.nom}', traiter_suppression_membre, self.su, m, 'executer', 'Membre décédé (démo)')
-        for m in actifs_a1[9:11]:  # renvoyé à l'antenne par le validateur national, avec motif
-            avant = drapeaux_validation(m)
-            self._forcer(m, is_validate3=False)
-            journaliser_validation(vn, m, avant, motif='Photo illisible : à reprendre (démo)')
+        for m in actifs_a1[9:11]:  # renvoyés à l'auteur de la saisie par le validateur national, avec motif (service F-23)
+            self._essayer(f'renvoi de {m.nom}', renvoyer_membre, vn, m, 'Photo illisible : à reprendre (démo)')
         self.mobile = actifs_a1[11]
         Membre.objects.filter(pk=self.mobile.pk).update(idf=IDF_MOBILE, password=make_password(self.mdp))
         self.mobile.refresh_from_db()
