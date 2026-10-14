@@ -1,180 +1,52 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-  <div class="pagetitle">
-    <h1>{{structure.nom}}</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'tableau-bord' %}">Accueil</a></li>
-        <li class="breadcrumb-item">Association membre</li>
-        <li class="breadcrumb-item active">{{structure.sigle}}</li>
-      </ol>
-    </nav>
-  </div><!-- End Page Title -->
-
-  <section class="section profile">
-    <div class="row">
-
-      {% if structure %}
-      <div class="col-xl-12 col-lg-12">
-
-        <div class="row">
-          <div class="col-6">
-            <div class="card">
-              <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-
-                {% if structure.logo %}
-                <img src="{{structure.logo.url}}" alt="FENAMO LOGO DE {{structure.sigle|upper}}" class="rounded-circle">
-                {% endif %}
-                <h2>{{structure.sigle|upper}}</h2>
-                <!--<h3>association membre</h3 -->
-                <div class="social-links mt-2">
-                  {% if structure.twitter %}
-                  <a href="{{structure.twitter}}" target="_blank" class="twitter"><i class="bi bi-twitter"></i></a>
-                  {% endif %}
-                  {% if structure.facebook %}
-                  <a href="{{structure.facebook}}" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
-                  {% endif %}
-                  {% if structure.instagram %}
-                  <a href="{{structure.instagram}}" target="_blank" class="instagram"><i
-                      class="bi bi-instagram"></i></a>
-                  {% endif %}
-                  {% if structure.linkedin %}
-                  <a href="{{structure.linkedin}}" target="_blank" class="linkedin"><i class="bi bi-linkedin"></i></a>
-                  {% endif %}
-                </div>
-
-              </div>
-            </div>
-          </div>
-          <!--Partie deux -->
-          <div class="col-6">
-            <div class="card">
-              <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-
-                <h2>Total membre: {{structure.membres}}</h2>
-                <h3>Propriètaire: {{structure.proprietaires}}</h3>
-                <h3>Motocycliste: {{structure.motocyclistes}}</h3>
-                {% if user.is_authenticated %}
-                {% if user.is_superuser %}
-                <a href="" class="btn btn-primary">Nommer un administrateur</a>
-                <a href="{% url 'structure-admin' structure.id %}" class="btn btn-primary mt-2">Administration</a>
-                {% else %}
-                <a href="" class="btn btn-primary">Liste des membres</a>
-                {% endif %}
-                {% endif %}
-
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-      {% endif %}
-
-      <div class="col-xl-12 col-lg-12">
-
-        <div class="card">
-          <div class="card-body pt-3">
-            <!-- Bordered Tabs -->
-            <ul class="nav nav-tabs nav-tabs-bordered">
-
-              {% if user.is_superuser %}
-              <li class="nav-item">
-                <button class="nav-link {{activeAdd}}" data-bs-toggle="tab"
-                  data-bs-target="#profile-edit">{{button}}</button>
-              </li>
-              {% endif %}
-
-              {% if structure %}
-              <li class="nav-item">
-                <button class="nav-link {{activeEdit}}" data-bs-toggle="tab"
-                  data-bs-target="#profile-overview">Information</button>
-              </li>
-              {% endif %}
-
-            </ul>
-            <div class="tab-content pt-2">
-
-              <div class="tab-pane fade {{activeAdd}} profile-edit pt-3" id="profile-edit">
-
-                <!-- Profile Edit Form -->
-                {% if msg %}
-                <p class="small fst-italic {{classMsg}}">{{msg}}</p>
-                {% endif %}
-                <form method="post" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  {{form.as_p}}
-
-                  <div class="text-center">
-                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
-                  </div>
-                </form><!-- End Profile Edit Form -->
-
-              </div>
-
-              <div class="tab-pane fade {{activeEdit}} profile-overview" id="profile-overview">
-
-                <h5 class="card-title">Details</h5>
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label ">Dénomination</div>
-                  <div class="col-lg-9 col-md-8">{{structure.nom}}</div>
-                </div>
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">Sigle</div>
-                  <div class="col-lg-9 col-md-8">{{structure.sigle}}</div>
-                </div>
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">Province</div>
-                  <div class="col-lg-9 col-md-8">{{structure.province.nom}}</div>
-                </div>
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">Antenne</div>
-                  <div class="col-lg-9 col-md-8">{{structure.ville.nom}}</div>
-                </div>
-
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">Adresse</div>
-                  <div class="col-lg-9 col-md-8">{{structure.adresse}}</div>
-                </div>
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">Téléphone</div>
-                  <div class="col-lg-9 col-md-8">{{structure.phone}}</div>
-                </div>
-
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 label">E-mail</div>
-                  <div class="col-lg-9 col-md-8">{{structure.email}}</div>
-                </div>
-
-              </div>
-
-            </div><!-- End Bordered Tabs -->
-
-          </div>
-        </div>
-
-      </div>
-    </div>
+{% extends "base.html" %}
+{% load i18n static design %}{% comment %}
+Fiche d'une association membre (écran migré). Contexte : structure, form, msg/classMsg, button, activeAdd/activeEdit.
+Le formulaire d'édition reste sur la page (la vue répond par un rendu de cette page) ; il est réservé au super-utilisateur.
+{% endcomment %}
+{% block titre %}{% translate "Association membre" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'str-list' %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{% if structure %}{{ structure.sigle|default:structure.nom }}{% else %}{{ button|default:"+" }}{% endif %}</span></nav>
+{% if structure %}
+<div class="page-tete page-tete--haut">
+  <span class="avatar avatar--grand">{% if structure.logo %}<img src="{{ structure.logo.url }}" alt="" width="88" height="88">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="88" height="88">{% endif %}</span>
+  <div class="page-tete-texte">
+    <h1 class="page-titre">{{ structure.nom }}</h1>
+    <p class="page-contexte"><span class="ident texte-plein">{{ structure.sigle|upper }}</span>{% if structure.province.nom %} · {{ structure.province.nom }}{% endif %}{% if structure.ville.nom %} · {{ structure.ville.nom }}{% endif %}</p>
+  </div>
+  {% if user.is_superuser %}<div class="page-actions"><a class="bouton" href="{% url 'structure-admin' structure.id %}">{% icone "settings" %}<span>{% translate "Administration" %}</span></a></div>{% endif %}
+</div>
+<div class="affichage">
+  {% translate "Membres" as t1 %}{% include "components/_chiffre.html" with valeur=structure.membres libelle=t1 %}
+  {% translate "Propriétaires" as t2 %}{% include "components/_chiffre.html" with valeur=structure.proprietaires libelle=t2 %}
+  {% translate "Motocyclistes" as t3 %}{% include "components/_chiffre.html" with valeur=structure.motocyclistes libelle=t3 %}
+</div>
+{% endif %}
+{% if msg %}<div class="u-mt-4">{% include "components/_erreur.html" with niveau="info" titre=msg %}</div>{% endif %}
+<div class="grille grille--principale u-mt-6">
+  {% if structure %}
+  <section class="panneau">
+    <div class="panneau-tete"><h2>{% translate "Informations" %}</h2></div>
+    <div class="panneau-corps"><dl class="definitions">
+      <div><dt>{% translate "Dénomination" %}</dt><dd>{{ structure.nom }}</dd></div>
+      <div><dt>{% translate "Sigle" %}</dt><dd class="ident">{{ structure.sigle|default:"—" }}</dd></div>
+      <div><dt>{% translate "Coordination provinciale" %}</dt><dd>{{ structure.province.nom|default:"—" }}</dd></div>
+      <div><dt>{% translate "Antenne" %}</dt><dd>{{ structure.ville.nom|default:"—" }}</dd></div>
+      <div><dt>{% translate "Adresse" %}</dt><dd>{{ structure.adresse|default:"—" }}</dd></div>
+      <div><dt>{% translate "Téléphone" %}</dt><dd>{{ structure.phone|default:"—" }}</dd></div>
+      <div><dt>{% translate "E-mail" %}</dt><dd>{{ structure.email|default:"—" }}</dd></div>
+    </dl></div>
   </section>
-
-</main><!-- End #main -->
-
-<!-- ======= Footer ======= -->
-{% include './footer.html' %}
-
-{% endblock body %}
+  {% endif %}
+  {% if user.is_superuser %}
+  <section class="panneau">
+    <div class="panneau-tete"><h2>{{ button|default:_("Enregistrer") }}</h2></div>
+    <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+      {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+      {% include "components/_bouton.html" with libelle=_("Enregistrer") variante="principal" type="submit" icone="check" %}
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

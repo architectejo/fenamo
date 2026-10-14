@@ -1,73 +1,25 @@
-{% extends 'base-app.html' %}
-
-{% load static %}{% load fichiers %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Communiqués</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-          <li class="breadcrumb-item active">Communiqués</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section dashboard">
-      <div class="row">
-        <!-- Right side columns -->
-        <div class="col-lg-12">
-          <!-- News & Updates Traffic -->
-          <div class="card">
-            <div class="filter">
-              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <li class="dropdown-header text-start">
-                  <h6></h6>
-                </li>
-
-                <li><a class="dropdown-item" href="#">Communiqués recents des utilisateurs</a></li>
-              </ul>
-            </div>
-
-            <div class="card-body pb-0">
-              <h5 class="card-title">Communiqués <span>/recents</span></h5>
-
-              <div class="news">
-
-                {% for message in communiques %}
-                    <div class="post-item clearfix">
-                        {% if message.membre.photo %}
-                            <a href="{% url 'membre-view' message.membre.id %}">
-                                <img src="{% url_fichier message.membre "photo" vignette=True %}" alt="">
-                            </a>
-                        {% endif %}
-                        {% if message.message %}
-                          <a href="{% url 'communique' message.id %}">
-                            <p>{{message.message | slice:'458'}}...</p>
-                          </a>
-                        {% endif %}
-                        <p>{{message.mise_a_jour}}</p>
-                    </div>
-                {% endfor %}
-
-              </div><!-- End sidebar recent posts-->
-
-            </div>
-          </div><!-- End News & Updates -->
-
-        </div><!-- End Right side columns -->
-
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n design fichiers %}{% comment %}Communiqués (écran migré). La vue fournit `communiques`.{% endcomment %}
+{% block titre %}{% translate "Communiqués" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete">
+  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Communiqués" %}</h1><p class="page-contexte">{% icone "megaphone" %}{% translate "Messages adressés aux membres" %}</p></div>
+  {% if fn_droits.peut_ecrire_referentiel %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'message' %}">{% icone "plus" %}<span>{% translate "Nouveau communiqué" %}</span></a></div>{% endif %}
+</div>
+{% if communiques %}
+<ul class="file">
+  {% for message in communiques %}
+  <li class="dossier">
+    {% avatar message.membre.nom message.membre.photo 40 %}
+    <div>
+      <div class="dossier-titre"><a href="{% url 'communique' message.id %}">{{ message.message|truncatechars:140 }}</a></div>
+      <div class="dossier-lieu"><span>{% icone "user" %}{{ message.membre.nom|default:"—" }}</span><span>{% icone "calendar" %}{{ message.mise_a_jour|date:"d/m/Y" }}</span></div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+{% translate "Aucun communiqué" as t_vide %}{% translate "Les communiqués publiés apparaîtront ici." as t_msg %}
+{% include "components/_etat_vide.html" with icone="megaphone" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endblock %}

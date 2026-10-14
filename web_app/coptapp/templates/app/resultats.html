@@ -1,114 +1,26 @@
-{% extends 'base-app.html' %}
-
-{% load static %}{% load fichiers %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Resultats de "{{champ}}"</h1>
-      <nav>
-        <ol class="breadcrumb">
-          {% if user.is_authenticated %}
-            <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-          {% endif %}
-          <li class="breadcrumb-item active">Recherche</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section dashboard">
-      <div class="row">
-        <!-- Right side columns -->
-        <div class="col-lg-12">
-          <!-- News & Updates Traffic -->
-          <div class="card">
-            <div class="filter">
-              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <li class="dropdown-header text-start">
-                  <h6></h6>
-                </li>
-
-                <li><a class="dropdown-item" href="#">Resultats de recherche</a></li>
-              </ul>
-            </div>
-
-            <div class="card-body pb-0">
-              <h5 class="card-title {{classe}}">{{message}} <span>/ pour {{champ}}</span></h5>
-
-              <div class="news">
-
-                {% for moto in motos %}
-                <div class="post-item clearfix">
-                    <div class="row">
-                        <div class="col-lg-2">
-                        <a href="{% url 'view-moto' moto.id %}">
-                            {% if moto.photo %}
-                            <img src="{{moto.photo.url}}" alt="">
-                            {% else %}
-                                <p style="font-size: 50px; color:blue;">
-                                    <i class="ri-motorbike-fill"></i>
-                                </p>
-                                {% endif %}
-                            </a>
-                        </div>
-                        <div class="col-lg-10">
-                            <h4><a href="{% url 'view-moto' moto.id %}">{{moto.numero}}</a></h4>
-                            {% if moto.motard_id %}
-                              <h4>
-                                <a href="{% url 'view-moto' moto.id %}">Voir les details</a>
-                              </h4>
-                            {% endif %}
-                              <p>
-                                <a href="{% url 'membre-view' moto.proprietaire.id %}">Proprietaire: {{moto.proprietaire.nom}}</a>
-                              </p>
-                            <p>{{moto.mise_a_jour}}</p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-                {% for membre in membres %}
-                <div class="post-item clearfix">
-                    <div class="row">
-                        <div class="col-lg-2">
-                        <a href="{% url 'membre-view' membre.id %}">
-                            {% if membre.photo %}
-                            <img src="{% url_fichier membre "photo" vignette=True %}" alt="">
-                            {% else %}
-                                <p style="font-size: 50px; color:blue;">
-                                    <i class="ri-account-pin-box-fill"></i>
-                                </p>
-                                {% endif %}
-                            </a>
-                        </div>
-                        <div class="col-lg-10">
-                            <h4><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></h4>
-                              <p>
-                                <a href="{% url 'membre-view' membre.id %}">Qualité: {{membre.qualite}}</a>
-                              </p>
-                            <!--<p>{{moto.mise_a_jour}}</p>-->
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-              </div><!-- End sidebar recent posts-->
-
-            </div>
-          </div><!-- End News & Updates -->
-
-        </div><!-- End Right side columns -->
-
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design fichiers %}{% comment %}Résultats de la recherche globale (écran migré). La vue fournit champ, membres, motos, message.{% endcomment %}
+{% block titre %}{% translate "Recherche" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete"><div class="page-tete-texte">
+  <h1 class="page-titre">{% translate "Recherche" %}</h1>
+  <p class="page-contexte">{% icone "search" %}{% blocktranslate with c=champ %}Résultats pour « {{ c }} »{% endblocktranslate %}</p>
+</div></div>
+{% if membres or motos %}
+<div class="grille grille--2">
+  <section class="panneau"><div class="panneau-tete"><h2>{% translate "Membres" %}</h2></div><div class="panneau-corps pile-serree">
+    {% for membre in membres %}
+    <div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a><span class="meta">{{ membre.qualite|default:"" }}</span></div></div>
+    {% empty %}<p class="doux u-mb-0">{% translate "Aucun membre." %}</p>{% endfor %}
+  </div></section>
+  <section class="panneau"><div class="panneau-tete"><h2>{% translate "Engins" %}</h2></div><div class="panneau-corps pile-serree">
+    {% for moto in motos %}
+    <div class="cellule-personne"><span class="avatar">{% icone "motorbike" %}</span><div><a href="{% url 'view-moto' moto.id %}">{% include "components/_plaque.html" with numero=moto.numero code="" %}</a><span class="meta">{% translate "propriétaire" %} : {{ moto.proprietaire.nom|default:"—" }}</span></div></div>
+    {% empty %}<p class="doux u-mb-0">{% translate "Aucun engin." %}</p>{% endfor %}
+  </div></section>
+</div>
+{% else %}
+{% translate "Aucun résultat" as t_vide %}{% translate "Vérifiez l'orthographe ou cherchez un numéro d'engin ou de carte." as t_msg %}
+{% include "components/_etat_vide.html" with icone="search" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endblock %}

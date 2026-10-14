@@ -1,96 +1,32 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-  <main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Liste des associations membres</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-          <li class="breadcrumb-item active">Liste des associations membres</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section dashboard">
-      <div class="row">
-
-        <!-- Left side columns -->
-        <div class="col-lg-12">
-          <div class="row">
-
-            <!-- Recent Sales -->
-            <div class="col-12">
-              <div class="card recent-sales top-selling overflow-auto">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6></h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Liste des associations membres</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body pb-0">
-                  <h5 class="card-title">Associations membres <span>| Enregistrées</span></h5>
-
-                  <table class="table table-borderless datatable">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Dénomination</th>
-                        <th scope="col">Membres</th>
-                        <th scope="col">Province</th>
-                        <th scope="col">Antenne</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for str in structures %}
-                      <tr>
-                        {% if str.logo %}
-                          <th scope="row"><a href="#"><img src="{{str.logo.url}}" alt="Association membre FENAMO {{str.nom}}"></a></th>
-                        {% else %}
-                          <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
-                        {% endif %}
-                        <td>
-                          <a href="{% url 'edit-structure' str.id %}">{{str.nom}}</a>
-                        </td>
-                        <td>
-                          <a href="{% url 'edit-structure' str.id %}">{{str.membres}}</a>
-                        </td>
-                        <td>
-                            <a href="{% url 'edit-structure' str.id %}">{{str.province}}</a>
-                        </td>
-                        <td>
-                            <a href="{% url 'edit-structure' str.id %}">{{str.ville}}</a>
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-
-                </div>
-
-              </div>
-            </div><!-- End Recent Sales -->
-            
-          </div>
-        </div><!-- End Left side columns -->
-
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design %}{% comment %}Liste des associations membres (écran migré sur la coque du design). La vue structures_liste fournit `structures`.{% endcomment %}
+{% block titre %}{% translate "Associations membres" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">{% translate "Associations membres" %}</h1>
+    <p class="page-contexte">{% icone "building-2" %}{% blocktranslate count n=structures|length %}{{ n }} association enregistrée{% plural %}{{ n }} associations enregistrées{% endblocktranslate %}</p>
+  </div>
+</div>
+{% if structures %}
+<div class="liste-enveloppe">
+  <table class="liste">
+    <caption class="lecteur">{% translate "Associations membres enregistrées" %}</caption>
+    <thead><tr><th scope="col">{% translate "Dénomination" %}</th><th scope="col">{% translate "Membres" %}</th><th scope="col">{% translate "Coordination" %}</th><th scope="col">{% translate "Antenne" %}</th></tr></thead>
+    <tbody>
+      {% for str in structures %}
+      <tr>
+        <td data-role="titre"><div class="cellule-personne"><span class="avatar">{% if str.logo %}<img src="{{ str.logo.url }}" alt="" width="40" height="40" loading="lazy">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="40" height="40" loading="lazy">{% endif %}</span><div><a class="lien-ligne" href="{% url 'edit-structure' str.id %}">{{ str.nom }}</a>{% if str.sigle %}<span class="meta ident">{{ str.sigle }}</span>{% endif %}</div></div></td>
+        <td data-libelle="{% translate 'Membres' %}" class="chiffres">{{ str.membres }}</td>
+        <td data-libelle="{% translate 'Coordination' %}">{{ str.province|default:"—" }}</td>
+        <td data-libelle="{% translate 'Antenne' %}">{{ str.ville|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{% translate "Aucune association membre" as t_vide %}{% translate "Les associations de votre périmètre apparaîtront ici." as t_msg %}
+{% include "components/_etat_vide.html" with icone="building-2" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endblock %}

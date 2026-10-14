@@ -1,84 +1,25 @@
-{% extends 'base-app.html' %}
-
-{% load static %}{% load fichiers %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Activités</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-          <li class="breadcrumb-item active">Activités</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section dashboard">
-      <div class="row">
-        <!-- Right side columns -->
-        <div class="col-lg-12">
-          <!-- News & Updates Traffic -->
-          <div class="card">
-            <div class="filter">
-              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <li class="dropdown-header text-start">
-                  <h6></h6>
-                </li>
-
-                <li><a class="dropdown-item" href="#">Activités recentes des utilisateurs</a></li>
-              </ul>
-            </div>
-
-            <div class="card-body pb-0">
-              <h5 class="card-title">Activités <span>/recentes</span></h5>
-
-              <div class="news">
-
-                {% for note in notifys %}
-                <div class="post-item clearfix">
-                    {% if note.membre %}
-                        <a href="{% url 'membre-view' note.membre.id %}">
-                            {% if note.membre.photo %}
-                            <img src="{% url_fichier note.membre "photo" vignette=True %}" alt="">
-                            {% else %}
-                            <img src="{% static 'img/logo-48.webp' %}" alt="">
-                            {% endif %}
-                        </a>
-                    {% else %}
-                        {% if note.user.membreId %}
-                            <a href="{% url 'membre-view' note.user.membreId %}">
-                                <img src="{% static 'img/logo-48.webp' %}" alt="">
-                            </a>
-                        {% else %}
-                            <img src="{% static 'img/logo-48.webp' %}" alt="">
-                        {% endif %}
-                    {% endif %}
-                  <h4><a href="#">{{note.titre}}</a></h4>
-                  {% if note.description %}
-                    <p>{{note.description}}</p>
-                  {% endif %}
-                  <p>{{note.mise_a_jour}}</p>
-                </div>
-                {% endfor %}
-
-              </div><!-- End sidebar recent posts-->
-
-            </div>
-          </div><!-- End News & Updates -->
-
-        </div><!-- End Right side columns -->
-
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design fichiers %}{% comment %}Notifications (écran migré). La vue fournit `notifys`.{% endcomment %}
+{% block titre %}{% translate "Notifications" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete"><div class="page-tete-texte">
+  <h1 class="page-titre">{% translate "Notifications" %}</h1>
+  <p class="page-contexte">{% icone "bell" %}{% translate "Activité récente sur les dossiers" %}</p>
+</div></div>
+<section class="panneau"><div class="panneau-corps">
+{% if notifys %}
+  <ol class="historique">
+    {% for note in notifys %}
+    <li><span class="point point--ciel">{% icone "bell" %}</span><div>
+      <p>{% if note.membre %}<a href="{% url 'membre-view' note.membre.id %}"><strong>{{ note.titre }}</strong></a>{% else %}<strong>{{ note.titre }}</strong>{% endif %}{% if note.membre.nom %} · {{ note.membre.nom }}{% endif %}</p>
+      {% if note.description %}<p>{{ note.description }}</p>{% endif %}
+      <p class="meta">{{ note.mise_a_jour|date:"d/m/Y · H:i" }}</p>
+    </div></li>
+    {% endfor %}
+  </ol>
+{% else %}
+  {% translate "Aucune notification" as t_vide %}{% translate "Les validations, demandes et rattachements apparaîtront ici." as t_msg %}
+  {% include "components/_etat_vide.html" with icone="bell" titre=t_vide texte=t_msg %}
+{% endif %}
+</div></section>
+{% endblock %}
