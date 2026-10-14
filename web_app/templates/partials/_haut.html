@@ -35,8 +35,8 @@
 
     <div class="relatif" x-data="{ ouvert: false }" @keydown.escape="ouvert = false" @click.outside="ouvert = false">
       <button type="button" class="profil" @click="ouvert = !ouvert" :aria-expanded="ouvert.toString()" aria-haspopup="true" aria-label="{% translate 'Mon compte' %}">
-        {% avatar user.get_username "" 40 %}
-        <span class="profil-texte"><strong>{{ user.get_username }}</strong><span class="meta bloc">{{ fn_role|default:"" }}</span></span>
+        {% avatar user.get_full_name|default:user.get_username "" 40 %}
+        <span class="profil-texte"><strong>{{ user.get_full_name|default:user.get_username }}</strong><span class="meta bloc">{{ fn_role|default:"" }}</span></span>
       </button>
       <div class="flottant flottant--etroit" x-show="ouvert" x-cloak>
         <a class="notif" href="{% url 'securite' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top" @click="ouvert = false">

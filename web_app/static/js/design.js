@@ -18,20 +18,31 @@
 
   /* ---------- Compteurs : [data-compteur="1234"] monte de 0 à la valeur ---------- */
   var format = new Intl.NumberFormat('fr-FR');
+  function animerCompteur(el) {
+    var cible = parseInt(el.getAttribute('data-compteur'), 10) || 0;
+    var duree = cible < 50 ? 500 : 900, debut = null;
+    function pas(t) {
+      if (debut === null) { debut = t; }
+      var p = Math.min(1, (t - debut) / duree);
+      var e = 1 - Math.pow(1 - p, 4);
+      el.textContent = format.format(Math.round(cible * e));
+      if (p < 1) { requestAnimationFrame(pas); } else { el.classList.add('est-compte'); }
+    }
+    el.textContent = format.format(0);
+    requestAnimationFrame(pas);
+  }
+  /* Le chiffre ne monte que lorsqu'il entre à l'écran (un chiffre hors champ garde sa valeur jusqu'à ce qu'on le voie) */
+  var observateur = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entrees) {
+    entrees.forEach(function (en) { if (en.isIntersecting) { observateur.unobserve(en.target); animerCompteur(en.target); } });
+  }, { threshold: .4 }) : null;
   function compter(racine) {
     (racine || document).querySelectorAll('[data-compteur]:not([data-compte])').forEach(function (el) {
       var cible = parseInt(el.getAttribute('data-compteur'), 10) || 0;
       el.setAttribute('data-compte', '');
-      if (reduit || cible < 10) { el.textContent = format.format(cible); return; }
-      var duree = 700, debut = null;
-      function pas(t) {
-        if (debut === null) { debut = t; }
-        var p = Math.min(1, (t - debut) / duree);
-        var e = 1 - Math.pow(1 - p, 3);
-        el.textContent = format.format(Math.round(cible * e));
-        if (p < 1) { requestAnimationFrame(pas); }
-      }
-      requestAnimationFrame(pas);
+      if (reduit || cible < 2) { el.textContent = format.format(cible); return; }
+      var r = el.getBoundingClientRect();
+      var visible = r.bottom > 0 && r.top < (window.innerHeight || document.documentElement.clientHeight);
+      if (observateur && !visible) { observateur.observe(el); } else { animerCompteur(el); }
     });
   }
 
@@ -192,9 +203,16 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { menu(false); } });
 
-  /* Contenu inséré par HTMX : compteurs à animer */
-  document.addEventListener('htmx:afterSettle', function (e) { compter(e.target); });
-  document.addEventListener('DOMContentLoaded', function () { compter(document); });
+  /* Valeurs absentes (« — ») : la définition s'efface visuellement, la cellule de liste disparaît des cartes mobiles */
+  function marquerVides(racine) {
+    (racine || document).querySelectorAll('.definitions dd, .liste td[data-libelle]').forEach(function (el) {
+      el.classList.toggle('est-vide', el.textContent.trim() === '—');
+    });
+  }
 
-  window.FenamoDesign = { bulle: bulle, ouvrirModale: ouvrirModale, fermerModale: fermerModale, menu: menu, retirerDossier: retirerDossier, compter: compter, majCompteur: majCompteur, icone: icone, copier: copier, deplier: deplier };
+  /* Contenu inséré par HTMX : compteurs à animer, valeurs vides à marquer */
+  document.addEventListener('htmx:afterSettle', function (e) { compter(e.target); marquerVides(e.target); });
+  document.addEventListener('DOMContentLoaded', function () { compter(document); marquerVides(document); });
+
+  window.FenamoDesign = { bulle: bulle, ouvrirModale: ouvrirModale, fermerModale: fermerModale, menu: menu, retirerDossier: retirerDossier, compter: compter, marquerVides: marquerVides, majCompteur: majCompteur, icone: icone, copier: copier, deplier: deplier };
 })();
