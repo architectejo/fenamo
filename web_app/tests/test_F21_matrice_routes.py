@@ -85,7 +85,7 @@ ROUTES = [
     ('structure-admin', 'get', lambda a: {'id': a['association'].id}, None, S(200, nu=404, p4=404, ed=404)),
     ('structure-admin', 'get', lambda a: {'id': a['autre'].id}, None, S(404, p5=200, su=200)),
     ('edit-structure', 'get', lambda a: {'id': a['association'].id}, None, S(403, p5=200, su=200)),
-    ('edit-structure', 'post', lambda a: {'id': a['association'].id}, {}, S(403, p5=200, su=200)),
+    ('edit-structure', 'post', lambda a: {'id': a['association'].id}, {}, S(403, p5=400, su=400)),
     ('add-structure', 'get', {}, None, S(403, p5=200, su=200)),
     ('ville-select', 'get', lambda a: {'id': a['association'].id}, None, S(403, p5=302, su=302)),
     ('ville-attr', 'post', lambda a: {'id': a['ville'].id, 'sid': a['association'].id}, None, S(403, p5=302, su=302)),

@@ -175,7 +175,7 @@ COMPLEMENT = [
     ('add-moto', 'post', M, ENGIN, S(200, **VISIBLES)),
     ('add-membre', 'post', ASSO, {}, S(200, nu=404, p4=404, ed=404)),
     ('add-fenamo-membre', 'post', {}, {}, S(403, p5=200, su=200)),
-    ('add-structure', 'post', {}, {}, S(403, p5=200, su=200)),
+    ('add-structure', 'post', {}, {}, S(403, p5=400, su=400)),
     ('add-antenne', 'post', ASSO, {'nom': 'Nouvelle antenne'}, S(403, p5=302, su=302)),
     ('add-ville', 'post', PROVINCE, {'nom': 'Ville nouvelle'}, S(403, p5=200, su=200)),
     ('ville-select', 'post', ASSO, {'ville': 'KINSHASA'}, S(403, p5=302, su=302)),
