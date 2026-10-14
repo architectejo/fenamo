@@ -18,6 +18,15 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
     {% endif %}
 
+    {% if peut_valider and not membre.is_delete %}
+    {% url 'validate' membre.id as url_valider %}{% translate "Valider le membre" as t_valider %}
+    {% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--valider" %}
+    {% endif %}
+    {% if peut_renvoyer and not membre.is_delete %}
+    {% url 'renvoyer-membre' membre.id as url_renvoi %}{% translate "Renvoyer" as t_renvoyer %}{% translate "Renvoyer le dossier" as t_titre_renvoi %}{% translate "Le dossier retourne au niveau inférieur avec votre motif ; l'auteur de la saisie est prévenu." as t_msg_renvoi %}{% translate "Motif du renvoi" as t_motif_renvoi %}{% translate "Renvoyer à l'auteur" as t_envoi_renvoi %}
+    {% include "components/_confirmer.html" with prefixe="renvoi" ident=membre.id url=url_renvoi libelle=t_renvoyer titre=t_titre_renvoi message=t_msg_renvoi libelle_envoi=t_envoi_renvoi icone="undo-2" variante="danger" avec_motif=True motif_libelle=t_motif_renvoi %}
+    {% endif %}
+
     {% if membre.is_validate3 and not membre.is_delete and fn_droits|peut_nommer %}
     <button type="button" class="bouton" hx-get="{% url 'utilisateurs-nommer' %}?membre={{ membre.id }}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "badge-check" %}<span>{% translate "Nommer" %}</span></button>
     {% endif %}
