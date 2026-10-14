@@ -7,7 +7,7 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
   <div class="page-tete-texte">
     <h1 class="page-titre">{% translate "Tableau de bord" %}</h1>
     <p class="page-contexte">{% icone "map-pin" %}{% if fn_perimetre %}{{ fn_perimetre }} · {% endif %}{% now "Y" as annee %}{% blocktranslate with annee=annee %}année {{ annee }}{% endblocktranslate %}</p>
-    <p class="page-contexte">{% blocktranslate with nom=user.get_username %}Bienvenue, {{ nom }}{% endblocktranslate %}</p>
+    <p class="page-contexte">{% blocktranslate with nom=user.get_full_name|default:user.get_username %}Bienvenue, {{ nom }}{% endblocktranslate %}</p>
   </div>
 </div>
 
@@ -34,7 +34,7 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
       {% if ind.graphique.valeurs.0 or ind.graphique.valeurs.1 or ind.graphique.valeurs.2 %}
       <ul class="barres">
         {% for ligne in ind.graphique.lignes %}
-        <li><span>{{ ligne.libelle }}</span><span class="chiffres">{{ ligne.valeur }}</span><span class="barre"><span class="part-{{ ligne.valeur|part_du_max:ind.graphique.valeurs|palier_5 }}"></span></span></li>
+        <li><span>{{ ligne.libelle }}</span><span class="chiffres">{{ ligne.valeur }}</span><span class="barre barre--{{ ligne.etat }}"><span class="part-{{ ligne.valeur|part_du_max:ind.graphique.valeurs|palier_5 }}"></span></span></li>
         {% endfor %}
       </ul>
       {% else %}
@@ -48,14 +48,13 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
     <div class="panneau-tete"><h2 id="titre-attente">{% translate "Derniers dossiers en attente" %}</h2></div>
     <div class="panneau-corps">
       {% if ind.en_attente %}
-      <ul class="file" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">
+      <ul class="file file--compacte" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">
         {% for m in ind.en_attente %}
         <li class="dossier">
           {% avatar m.nom m.photo 40 %}
           <div>
-            <div class="dossier-titre"><a href="{% url 'membre-view' m.id %}">{{ m.nom|default:"—" }}</a></div>
+            <div class="dossier-titre"><a href="{% url 'membre-view' m.id %}">{{ m.nom|default:"—" }}</a>{% with code=m|etat_membre %}{% badge_etat code %}{% endwith %}</div>
             {% if m.antenne.nom %}<div class="dossier-lieu"><span>{% icone "map-pin" %}{% blocktranslate with nom=m.antenne.nom %}Antenne de {{ nom }}{% endblocktranslate %}</span></div>{% endif %}
-            <div class="dossier-etat">{% with code=m|etat_membre %}{% badge_etat code %}{% endwith %}</div>
           </div>
         </li>
         {% endfor %}

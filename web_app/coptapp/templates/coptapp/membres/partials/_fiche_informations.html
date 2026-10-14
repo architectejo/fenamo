@@ -64,8 +64,8 @@ Contexte : membre, user, villes, antennes, structures, age, nbrMoto.
   <div class="panneau-tete"><h2>{% translate "Coordonnées et pièces" %}</h2></div>
   <div class="panneau-corps">
     <dl class="definitions">
-      <div><dt>{% translate "Téléphone" %}</dt><dd>{{ membre.telephone|default:"—" }}</dd></div>
-      <div><dt>{% translate "E-mail" %}</dt><dd>{{ membre.mail|default:"—" }}</dd></div>
+      <div class="definition--large"><dt>{% translate "Téléphone" %}</dt><dd class="sans-coupure">{{ membre.telephone|default:"—" }}</dd></div>
+      <div class="definition--large"><dt>{% translate "E-mail" %}</dt><dd>{{ membre.mail|default:"—" }}</dd></div>
       <div><dt>{% translate "Adresse" %}</dt><dd>{{ membre.adresse|default:"—" }}</dd></div>
       <div><dt>{% translate "Village" %}</dt><dd>{{ membre.village|default:"—" }}</dd></div>
       <div><dt>{% translate "Chefferie" %}</dt><dd>{{ membre.chefferie|default:"—" }}</dd></div>

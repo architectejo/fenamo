@@ -25,10 +25,10 @@ Cette zone n'est pas une région vivante : le résumé annoncé est #liste-resum
       {% with code=membre|etat_membre %}
       <tr>
         <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a>{% if membre.numero_carte_de_membre %}<span class="meta ident">{{ membre.numero_carte_de_membre }}</span>{% endif %}</div></div></td>
-        <td data-libelle="{% translate 'Antenne' %}">{{ membre.antenne.nom|default:"—" }}</td>
+        <td data-libelle="{% translate 'Antenne' %}" class="sans-coupure-large">{{ membre.antenne.nom|default:"—" }}</td>
         <td data-libelle="{% translate 'Association membre' %}">{% if membre.structure %}{{ membre.structure.sigle|default:membre.structure.nom }}{% else %}—{% endif %}</td>
         <td data-libelle="{% translate 'Qualité' %}">{{ membre.qualite|default:"—" }}</td>
-        <td data-libelle="{% translate 'État' %}">{% badge_etat code %}</td>
+        <td data-libelle="{% translate 'État' %}" data-role="etat">{% badge_etat code %}</td>
         {% if peut_valider %}
         <td data-role="actions">
           {% if membre.peut_valider and code != "actif" %}

@@ -13,7 +13,7 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     <p class="u-mt-2">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}{% if membre.suppression_demandee and not membre.is_delete %} <span class="etat etat--a_renouveler">{% icone "trash-2" %}{% translate "Suppression demandée" %}</span>{% endif %}</p>
     {% if membre.motif_suppression and membre.suppression_demandee or membre.motif_suppression and membre.is_delete %}<p class="page-contexte"><strong>{% translate "Motif de suppression :" %}</strong> {{ membre.motif_suppression }}</p>{% endif %}
   </div>
-  <div class="page-actions">
+  <div class="page-actions page-actions--fiche">
     {% if peut_modifier %}
     <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
     {% endif %}

@@ -12,12 +12,12 @@
 <div class="liste-enveloppe">
   <table class="liste">
     <caption class="lecteur">{% translate "Associations membres enregistrées" %}</caption>
-    <thead><tr><th scope="col">{% translate "Dénomination" %}</th><th scope="col">{% translate "Membres" %}</th><th scope="col">{% translate "Coordination" %}</th><th scope="col">{% translate "Antenne" %}</th></tr></thead>
+    <thead><tr><th scope="col">{% translate "Dénomination" %}</th><th scope="col" class="num">{% translate "Membres" %}</th><th scope="col">{% translate "Coordination" %}</th><th scope="col">{% translate "Antenne" %}</th></tr></thead>
     <tbody>
       {% for str in structures %}
       <tr>
-        <td data-role="titre"><div class="cellule-personne"><span class="avatar">{% if str.logo %}<img src="{{ str.logo.url }}" alt="" width="40" height="40" loading="lazy">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="40" height="40" loading="lazy">{% endif %}</span><div><a class="lien-ligne" href="{% url 'edit-structure' str.id %}">{{ str.nom }}</a>{% if str.sigle %}<span class="meta ident">{{ str.sigle }}</span>{% endif %}</div></div></td>
-        <td data-libelle="{% translate 'Membres' %}" class="chiffres">{{ str.membres }}</td>
+        <td data-role="titre"><div class="cellule-personne"><span class="avatar{% if not str.logo %} avatar--sigle{% endif %}" aria-hidden="true">{% if str.logo %}<img src="{{ str.logo.url }}" alt="" width="40" height="40" loading="lazy">{% else %}{{ str.sigle|default:str.nom|slice:":6" }}{% endif %}</span><div><a class="lien-ligne" href="{% url 'edit-structure' str.id %}">{{ str.nom }}</a>{% if str.sigle and str.logo %}<span class="meta ident">{{ str.sigle }}</span>{% endif %}</div></div></td>
+        <td data-libelle="{% translate 'Membres' %}" class="chiffres num">{{ str.membres }}</td>
         <td data-libelle="{% translate 'Coordination' %}">{{ str.province|default:"—" }}</td>
         <td data-libelle="{% translate 'Antenne' %}">{{ str.ville|default:"—" }}</td>
       </tr>
