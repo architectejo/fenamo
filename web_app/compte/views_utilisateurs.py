@@ -54,7 +54,7 @@ def _compte_a_gerer(auteur, id):
     if compte is None:
         raise Http404
     try:
-        noms._verifier_gestion(auteur, compte)  # même règle que les services (une seule source)
+        noms.verifier_gestion(auteur, compte)  # même règle que les services (une seule source)
     except noms.HorsPerimetre:
         raise Http404
     except noms.DroitInsuffisant:
@@ -126,19 +126,30 @@ def etat_du_compte(compte):
     return 'mdp_temporaire' if compte.doit_changer_mot_de_passe else 'actif'
 
 
-def _ligne(auteur, compte, nomination=None, aujourdhui=None):
+def _membres_par_id(comptes):
+    """{id du membre: Membre (nom, idf)} pour une liste de comptes : UNE requête pour toute la page, pas une par ligne."""
+    ids = {c.membreId for c in comptes if c.membreId}
+    return {m.pk: m for m in Membre.objects.filter(pk__in=ids).only('nom', 'idf')} if ids else {}
+
+
+def _ligne(auteur, compte, nomination=None, aujourdhui=None, membres=None, gerable=None):
+    """Ligne d'un compte pour l'écran. `membres` ({id: Membre}) et `gerable` (vrai pour les comptes issus de
+    ``lister_comptes_gerables`` / ``mandats_a_traiter``, déjà limités aux comptes gérables) évitent des requêtes par ligne."""
     if nomination is None:
         liste = getattr(compte, 'nomination_active_liste', None)
         nomination = liste[0] if liste else None
     soi = compte.pk == auteur.pk
-    membre = Membre.objects.filter(pk=compte.membreId).only('nom', 'idf').first() if compte.membreId else None
+    if membres is not None:
+        membre = membres.get(compte.membreId)
+    else:
+        membre = Membre.objects.filter(pk=compte.membreId).only('nom', 'idf').first() if compte.membreId else None
     nom = (membre.nom if membre and membre.nom else '') or compte.get_full_name() or compte.username
     if nomination is not None and nomination.nomme_par_id:
         par = _("vous") if nomination.nomme_par_id == auteur.pk else (nomination.nomme_par.get_full_name() or nomination.nomme_par.username)
         nomme_par = _("nommé par %(nom)s") % {'nom': par}
     else:
         nomme_par = ''
-    peut = False if soi else noms.peut_gerer(auteur, compte)
+    peut = False if soi else (gerable if gerable is not None else noms.peut_gerer(auteur, compte))
     super_utilisateur = nomination is None and compte.is_superuser
     return {
         'compte': compte, 'nom': nom, 'membre': membre, 'externe': not compte.membreId and not compte.is_superuser, 'soi': soi,
@@ -192,7 +203,8 @@ def _choix_perimetre(auteur):
 def _contexte_comptes(request, auteur):
     filtres = _filtres_pour_service(_filtres(request))
     page = Paginator(noms.lister_comptes_gerables(auteur, filtres), PAR_PAGE).get_page(request.GET.get('page'))
-    lignes = [_ligne(auteur, c) for c in page]
+    membres = _membres_par_id(list(page))
+    lignes = [_ligne(auteur, c, membres=membres, gerable=True) for c in page]
     if page.number == 1 and not any(filtres.values()):  # sa propre ligne, sans action : « Votre compte »
         lignes.insert(0, _ligne(auteur, auteur, _nomination_de(auteur)))
     nb_filtres = sum(1 for cle in ('role', 'coordination', 'antenne', 'mandat') if filtres.get(cle))
@@ -207,13 +219,14 @@ def _contexte_comptes(request, auteur):
 def _contexte_mandats(auteur):
     jour = timezone.localdate()
     tous = list(noms.mandats_a_traiter(auteur))
+    membres = _membres_par_id([n.compte for n in tous])
     echus = [n for n in tous if noms.etat_mandat(n, jour) == 'echu']
     bientot = [n for n in tous if noms.etat_mandat(n, jour) == 'a_echoir']
     gerables = noms.comptes_gerables(auteur)
     actives = Nomination.objects.filter(active=True, compte__in=gerables)
     return {
-        'echus': [_ligne(auteur, n.compte, n, jour) for n in echus],
-        'bientot': [_ligne(auteur, n.compte, n, jour) for n in bientot],
+        'echus': [_ligne(auteur, n.compte, n, jour, membres, True) for n in echus],
+        'bientot': [_ligne(auteur, n.compte, n, jour, membres, True) for n in bientot],
         'nb_echus': len(echus), 'nb_bientot': len(bientot),
         'nb_en_cours': actives.filter(fin__gt=jour + timedelta(days=noms.JOURS_ALERTE)).count(),
         'nb_sans_fin': actives.filter(fin__isnull=True).count(),
@@ -236,7 +249,7 @@ def utilisateurs(request):
         'onglet': 'mandats' if request.GET.get('onglet') == 'mandats' else 'comptes',
         'total_comptes': noms.comptes_gerables(auteur).count(),
         'roles_filtre': [(code, roles.LIBELLES[code]) for code in (roles.PR, roles.VN, roles.VP, roles.VA, roles.AT, roles.VI, roles.ED)],
-        'peut_externe': auteur.is_superuser or noms._role_de(auteur) == roles.PR,
+        'peut_externe': auteur.is_superuser or noms.role_de(auteur) == roles.PR,
         'perimetre_libelle': _libelle_perimetre(auteur),
     })
     return render(request, 'compte/utilisateurs/utilisateurs.html', contexte)
@@ -261,6 +274,23 @@ def _raison_non_nommable(membre, avec_nomination):
     return _("Ce membre ne peut pas être nommé.")
 
 
+def _resultats_membres(auteur, trouves):
+    """Dictionnaires pour components/_choix_membre.html : les non nommables restent visibles avec leur raison."""
+    trouves = list(trouves)
+    nommables = set(noms.membres_nommables(auteur).values_list('pk', flat=True))
+    avec_nomination = {}
+    for n in Nomination.objects.filter(active=True, compte__membreId__in=[m.pk for m in trouves]).select_related('compte'):
+        avec_nomination[n.compte.membreId] = n.role
+    resultats = []
+    for m in trouves:
+        resultats.append({
+            'id': m.pk, 'nom': m.nom or '—', 'identifiant': m.numero_carte_de_membre or m.idf or f'MBR{m.pk:07d}',
+            'lieu': _("Antenne de %(nom)s") % {'nom': m.antenne.nom} if m.antenne_id else '—', 'etat': etat_de(m),
+            'nommable': m.pk in nommables, 'raison': '' if m.pk in nommables else _raison_non_nommable(m, avec_nomination),
+        })
+    return resultats
+
+
 @require_GET
 def membres_nommables(request):
     """Fragment des résultats de recherche (components/_choix_membre.html) : les membres du périmètre qui correspondent, les non
@@ -272,16 +302,7 @@ def membres_nommables(request):
         trouves = (membres_du_perimetre(auteur).filter(is_delete=False)
                    .filter(nom__icontains=q) | membres_du_perimetre(auteur).filter(is_delete=False, numero_carte_de_membre__icontains=q)
                    | membres_du_perimetre(auteur).filter(is_delete=False, telephone__icontains=q)).select_related('antenne').distinct()[:8]
-        nommables = set(noms.membres_nommables(auteur).values_list('pk', flat=True))
-        avec_nomination = {}
-        for n in Nomination.objects.filter(active=True, compte__membreId__in=[m.pk for m in trouves]).select_related('compte'):
-            avec_nomination[n.compte.membreId] = n.role
-        for m in trouves:
-            resultats.append({
-                'id': m.pk, 'nom': m.nom or '—', 'identifiant': m.numero_carte_de_membre or m.idf or f'MBR{m.pk:07d}',
-                'lieu': _("Antenne de %(nom)s") % {'nom': m.antenne.nom} if m.antenne_id else '—', 'etat': etat_de(m),
-                'nommable': m.pk in nommables, 'raison': '' if m.pk in nommables else _raison_non_nommable(m, avec_nomination),
-            })
+        resultats = _resultats_membres(auteur, trouves)
     return render(request, 'compte/utilisateurs/partials/_resultats_membres.html', {'resultats': resultats, 'q': q})
 
 
@@ -361,6 +382,8 @@ def nommer(request):
                 raise Http404
         contexte['membre_retenu'] = membre
         contexte['debut_texte'] = timezone.localdate().strftime('%d/%m/%Y')
+        if membre is None:  # accueil : quelques membres actifs prêts à être nommés, avant toute saisie
+            contexte['suggestions'] = _resultats_membres(auteur, noms.membres_nommables(auteur).select_related('antenne').order_by('-updated', '-id')[:6])
         return render(request, 'compte/utilisateurs/partials/_modale_nommer.html', contexte)
     identifiant = _entier(request.POST.get('membre'))
     role = request.POST.get('role', '')
@@ -392,7 +415,7 @@ def nommer(request):
 @require_http_methods(['GET', 'POST'])
 def ajouter_externe(request):
     auteur = _auteur_autorise(request)
-    if not (auteur.is_superuser or noms._role_de(auteur) == roles.PR):
+    if not (auteur.is_superuser or noms.role_de(auteur) == roles.PR):
         raise PermissionDenied
     contexte = {'action': request.path, 'peut_editeur': auteur.is_superuser, **_choix_perimetre(auteur)}
     if request.method == 'GET':
@@ -510,11 +533,11 @@ def changer_role(request, id):
 def renouveler(request, id):
     auteur = _auteur_autorise(request)
     compte = _compte_a_gerer(auteur, id)
-    ligne = _ligne(auteur, compte)
-    nomination = ligne['nomination']
+    nomination = _nomination_de(compte)  # None pour un compte sans nomination (super-utilisateur, compte hérité)
+    ligne = _ligne(auteur, compte, nomination)
     duree = roles.duree_par_defaut(nomination.role) if nomination else None
     contexte = {'action': request.path, 'compte': compte, 'cible': ligne, 'duree': duree,
-                'nouvelle_fin': (timezone.localdate() + timedelta(days=365 * duree)) if duree else None}
+                'nouvelle_fin': noms.fin_de_mandat(nomination.role) if duree else None}  # même date que le service
     if request.method == 'GET':
         return render(request, 'compte/utilisateurs/partials/_modale_renouveler.html', contexte)
     try:

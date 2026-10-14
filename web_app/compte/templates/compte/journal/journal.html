@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% load i18n design %}{% comment %}Journal d'activités (F-71, super-utilisateur, lecture seule). Contexte : page_obj, filtres, actions.{% endcomment %}
+{% load i18n design %}{% comment %}
+Journal d'activités (F-71, super-utilisateur, lecture seule). Contexte : page_obj, filtres, actions, roles, coordinations, antennes.
+Ordinateur : la liste à gauche, les filtres dans la colonne de droite ; téléphone : les filtres d'abord.
+{% endcomment %}
 {% block titre %}{% translate "Journal d'activités" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div class="page-tete"><div class="page-tete-texte">
@@ -8,15 +11,23 @@
 </div></div>
 <form id="filtres-journal" method="get" action="{% url 'journal' %}" role="search" hx-boost="false" hx-get="{% url 'journal' %}"
       hx-trigger="input changed delay:300ms from:#j-q, change, submit" hx-target="#journal-zone" hx-push-url="true" hx-indicator="#journal-zone" hx-sync="this:replace">
-  <div class="filtres">
-    <div class="recherche">{% icone "search" %}<label class="lecteur" for="j-q">{% translate "Rechercher" %}</label><input id="j-q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Auteur, objet ou motif' %}" autocomplete="off"></div>
-    <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus">{% icone "sliders-horizontal" %}<span>{% translate "Filtres" %}</span></button>
-  </div>
-  <div class="filtres-plus" id="filtres-plus">
-    <div class="champ"><label class="champ-libelle" for="j-action">{% translate "Type d'action" %}</label><select id="j-action" name="action"><option value="">{% translate "Toutes" %}</option>{% for code, libelle in actions %}<option value="{{ code }}"{% if filtres.action == code %} selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
-    <div class="champ"><label class="champ-libelle" for="j-du">{% translate "Du" %}</label><input id="j-du" type="date" name="du" value="{{ filtres.du }}"></div>
-    <div class="champ"><label class="champ-libelle" for="j-au">{% translate "Au" %}</label><input id="j-au" type="date" name="au" value="{{ filtres.au }}"></div>
-  </div>
+<div class="grille grille--principale">
+  <div id="journal-zone" class="zone-rafraichie">{% include "compte/journal/partials/_zone.html" %}</div>
+  <aside class="panneau ordre-premier-mobile" aria-labelledby="t-filtres-journal">
+    <div class="panneau-tete"><h2 id="t-filtres-journal">{% translate "Filtres" %}</h2></div>
+    <div class="panneau-corps formulaire">
+      <div class="champ"><label class="champ-libelle" for="j-q">{% translate "Rechercher" %}</label><div class="recherche">{% icone "search" %}<input id="j-q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Auteur, objet ou motif' %}" autocomplete="off"></div></div>
+      <div class="champ"><label class="champ-libelle" for="j-action">{% translate "Type d'action" %}</label><select id="j-action" name="action"><option value="">{% translate "Toutes" %}</option>{% for code, libelle in actions %}<option value="{{ code }}"{% if filtres.action == code %} selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+      <div class="champ"><label class="champ-libelle" for="j-role">{% translate "Rôle de l'auteur" %}</label><select id="j-role" name="role"><option value="">{% translate "Tous" %}</option>{% for code, libelle in roles %}<option value="{{ code }}"{% if filtres.role == code %} selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+      <div class="champ"><label class="champ-libelle" for="j-coord">{% translate "Coordination" %}</label><select id="j-coord" name="coordination"><option value="">{% translate "Toutes" %}</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if filtres.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+      <div class="champ"><label class="champ-libelle" for="j-antenne">{% translate "Antenne" %}</label><select id="j-antenne" name="antenne"><option value="">{% translate "Toutes" %}</option>{% for a in antennes %}<option value="{{ a.id }}"{% if filtres.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select></div>
+      <div class="formulaire-ligne">
+        <div class="champ"><label class="champ-libelle" for="j-du">{% translate "Du" %}</label><input id="j-du" type="date" name="du" value="{{ filtres.du }}"></div>
+        <div class="champ"><label class="champ-libelle" for="j-au">{% translate "Au" %}</label><input id="j-au" type="date" name="au" value="{{ filtres.au }}"></div>
+      </div>
+      <a class="bouton bouton--discret" href="{% url 'journal' %}">{% icone "x" %}<span>{% translate "Effacer les filtres" %}</span></a>
+    </div>
+  </aside>
+</div>
 </form>
-<div id="journal-zone" class="zone-rafraichie">{% include "compte/journal/partials/_zone.html" %}</div>
 {% endblock %}

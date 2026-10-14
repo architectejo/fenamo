@@ -24,9 +24,10 @@ Contexte : action, roles_choix, coordinations, antennes, associations, durees, m
           <p class="champ-aide" id="cherche-membre-aide">{% translate "Seul un membre actif, sans nomination en cours, peut être nommé." %}</p>
         </div>
         <fieldset>
-          <legend class="champ-libelle">{% translate "Résultats" %}</legend>
+          <legend class="champ-libelle">{% if suggestions %}{% translate "Suggestions" %}{% else %}{% translate "Résultats" %}{% endif %}</legend>
           <div id="resultats-membres-zone" class="zone-rafraichie" @change="choisir($event)" aria-live="polite">
-            <p class="meta">{% translate "Saisissez au moins une lettre du nom, ou un numéro MBR." %}</p>
+            {% if suggestions %}<p class="meta">{% translate "Membres actifs prêts à être nommés. Cherchez par nom ou MBR pour en trouver d'autres." %}</p>{% include "components/_choix_membre.html" with resultats=suggestions %}
+            {% else %}<p class="meta">{% translate "Saisissez au moins une lettre du nom, ou un numéro MBR." %}</p>{% endif %}
           </div>
         </fieldset>
         <input type="hidden" name="membre" :value="membre" x-ref="membre" value="{{ membre_retenu.id|default:'' }}">

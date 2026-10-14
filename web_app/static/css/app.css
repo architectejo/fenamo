@@ -835,6 +835,8 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
    16 bis. Utilitaires d'intégration (remplacent les style="" des maquettes ; uniquement des jetons)
    ========================================================= */
 .relatif { position: relative; }
+.ordre-premier-mobile { order: -1; }
+@media (min-width: 992px) { .ordre-premier-mobile { order: 0; } }
 .page-tete--haut { align-items: flex-start; }
 .texte-plein { color: var(--texte); }
 .champ--plein { grid-column: 1 / -1; }
