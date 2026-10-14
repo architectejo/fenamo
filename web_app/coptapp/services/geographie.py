@@ -46,11 +46,16 @@ def rattacher_ville(auteur, objet, ville):
     `auteur` peut être None (espace mobile : le membre agit sans compte). Aucun contrôle de droit ici : c'est l'affaire de la vue.
     """
     antenne = antenne_depuis_ville(ville, creer=True)
-    avant = {'ville': objet.ville_id, 'antenne': objet.antenne_id}
+    avant = {'ville': objet.ville_id, 'antenne': objet.antenne_id, 'province': objet.province_id}
     objet.ville, objet.antenne = ville, antenne
-    objet.save(update_fields=_colonnes(objet, 'ville', 'antenne'))
+    champs = ['ville', 'antenne']
+    coordination_id = (antenne.coordination_id if antenne is not None else None) or (ville.province_id if ville is not None else None)
+    if coordination_id:  # la coordination suit le rattachement : elle ne contredit jamais l'antenne
+        objet.province_id = coordination_id
+        champs.append('province')
+    objet.save(update_fields=_colonnes(objet, *champs))
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, objet, avant=avant,
-                apres={'ville': objet.ville_id, 'antenne': objet.antenne_id})
+                apres={'ville': objet.ville_id, 'antenne': objet.antenne_id, 'province': objet.province_id})
     return objet
 
 
@@ -71,15 +76,18 @@ def rattacher_antenne(auteur, objet, antenne):
     la reprise ne sait pas dire de quelle ville héritée elle dépend. Écrit seulement les colonnes concernées et journalise.
     """
     ville = antenne.ville_origine if antenne is not None else None
-    avant = {'ville': objet.ville_id, 'antenne': objet.antenne_id}
+    avant = {'ville': objet.ville_id, 'antenne': objet.antenne_id, 'province': objet.province_id}
     objet.antenne = antenne
     champs = ['antenne']
     if ville is not None:
         objet.ville = ville
         champs.append('ville')
+    if antenne is not None and antenne.coordination_id:  # la coordination de l'objet suit celle de l'antenne
+        objet.province_id = antenne.coordination_id
+        champs.append('province')
     objet.save(update_fields=_colonnes(objet, *champs))
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, objet, avant=avant,
-                apres={'ville': objet.ville_id, 'antenne': objet.antenne_id})
+                apres={'ville': objet.ville_id, 'antenne': objet.antenne_id, 'province': objet.province_id})
     return objet
 
 
@@ -94,7 +102,7 @@ def rattacher_association(auteur, membre, association):
     - association sans ville ni antenne : seule l'association est écrite.
     Écrit seulement les colonnes concernées et journalise l'avant / après (association, ville, antenne).
     """
-    avant = {'structure': membre.structure_id, 'ville': membre.ville_id, 'antenne': membre.antenne_id}
+    avant = {'structure': membre.structure_id, 'ville': membre.ville_id, 'antenne': membre.antenne_id, 'province': membre.province_id}
     membre.structure = association
     champs = ['structure']
     if association.ville_id:
@@ -107,7 +115,12 @@ def rattacher_association(auteur, membre, association):
         if association.antenne.ville_origine_id:
             membre.ville = association.antenne.ville_origine
             champs.append('ville')
+    coordination_id = (membre.antenne.coordination_id if membre.antenne_id else None) or association.province_id
+    if coordination_id and 'antenne' in champs:  # la coordination suit l'antenne (ou, à défaut, celle de l'association)
+        membre.province_id = coordination_id
+        champs.append('province')
     membre.save(update_fields=_colonnes(membre, *champs))
     journaliser(auteur, JournalAction.Action.RATTACHEMENT, membre, avant=avant,
-                apres={'structure': membre.structure_id, 'ville': membre.ville_id, 'antenne': membre.antenne_id})
+                apres={'structure': membre.structure_id, 'ville': membre.ville_id, 'antenne': membre.antenne_id,
+                       'province': membre.province_id})
     return membre

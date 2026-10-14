@@ -20,7 +20,7 @@ def definir_mot_de_passe_mobile(request, id):
     complète sinon), avec ``Cache-Control: no-store``. Seul son hachage est enregistré et le journal ne le contient jamais.
     Les refus (membre supprimé, sans identifiant mobile) sont de simples messages suivis d'une redirection vers la fiche.
     """
-    membre = membre_pour(request.user, id, 'peut_creer_membre')
+    membre = membre_pour(request.user, id, 'peut_definir_mot_de_passe_mobile')
     if membre.is_delete:
         messages.error(request, _("Ce membre est supprimé : aucun mot de passe ne peut être défini."))
         return redirect('membre-view', id=id)

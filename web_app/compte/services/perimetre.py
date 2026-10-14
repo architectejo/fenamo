@@ -37,12 +37,29 @@ def voit_toutes_notifications(user):
 
 
 def notifications_du_perimetre(user):
-    """Notifications visibles par `user` : toutes pour un SU, un PR (ou privilege5 hérité), les siennes sinon.
+    """Notifications visibles par `user` (matrice § 4.3, § 4.2) :
+    - SU et PR (et privilege5 hérité) : toutes ;
+    - VN, VP, VA : les siennes, celles des dossiers (membres) de leur périmètre et celles des comptes qu'ils ont nommés ;
+    - AT : les siennes (ses dossiers : renvois, demandes) ; VI et ED : aucune ;
+    - compte sans nomination : les siennes."""
+    from django.db.models import Q
 
-    Même périmètre que l'écran hérité des notifications (coptapp.views.myNotify, au filtre par fiche près)."""
+    from compte import roles
+    from compte.models import Nomination
+    from compte.services.droits import membres_du_perimetre, profil_de
     from coptapp.models import Notification
     if voit_toutes_notifications(user):
         return Notification.objects.all()
+    profil = profil_de(user)
+    if profil.mode == 'aucun':
+        return Notification.objects.none()
+    if profil.mode == 'nomination':
+        if profil.role in (roles.VI, roles.ED):
+            return Notification.objects.none()
+        if profil.role in (roles.VN, roles.VP, roles.VA):
+            nommes = Nomination.objects.filter(nomme_par=user, active=True).values('compte_id')
+            return Notification.objects.filter(
+                Q(user=user) | Q(membre__in=membres_du_perimetre(user).values('pk')) | Q(user__in=nommes)).distinct()
     return Notification.objects.filter(user=user)
 
 

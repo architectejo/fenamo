@@ -21,13 +21,10 @@ membre.html / _fiche_entete.html) :
 Ambiguïtés, appliquées dans le sens le plus restrictif et à confirmer par la FENAMO : voir le rapport du lot.
 """
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied
-from django.http import Http404
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 
 from compte.models import JournalAction
-from coptapp.models import Antenne, AssociationMembre, Membre, Moto, Province, Ville
+from coptapp.models import Antenne, AssociationMembre, Membre, Province, Ville
 
 
 def _actif(user):
@@ -89,7 +86,8 @@ def droits_membre(user, membre=None):
         'peut_voir_historique': False, 'peut_demander_modification': False,
         'peut_modifier_engin': False, 'peut_supprimer_engin': False, 'peut_modifier_famille': False,
         'peut_supprimer_famille': False, 'peut_executer_suppression': False, 'peut_restaurer': False,
-        'peut_annuler_demande_suppression': False, 'peut_renvoyer': False,
+        'peut_annuler_demande_suppression': False, 'peut_renvoyer': False, 'peut_voir_pieces': False,
+        'peut_definir_mot_de_passe_mobile': False,
     }
     if not _actif(user):
         return nul
@@ -130,6 +128,8 @@ def droits_membre(user, membre=None):
             ecriture and membre is not None and membre.suppression_demandee and not membre.is_delete
             and (executer or membre.suppression_demandee_par_id == user.pk)),
         'peut_creer_membre': ecriture,
+        'peut_voir_pieces': ecriture,  # inchangé pour les droits hérités : mêmes conditions que la création
+        'peut_definir_mot_de_passe_mobile': ecriture,
         'peut_modifier': peut_modifier,
         'peut_valider': peut_valider,
         'peut_renvoyer': peut_valider,  # renvoyer = refuser à son niveau : mêmes conditions que valider
@@ -187,46 +187,6 @@ def etapes_a_valider(user, membre):
     (validé province) que les deux drapeaux hérités ne représentent pas : il viendra avec le champ d'état unique.
     """
     return _etapes(user, membre)
-
-
-# ---------------------------------------------------------------- accès par identifiant (404 hors périmètre, 403 sans droit)
-
-def membre_et_droits(user, id, droit=None, supprimes_visibles=False):
-    """(membre, droits) : membre `id` visible par `user` (404 sinon) et ses droits ; 403 si `droit` manque.
-
-    Un membre supprimé logiquement n'est visible que si `supprimes_visibles` ET si `user` peut le restaurer
-    (``peut_restaurer``) : pour tout autre compte, agent compris, il est introuvable (404).
-    """
-    membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=supprimes_visibles), id=id)
-    droits = droits_membre(user, membre)
-    if membre.is_delete and not droits['peut_restaurer']:
-        raise Http404
-    if droit and not droits[droit]:
-        raise PermissionDenied
-    return membre, droits
-
-
-def membre_pour(user, id, droit=None, supprimes_visibles=False):
-    """Membre `id` visible par `user` (404 sinon) ; 403 si `droit` (clé de `droits_membre`) n'est pas accordé."""
-    return membre_et_droits(user, id, droit, supprimes_visibles)[0]
-
-
-def engins_visibles(user):
-    """Engins non supprimés dont le propriétaire est visible par `user` (tous pour SU / privilege5)."""
-    engins = Moto.objects.filter(is_delete=False)
-    if voit_tout(user):
-        return engins
-    return engins.filter(proprietaire__in=membres_du_perimetre(user).values('pk'))
-
-
-def engin_pour(user, id, droit=None):
-    """Engin `id` visible par `user` (404 sinon) ; `droit` est contrôlé sur le propriétaire (403 sinon)."""
-    moto = get_object_or_404(engins_visibles(user), id=id)
-    if droit:
-        proprietaire = moto.proprietaire
-        if proprietaire is None or not droits_membre(user, proprietaire)[droit]:
-            raise PermissionDenied
-    return moto
 
 
 def associations_du_compte(user):

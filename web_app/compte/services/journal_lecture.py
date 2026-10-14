@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.db.models import Q
 
+from compte import roles
 from compte.models import JournalAction
 
 PAR_PAGE = 30
@@ -17,12 +18,27 @@ def _jour(texte):
         return None
 
 
+def _entier(valeur):
+    try:
+        nombre = int(valeur)
+    except (TypeError, ValueError):
+        return None
+    return nombre if 0 < nombre <= 2**31 - 1 else None
+
+
 def lister_journal(filtres, numero_page=None):
-    """Page du journal, du plus récent au plus ancien. Filtres : q (auteur, objet, motif), action, du, au (AAAA-MM-JJ)."""
+    """Page du journal, du plus récent au plus ancien. Filtres : q (auteur, objet, motif), action, role (code du rôle de l'auteur),
+    coordination et antenne (identifiants du lieu de l'objet), du, au (AAAA-MM-JJ)."""
     lignes = JournalAction.objects.select_related('auteur').defer('avant', 'apres').order_by('-date', '-id')
     q = (filtres.get('q') or '').strip()[:100]
     if q:
         lignes = lignes.filter(Q(auteur__username__icontains=q) | Q(objet_libelle__icontains=q) | Q(motif__icontains=q))
+    if filtres.get('role') in roles.ROLES:
+        lignes = lignes.filter(role=filtres['role'])
+    for cle in ('coordination', 'antenne'):
+        valeur = _entier(filtres.get(cle))
+        if valeur:
+            lignes = lignes.filter(**{f'{cle}_id': valeur})
     if filtres.get('action') in JournalAction.Action.values:
         lignes = lignes.filter(action=filtres['action'])
     du, au = _jour(filtres.get('du')), _jour(filtres.get('au'))

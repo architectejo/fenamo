@@ -8,7 +8,7 @@ consultation d'une PIÈCE (pas d'une photo, consultée en continu dans les liste
 Droits :
 - photo d'un membre : membre dans le périmètre du compte (``membre_pour``) ;
 - pièce d'un membre (``fiche_id``) et pièces d'une association membre (``capture_justice``, ``preuve_de_paiement``) :
-  idem plus le droit d'enregistrer des membres (``peut_creer_membre`` : jamais en lecture seule) ; association dans
+  idem plus le droit de voir les pièces (``peut_voir_pieces`` : jamais en lecture seule) ; association dans
   celles du compte (``associations_du_compte``).
 """
 from urllib.parse import unquote
@@ -36,11 +36,11 @@ def servir(request, type_objet, id, champ, vignette=False):
     user = request.user
     if type_objet == 'membre':
         objet = membre_pour(user, id)
-        if piece and not droits_membre(user, objet)['peut_creer_membre']:
+        if piece and not droits_membre(user, objet)['peut_voir_pieces']:
             raise PermissionDenied
     else:
         objet = get_object_or_404(associations_du_compte(user), id=id)
-        if not droits_membre(user)['peut_creer_membre']:
+        if not droits_membre(user)['peut_voir_pieces']:
             raise PermissionDenied
     return reponse_fichier(request.user, objet, champ, piece, vignette)
 

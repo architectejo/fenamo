@@ -1,7 +1,7 @@
 """Droits des comptes selon leur RÔLE (cahier des charges web § 4) : point d'entrée unique des droits sur les membres, les engins,
 les associations membres et la géographie.
 
-Interface identique à l'ancien ``droits_provisoires`` : mêmes fonctions et mêmes 16 clés ``peut_*`` de ``droits_membre``.
+``droits_membre`` renvoie toujours les clés ``peut_*`` de ``CLES_DROITS`` (19 clés), pour les rôles comme pour les droits hérités.
 
 PROFIL EFFECTIF d'un compte (``profil_de``) :
 1. ``is_superuser`` : rôle SU (comportement inchangé, il garde l'exception de valider ses propres saisies) ;
@@ -17,8 +17,10 @@ RÈGLES DE RÔLE (matrice du § 4.3), pour un compte avec nomination :
 - VP : sa coordination ; modifie, demande les suppressions ; son étape de validation (province) n'est PAS représentable avec les
   booléens hérités (``is_validate1..3``) : voir ``ETAPES_PAR_ROLE`` et ``_etapes_role``, point d'extension du futur champ d'état
   unique ; en attendant le VP ne pose aucune étape ;
-- VA : son antenne ; modifie, pose ``is_validate2`` (1re validation) ; AT : ses PROPRES saisies, les modifie seulement tant que la
-  1re validation n'a pas eu lieu, puis ne peut que demander une modification ;
+- VA : son antenne ; modifie, pose ``is_validate2`` (1re validation) ; AT : lit les membres de son antenne (L), mais n'écrit que sur
+  ses PROPRES saisies, qu'il modifie seulement tant que la 1re validation n'a pas eu lieu, puis ne peut que demander une modification ;
+- création de membre (``peut_creer_membre``) : AT (C) et PR (G) ; les pièces privées (``peut_voir_pieces``) et le mot de passe mobile
+  (``peut_definir_mot_de_passe_mobile``) ont leurs propres clés ;
 - VI : lecture seule des membres ACTIFS (``is_validate3``) de son périmètre (national, coordination ou antenne), jamais les pièces ;
 - ED : contenu du site seulement, aucun membre (sa propre fiche mise à part) ;
 - personne (sauf le SU) ne valide sa propre fiche ni ses propres saisies ; l'attribution des privilèges reste réservée au SU.
@@ -42,6 +44,7 @@ CLES_DROITS = (
     'peut_voir_historique', 'peut_demander_modification', 'peut_ajouter_engin', 'peut_ajouter_famille',
     'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille',
     'peut_executer_suppression', 'peut_restaurer', 'peut_annuler_demande_suppression', 'peut_renvoyer',
+    'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile',
 )
 
 # Drapeaux de validation posés par chaque rôle, dans l'ordre du circuit (§ 4.4). POINT D'EXTENSION : quand le champ d'état unique
@@ -106,15 +109,17 @@ def _role(profil):
 # ---------------------------------------------------------------- portée d'un rôle sur les membres
 
 def _q_antenne(antenne):
-    """Membres d'une antenne : rattachés à elle, ou à la ville héritée dont elle est issue."""
+    """Membres d'une antenne : ceux qui lui sont rattachés ; la ville héritée dont elle est issue ne compte QUE pour les membres sans
+    antenne (un membre rattaché à une autre antenne n'est jamais lu d'après sa ville)."""
     q = Q(antenne_id=antenne.pk)
     if antenne.ville_origine_id:
-        q |= Q(ville_id=antenne.ville_origine_id)
+        q |= Q(antenne__isnull=True, ville_id=antenne.ville_origine_id)
     return q
 
 
 def _q_coordination(coordination_id):
-    return Q(province_id=coordination_id) | Q(antenne__coordination_id=coordination_id)
+    """Membres d'une coordination : d'après leur antenne si elle est renseignée, sinon d'après leur coordination propre."""
+    return Q(antenne__coordination_id=coordination_id) | Q(antenne__isnull=True, province_id=coordination_id)
 
 
 def _q_portee(user, nomination):
@@ -127,7 +132,7 @@ def _q_portee(user, nomination):
     if role == roles.VA:
         return _q_antenne(nomination.antenne)
     if role == roles.AT:
-        return Q(user=user)
+        return _q_antenne(nomination.antenne)  # lit les listes nominatives de son antenne (L) ; n'écrit que ses saisies (droits_membre)
     if role == roles.VI:
         if nomination.coordination_id:
             portee = _q_coordination(nomination.coordination_id)
@@ -144,21 +149,22 @@ def _dans_portee(user, nomination, membre):
     role = nomination.role
     if role in (roles.PR, roles.VN):
         return True
-    if role == roles.AT:
-        return membre.user_id == user.pk
     if role == roles.ED:
         return False
 
     def dans_antenne(antenne):
-        return membre.antenne_id == antenne.pk or bool(antenne.ville_origine_id and membre.ville_id == antenne.ville_origine_id)
+        if membre.antenne_id is not None:
+            return membre.antenne_id == antenne.pk
+        return bool(antenne.ville_origine_id and membre.ville_id == antenne.ville_origine_id)
 
     def dans_coordination(coordination_id):
-        return membre.province_id == coordination_id or (
-            membre.antenne_id is not None and Antenne.objects.filter(pk=membre.antenne_id, coordination_id=coordination_id).exists())
+        if membre.antenne_id is None:
+            return membre.province_id == coordination_id
+        return membre.antenne.coordination_id == coordination_id  # sans requête si l'antenne est déjà chargée (select_related)
 
     if role == roles.VP:
         return dans_coordination(nomination.coordination_id)
-    if role == roles.VA:
+    if role in (roles.VA, roles.AT):
         return dans_antenne(nomination.antenne)
     if role == roles.VI:
         if nomination.coordination_id:
@@ -242,7 +248,7 @@ def etapes_a_valider(user, membre):
 
 
 def droits_membre(user, membre=None):
-    """Booléens de droits (16 clés ``peut_*``, voir CLES_DROITS) : en général (`membre` absent) ou sur un membre précis."""
+    """Booléens de droits (19 clés ``peut_*``, voir CLES_DROITS) : en général (`membre` absent) ou sur un membre précis."""
     profil = profil_de(user)
     if _herite(profil):
         return herites.droits_membre(user, membre)
@@ -252,15 +258,18 @@ def droits_membre(user, membre=None):
     nomination, role = profil.nomination, profil.role
     ecriture_role = role in ROLES_ECRITURE
     portee = membre is None or _dans_portee(user, nomination, membre)
-    ecriture = ecriture_role and portee
+    saisie_perso = membre is None or membre.user_id == user.pk
+    # L'agent LIT les membres de son antenne mais n'écrit que sur ses propres saisies (matrice § 4.3 : « C, modifier avant V1 »).
+    ecriture = ecriture_role and portee and (role != roles.AT or saisie_perso)
     supprime = membre is not None and bool(membre.is_delete)
     avant_v1 = membre is None or not membre.is_validate2
-    saisie_perso = membre is None or membre.user_id == user.pk
     gerer = ecriture and not supprime
-    gerer_apres_saisie = gerer and (role != roles.AT or (avant_v1 and saisie_perso))  # AT : seulement avant la 1re validation
+    gerer_apres_saisie = gerer and (role != roles.AT or avant_v1)  # AT : seulement avant la 1re validation
     executer = ecriture and role in ROLES_EXECUTENT_SUPPRESSION
     droits.update({
-        'peut_creer_membre': ecriture_role,
+        'peut_creer_membre': role in (roles.PR, roles.AT),  # matrice § 4.3 : créer = AT (C) et PR (G) ; VN, VP, VA valident et modifient
+        'peut_voir_pieces': ecriture and not supprime and (role != roles.AT or membre is not None),  # pièces : jamais VI ni ED ; l'agent seulement sur ses saisies, jamais celles d'une association
+        'peut_definir_mot_de_passe_mobile': ecriture and not supprime,
         'peut_modifier': gerer_apres_saisie,
         'peut_valider': (role in (roles.PR, roles.VA, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
         'peut_renvoyer': (role in (roles.PR, roles.VA, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
@@ -335,8 +344,8 @@ def _associations_de_portee(profil):
         q = Q(antenne_id=antenne.pk) | Q(antennes_heritees__pk=antenne.pk)
         if antenne.ville_origine_id:
             q |= Q(ville_id=antenne.ville_origine_id)
-        if nomination.association_id:
-            q |= Q(pk=nomination.association_id)
+        if role == roles.AT and nomination.association_id:  # l'agent lié à une association ne voit que celle-là, dans son antenne
+            q &= Q(pk=nomination.association_id)
         return q
     if role == roles.VI:
         return Q()  # visiteur national
@@ -344,19 +353,19 @@ def _associations_de_portee(profil):
 
 
 def associations_du_compte(user):
-    """Associations membres visibles : celles du périmètre du rôle, plus celles auxquelles le compte est rattaché."""
+    """Associations membres visibles : celles du périmètre du rôle pour un compte nommé ; celles auxquelles le compte est rattaché
+    pour un compte sans nomination (droits hérités ou propre fiche)."""
     profil = profil_de(user)
     if _herite(profil):
         return herites.associations_du_compte(user)
     if profil.mode == 'aucun':
         return AssociationMembre.objects.none()
-    rattachees = Q(users=user)
-    if profil.mode == 'nomination':
+    if profil.mode == 'nomination':  # un compte nommé s'en tient à la portée de son rôle (jamais de rattachement hérité en plus)
         portee = _associations_de_portee(profil)
         if not portee:  # Q() vide : périmètre national, toutes les associations
             return AssociationMembre.objects.all()
-        rattachees |= portee
-    return AssociationMembre.objects.filter(rattachees).distinct()
+        return AssociationMembre.objects.filter(portee).distinct()
+    return AssociationMembre.objects.filter(users=user).distinct()
 
 
 def _lieux_fiche(user):
@@ -386,7 +395,8 @@ def _geographie(user, modele):
             provinces.add(nomination.coordination_id)
         if nomination.antenne_id:
             antennes.add(nomination.antenne_id)
-            provinces.add(nomination.antenne.coordination_id) if nomination.antenne.coordination_id else None
+            if nomination.antenne.coordination_id:
+                provinces.add(nomination.antenne.coordination_id)
             if nomination.antenne.ville_origine_id:
                 villes.add(nomination.antenne.ville_origine_id)
     if modele is Province:
@@ -485,7 +495,7 @@ def droits_menu(user):
     if profil.mode == 'aucun':
         return {'role': '', 'role_libelle': '', 'est_su': False, 'voit_membres': False, 'voit_associations': False,
                 'voit_geographie': False, 'peut_creer_membre': False, 'peut_ecrire_referentiel': False, 'est_editeur': False,
-                'voit_journal': False}
+                'voit_journal': False, 'peut_nommer': False}
     role = profil.role
     en_general = droits_membre(user)
     return {
@@ -499,4 +509,5 @@ def droits_menu(user):
         'peut_ecrire_referentiel': peut_ecrire_referentiel(user),
         'est_editeur': est_editeur(user),
         'voit_journal': profil.mode == 'su',
+        'peut_nommer': profil.mode == 'su' or bool(roles.roles_nommables_par(role)),
     }

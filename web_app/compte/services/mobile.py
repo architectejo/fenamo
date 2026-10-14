@@ -78,10 +78,10 @@ def definir_mot_de_passe_membre(auteur, membre):
 
     Un mot de passe temporaire aléatoire est généré. Seul le hachage est enregistré ; le
     journal garde l'auteur, la date et le membre, JAMAIS le mot de passe. Droits : SU, ou compte qui peut enregistrer
-    des membres (jamais en lecture seule) et voit ce membre dans son périmètre ; PermissionDenied sinon.
+    de définir le mot de passe mobile (``peut_definir_mot_de_passe_mobile``) et voit ce membre dans son périmètre ; PermissionDenied sinon.
     """
     if not auteur.is_superuser and not (
-        membres_du_perimetre(auteur).filter(pk=membre.pk).exists() and droits_membre(auteur, membre)['peut_creer_membre']
+        membres_du_perimetre(auteur).filter(pk=membre.pk).exists() and droits_membre(auteur, membre)['peut_definir_mot_de_passe_mobile']
     ):
         raise PermissionDenied
     clair = mot_de_passe_temporaire()

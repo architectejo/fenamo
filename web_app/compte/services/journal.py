@@ -42,11 +42,16 @@ def instantane(objet, champs):
 
 
 def role_de(auteur):
-    """Rôle de l'auteur au moment de l'action (SU ; sinon privilèges hérités en attendant les rôles du 2e)."""
+    """Rôle de l'auteur au moment de l'action : code de son rôle (SU, PR, VN, VP, VA, AT, VI, ED) d'après sa nomination active ;
+    sans nomination, ses privilèges hérités (« privilèges P1,P3 ») ou « utilisateur »."""
     if auteur is None or not getattr(auteur, 'pk', None):
         return ''
     if auteur.is_superuser:
         return 'SU'
+    from compte.services.droits import profil_de
+    profil = profil_de(auteur)
+    if profil.mode == 'nomination':
+        return profil.role
     herites = [f'P{i}' for i in range(1, 6) if getattr(auteur, f'privilege{i}', False)]
     return 'privilèges ' + ','.join(herites) if herites else 'utilisateur'
 
