@@ -300,7 +300,7 @@ def membres_nommables(auteur):
     from django.contrib.auth import get_user_model
     Compte = get_user_model()
     superutilisateurs = Compte.objects.filter(is_superuser=True).values('membreId')
-    membres = (membres_du_perimetre(auteur).filter(is_validate3=True, is_delete=False)
+    membres = (membres_du_perimetre(auteur).filter(etat='actif')
                .exclude(pk__in=[m for m in avec_nomination.values_list('compte__membreId', flat=True) if m])
                .exclude(pk__in=[m for m in superutilisateurs.values_list('membreId', flat=True) if m]))
     if not auteur.is_superuser:  # mêmes refus que `nommer` : compte existant inactif ou à privilèges hérités
@@ -326,7 +326,7 @@ def nommer(auteur, membre, role, *, coordination=None, antenne=None, association
     if not membres_du_perimetre(auteur).filter(pk=membre.pk).exists():
         raise HorsPerimetre(_("Membre introuvable."))
     _verifier_nommable(auteur, role, coordination, antenne, association)
-    if not membre.is_validate3 or membre.is_delete:
+    if membre.etat != 'actif':
         raise RegleMetier(_("Le membre nommé doit être actif (validé au dernier niveau)."))
     try:
         valider_coherence(role, getattr(coordination, 'pk', None), getattr(antenne, 'pk', None), getattr(association, 'pk', None))

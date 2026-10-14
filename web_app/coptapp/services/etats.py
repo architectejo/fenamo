@@ -1,18 +1,10 @@
 """État d'un membre ou d'un engin dans le circuit de validation (cahier des charges § 4.4).
 
-Circuit cible : saisi -> valide_antenne -> valide_province -> actif, plus renvoye, a_renouveler, supprime.
-Les booléens hérités ne le représentent qu'en partie (ils seront remplacés par un champ d'état unique, § 4.4) ;
-cette fonction est le SEUL endroit qui les interprète. Quand le champ `etat` existera, `etat_de` le lira en priorité.
-
-Correspondance héritière retenue, d'après coptapp.views.validate et les listes de coptapp.views (à confirmer) :
-- Membre.is_validate1 vaut True dès la création (défaut du modèle) et validate() ne le touche que pour le
-  mettre à True : il ne signifie donc PAS « validé antenne » et n'est pas lu ici ;
-- is_validate2 = première validation (privilege2) -> 'valide_antenne' ;
-- is_validate3 = validation finale (privilege3), seule visible du public et comptée dans les effectifs -> 'actif' ;
-- 'valide_province' n'est pas produit par les booléens hérités (une seule validation intermédiaire existe) ;
-- 'renvoye' : drapeau Membre.renvoye + motif_renvoi (service renvoyer_membre) ; la modification par l'auteur le remet dans le circuit ;
-- Moto n'a aucun drapeau de validation : un engin non supprimé est 'actif' ; 'a_renouveler' s'il est échu
-  (Moto.abonnement < aujourd'hui, à confirmer comme « identification annuelle échue »).
+Circuit : saisi -> valide_antenne -> valide_province -> actif, plus renvoye, a_renouveler, supprime.
+Pour un MEMBRE, la source de vérité est le champ unique ``Membre.etat`` (les anciens booléens is_delete, is_validate2, is_validate3 et
+renvoye n'en sont que des miroirs, recalculés par ``Membre.save``) ; les changements d'état passent par ``coptapp.services.transitions``.
+Un Moto n'a aucun drapeau de validation : un engin non supprimé est 'actif' ; 'a_renouveler' s'il est échu
+(Moto.abonnement < aujourd'hui, à confirmer comme « identification annuelle échue »).
 """
 from datetime import date
 
@@ -35,41 +27,26 @@ LIBELLES = {
 
 def etat_de(objet, aujourdhui=None):
     """Code d'état de `objet` (Membre ou Moto), parmi ETATS."""
-    explicite = getattr(objet, 'etat', None)  # futur champ d'état unique
+    explicite = getattr(objet, 'etat', None)
     if explicite in ETATS:
         return explicite
     if getattr(objet, 'is_delete', False):
         return 'supprime'
-    if getattr(objet, 'renvoye', False):
-        return 'renvoye'
-    if hasattr(objet, 'abonnement') and not hasattr(objet, 'is_validate3'):  # engin
+    if hasattr(objet, 'abonnement'):  # engin : pas de circuit propre pour l'instant
         echeance = objet.abonnement
         if echeance and echeance < (aujourdhui or date.today()):
             return 'a_renouveler'
         return 'actif'
-    if getattr(objet, 'is_validate3', False):
-        return 'actif'
-    if getattr(objet, 'is_validate2', False):
-        return 'valide_antenne'
     return 'saisi'
 
 
 def filtrer_membres_par_etat(membres, etat):
-    """Restreint un queryset de Membre à un état du circuit (même lecture des booléens hérités que `etat_de`).
+    """Restreint un queryset de Membre à un état du circuit (champ unique ``etat``).
 
-    `etat` : un code de ETATS. Les états qu'aucun booléen hérité ne produit ('valide_province', 'renvoye',
-    'a_renouveler') et 'supprime' (les listes excluent les membres supprimés) donnent une liste vide.
-    Un code inconnu ou vide ne filtre pas.
-    """
+    `etat` : un code de ETATS. 'supprime' donne une liste vide (les listes excluent les membres supprimés). Un code inconnu ou
+    vide ne filtre pas."""
     if etat not in ETATS:
         return membres
-    if etat == 'renvoye':
-        return membres.filter(renvoye=True, is_delete=False)
-    membres = membres.filter(renvoye=False)  # un membre renvoyé n'est dans aucun autre état tant qu'il n'est pas repris
-    if etat == 'actif':
-        return membres.filter(is_validate3=True, is_delete=False)
-    if etat == 'valide_antenne':
-        return membres.filter(is_validate2=True, is_validate3=False, is_delete=False)
-    if etat == 'saisi':
-        return membres.filter(is_validate2=False, is_validate3=False, is_delete=False)
-    return membres.none()
+    if etat == 'supprime':
+        return membres.none()
+    return membres.filter(etat=etat)

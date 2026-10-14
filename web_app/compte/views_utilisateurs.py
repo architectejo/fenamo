@@ -269,7 +269,7 @@ def _libelle_perimetre(auteur):
 def _raison_non_nommable(membre, avec_nomination):
     if membre.pk in avec_nomination:
         return _("Déjà nommé : %(role)s.") % {'role': str(roles.LIBELLES.get(avec_nomination[membre.pk], '')).lower()}
-    if not membre.is_validate3:
+    if membre.etat != 'actif':
         return _("Pas encore actif : la validation nationale manque.")
     return _("Ce membre ne peut pas être nommé.")
 
@@ -299,9 +299,9 @@ def membres_nommables(request):
     q = (request.GET.get('q') or '').strip()[:100]
     resultats = []
     if q:
-        trouves = (membres_du_perimetre(auteur).filter(is_delete=False)
-                   .filter(nom__icontains=q) | membres_du_perimetre(auteur).filter(is_delete=False, numero_carte_de_membre__icontains=q)
-                   | membres_du_perimetre(auteur).filter(is_delete=False, telephone__icontains=q)).select_related('antenne').distinct()[:8]
+        trouves = (membres_du_perimetre(auteur)
+                   .filter(nom__icontains=q) | membres_du_perimetre(auteur).filter(numero_carte_de_membre__icontains=q)
+                   | membres_du_perimetre(auteur).filter(telephone__icontains=q)).select_related('antenne').distinct()[:8]
         resultats = _resultats_membres(auteur, trouves)
     return render(request, 'compte/utilisateurs/partials/_resultats_membres.html', {'resultats': resultats, 'q': q})
 

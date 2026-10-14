@@ -1,7 +1,7 @@
 """Droits des comptes selon leur RÔLE (cahier des charges web § 4) : point d'entrée unique des droits sur les membres, les engins,
 les associations membres et la géographie.
 
-``droits_membre`` renvoie toujours les clés ``peut_*`` de ``CLES_DROITS`` (19 clés), pour les rôles comme pour les droits hérités.
+``droits_membre`` renvoie toujours les clés ``peut_*`` de ``CLES_DROITS`` (20 clés), pour les rôles comme pour les droits hérités.
 
 PROFIL EFFECTIF d'un compte (``profil_de``) :
 1. ``is_superuser`` : rôle SU (comportement inchangé, il garde l'exception de valider ses propres saisies) ;
@@ -13,15 +13,13 @@ Aucune nomination n'est créée automatiquement. Un compte n'a qu'une nomination
 
 RÈGLES DE RÔLE (matrice du § 4.3), pour un compte avec nomination :
 - PR, VN : national, tout voir ; PR modifie, valide à tous les niveaux d'un coup, exécute les suppressions ; VN modifie, pose la
-  3e validation, exécute les suppressions ;
-- VP : sa coordination ; modifie, demande les suppressions ; son étape de validation (province) n'est PAS représentable avec les
-  booléens hérités (``is_validate1..3``) : voir ``ETAPES_PAR_ROLE`` et ``_etapes_role``, point d'extension du futur champ d'état
-  unique ; en attendant le VP ne pose aucune étape ;
-- VA : son antenne ; modifie, pose ``is_validate2`` (1re validation) ; AT : lit les membres de son antenne (L), mais n'écrit que sur
+  dernière validation (valide_province -> actif), exécute les suppressions ;
+- VP : sa coordination ; modifie, demande les suppressions, pose l'étape province (valide_antenne -> valide_province) ;
+- VA : son antenne ; modifie, pose la 1re validation (saisi -> valide_antenne) ; AT : lit les membres de son antenne (L), mais n'écrit que sur
   ses PROPRES saisies, qu'il modifie seulement tant que la 1re validation n'a pas eu lieu, puis ne peut que demander une modification ;
 - création de membre (``peut_creer_membre``) : AT (C) et PR (G) ; les pièces privées (``peut_voir_pieces``) et le mot de passe mobile
   (``peut_definir_mot_de_passe_mobile``) ont leurs propres clés ;
-- VI : lecture seule des membres ACTIFS (``is_validate3``) de son périmètre (national, coordination ou antenne), jamais les pièces ;
+- VI : lecture seule des membres ACTIFS (``etat='actif'``) de son périmètre (national, coordination ou antenne), jamais les pièces ;
 - ED : contenu du site seulement, aucun membre (sa propre fiche mise à part) ;
 - personne (sauf le SU) ne valide sa propre fiche ni ses propres saisies ; l'attribution des privilèges reste réservée au SU.
 """
@@ -44,13 +42,13 @@ CLES_DROITS = (
     'peut_voir_historique', 'peut_demander_modification', 'peut_ajouter_engin', 'peut_ajouter_famille',
     'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille',
     'peut_executer_suppression', 'peut_restaurer', 'peut_annuler_demande_suppression', 'peut_renvoyer',
-    'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile',
+    'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_valider_tous',
 )
 
-# Drapeaux de validation posés par chaque rôle, dans l'ordre du circuit (§ 4.4). POINT D'EXTENSION : quand le champ d'état unique
-# (saisi, valide_antenne, valide_province, actif…) remplacera les booléens, le VP y posera l'étape « province » ; aujourd'hui
-# elle n'existe pas dans les booléens hérités (is_validate2 = « validé antenne », is_validate3 = « actif »).
-ETAPES_PAR_ROLE = {roles.VA: 'is_validate2', roles.VP: None, roles.VN: 'is_validate3'}
+# Étape de chaque rôle : (état de départ, état atteint). PR et SU enchaînent toutes les étapes restantes.
+CIRCUIT = ('saisi', 'valide_antenne', 'valide_province', 'actif')
+ETAPES_PAR_ROLE = {roles.VA: ('saisi', 'valide_antenne'), roles.VP: ('valide_antenne', 'valide_province'),
+                   roles.VN: ('valide_province', 'actif')}
 ROLES_ECRITURE = (roles.AT, roles.VA, roles.VP, roles.VN, roles.PR)
 ROLES_VOIENT_HISTORIQUE = (roles.VA, roles.VP, roles.VN, roles.PR)
 ROLES_EXECUTENT_SUPPRESSION = (roles.VN, roles.PR)
@@ -140,7 +138,7 @@ def _q_portee(user, nomination):
             portee = _q_antenne(nomination.antenne)
         else:
             portee = Q()
-        return portee & Q(is_validate3=True)  # le visiteur ne voit que les membres ACTIFS
+        return portee & Q(etat='actif')  # le visiteur ne voit que les membres ACTIFS
     return Q(pk__in=[])  # ED : aucun membre
 
 
@@ -173,7 +171,7 @@ def _dans_portee(user, nomination, membre):
             portee = dans_antenne(nomination.antenne)
         else:
             portee = True
-        return portee and bool(membre.is_validate3)
+        return portee and membre.etat == 'actif'
     return False
 
 
@@ -200,7 +198,7 @@ def membres_du_perimetre(user, avec_supprimes=False):
     profil = profil_de(user)
     if _herite(profil):
         return herites.membres_du_perimetre(user, avec_supprimes)
-    membres = Membre.objects.all() if avec_supprimes else Membre.objects.filter(is_delete=False)
+    membres = Membre.objects.all() if avec_supprimes else Membre.objects.exclude(etat='supprime')
     if profil.mode == 'aucun':
         return membres.none()
     if profil.mode == 'nomination' and profil.role in (roles.PR, roles.VN):
@@ -218,27 +216,39 @@ def _droits_nuls():
 
 
 def _etapes_role(user, profil, membre):
-    """Drapeaux de validation que le rôle pose sur `membre` maintenant (liste vide : rien).
+    """États que le rôle fait atteindre à `membre` maintenant (liste vide : rien à valider).
 
-    PR pose toutes les étapes manquantes ; VA pose is_validate2 ; VN pose is_validate3 (après is_validate2) ; VP n'a pas d'étape
-    représentable (point d'extension ``ETAPES_PAR_ROLE``). Jamais sur un membre supprimé, ni sur sa propre fiche ou ses propres
-    saisies. Le SU, qui a l'exception, est traité par les droits hérités."""
+    PR enchaîne toutes les étapes restantes ; VA fait passer saisi -> valide_antenne, VP valide_antenne -> valide_province, VN
+    valide_province -> actif (l'étape précédente est exigée). Jamais sur un membre supprimé, renvoyé, actif ou à renouveler, ni sur sa
+    propre fiche ou ses propres saisies. Le SU, qui a l'exception, est traité par les droits hérités."""
     nomination, role = profil.nomination, profil.role
-    if membre.is_delete or membre.renvoye or membre.pk == user.membreId or membre.user_id == user.pk:
-        return []  # un membre renvoyé attend sa reprise par l'auteur de la saisie
+    if membre.etat not in CIRCUIT[:-1] or membre.pk == user.membreId or membre.user_id == user.pk:
+        return []
     if role not in (roles.PR, roles.VA, roles.VP, roles.VN) or not _dans_portee(user, nomination, membre):
         return []
-    manquantes = [c for c in ('is_validate1', 'is_validate2', 'is_validate3') if not getattr(membre, c)]
+    reste = list(CIRCUIT[CIRCUIT.index(membre.etat) + 1:])
     if role == roles.PR:
-        return manquantes
-    drapeau = ETAPES_PAR_ROLE.get(role)
-    if drapeau and manquantes and manquantes[0] == drapeau:
-        return [drapeau]  # l'étape précédente est exigée : on pose seulement la PREMIÈRE étape manquante, si c'est la sienne
-    return []
+        return reste
+    depuis, vers = ETAPES_PAR_ROLE[role]
+    return [vers] if membre.etat == depuis else []
+
+
+def etats_de_depart(user):
+    """États dans lesquels `user` peut valider un membre (le SU et le PR : toutes les étapes ; un validateur : son étape ; le droit
+    hérité : selon privilege2 / privilege3). Sert à réduire les candidats de « Valider tout le monde » en SQL."""
+    profil = profil_de(user)
+    if _herite(profil):
+        return herites.etats_de_depart(user)
+    if profil.mode != 'nomination':
+        return []
+    if profil.role == roles.PR:
+        return list(CIRCUIT[:-1])
+    depart = ETAPES_PAR_ROLE.get(profil.role)
+    return [depart[0]] if depart else []
 
 
 def etapes_a_valider(user, membre):
-    """Drapeaux de validation que `user` pose sur `membre` (idempotent : jamais de retrait)."""
+    """États que `user` fait atteindre à `membre` par une validation (liste vide : rien ; idempotent, jamais de retrait)."""
     profil = profil_de(user)
     if _herite(profil):
         return herites.etapes_a_valider(user, membre)
@@ -248,7 +258,7 @@ def etapes_a_valider(user, membre):
 
 
 def droits_membre(user, membre=None):
-    """Booléens de droits (19 clés ``peut_*``, voir CLES_DROITS) : en général (`membre` absent) ou sur un membre précis."""
+    """Booléens de droits (20 clés ``peut_*``, voir CLES_DROITS) : en général (`membre` absent) ou sur un membre précis."""
     profil = profil_de(user)
     if _herite(profil):
         return herites.droits_membre(user, membre)
@@ -261,8 +271,8 @@ def droits_membre(user, membre=None):
     saisie_perso = membre is None or membre.user_id == user.pk
     # L'agent LIT les membres de son antenne mais n'écrit que sur ses propres saisies (matrice § 4.3 : « C, modifier avant V1 »).
     ecriture = ecriture_role and portee and (role != roles.AT or saisie_perso)
-    supprime = membre is not None and bool(membre.is_delete)
-    avant_v1 = membre is None or not membre.is_validate2
+    supprime = membre is not None and membre.etat == 'supprime'
+    avant_v1 = membre is None or membre.etat in ('saisi', 'renvoye')
     gerer = ecriture and not supprime
     gerer_apres_saisie = gerer and (role != roles.AT or avant_v1)  # AT : seulement avant la 1re validation
     executer = ecriture and role in ROLES_EXECUTENT_SUPPRESSION
@@ -271,8 +281,9 @@ def droits_membre(user, membre=None):
         'peut_voir_pieces': ecriture and not supprime and (role != roles.AT or membre is not None),  # pièces : jamais VI ni ED ; l'agent seulement sur ses saisies, jamais celles d'une association
         'peut_definir_mot_de_passe_mobile': ecriture and not supprime,
         'peut_modifier': gerer_apres_saisie,
-        'peut_valider': (role in (roles.PR, roles.VA, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
-        'peut_renvoyer': (role in (roles.PR, roles.VA, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
+        'peut_valider_tous': role in (roles.PR, roles.VA, roles.VP, roles.VN),  # au moins une étape de validation dans le circuit
+        'peut_valider': (role in (roles.PR, roles.VA, roles.VP, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
+        'peut_renvoyer': (role in (roles.PR, roles.VA, roles.VP, roles.VN)) if membre is None else bool(_etapes_role(user, profil, membre)),
         'peut_demander_suppression': ecriture,
         'peut_attribuer_privileges': False,  # réservé au SU (correctif C1)
         'peut_voir_historique': role in ROLES_VOIENT_HISTORIQUE and portee,
@@ -300,7 +311,7 @@ def membre_et_droits(user, id, droit=None, supprimes_visibles=False):
     Un membre supprimé logiquement n'est visible que si `supprimes_visibles` ET si `user` peut le restaurer (404 sinon)."""
     membre = get_object_or_404(membres_du_perimetre(user, avec_supprimes=supprimes_visibles), id=id)
     droits = droits_membre(user, membre)
-    if membre.is_delete and not droits['peut_restaurer']:
+    if membre.etat == 'supprime' and not droits['peut_restaurer']:
         raise Http404
     if droit and not droits[droit]:
         raise PermissionDenied

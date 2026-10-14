@@ -7,6 +7,8 @@ PROVISOIRE : membres, engins et associations membres sont comptés dans le MÊME
 - associations membres : celles des membres du périmètre et celles du compte (tous pour SU / privilege5).
 TODO : remplacé par le périmètre des rôles (F-16, F-51) au sous-lot 2e.
 """
+from django.db.models import Count
+
 from coptapp.models import AssociationMembre, Moto
 from coptapp.services.etats import LIBELLES
 from compte.services.droits import membres_du_perimetre, voit_tout  # noqa: F401 (membres_du_perimetre réexporté)
@@ -30,20 +32,22 @@ def associations_du_perimetre(user):
     return associations.filter(pk__in=visibles) | associations.filter(users=user)
 
 
+ETATS_EN_ATTENTE = ('saisi', 'valide_antenne', 'valide_province')
+
+
 def indicateurs_tableau_bord(user):
     membres = membres_du_perimetre(user)
-    actifs = membres.filter(is_validate3=True).count()
-    valides_antenne = membres.filter(is_validate2=True, is_validate3=False).count()
-    saisis = membres.filter(is_validate2=False, is_validate3=False).count()
-    en_attente = list(
-        membres.filter(is_validate3=False).select_related('antenne').order_by('-updated', '-id')[:5]
-    )
-    valeurs = {'saisi': saisis, 'valide_antenne': valides_antenne, 'actif': actifs}
+    par_etat = {ligne['etat']: ligne['n'] for ligne in membres.values('etat').annotate(n=Count('pk'))}  # UNE agrégation
+    compte = lambda etat: par_etat.get(etat, 0)  # noqa: E731
+    en_attente = list(membres.filter(etat__in=ETATS_EN_ATTENTE).select_related('antenne').order_by('-updated', '-id')[:5])
+    valeurs = {e: compte(e) for e in ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye')}
     return {
-        'actifs': actifs,
-        'valides_antenne': valides_antenne,
-        'saisis': saisis,
-        'en_attente_total': valides_antenne + saisis,
+        'actifs': valeurs['actif'],
+        'valides_antenne': valeurs['valide_antenne'],
+        'valides_province': valeurs['valide_province'],
+        'saisis': valeurs['saisi'],
+        'renvoyes': valeurs['renvoye'],
+        'en_attente_total': sum(valeurs[e] for e in ETATS_EN_ATTENTE),
         'engins': engins_du_perimetre(user).count(),
         'associations': associations_du_perimetre(user).distinct().count(),
         'en_attente': en_attente,

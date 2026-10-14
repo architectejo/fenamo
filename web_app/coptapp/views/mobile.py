@@ -21,7 +21,7 @@ def definir_mot_de_passe_mobile(request, id):
     Les refus (membre supprimé, sans identifiant mobile) sont de simples messages suivis d'une redirection vers la fiche.
     """
     membre = membre_pour(request.user, id, 'peut_definir_mot_de_passe_mobile')
-    if membre.is_delete:
+    if membre.etat == 'supprime':
         messages.error(request, _("Ce membre est supprimé : aucun mot de passe ne peut être défini."))
         return redirect('membre-view', id=id)
     if not membre.idf:

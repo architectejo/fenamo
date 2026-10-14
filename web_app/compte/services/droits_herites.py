@@ -47,7 +47,7 @@ def membres_du_perimetre(user, avec_supprimes=False):
     Par défaut les membres supprimés logiquement sont exclus ; `avec_supprimes=True` les inclut (fiche d'un
     membre dont la suppression est demandée, pour l'annuler). Sans droit : queryset vide (jamais « tout »).
     """
-    membres = Membre.objects.all() if avec_supprimes else Membre.objects.filter(is_delete=False)
+    membres = Membre.objects.all() if avec_supprimes else Membre.objects.exclude(etat='supprime')
     if not _actif(user):
         return membres.none()
     if voit_tout(user):
@@ -58,11 +58,11 @@ def membres_du_perimetre(user, avec_supprimes=False):
     if user.privilege1:
         filtre |= Q(user=user)  # ses saisies
     if user.privilege2:
-        filtre |= Q(is_validate1=True)
+        filtre |= ~Q(etat='supprime')  # tous les dossiers : il valide l'étape d'antenne
     if user.privilege3:
-        filtre |= Q(is_validate1=True, is_validate2=True)
+        filtre |= Q(etat__in=('valide_antenne', 'valide_province', 'actif', 'a_renouveler'))
     if user.privilege4:
-        filtre |= Q(is_validate3=True)
+        filtre |= Q(etat__in=('actif', 'a_renouveler'))
     return membres.filter(filtre)
 
 
@@ -88,6 +88,7 @@ def droits_membre(user, membre=None):
         'peut_supprimer_famille': False, 'peut_executer_suppression': False, 'peut_restaurer': False,
         'peut_annuler_demande_suppression': False, 'peut_renvoyer': False, 'peut_voir_pieces': False,
         'peut_definir_mot_de_passe_mobile': False,
+        'peut_valider_tous': False,
     }
     if not _actif(user):
         return nul
@@ -96,7 +97,7 @@ def droits_membre(user, membre=None):
     lecture_seule = est_visiteur(user)
     ecriture = not lecture_seule and (maitre or any((user.privilege1, user.privilege2, user.privilege3)))
 
-    supprime = membre is not None and membre.is_delete  # un membre supprimé n'est plus modifiable : seule la restauration reste
+    supprime = membre is not None and membre.etat == 'supprime'  # un membre supprimé n'est plus modifiable : seule la restauration reste
     saisie_perso = bool(membre is not None and user.privilege1 and membre.user_id == user.pk)
     chez_lui = False  # le membre appartient à une association membre du compte
     if membre is not None and membre.structure_id:
@@ -114,7 +115,7 @@ def droits_membre(user, membre=None):
     # et supprime engins et famille tant que le propriétaire n'a pas passé la 1re validation (is_validate2). L'engin n'a
     # pas de drapeau de validation : l'état du propriétaire en tient lieu (limite à lever avec le champ d'état unique).
     agent_seul = bool(user.privilege1) and not (maitre or user.privilege2 or user.privilege3)
-    avant_v1 = membre is None or not membre.is_validate2
+    avant_v1 = membre is None or membre.etat in ('saisi', 'renvoye')
     gerer_apres_saisie = gerer and (not agent_seul or avant_v1)
     executer = maitre and ecriture
     return {
@@ -123,15 +124,16 @@ def droits_membre(user, membre=None):
         'peut_modifier_famille': gerer_apres_saisie,
         'peut_supprimer_famille': gerer_apres_saisie,
         'peut_executer_suppression': executer,
-        'peut_restaurer': bool(executer and membre is not None and membre.is_delete),
+        'peut_restaurer': bool(executer and membre is not None and membre.etat == 'supprime'),
         'peut_annuler_demande_suppression': bool(
-            ecriture and membre is not None and membre.suppression_demandee and not membre.is_delete
+            ecriture and membre is not None and membre.suppression_demandee and membre.etat != 'supprime'
             and (executer or membre.suppression_demandee_par_id == user.pk)),
         'peut_creer_membre': ecriture,
         'peut_voir_pieces': ecriture,  # inchangé pour les droits hérités : mêmes conditions que la création
         'peut_definir_mot_de_passe_mobile': ecriture,
         'peut_modifier': peut_modifier,
         'peut_valider': peut_valider,
+        'peut_valider_tous': not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3)),
         'peut_renvoyer': peut_valider,  # renvoyer = refuser à son niveau : mêmes conditions que valider
         'peut_demander_suppression': ecriture,
         # Réservé aux SU (correctif C1) : le privilege5 hérité ne suffit pas.
@@ -152,29 +154,38 @@ def _a_deja_valide(user, membre):
     ).exists()
 
 
+CIRCUIT = ('saisi', 'valide_antenne', 'valide_province', 'actif')
+
+
 def _etapes(user, membre):
-    """Drapeaux que `user` peut poser sur `membre` maintenant (voir `etapes_a_valider`)."""
-    if not _actif(user) or est_visiteur(user) or membre.is_delete or membre.renvoye:
-        return []  # un membre renvoyé attend sa reprise par l'auteur de la saisie
+    """États que `user` peut faire atteindre à `membre` maintenant (voir `etapes_a_valider`)."""
+    if not _actif(user) or est_visiteur(user) or membre.etat not in CIRCUIT[:-1]:
+        return []  # supprimé, renvoyé (attend sa reprise par l'auteur de la saisie), déjà actif ou à renouveler
     if not user.is_superuser and (membre.pk == user.membreId or membre.user_id == user.pk):
         return []  # jamais sa propre fiche ni ses propres saisies (séparation des tâches)
-    manquantes = [c for c in ('is_validate1', 'is_validate2', 'is_validate3') if not getattr(membre, c)]
+    reste = list(CIRCUIT[CIRCUIT.index(membre.etat) + 1:])
     if voit_tout(user):
-        return manquantes  # SU et privilege5 : plusieurs niveaux d'un coup, chacun reste tracé
-    if not manquantes:
-        return []
+        return reste  # SU et privilege5 : plusieurs niveaux d'un coup, chacun reste tracé
     if user.privilege2 and user.privilege3 and _a_deja_valide(user, membre):
         return []  # cumul des privilèges 2 et 3 : jamais V2 puis V3 sur le même dossier (réservé à privilege5 et SU)
-    suivante = manquantes[0]  # une seule étape à la fois, dans l'ordre : l'étape précédente est exigée
-    if suivante == 'is_validate2' and user.privilege2:
-        return [suivante]
-    if suivante == 'is_validate3' and user.privilege3:
-        return [suivante]
+    if membre.etat == 'saisi' and user.privilege2:
+        return ['valide_antenne']
+    if membre.etat in ('valide_antenne', 'valide_province') and user.privilege3:
+        return ['actif']  # privilege3 : étape nationale seule (l'héritage n'a pas d'étape « province »)
     return []
 
 
+def etats_de_depart(user):
+    """États dans lesquels `user` valide un membre (réduit les candidats de « Valider tout le monde » avant le contrôle membre par membre)."""
+    if not _actif(user) or est_visiteur(user):
+        return []
+    if voit_tout(user):
+        return list(CIRCUIT[:-1])
+    return [e for e, ok in (('saisi', user.privilege2), ('valide_antenne', user.privilege3), ('valide_province', user.privilege3)) if ok]
+
+
 def etapes_a_valider(user, membre):
-    """Drapeaux de validation que `user` pose sur `membre` (idempotent : jamais de retrait).
+    """États que `user` fait atteindre à `membre` par une validation (liste vide : rien à valider).
 
     Règles (M2) : un compte qui cumule privilege2 et privilege3 ne valide qu'UNE étape par dossier (jamais V2 puis V3 :
     plusieurs niveaux sont réservés à privilege5 et SU) ; l'étape précédente est exigée (privilege2 pose is_validate2 si is_validate1 ; privilege3 pose

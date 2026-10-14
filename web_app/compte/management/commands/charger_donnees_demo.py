@@ -163,26 +163,26 @@ class Command(BaseCommand):
             idf=idf or f'{PREFIXE}-{index:04d}', nom=nom[:50], genre='F' if nom.split()[0] in ('Mireille', 'Espérance') else 'M',
             date_naissance=date(1975 + index % 25, 1 + index % 12, 1 + index % 27), lieux_naissance='Kinshasa',
             telephone=f'+243 99 000 {index:04d}', mail=f'membre{index}@example.invalid', permis='A', categorie='Motard',
-            province=antenne.coordination, antenne=antenne, structure=association, user=saisi_par, is_validate1=True)
+            province=antenne.coordination, antenne=antenne, structure=association, user=saisi_par)
 
-    def _forcer(self, membre, **etat):
-        for champ, valeur in etat.items():
-            setattr(membre, champ, valeur)
-        membre.save(update_fields=list(etat) + ['mise_a_jour'])
+    def _forcer(self, membre, etat):
+        """Repli direct sur l'état unique (jamais sur les anciens booléens, qui en sont des miroirs)."""
+        Membre.objects.filter(pk=membre.pk).update(etat=etat)
+        membre.refresh_from_db()
 
     def _activer(self, membre):
         """Valide tous les niveaux par le super-utilisateur (service réel) ; repli direct si le service ne le permet pas."""
         self._essayer(f'validation de {membre.nom}', valider_membre, self.su, membre)
         membre.refresh_from_db()
-        if not (membre.is_validate2 and membre.is_validate3):
-            self._forcer(membre, is_validate2=True, is_validate3=True)
+        if membre.etat != 'actif':
+            self._forcer(membre, 'actif')
 
-    def _valider_par(self, auteur, membre, niveaux, repli):
-        for _ in range(niveaux):
-            self._essayer(f'validation de {membre.nom}', valider_membre, auteur, membre)
-            membre.refresh_from_db()
-        if (membre.is_validate2, membre.is_validate3) != repli:
-            self._forcer(membre, is_validate2=repli[0], is_validate3=repli[1])
+    def _valider_par(self, auteur, membre, cible):
+        """Une étape par le validateur `auteur` (service réel) ; repli direct sur l'état voulu si le service refuse."""
+        self._essayer(f'validation de {membre.nom}', valider_membre, auteur, membre)
+        membre.refresh_from_db()
+        if membre.etat != cible:
+            self._forcer(membre, cible)
 
     def _noms(self, n):
         return [f'{PRENOMS[(i * 7) % len(PRENOMS)]} {NOMS[(i * 5 + 3) % len(NOMS)]}' for i in range(n)]
@@ -192,22 +192,25 @@ class Command(BaseCommand):
         noms_ = self._noms(40)
         self.membres = []
         a1 = self.antennes[0]
+        vp = self.comptes['VP']
         for j in range(24):  # antenne principale : tous les états du circuit
             m = self._membre(noms_[j], a1, j + 1, saisi_par=agent)
             self.membres.append(m)
-            if 6 <= j <= 11:
-                self._valider_par(va, m, 1, (True, False))
-            elif 12 <= j <= 23:
-                self._valider_par(va, m, 1, (True, False))
-                if j not in (21, 22):  # ces deux-là seront renvoyés par le validateur national
-                    self._valider_par(vn, m, 1, (True, True))
+            if j in (4, 5):  # renvoyés à l'agent de terrain par le validateur d'antenne, avec motif
+                self._essayer(f'renvoi de {m.nom}', renvoyer_membre, va, m, 'Pièce d\'identité illisible : à reprendre (démo)')
+            if j >= 6:
+                self._valider_par(va, m, 'valide_antenne')
+            if j >= 9:
+                self._valider_par(vp, m, 'valide_province')
+            if j >= 12 and j not in (21, 22):  # ces deux-là seront reculés par le validateur national
+                self._valider_par(vn, m, 'actif')
         actifs_a1 = self.membres[12:24]
         for m in actifs_a1[6:8]:  # suppression demandée
             self._essayer(f'demande de suppression de {m.nom}', traiter_suppression_membre, va, m, 'demander', 'Fiche en double (démo)')
         m = actifs_a1[8]  # supprimé (demande puis exécution par le SU)
         self._essayer(f'demande de suppression de {m.nom}', traiter_suppression_membre, va, m, 'demander', 'Membre décédé (démo)')
         self._essayer(f'suppression de {m.nom}', traiter_suppression_membre, self.su, m, 'executer', 'Membre décédé (démo)')
-        for m in actifs_a1[9:11]:  # renvoyés à l'auteur de la saisie par le validateur national, avec motif (service F-23)
+        for m in actifs_a1[9:11]:  # reculés d'un cran par le validateur national, avec motif (service F-23)
             self._essayer(f'renvoi de {m.nom}', renvoyer_membre, vn, m, 'Photo illisible : à reprendre (démo)')
         self.mobile = actifs_a1[11]
         Membre.objects.filter(pk=self.mobile.pk).update(idf=IDF_MOBILE, password=make_password(self.mdp))
@@ -221,7 +224,7 @@ class Command(BaseCommand):
 
     def _engins(self):
         agent = self.comptes['AT']
-        candidats = [m for m in self.membres if m.is_validate3 and not m.is_delete][:10]
+        candidats = [m for m in self.membres if Membre.objects.filter(pk=m.pk, etat='actif').exists()][:10]
         for i, membre in enumerate(candidats):
             marque, couleur = MARQUES[i % len(MARQUES)]
             self._essayer(f'engin de {membre.nom}', enregistrer_engin, membre, agent, {

@@ -3,86 +3,35 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 
 from compte.models import JournalAction
-from compte.services.journal import instantane, journaliser
+from compte.services.journal import journaliser
 from coptapp.models import Membre
-from compte.services.droits import droits_membre, etapes_a_valider
+from coptapp.services import transitions
+from coptapp.services.transitions import EtatIncoherent, MOTIF_MAX  # noqa: F401 (réexportés : les vues importent d'ici)
+from compte.services.droits import droits_membre
 
-DRAPEAUX_VALIDATION = ('is_validate1', 'is_validate2', 'is_validate3')
-
-
-def drapeaux_validation(membre):
-    return instantane(membre, DRAPEAUX_VALIDATION)
-
-
-def journaliser_validation(auteur, membre, avant, motif=''):
-    """VALIDATION si des étapes sont franchies, RENVOI si elles sont retirées (circuit de validation)."""
-    apres = drapeaux_validation(membre)
-    if apres == avant:
-        return None
-    franchies = sum(bool(v) for v in apres.values())
-    precedentes = sum(bool(v) for v in avant.values())
-    action = JournalAction.Action.VALIDATION if franchies > precedentes else JournalAction.Action.RENVOI
-    return journaliser(auteur, action, membre, avant=avant, apres=apres, motif=motif)
+# Nom hérité du drapeau posé par chaque état atteint : le code de retour de ``valider_membre`` reste celui d'avant l'état unique.
+DRAPEAU_DE_L_ETAT = {'valide_antenne': 'is_validate2', 'valide_province': 'valide_province', 'actif': 'is_validate3'}
 
 
-@transaction.atomic
 def valider_membre(auteur, membre):
-    """Valide `membre` pour `auteur` (F-23) et retourne la liste des drapeaux posés (vide : rien à valider).
+    """Valide `membre` pour `auteur` (F-23) ; retourne la liste des drapeaux posés (vide : rien à valider).
 
-    Règles de `compte.services.droits.etapes_a_valider` (étape précédente exigée, jamais sa propre fiche ni ses saisies,
-    une seule étape pour privilege2 / privilege3, jamais V2 puis V3 par un compte qui cumule les deux ; plusieurs
-    niveaux d'un coup pour SU et privilege5 seulement). Idempotente : ne dévalide jamais. L'état est relu sous
-    verrou ; seules les colonnes de validation sont écrites ; chaque validation est journalisée.
-    """
-    membre = Membre.objects.select_for_update().get(pk=membre.pk)
-    etapes = etapes_a_valider(auteur, membre)
-    if not etapes:
-        return []
-    avant = drapeaux_validation(membre)
-    for etape in etapes:
-        setattr(membre, etape, True)
-    membre.save(update_fields=etapes + ['mise_a_jour'])
-    journaliser_validation(auteur, membre, avant)
-    return etapes
+    Délègue à ``transitions.valider`` (état unique, verrou, droits, une ligne de journal par étape). Codes : 'is_validate2' (validé
+    antenne), 'valide_province', 'is_validate3' (actif)."""
+    return [DRAPEAU_DE_L_ETAT[etat] for etat in transitions.valider(auteur, membre)]
 
 
-@transaction.atomic
 def renvoyer_membre(auteur, membre, motif):
-    """Renvoie `membre` à l'auteur de la saisie avec un motif (F-23) ; retourne 'renvoye', 'motif_requis' ou 'motif_trop_long'.
-
-    Droits : ceux de validateur sur CE membre (``droits_membre(...)['peut_renvoyer']`` : c'est son tour de valider, jamais sa propre
-    fiche ni ses saisies) ; PermissionDenied sinon. L'état est relu sous verrou. Le renvoi retire la dernière étape franchie
-    (is_validate3 puis is_validate2 : « niveau juste en dessous »), pose ``renvoye`` et le motif, journalise RENVOI (avant / après,
-    motif) et notifie l'auteur de la saisie. La modification de la fiche par son auteur la remet dans le circuit.
-    """
-    from coptapp.models import Notification
-    membre = Membre.objects.select_for_update().get(pk=membre.pk)
-    if not droits_membre(auteur, membre)['peut_renvoyer']:
-        raise PermissionDenied
-    motif = (motif or '').strip()
-    if not motif:
-        return 'motif_requis'
-    if len(motif) > MOTIF_MAX:
-        return 'motif_trop_long'
-    avant = {**drapeaux_validation(membre), 'renvoye': False}
-    champs = ['renvoye', 'motif_renvoi', 'mise_a_jour']
-    for etape in ('is_validate3', 'is_validate2'):
-        if getattr(membre, etape):
-            setattr(membre, etape, False)
-            champs.append(etape)
-            break
-    membre.renvoye, membre.motif_renvoi = True, motif
-    membre.save(update_fields=champs)
-    journaliser(auteur, JournalAction.Action.RENVOI, membre, avant=avant, apres={**drapeaux_validation(membre), 'renvoye': True}, motif=motif)
-    if membre.user_id:
-        Notification.objects.create(user_id=membre.user_id, membre=membre, titre=f'Fiche renvoyée : {membre.nom or membre.idf}',
-                                    description=motif)
-    return 'renvoye'
+    """Renvoie `membre` un cran en arrière avec un motif (F-23) ; retourne 'renvoye', 'motif_requis' ou 'motif_trop_long'.
+    Délègue à ``transitions.renvoyer`` (PermissionDenied sans droit de validateur sur ce membre)."""
+    return transitions.renvoyer(auteur, membre, motif)
 
 
 def changer_suppression(auteur, objet, supprime, motif=''):
     """Suppression logique (ou annulation) d'un membre ou d'un engin ; journalisée. Ne contrôle aucun droit :
     pour un membre, passer par `traiter_suppression_membre`. N'écrit que les colonnes concernées."""
+    if isinstance(objet, Membre):  # un membre : état unique (transitions), jamais un booléen écrit ici
+        return (transitions.supprimer if supprime else transitions.restaurer)(auteur, objet, motif)
     avant = {'is_delete': bool(objet.is_delete)}
     objet.is_delete = supprime
     champs = ['is_delete', 'mise_a_jour']
@@ -111,12 +60,7 @@ def rattacher(auteur, objet, champ, cible):
     return objet
 
 
-MOTIF_MAX = 500
 ACTIONS_SUPPRESSION = ('demander', 'annuler', 'executer', 'restaurer')
-
-
-class EtatIncoherent(Exception):
-    """L'action demandée ne correspond pas à l'état courant du membre (déjà supprimé, demande déjà faite…) : HTTP 409."""
 
 
 @transaction.atomic
@@ -141,7 +85,7 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
         return 'motif_trop_long'  # valable pour toutes les actions, annulation comprise
 
     if action == 'annuler':
-        if not membre.suppression_demandee or membre.is_delete:
+        if not membre.suppression_demandee or membre.etat == 'supprime':
             raise EtatIncoherent('Aucune demande de suppression en cours.')
         if not droits['peut_annuler_demande_suppression']:
             raise PermissionDenied
@@ -153,7 +97,7 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
         return 'demande_annulee'
 
     if action == 'demander':
-        if membre.is_delete or membre.suppression_demandee:
+        if membre.etat == 'supprime' or membre.suppression_demandee:
             raise EtatIncoherent('Membre déjà supprimé ou demande déjà en cours.')
         if not motif:
             return 'motif_requis'
@@ -165,7 +109,7 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
                     apres={'suppression_demandee': True}, motif=motif)
         return 'demande'
     if action == 'executer':
-        if membre.is_delete:
+        if membre.etat == 'supprime':
             raise EtatIncoherent('Membre déjà supprimé.')
         if not droits['peut_executer_suppression']:
             raise PermissionDenied
@@ -174,7 +118,7 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
         changer_suppression(auteur, membre, True, motif)
         return 'supprime'
     # restaurer
-    if not membre.is_delete:
+    if membre.etat != 'supprime':
         raise EtatIncoherent("Le membre n'est pas supprimé.")
     if not droits['peut_restaurer']:
         raise PermissionDenied

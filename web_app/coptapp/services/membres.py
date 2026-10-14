@@ -14,6 +14,7 @@ from compte.services.journal import instantane, journaliser
 from coptapp.forms import CHAMPS_MODIFIABLES, MembreModificationForm
 from coptapp.models import Antenne, AssociationMembre, Membre, Notification
 from compte.services.droits import droits_membre, etapes_a_valider, membres_du_perimetre
+from coptapp.services import transitions
 from coptapp.services.etats import ETATS, filtrer_membres_par_etat
 
 PAR_PAGE = 25
@@ -97,7 +98,7 @@ def choix_filtres(user):
         'antennes': Antenne.objects.filter(pk__in=visibles.exclude(antenne=None).values('antenne')).exclude(nom=None).order_by('nom'),
         'associations': AssociationMembre.objects.filter(pk__in=visibles.exclude(structure=None).values('structure')).order_by('sigle', 'nom'),
         'qualites': QUALITES,
-        'etats': tuple(e for e in ETATS if e in ('saisi', 'valide_antenne', 'actif')),
+        'etats': tuple(e for e in ETATS if e != 'supprime'),
     }
 
 
@@ -125,17 +126,17 @@ def modifier_membre(auteur, membre, donnees, fichiers=None):
     if not formulaire.changed_data:
         return formulaire, False
     formulaire.save()
-    remis = membre.renvoye
-    if remis:  # la reprise de la fiche par son auteur la remet dans le circuit
-        membre.renvoye, membre.motif_renvoi = False, ''
-        membre.save(update_fields=['renvoye', 'motif_renvoi', 'mise_a_jour'])
+    remis = membre.etat == 'renvoye'
+    if remis:  # la reprise de la fiche par son auteur la remet dans le circuit (transition journalisée à part)
+        transitions.reprendre(auteur, membre)
+        membre.refresh_from_db()  # l'état, son motif et les miroirs ont été réécrits par la transition
     apres = instantane(membre, CHAMPS_MODIFIABLES)
     modifies = [c for c in formulaire.changed_data if c in CHAMPS_MODIFIABLES or c == 'photo']
     visibles = [c for c in modifies if c in CHAMPS_JOURNALISABLES]
     journaliser(auteur, JournalAction.Action.MODIFICATION, membre,
                 avant={c: avant[c] for c in visibles},
-                apres={**{c: apres[c] for c in visibles}, 'champs_modifies': modifies, **({'renvoye': False} if remis else {})},
-                motif='Fiche reprise après renvoi : remise dans le circuit.' if remis else '')
+                apres={**{c: apres[c] for c in visibles}, 'champs_modifies': modifies},
+                motif='')
     return formulaire, True
 
 
