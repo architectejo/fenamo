@@ -2,10 +2,9 @@
 <section class="mob-membre">
   {% if membre.photo %}<span class="avatar avatar--grand"><img src="{% url 'photo-mob' membre.id %}?vignette=1" alt="" width="88" height="88" loading="lazy"></span>
   {% else %}{% avatar membre.nom None 88 %}{% endif %}
-  <div>
+  <div class="mob-membre-texte">
     <h1 class="u-t-5">{{ membre.nom }}</h1>
-    <p class="doux u-mb-0">{{ membre.qualite }}</p>
-    <p class="u-mb-0"><span class="ident">{{ membre.idf }}</span></p>
-    <form method="post" action="{% url 'deconnexion-mob' %}" class="u-mt-2">{% csrf_token %}<button type="submit" class="bouton bouton--petit">{% translate "Se déconnecter" %}</button></form>
+    <p class="u-mb-0"><span class="ident">{{ membre.idf }}</span>{% if membre.qualite and membre.qualite != "..." %}<span class="doux"> · {{ membre.qualite|libelle_qualite }}</span>{% endif %}</p>
   </div>
+  <form method="post" action="{% url 'deconnexion-mob' %}" class="mob-membre-sortie">{% csrf_token %}<button type="submit" class="bouton bouton--discret bouton--petit">{% icone "log-out" %}<span>{% translate "Se déconnecter" %}</span></button></form>
 </section>
