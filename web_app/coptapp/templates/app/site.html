@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load i18n design %}{% comment %}
-Contenu du site public (écran migré) : formulaire d'article (nouveau, ou modification quand `article` est fourni) puis liste des articles.
+Contenu du site public (écran migré) : liste des articles ; le formulaire d'article s'ouvre dans la modale commune (app/modales/_article.html).
 La suppression d'un article passe par la modale commune de confirmation (définitive : « irréversible » est exact). Contexte : intit, article, articles, message/classe.
 {% endcomment %}
 {% block titre %}{% translate "Contenu du site" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div class="page-tete">
   <div class="page-tete-texte"><h1 class="page-titre">{% translate "Contenu du site" %}</h1><p class="page-contexte">{% icone "globe" %}{% translate "Articles du site public" %}</p></div>
-  <div class="page-actions"><a class="bouton" href="{% url 'contact' %}">{% icone "mail" %}<span>{% translate "Messages reçus" %}</span></a></div>
+  <div class="page-actions"><a class="bouton" href="{% url 'contact' %}">{% icone "mail" %}<span>{% translate "Messages reçus" %}</span></a><a class="bouton bouton--principal" href="{% url 'site' %}" hx-get="{% url 'site' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Nouvel article" %}</span></a></div>
 </div>
-{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
-<div class="grille grille--principale">
+{% include "components/_message_vue.html" with message=message classe=classe %}
+<div>
   <section class="panneau" aria-labelledby="titre-liste-articles">
     <div class="panneau-tete"><h2 id="titre-liste-articles">{% translate "Articles" %}</h2></div>
     <div class="panneau-corps">
@@ -21,10 +21,10 @@ La suppression d'un article passe par la modale commune de confirmation (défini
         <tbody>
         {% for a in articles %}
           <tr>
-            <td data-role="titre"><div class="cellule-personne"><span class="avatar">{% if a.image %}<img src="{{ a.image.url }}" alt="" width="40" height="40" loading="lazy">{% else %}{% icone "file-text" %}{% endif %}</span><div><a class="lien-ligne" href="{% url 'article' a.id %}">{{ a.titre }}</a></div></div></td>
+            <td data-role="titre"><div class="cellule-personne"><span class="avatar">{% if a.image %}<img src="{{ a.image.url }}" alt="" width="40" height="40" loading="lazy">{% else %}{% icone "file-text" %}{% endif %}</span><div><a class="lien-ligne" href="{% url 'article' a.id %}" hx-get="{% url 'article' a.id %}" hx-target="#modale-contenu" hx-swap="innerHTML">{{ a.titre }}</a></div></div></td>
             <td data-libelle="{% translate 'Mis à jour' %}" class="chiffres">{{ a.mise_a_jour|date:"d/m/Y" }}</td>
             <td data-role="actions">
-              <a href="{% url 'article' a.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’article' %}" title="{% translate 'Modifier l’article' %}">{% icone "pencil" %}</a>
+              <a href="{% url 'article' a.id %}" hx-get="{% url 'article' a.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" class="bouton-icone" aria-label="{% translate 'Modifier l’article' %}" title="{% translate 'Modifier l’article' %}">{% icone "pencil" %}</a>
               {% url 'delete-article' a.id as url_suppr %}{% translate "Supprimer l'article" as t_libelle %}{% translate "Supprimer définitivement cet article ? Cette action est irréversible." as t_message %}
               {% include "components/_confirmer.html" with prefixe="article" ident=a.id url=url_suppr libelle=t_libelle titre=t_libelle message=t_message libelle_envoi=t_libelle icone="trash-2" icone_seule=True %}
             </td>
@@ -33,20 +33,10 @@ La suppression d'un article passe par la modale commune de confirmation (défini
         </tbody>
       </table>
     {% else %}
-      {% translate "Aucun article" as t_vide %}{% translate "Publiez le premier article avec le formulaire." as t_msg %}
+      {% translate "Aucun article" as t_vide %}{% translate "Publiez le premier article avec « Nouvel article »." as t_msg %}
       {% include "components/_etat_vide.html" with icone="file-text" titre=t_vide texte=t_msg %}
     {% endif %}
     </div>
-  </section>
-  <section class="panneau" aria-labelledby="titre-form-article">
-    <div class="panneau-tete"><h2 id="titre-form-article">{% if article %}{% translate "Modifier l’article" %}{% else %}{% translate "Nouvel article" %}{% endif %}</h2></div>
-    <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
-      {% csrf_token %}
-      <div class="champ"><label class="champ-libelle" for="a-titre">{% translate "Titre" %}</label><input type="text" name="titre" id="a-titre" value="{{ article.titre|default_if_none:'' }}" required></div>
-      <div class="champ"><label class="champ-libelle" for="a-image">{% translate "Image" %}</label><input type="file" name="image" id="a-image" accept="image/*"></div>
-      <div class="champ"><label class="champ-libelle" for="a-desc">{% translate "Description" %}</label><textarea name="description" id="a-desc" rows="6">{{ article.description|default_if_none:'' }}</textarea></div>
-      <button type="submit" name="add" value="add" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Publier" %}</span></button>
-    </form>
   </section>
 </div>
 {% endblock %}

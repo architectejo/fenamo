@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% load i18n design %}
-{% block titre %}Nouveau communiqué - FENAMO-RDC{% endblock %}
+{% load i18n design %}{% comment %}Repli sans JavaScript de la modale « Nouveau communiqué » : même formulaire (app/formulaires/_communique.html).{% endcomment %}
+{% block titre %}{% translate "Nouveau communiqué" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "list-message" %}">{% translate "Communiqués" %}</a><span aria-hidden="true">/</span><span>{% translate "Nouveau" %}</span></nav>
 <div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Nouveau communiqué" %}</h1><p class="page-contexte">{% icone "megaphone" %}{% translate "Message adressé aux membres" %}</p></div></div>
-{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+{% include "components/_message_vue.html" with message=message classe=classe %}
 <section class="panneau panneau--etroit" hx-history="false">
-  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+  <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
     {% csrf_token %}
-    <div class="champ"><label class="champ-libelle" for="c-message">{% translate "Message" %}</label><textarea name="message" id="c-message" rows="6" required></textarea></div>
+    {% include "app/formulaires/_communique.html" %}
     <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Publier le communiqué" %}</span></button>
   </form>
 </section>

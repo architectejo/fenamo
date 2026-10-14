@@ -1,0 +1,6 @@
+{% load i18n design %}<div class="champ"><label class="champ-libelle" for="p-nom">{% translate "Nom" %}</label><input type="text" name="nom" id="p-nom" value="{{ request.POST.nom }}" required></div>
+<div class="formulaire-ligne">
+  <div class="champ"><label class="champ-libelle" for="p-code">{% translate "Code officiel" %}</label><input type="text" name="code" id="p-code" maxlength="5" value="{{ request.POST.code }}" aria-describedby="p-code-aide" autocapitalize="characters"><p class="champ-aide" id="p-code-aide">{% translate "Annexe C de la charte (5 caractères au plus). Il termine les numéros d'engins ; une fois utilisé, il ne change plus." %}</p></div>
+  <div class="champ"><label class="champ-libelle" for="p-ordre">{% translate "Ordre d’affichage" %}</label><input type="number" name="ordre" id="p-ordre" min="0" max="999" inputmode="numeric" value="{{ request.POST.ordre }}"></div>
+</div>
+<div class="champ"><label class="champ-libelle" for="p-sigle">{% translate "Sigle" %} <span class="facultatif">({% translate "facultatif" %})</span></label><input type="text" name="sigle" id="p-sigle" maxlength="5" value="{{ request.POST.sigle }}"></div>

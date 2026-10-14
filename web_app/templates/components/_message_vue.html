@@ -1,0 +1,4 @@
+{% load design %}{% comment %}
+Message renvoyé par une vue héritée (variables message et classe) : un seul endroit décide du niveau (succès ou erreur).
+Usage : {% include "components/_message_vue.html" with message=message classe=classe %}
+{% endcomment %}{% if message %}<div class="u-mb-4" role="status">{% include "components/_erreur.html" with niveau=classe|niveau_alerte titre=message %}</div>{% endif %}

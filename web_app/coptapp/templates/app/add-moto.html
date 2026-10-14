@@ -1,21 +1,14 @@
 {% extends "base.html" %}
-{% load i18n design %}
-{% block titre %}Engin - FENAMO-RDC{% endblock %}
+{% load i18n design %}{% comment %}Repli sans JavaScript de la modale « Ajouter ou modifier un engin » : même formulaire (app/formulaires/_moto.html).{% endcomment %}
+{% block titre %}{% translate "Ajouter ou modifier un engin" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "membre-view" membre.id %}">{{ membre.nom }}</a><span aria-hidden="true">/</span><span>{% translate "Engin" %}</span></nav>
 <div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter ou modifier un engin" %}</h1><p class="page-contexte">{% icone "motorbike" %}{{ membre.nom }}</p></div></div>
-{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+{% include "components/_message_vue.html" with message=message classe=classe %}
 <section class="panneau panneau--etroit" hx-history="false">
   <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
     {% csrf_token %}
-    <div class="formulaire-ligne">
-      <div class="champ"><label class="champ-libelle" for="m-plaque">{% translate "Plaque" %}</label><input type="text" name="plaque" id="m-plaque" value="{{ moto.num_plaque|default_if_none:'' }}"></div>
-      <div class="champ"><label class="champ-libelle" for="m-moteur">{% translate "Numéro de moteur" %}</label><input type="text" name="moteur" id="m-moteur" value="{{ moto.num_moteur|default_if_none:'' }}"></div>
-      <div class="champ"><label class="champ-libelle" for="m-chassie">{% translate "Numéro de châssis" %}</label><input type="text" name="chassie" id="m-chassie" value="{{ moto.num_chassie|default_if_none:'' }}"></div>
-      <div class="champ"><label class="champ-libelle" for="m-marque">{% translate "Marque" %}</label><input type="text" name="marque" id="m-marque" value="{{ moto.marque|default_if_none:'' }}"></div>
-      <div class="champ"><label class="champ-libelle" for="m-couleur">{% translate "Couleur" %}</label><input type="text" name="couleur" id="m-couleur" value="{{ moto.couleur|default_if_none:'' }}"></div>
-      <div class="champ"><label class="champ-libelle" for="m-photo">{% translate "Photo de l’engin" %}</label><input type="file" name="photo" id="m-photo" accept="image/*"></div>
-    </div>
+    {% include "app/formulaires/_moto.html" %}
     <button type="submit" name="add" value="add" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Enregistrer l’engin" %}</span></button>
   </form>
 </section>

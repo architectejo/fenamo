@@ -7,7 +7,7 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
 {% if membre.qualite == 'PROPRIETAIRE' or membre.qualite == 'MOTARD ET PROPRIETAIRE' %}
 <section class="panneau">
   <div class="panneau-tete"><h2>{% translate "Engins du membre" %} <span class="ident doux">{{ nbrMoto }}</span></h2>
-    {% if peut_ajouter_engin %}<a href="{% url 'add-moto' membre.id %}" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un engin" %}</span></a>{% endif %}
+    {% if peut_ajouter_engin %}<a href="{% url 'add-moto' membre.id %}" hx-get="{% url 'add-moto' membre.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un engin" %}</span></a>{% endif %}
   </div>
   <div class="panneau-corps">
   {% if motos %}
@@ -23,7 +23,7 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
           <td data-libelle="{% translate 'Fin d’identification' %}" class="chiffres">{{ moto.abonnement|default:"—" }}</td>
           <td data-role="actions">
           {% if peut_modifier_engin %}
-            <a href="{% url 'edit-moto' moto.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
+            <a href="{% url 'edit-moto' moto.id %}" hx-get="{% url 'edit-moto' moto.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
           {% endif %}
           {% if peut_supprimer_engin %}
             {% url 'delete-moto' moto.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Il disparaîtra des listes ; la suppression est enregistrée dans le journal." as t_message %}
@@ -60,7 +60,7 @@ Le code de coordination de la plaque (KN-E) viendra avec la numérotation F-31 :
           <td data-libelle="{% translate 'Propriétaire' %}">{{ motoAttr.proprietaire.nom|default:"—" }}</td>
           <td data-role="actions">
           {% if peut_modifier_engin %}
-            <a href="{% url 'edit-moto' motoAttr.id %}" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
+            <a href="{% url 'edit-moto' motoAttr.id %}" hx-get="{% url 'edit-moto' motoAttr.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" class="bouton-icone" aria-label="{% translate 'Modifier l’engin' %}" title="{% translate 'Modifier l’engin' %}">{% icone "pencil" %}</a>
           {% endif %}
           {% if peut_supprimer_engin %}
             {% url 'delete-moto' motoAttr.id as url_suppr %}{% translate "Supprimer l'engin" as t_libelle %}{% translate "Supprimer cet engin ? Il disparaîtra des listes ; la suppression est enregistrée dans le journal." as t_message %}

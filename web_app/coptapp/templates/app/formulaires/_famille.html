@@ -1,0 +1,6 @@
+{% load i18n design %}<div class="champ"><label class="champ-libelle" for="f-nom">{% translate "Nom complet" %}</label><input type="text" name="nom" id="f-nom" value="{{ famille.beneficiere|default_if_none:'' }}" required></div>
+<div class="formulaire-ligne">
+  <div class="champ"><label class="champ-libelle" for="f-qualite">{% translate "Lien" %}</label><select name="qualite" id="f-qualite"><option value="L"{% if famille.qualite == 'L' %} selected{% endif %}>L</option><option value="R"{% if famille.qualite == 'R' %} selected{% endif %}>R</option><option value="L/R"{% if famille.qualite == 'L/R' %} selected{% endif %}>L/R</option></select></div>
+  <div class="champ"><label class="champ-libelle" for="f-genre">{% translate "Genre" %}</label><select name="genre" id="f-genre"><option value="HOMME"{% if famille.genre == 'HOMME' %} selected{% endif %}>{% translate "Homme" %}</option><option value="FEMME"{% if famille.genre == 'FEMME' %} selected{% endif %}>{% translate "Femme" %}</option></select></div>
+</div>
+<div class="champ"><label class="champ-libelle" for="f-annee">{% translate "Année de naissance" %}</label><input type="text" name="annee" id="f-annee" inputmode="numeric" value="{{ famille.annee|default_if_none:'' }}"></div>

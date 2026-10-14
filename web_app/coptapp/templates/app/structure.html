@@ -5,7 +5,7 @@ Le formulaire d'édition reste sur la page (la vue répond par un rendu de cette
 {% endcomment %}
 {% block titre %}{% translate "Association membre" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'str-list' %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{% if structure %}{{ structure.sigle|default:structure.nom }}{% else %}{{ button|default:"+" }}{% endif %}</span></nav>
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'str-list' %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{% if structure %}{% firstof structure.sigle structure.nom %}{% else %}{{ button|default:"+" }}{% endif %}</span></nav>
 {% if structure %}
 <div class="page-tete page-tete--haut">
   <span class="avatar avatar--grand">{% if structure.logo %}<img src="{{ structure.logo.url }}" alt="" width="88" height="88">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="88" height="88">{% endif %}</span>
@@ -13,7 +13,7 @@ Le formulaire d'édition reste sur la page (la vue répond par un rendu de cette
     <h1 class="page-titre">{{ structure.nom }}</h1>
     <p class="page-contexte"><span class="ident texte-plein">{{ structure.sigle|upper }}</span>{% if structure.province.nom %} · {{ structure.province.nom }}{% endif %}{% if structure.ville.nom %} · {{ structure.ville.nom }}{% endif %}</p>
   </div>
-  {% if user.is_superuser %}<div class="page-actions"><a class="bouton" href="{% url 'structure-admin' structure.id %}">{% icone "settings" %}<span>{% translate "Administration" %}</span></a></div>{% endif %}
+  {% if user.is_superuser %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'edit-structure' structure.id %}" hx-get="{% url 'edit-structure' structure.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "pencil" %}<span>{% translate "Modifier" %}</span></a><a class="bouton" href="{% url 'structure-admin' structure.id %}">{% icone "settings" %}<span>{% translate "Administration" %}</span></a></div>{% endif %}
 </div>
 <div class="affichage">
   {% translate "Membres" as t1 %}{% include "components/_chiffre.html" with valeur=structure.membres libelle=t1 %}
@@ -22,7 +22,7 @@ Le formulaire d'édition reste sur la page (la vue répond par un rendu de cette
 </div>
 {% endif %}
 {% if not structure %}<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une association membre" %}</h1><p class="page-contexte">{% icone "building-2" %}{% translate "Référentiel des associations de la fédération" %}</p></div></div>{% endif %}
-{% if msg %}<div class="u-mt-4">{% include "components/_erreur.html" with niveau="info" titre=msg %}</div>{% endif %}
+{% include "components/_message_vue.html" with message=message classe=classe %}
 <div class="grille grille--principale u-mt-6">
   {% if structure %}
   <section class="panneau">
@@ -38,13 +38,11 @@ Le formulaire d'édition reste sur la page (la vue répond par un rendu de cette
     </dl></div>
   </section>
   {% endif %}
-  {% if user.is_superuser %}
+  {% if not structure and user.is_superuser %}
   <section class="panneau">
-    <div class="panneau-tete"><h2>{{ button|default:_("Enregistrer") }}</h2></div>
     <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
       {% csrf_token %}
-      {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
-      {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+      {% include "app/formulaires/_generique.html" %}
       {% include "components/_bouton.html" with libelle=_("Enregistrer") variante="principal" type="submit" icone="check" %}
     </form>
   </section>

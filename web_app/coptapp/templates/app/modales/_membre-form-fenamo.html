@@ -1,0 +1,5 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}Modale « Ajouter un membre » (formulaire servi dans la modale commune par coptapp.views.modales.rendre_formulaire).{% endcomment %}
+{% block titre %}{% translate "Ajouter un membre" %}{% endblock %}
+{% block corps %}{% include "app/formulaires/_generique.html" %}{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Ajouter" %}</span></button>{% endblock %}

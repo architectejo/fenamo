@@ -1,15 +1,14 @@
 {% extends "base.html" %}
-{% load i18n design %}
-{% block titre %}Ajouter une coordination - FENAMO-RDC{% endblock %}
+{% load i18n design %}{% comment %}Repli sans JavaScript de la modale « Ajouter une coordination provinciale » : même formulaire (app/formulaires/_province.html).{% endcomment %}
+{% block titre %}{% translate "Ajouter une coordination provinciale" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><span>{% translate "Coordination provinciale" %}</span></nav>
 <div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter une coordination provinciale" %}</h1><p class="page-contexte">{% icone "map" %}{% translate "Référentiel géographique" %}</p></div></div>
-{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+{% include "components/_message_vue.html" with message=message classe=classe %}
 <section class="panneau panneau--etroit" hx-history="false">
-  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+  <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
     {% csrf_token %}
-    <div class="champ"><label class="champ-libelle" for="p-nom">{% translate "Nom" %}</label><input type="text" name="nom" id="p-nom" required></div>
-    <div class="champ"><label class="champ-libelle" for="p-sigle">{% translate "Sigle" %}</label><input type="text" name="sigle" id="p-sigle"></div>
+    {% include "app/formulaires/_province.html" %}
     <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Ajouter" %}</span></button>
   </form>
 </section>

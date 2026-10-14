@@ -7,6 +7,7 @@
     <h1 class="page-titre">{% translate "Associations membres" %}</h1>
     <p class="page-contexte">{% icone "building-2" %}{% blocktranslate count n=structures|length %}{{ n }} association enregistrée{% plural %}{{ n }} associations enregistrées{% endblocktranslate %}</p>
   </div>
+  {% if fn_droits.peut_ecrire_referentiel %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'add-structure' %}" hx-get="{% url 'add-structure' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Ajouter une association" %}</span></a></div>{% endif %}
 </div>
 {% if structures %}
 <div class="liste-enveloppe">

@@ -7,6 +7,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_POST
 from coptapp.models import Membre
+from coptapp.views.modales import rendre_formulaire
 from compte.forms import AddUserForm, ChangementMotDePasseForm
 from compte.permissions import superuser_requis
 from compte.services.verrou import ip_bloquee
@@ -69,7 +70,7 @@ def add_user(request):
             form = AddUserForm()
     else:
         form = AddUserForm()
-    return render(request, 'app/add-user.html', locals())
+    return rendre_formulaire(request, 'user', locals(), lecture_unique=True)
 
 
 @sensitive_post_parameters('old_password', 'new_password1', 'new_password2')

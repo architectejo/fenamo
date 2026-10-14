@@ -1,0 +1,5 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}Modale « Article du site » (nouvel article ou modification quand `article` est fourni).{% endcomment %}
+{% block titre %}{% if article %}{% translate "Modifier l’article" %}{% else %}{% translate "Nouvel article" %}{% endif %}{% endblock %}
+{% block corps %}{% include "app/formulaires/_article.html" %}{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" name="add" value="add" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Publier" %}</span></button>{% endblock %}

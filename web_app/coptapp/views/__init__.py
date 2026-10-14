@@ -11,11 +11,12 @@ from coptapp.services.actions import (
     ACTIONS_SUPPRESSION, EtatIncoherent,
 )
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
 from virtrine.models import Article, Contact, Galery
 from coptapp.forms import *
+from coptapp.views.modales import rendre_formulaire
 from coptapp.validators import erreur_image
 from compte.permissions import editeur_requis, referentiel_ecriture_requis
 from compte.services.droits import (
@@ -108,17 +109,8 @@ def statistiqueMoto(an=False, mois=False, structure=None):
 
 #Notification recupération
 def myNotify(request):
-    user = request.user
-    from compte.services.perimetre import notifications_du_perimetre, voit_toutes_notifications
-    if voit_toutes_notifications(user):
-        return notifications_du_perimetre(user).order_by('-id')
-    else:
-        data = notifications_du_perimetre(user).order_by('-id')
-        if user.membreId:
-            membre = Membre.objects.filter(id=user.membreId).first()
-            if membre:
-                data = Notification.objects.filter(user=user, membre=membre).order_by('-id')
-    return data
+    from compte.services.perimetre import notifications_du_perimetre
+    return notifications_du_perimetre(request.user).order_by('-id')
 
 #Validation des membres
 def _retour(request, defaut):
@@ -177,9 +169,10 @@ def add_structure(request):
             msg = "Nouvelle association membre ajoutée !"
             classMsg = 'alert alert-info'
             return redirect('edit-structure', id=structure.id)
+        return rendre_formulaire(request, 'structure', locals(), status=400, page='app/structure.html')
     else:
         form = AssociationMembreIdentifyForm()
-    return render(request, 'app/structure.html', locals())
+    return rendre_formulaire(request, 'structure', locals(), page='app/structure.html')
 
 
 @referentiel_ecriture_requis
@@ -254,13 +247,17 @@ def edit_structure(request, id):
         form = AssociationMembreForm(request.POST, request.FILES, instance=structure)
         if form.is_valid():
             form.save()
+            message = _("Association enregistrée.")
+            classe = 'alert alert-info'
+        else:
+            statut_formulaire = 400
     else:
         form = AssociationMembreForm(instance=structure)
     membres_association = Membre.objects.filter(structure=structure, is_delete=False)
     structure.membres = membres_association.count()
     structure.proprietaires = membres_association.filter(titre='PROPRIETAIRE').count()
     structure.motocyclistes = membres_association.exclude(titre='PROPRIETAIRE').count()
-    return render(request, 'app/structure.html', locals())
+    return rendre_formulaire(request, 'structure', locals(), status=locals().get('statut_formulaire', 200), page='app/structure.html')
 
 def structures_liste(request):
     """Associations membres du compte (toutes pour SU / privilege5)."""
@@ -430,7 +427,7 @@ def addAntenne(request, id):
             return redirect('edit-antenne', id=antenne.id)
     else:
         form = AntenneForm()
-    return render(request, 'app/add-antenne.html', locals())
+    return rendre_formulaire(request, 'antenne', locals())
 
 @referentiel_ecriture_requis
 def editAntenne(request,id):
@@ -441,7 +438,7 @@ def editAntenne(request,id):
         form = AntenneForm(request.POST, instance=antenne)
         if form.is_valid():
             form.save()
-    return render(request, 'app/add-antenne.html', locals())
+    return rendre_formulaire(request, 'antenne', locals())
 
 @editeur_requis
 def addCommunique(request):
@@ -467,7 +464,7 @@ def addCommunique(request):
         if not message:
             message = _("Écrivez le communiqué.")
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-communique.html', locals(), status=400)
+            return rendre_formulaire(request, 'communique', locals(), status=400)
         getter, setter = Communique.objects.get_or_create(user=user, membre=membre, message=message)
         if setter:
             message = _('Envoyé !')
@@ -475,7 +472,7 @@ def addCommunique(request):
         elif getter:
             message = _('Vous avez déjà envoyé !')
             classe = 'alert alert-danger text-center'
-    return render(request, 'app/add-communique.html', locals())
+    return rendre_formulaire(request, 'communique', locals())
 
 def addFamily(request,id):
     user = request.user
@@ -485,7 +482,7 @@ def addFamily(request,id):
         if not formulaire.is_valid():
             message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-family.html', locals(), status=400)
+            return rendre_formulaire(request, 'famille', locals(), status=400)
         donnees = formulaire.cleaned_data
         getter, setter = Famille.objects.get_or_create(
             user=user
@@ -501,7 +498,7 @@ def addFamily(request,id):
         elif getter:
             message = 'Ce membre est déjà ajouté'
             classe = 'alert alert-danger text-center'
-    return render(request, 'app/add-family.html', locals())
+    return rendre_formulaire(request, 'famille', locals())
 
 def addMembre(request, id):
     """Ajout d'un membre à l'association `id` : association du compte (404 sinon), droit de créer (403 sinon)."""
@@ -528,7 +525,7 @@ def addMembre(request, id):
         message = "Le membre est déjà ajouter"
     else:
         form = MembreForm(structure=structure)
-    return render(request, 'app/add-membre.html', locals())
+    return rendre_formulaire(request, 'membre', locals())
 
 def add_membre_from_fenamo(request):
     """Ajout d'un membre hors association : réservé à qui voit tout (SU, privilege5), jamais en lecture seule."""
@@ -547,7 +544,7 @@ def add_membre_from_fenamo(request):
             return redirect('membre-view', id=membre.id)
     else:
         form = MembreFenamoForm()
-    return render(request, 'app/add-membre-form-fenamo.html', locals())
+    return rendre_formulaire(request, 'membre-form-fenamo', locals())
 
 #Ajout d'une moto
 def addMoto(request, id):
@@ -569,12 +566,12 @@ def addMoto(request, id):
         if erreur_photo:
             message = erreur_photo
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-moto.html', locals(), status=400)
+            return rendre_formulaire(request, 'moto', locals(), status=400)
         formulaire = EnginForm(request.POST)
         if not formulaire.is_valid():
             message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-moto.html', locals(), status=400)
+            return rendre_formulaire(request, 'moto', locals(), status=400)
         donnees = formulaire.cleaned_data
         try:
             engin = enregistrer_engin(membre, user, {
@@ -583,16 +580,16 @@ def addMoto(request, id):
         except CoordinationInconnue:
             message = _("La coordination provinciale du membre est inconnue : l'engin ne peut pas être numéroté.")
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-moto.html', locals(), status=400)
+            return rendre_formulaire(request, 'moto', locals(), status=400)
         except EnginDejaEnregistre:
             message = _("Cet engin est déjà enregistré (même numéro de châssis et de moteur).")
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-moto.html', locals(), status=400)
+            return rendre_formulaire(request, 'moto', locals(), status=400)
         numero = engin.numero
         notify(user=user, titre="Ajout d'une moto", description=f"Numéro:{numero}")
         message = "Mise à jour !"
         classe='alert alert-primary text-center'
-    return render(request, 'app/add-moto.html', locals())
+    return rendre_formulaire(request, 'moto', locals())
 
 #Ajout d'une province
 @referentiel_ecriture_requis
@@ -611,12 +608,23 @@ def addProvince(request):
         if not nom_province:
             message = _("Indiquez le nom de la coordination provinciale.")
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-province.html', locals(), status=400)
-        getter, setter = Province.objects.get_or_create(nom=nom_province, sigle=request.POST.get('sigle'))
+            return rendre_formulaire(request, 'province', locals(), status=400)
+        code = Province.normaliser_code(request.POST.get('code'))
+        ordre_texte = (request.POST.get('ordre') or '').strip()
+        if code and (len(code) > 5 or Province.objects.filter(code=code).exists()):
+            message = _("Ce code officiel est trop long (5 caractères au plus) ou déjà utilisé.")
+            classe = 'alert alert-danger text-center'
+            return rendre_formulaire(request, 'province', locals(), status=400)
+        if ordre_texte and not (ordre_texte.isdigit() and int(ordre_texte) <= 999):
+            message = _("L'ordre d'affichage est un nombre entier de 0 à 999.")
+            classe = 'alert alert-danger text-center'
+            return rendre_formulaire(request, 'province', locals(), status=400)
+        getter, setter = Province.objects.get_or_create(nom=nom_province, sigle=request.POST.get('sigle'),
+                                                        defaults={'code': code, 'ordre': int(ordre_texte) if ordre_texte else None})
         if setter:
             message = _("%(nom)s a été ajoutée comme coordination provinciale.") % {'nom': nom_province}
             classe = 'alert alert-info text-center'
-    return render(request, 'app/add-province.html', locals())
+    return rendre_formulaire(request, 'province', locals())
 
 #Ajout d'une ville
 @referentiel_ecriture_requis
@@ -637,7 +645,7 @@ def addVille(request, id):
         if not nom_ville:
             message = _("Indiquez le nom de l'antenne.")
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-ville.html', locals(), status=400)
+            return rendre_formulaire(request, 'ville', locals(), status=400)
         ville, cree = Ville.objects.get_or_create(user=user, province=province, nom=nom_ville)
         antenne_depuis_ville(ville, creer=True)  # toute ville a son antenne
         if cree:
@@ -645,7 +653,7 @@ def addVille(request, id):
             message = _("Antenne ajoutée à la coordination provinciale.")
             notify(user=user, titre=_("Ajout d'une antenne"),
                    description=f"{_('Coordination')} : {ville.province.nom} ; {_('antenne')} : {ville.nom}")
-    return render(request, 'app/add-ville.html', locals())
+    return rendre_formulaire(request, 'ville', locals())
 
 @require_POST
 def attributMoto(request, id):
@@ -717,7 +725,7 @@ def editFamily(request,id):
         if not formulaire.is_valid():
             message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-family.html', locals(), status=400)
+            return rendre_formulaire(request, 'famille', locals(), status=400)
         donnees = formulaire.cleaned_data
         famille.user = user
         famille.membre=membre
@@ -728,7 +736,7 @@ def editFamily(request,id):
         famille.save()
         message = 'Mise à jour !'
         classe = 'alert alert-success text-center'
-    return render(request, 'app/add-family.html', locals())
+    return rendre_formulaire(request, 'famille', locals())
 
 def editMoto(request, id):
     #Configuration
@@ -748,12 +756,12 @@ def editMoto(request, id):
         if erreur_photo:
             message = erreur_photo
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-moto.html', locals(), status=400)
+            return rendre_formulaire(request, 'moto', locals(), status=400)
         formulaire = EnginForm(request.POST)
         if not formulaire.is_valid():
             message = erreurs_en_texte(formulaire)
             classe = 'alert alert-danger text-center'
-            return render(request, 'app/add-moto.html', locals(), status=400)
+            return rendre_formulaire(request, 'moto', locals(), status=400)
         donnees = formulaire.cleaned_data
         moto.num_plaque = donnees['plaque']
         moto.num_chassie = donnees['chassie']
@@ -766,7 +774,7 @@ def editMoto(request, id):
         message = "Mise à jour !"
         classe = 'alert alert-primary text-center'
         notify(user=moto.user, titre="Modification d'une moto", description=f"Numero:{moto.numero}")
-    return render(request, 'app/add-moto.html', locals())
+    return rendre_formulaire(request, 'moto', locals())
 
 
 #Redirection to membre-view
@@ -908,8 +916,9 @@ def membreListe(request):
     return render(request, modele, contexte)
 
 
+@require_GET
 def enginListe(request):
-    """Liste des engins (F-30) : GET seulement, dans le périmètre du compte (404 jamais : une liste vide si rien n'est visible).
+    """Liste des engins (F-30) : GET seulement (405 sinon), dans le périmètre du compte (liste vide si rien n'est visible).
 
     Paramètres : ``q`` (numéro, plaque, châssis, moteur, propriétaire), ``coordination`` (id), ``antenne`` (id), ``page`` (25 par page).
     Fragment ``coptapp/engins/partials/_liste.html`` pour une requête HTMX, page complète ``coptapp/engins/liste.html`` sinon
@@ -1007,7 +1016,7 @@ def site(request):
                 message = erreur_photo
                 classe = 'alert alert-danger text-center'
                 articles = Article.objects.order_by('-id')
-                return render(request, 'app/site.html', locals(), status=400)
+                return rendre_formulaire(request, 'article', locals(), status=400, page='app/site.html')
             verify = Article.objects.filter(titre=titre).exists()
 
             if verify == False:
@@ -1024,7 +1033,7 @@ def site(request):
     
     #Articles
     articles = Article.objects.order_by('-id')
-    return render(request, 'app/site.html', locals())
+    return rendre_formulaire(request, 'article', locals(), page='app/site.html')
 
 @editeur_requis
 def article(request, id):
@@ -1050,7 +1059,7 @@ def article(request, id):
             message = erreur_photo
             classe = 'alert alert-danger text-center'
             articles = Article.objects.order_by('-id')
-            return render(request, 'app/site.html', locals(), status=400)
+            return rendre_formulaire(request, 'article', locals(), status=400, page='app/site.html')
         article.titre = request.POST.get('titre')
         article.description = request.POST.get('description')
         if image:  # un nouveau fichier valide seulement ; l'ancien est supprimé après validation de la transaction (signal)
@@ -1061,7 +1070,7 @@ def article(request, id):
     
     #Articles
     articles = Article.objects.order_by('-id')
-    return render(request, 'app/site.html', locals())
+    return rendre_formulaire(request, 'article', locals(), page='app/site.html')
 
 @editeur_requis
 @require_POST

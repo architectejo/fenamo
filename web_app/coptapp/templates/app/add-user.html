@@ -1,21 +1,14 @@
 {% extends "base.html" %}
-{% load i18n design %}{% comment %}
-Création d'un compte (super-utilisateur). La vue add_user génère le mot de passe temporaire et l'affiche UNE fois dans `message` : la page n'est jamais mise en cache
-(hx-history="false" ; la réponse est en no-store côté vue). Contexte : form, message, classe.
-{% endcomment %}
+{% load i18n design %}{% comment %}Repli sans JavaScript de la modale « Créer un compte » : même formulaire (app/formulaires/_generique.html).{% endcomment %}
 {% block titre %}{% translate "Créer un compte" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<div hidden hx-history="false"></div>
-<div class="page-tete"><div class="page-tete-texte">
-  <h1 class="page-titre">{% translate "Créer un compte" %}</h1>
-  <p class="page-contexte">{% icone "user-plus" %}{% translate "Un mot de passe temporaire est généré et affiché une seule fois." %}</p>
-</div></div>
-{% if message %}<div class="u-mb-4" role="status">{% include "components/_erreur.html" with niveau="succes" titre=message %}</div>{% endif %}
-<section class="panneau panneau--etroit">
-  <form method="post" class="panneau-corps formulaire" hx-boost="false" novalidate>
+<nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><span>{% translate "Compte" %}</span></nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Créer un compte" %}</h1><p class="page-contexte">{% icone "user-plus" %}{% translate "Un mot de passe temporaire est généré et affiché une seule fois." %}</p></div></div>
+{% include "components/_message_vue.html" with message=message classe=classe %}
+<section class="panneau panneau--etroit" hx-history="false">
+  <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
     {% csrf_token %}
-    {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
-    {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+    {% include "app/formulaires/_generique.html" %}
     <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Créer le compte" %}</span></button>
   </form>
 </section>

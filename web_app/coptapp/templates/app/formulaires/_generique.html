@@ -1,0 +1,2 @@
+{% load i18n design %}{% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
+{% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}

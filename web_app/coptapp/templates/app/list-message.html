@@ -4,7 +4,7 @@
 {% block contenu %}
 <div class="page-tete">
   <div class="page-tete-texte"><h1 class="page-titre">{% translate "Communiqués" %}</h1><p class="page-contexte">{% icone "megaphone" %}{% translate "Messages adressés aux membres" %}</p></div>
-  {% if fn_droits.peut_ecrire_referentiel %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'message' %}">{% icone "plus" %}<span>{% translate "Nouveau communiqué" %}</span></a></div>{% endif %}
+  {% if fn_droits.peut_ecrire_referentiel %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML">{% icone "plus" %}<span>{% translate "Nouveau communiqué" %}</span></a></div>{% endif %}
 </div>
 {% if communiques %}
 <ul class="file">

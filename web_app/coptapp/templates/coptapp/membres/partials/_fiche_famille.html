@@ -5,7 +5,7 @@ Contexte : membre, user, structure, familles.
 <section class="panneau">
   <div class="panneau-tete"><h2>{% translate "Composition familiale" %}</h2>
     {% if peut_ajouter_famille %}
-    <a href="{% url 'add-family' membre.id %}" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un membre de la famille" %}</span></a>
+    <a href="{% url 'add-family' membre.id %}" hx-get="{% url 'add-family' membre.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" class="bouton bouton--petit pousse">{% icone "plus" %}<span>{% translate "Ajouter un membre de la famille" %}</span></a>
     {% endif %}
   </div>
   <div class="panneau-corps pile">
@@ -28,7 +28,7 @@ Contexte : membre, user, structure, familles.
           <td data-libelle="{% translate 'Année' %}" class="chiffres">{{ famille.annee|default:"—" }}</td>
           <td data-role="actions">
           {% if peut_modifier_famille %}
-            <a href="{% url 'edit-family' famille.id %}" class="bouton-icone" aria-label="{% translate 'Modifier le bénéficiaire' %}" title="{% translate 'Modifier le bénéficiaire' %}">{% icone "pencil" %}</a>
+            <a href="{% url 'edit-family' famille.id %}" hx-get="{% url 'edit-family' famille.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" class="bouton-icone" aria-label="{% translate 'Modifier le bénéficiaire' %}" title="{% translate 'Modifier le bénéficiaire' %}">{% icone "pencil" %}</a>
           {% endif %}
           {% if peut_supprimer_famille %}
             {% url 'delete-family' famille.id as url_suppr %}{% translate "Supprimer le bénéficiaire" as t_titre %}{% translate "Retirer ce membre de la famille ? Cette action est irréversible." as t_message %}{% translate "Supprimer" as t_libelle %}

@@ -185,5 +185,12 @@ def libelle_pluriel_etat(code):
 
 @register.filter
 def peut_nommer(droits):
-    """Vrai si le contexte de droits de la coque (fn_droits) permet de nommer des utilisateurs : SU, PR, VN, VP, VA (compte.roles.NOMMABLES)."""
-    return bool(droits) and bool(droits.get('est_su') or droits.get('role') in ('PR', 'VN', 'VP', 'VA'))
+    """Vrai si le contexte de droits de la coque (fn_droits) permet de nommer des utilisateurs : clé ``peut_nommer`` de ``droits_menu``, déduite de compte.roles.NOMMABLES."""
+    return bool(droits) and bool(droits.get('peut_nommer'))
+
+
+@register.filter
+def niveau_alerte(classe):
+    """Niveau du composant d'alerte pour une classe de message héritée (alert-success, alert-info… = « succes », sinon « danger »)."""
+    from coptapp.views.modales import niveau_message
+    return niveau_message(classe)

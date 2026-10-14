@@ -1,15 +1,14 @@
 {% extends "base.html" %}
-{% load i18n design %}
-{% block titre %}Ajouter un membre - FENAMO-RDC{% endblock %}
+{% load i18n design %}{% comment %}Repli sans JavaScript de la modale « Ajouter un membre » : même formulaire (app/formulaires/_generique.html).{% endcomment %}
+{% block titre %}{% translate "Ajouter un membre" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <nav class="fil" aria-label="{% translate "Fil d’Ariane" %}"><a href="{% url "liste-membre" %}">{% translate "Membres" %}</a><span aria-hidden="true">/</span><span>{% translate "Ajouter" %}</span></nav>
 <div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Ajouter un membre" %}</h1><p class="page-contexte">{% icone "user-plus" %}{{ structure.nom }}</p></div></div>
-{% if message %}<div class="u-mb-4">{% if "success" in classe or "info" in classe or "primary" in classe %}{% include "components/_erreur.html" with niveau="succes" titre=message %}{% else %}{% include "components/_erreur.html" with niveau="danger" titre=message %}{% endif %}</div>{% endif %}
+{% include "components/_message_vue.html" with message=message classe=classe %}
 <section class="panneau panneau--etroit" hx-history="false">
   <form method="post" enctype="multipart/form-data" class="panneau-corps formulaire" hx-boost="false" novalidate>
     {% csrf_token %}
-    {% for champ in form %}{% include "components/_champ.html" with champ=champ %}{% endfor %}
-    {% if form.non_field_errors %}{% include "components/_erreur.html" with niveau="danger" titre=form.non_field_errors.0 %}{% endif %}
+    {% include "app/formulaires/_generique.html" %}
     <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Ajouter" %}</span></button>
   </form>
 </section>

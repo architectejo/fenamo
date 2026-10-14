@@ -1,0 +1,3 @@
+{% load i18n design %}<div class="champ"><label class="champ-libelle" for="a-titre">{% translate "Titre" %}</label><input type="text" name="titre" id="a-titre" value="{{ article.titre|default_if_none:'' }}" required></div>
+<div class="champ"><label class="champ-libelle" for="a-image">{% translate "Image" %}</label><input type="file" name="image" id="a-image" accept="image/*"></div>
+<div class="champ"><label class="champ-libelle" for="a-desc">{% translate "Description" %}</label><textarea name="description" id="a-desc" rows="6">{{ article.description|default_if_none:'' }}</textarea></div>

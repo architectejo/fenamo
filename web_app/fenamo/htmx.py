@@ -97,9 +97,14 @@ class HtmxSessionMessagesMiddleware:
                 redirection = HttpResponse(status=200)
                 redirection.headers['HX-Redirect'] = response.headers['Location']
                 return redirection
+            if getattr(request.htmx, 'boosted', False) is False and adresse != reverse('application'):
+                # Formulaire de modale réussi : HTMX suivrait la redirection et afficherait la page dans la modale ; on redirige la fenêtre.
+                redirection = HttpResponse(status=200)
+                redirection.headers['HX-Redirect'] = response.headers['Location']
+                return redirection
             return response  # les messages restent pour la page suivante
 
-        if 'HX-Redirect' in response.headers or 'HX-Location' in response.headers:
+        if 'HX-Redirect' in response.headers or 'HX-Location' in response.headers or 'HX-Refresh' in response.headers:
             return response
         if hasattr(request, '_messages'):
             declencheurs = [

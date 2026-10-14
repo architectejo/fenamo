@@ -1,0 +1,8 @@
+{% load i18n design %}<div class="formulaire-ligne">
+  <div class="champ"><label class="champ-libelle" for="m-plaque">{% translate "Plaque" %}</label><input type="text" name="plaque" id="m-plaque" value="{{ moto.num_plaque|default_if_none:'' }}"></div>
+  <div class="champ"><label class="champ-libelle" for="m-moteur">{% translate "Numéro de moteur" %}</label><input type="text" name="moteur" id="m-moteur" value="{{ moto.num_moteur|default_if_none:'' }}"></div>
+  <div class="champ"><label class="champ-libelle" for="m-chassie">{% translate "Numéro de châssis" %}</label><input type="text" name="chassie" id="m-chassie" value="{{ moto.num_chassie|default_if_none:'' }}"></div>
+  <div class="champ"><label class="champ-libelle" for="m-marque">{% translate "Marque" %}</label><input type="text" name="marque" id="m-marque" value="{{ moto.marque|default_if_none:'' }}"></div>
+  <div class="champ"><label class="champ-libelle" for="m-couleur">{% translate "Couleur" %}</label><input type="text" name="couleur" id="m-couleur" value="{{ moto.couleur|default_if_none:'' }}"></div>
+  <div class="champ"><label class="champ-libelle" for="m-photo">{% translate "Photo de l’engin" %}</label><input type="file" name="photo" id="m-photo" accept="image/*"></div>
+</div>
