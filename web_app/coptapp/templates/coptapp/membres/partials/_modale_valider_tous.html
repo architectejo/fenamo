@@ -1,0 +1,18 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}
+Confirmation de « Valider tout le monde » (F-23). Contexte : action (valider-tous), nb_validables, filtres, filtres_actifs, choix.
+POST HTMX : les filtres de la liste sont renvoyés tels quels (champs cachés) ; réponse 204 + toast + événement membresMaj (la liste se rafraîchit).
+Le service borne l'appel à 500 membres ; le compte rendu (validés, restants) est dans le toast.
+{% endcomment %}
+{% block titre %}{% translate "Valider tout le monde" %}<span class="sous-titre">{% blocktranslate count n=nb_validables %}{{ n }} membre à valider{% plural %}{{ n }} membres à valider{% endblocktranslate %}</span>{% endblock %}
+{% block corps %}
+<input type="hidden" name="q" value="{{ filtres.q }}"><input type="hidden" name="etat" value="{{ filtres.etat }}"><input type="hidden" name="qualite" value="{{ filtres.qualite }}">
+<input type="hidden" name="antenne" value="{{ filtres.antenne }}"><input type="hidden" name="association" value="{{ filtres.association }}">
+{% blocktranslate count n=nb_validables asvar t_msg %}Un membre sera validé à votre étape du circuit.{% plural %}{{ n }} membres seront validés à votre étape du circuit.{% endblocktranslate %}
+{% include "components/_erreur.html" with niveau="alerte" titre=t_msg texte=_("Seuls les membres de votre périmètre que vous avez le droit de valider sont concernés, jamais vos propres saisies. Chaque validation est inscrite au journal.") %}
+<dl class="definitions">
+  <div><dt>{% translate "Filtres de la liste" %}</dt><dd>{% if filtres_actifs %}{% if filtres.q %}« {{ filtres.q }} »{% endif %}{% if filtres.etat %} {{ filtres.etat|libelle_code_etat }}{% endif %}{% if filtres.qualite %} {{ filtres.qualite }}{% endif %}{% if filtres.antenne %}{% for a in choix.antennes %}{% if a.id == filtres.antenne %} {% blocktranslate with nom=a.nom %}antenne de {{ nom }}{% endblocktranslate %}{% endif %}{% endfor %}{% endif %}{% if filtres.association %}{% for s in choix.associations %}{% if s.id == filtres.association %} {% firstof s.sigle s.nom %}{% endif %}{% endfor %}{% endif %}{% else %}{% translate "Aucun : tout votre périmètre" %}{% endif %}</dd></div>
+</dl>
+<p class="meta">{% translate "Au plus 500 membres par validation : s'il en reste, relancez la validation." %}</p>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--valider"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Valider tout le monde" %}</span></button>{% endblock %}

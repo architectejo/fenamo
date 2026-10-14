@@ -23,7 +23,12 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     {% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--valider" %}
     {% endif %}
     {% if peut_renvoyer and not membre.is_delete %}
-    {% url 'renvoyer-membre' membre.id as url_renvoi %}{% translate "Renvoyer" as t_renvoyer %}{% translate "Renvoyer le dossier" as t_titre_renvoi %}{% translate "Le dossier retourne au niveau inférieur avec votre motif ; l'auteur de la saisie est prévenu." as t_msg_renvoi %}{% translate "Motif du renvoi" as t_motif_renvoi %}{% translate "Renvoyer à l'auteur" as t_envoi_renvoi %}
+    {% url 'renvoyer-membre' membre.id as url_renvoi %}{% translate "Renvoyer" as t_renvoyer %}
+    {% if membre.etat == "valide_province" %}{% translate "à la coordination provinciale" as t_destination %}{% elif membre.etat == "valide_antenne" %}{% translate "à l'antenne" as t_destination %}{% else %}{% translate "à l'agent" as t_destination %}{% endif %}
+    {% blocktranslate with d=t_destination asvar t_titre_renvoi %}Renvoyer le dossier {{ d }}{% endblocktranslate %}
+    {% blocktranslate with d=t_destination asvar t_msg_renvoi %}Le dossier retourne {{ d }} avec votre motif ; l'auteur de la saisie est prévenu.{% endblocktranslate %}
+    {% blocktranslate with d=t_destination asvar t_envoi_renvoi %}Renvoyer {{ d }}{% endblocktranslate %}
+    {% translate "Motif du renvoi" as t_motif_renvoi %}
     {% include "components/_confirmer.html" with prefixe="renvoi" ident=membre.id url=url_renvoi libelle=t_renvoyer titre=t_titre_renvoi message=t_msg_renvoi libelle_envoi=t_envoi_renvoi icone="undo-2" variante="danger" avec_motif=True motif_libelle=t_motif_renvoi %}
     {% endif %}
 
