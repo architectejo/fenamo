@@ -374,7 +374,7 @@
     </li><!-- End Error 404 Page Nav -->
     {% endif %}
 
-    {% if user.is_superuser or user.editor %}
+    {% if user.is_superuser or fn_droits.est_editeur %}
     <li class="nav-item">
       <a class="nav-link collapsed" href="{% url 'site' %}">
         <i class="ri-archive-drawer-fill"></i>

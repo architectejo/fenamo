@@ -157,10 +157,12 @@ def _filtres(request):
 
 
 def _entier(valeur):
+    """Entier positif tenant dans une clé primaire (2**31 - 1) ; None sinon (pas d'OverflowError sur un identifiant géant)."""
     try:
-        return int(valeur)
+        nombre = int(valeur)
     except (TypeError, ValueError):
         return None
+    return nombre if 0 < nombre <= 2147483647 else None
 
 
 def _filtres_pour_service(filtres):

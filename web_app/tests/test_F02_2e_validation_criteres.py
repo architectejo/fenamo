@@ -82,8 +82,6 @@ def _fichiers_a_auditer():
     assert racine.exists()
 
 
-@CONSTAT("coptapp/views/__init__.py (myNotify) lit user.privilege5 et coptapp/templates/app/header.html lit user.editor, hors "
-         "droits_herites.py et compte/ : un compte AVEC nomination ou avec FENAMO_DROITS_HERITES=False garde ces effets")
 def test_F02_2e_aucun_privilege_lu_hors_droits_herites_et_compte():
     fautifs = []
     for chemin in _fichiers_a_auditer():
@@ -168,8 +166,6 @@ def test_F02_2e_herites_faux_aucun_privilege_ne_s_ajoute_a_une_nomination(monde,
         assert not est_editeur(at) and not peut_ecrire_referentiel(at)
 
 
-@CONSTAT("myNotify (coptapp/views/__init__.py) lit privilege5 : un compte sans nomination, FENAMO_DROITS_HERITES=False, voit les "
-         "notifications de tous les utilisateurs")
 def test_F02_2e_herites_faux_notifications_des_autres_non_visibles(client, monde, settings):
     settings.FENAMO_DROITS_HERITES = False
     c = _herite(monde, privilege5=True)
@@ -178,7 +174,6 @@ def test_F02_2e_herites_faux_notifications_des_autres_non_visibles(client, monde
     assert 'SECRET-DU-PRESIDENT' not in client.get(reverse('notifys')).content.decode()
 
 
-@CONSTAT("même défaut avec nomination : un AT qui porte privilege5 voit toutes les notifications via la page Notifications")
 def test_F02_2e_nomination_notifications_selon_le_role_pas_le_privilege(client, monde):
     at = Compte.objects.get(username='at')
     Compte.objects.filter(pk=at.pk).update(privilege5=True)
@@ -365,8 +360,6 @@ def test_F02_2e_un_compte_su_ne_se_nomme_pas(client, monde):
     assert r.status_code == 422 and Nomination.objects.filter(compte=monde['comptes']['su'], role='AT').count() == 0
 
 
-@CONSTAT("escalade par rétrogradation : « celui qui a nommé » (nomme_par) garde la main sur le compte même quand son propre rôle "
-         "est devenu inférieur ; un PR rétrogradé VA par le SU réinitialise le mot de passe du VN qu'il avait nommé et peut s'y connecter")
 def test_F02_2e_anti_escalade_ancien_nominateur_retrograde_ne_gere_plus_son_ancien_subordonne(client, monde):
     pr = monde['comptes']['pr']
     vn_cible = Compte.objects.create_user('vn-du-pr', password='x')
@@ -631,7 +624,6 @@ def test_F02_2e_liste_parametres_invalides_jamais_de_500(client, monde, params):
         assert client.get(reverse('utilisateurs'), params, **entetes).status_code == 200
 
 
-@CONSTAT("GET /utilisateurs/?antenne=99999999999999999999 (ou coordination=) : OverflowError, réponse 500 (entier hors limites non borné)")
 @pytest.mark.parametrize('cle', ['antenne', 'coordination'])
 def test_F02_2e_liste_identifiant_geant_pas_de_500(client, monde, cle):
     client.force_login(monde['comptes']['pr'])
@@ -684,7 +676,6 @@ def test_F02_2e_motif_de_desactivation_conserve_au_journal_et_compte_inactif_ne_
     assert Nomination.objects.get(compte=cible, active=True)  # nomination conservée
 
 
-@CONSTAT("nommer accepte une date de fin antérieure au début (nomination échue dès sa création, aucune erreur de formulaire)")
 def test_F02_2e_nommer_refuse_une_fin_avant_le_debut(client, monde):
     """Sonde : une date de fin antérieure au début, ou bien au-delà de la durée de la charte, est-elle acceptée ? (documenté)"""
     client.force_login(monde['comptes']['pr'])
@@ -694,10 +685,26 @@ def test_F02_2e_nommer_refuse_une_fin_avant_le_debut(client, monde):
     assert nomination is None or nomination.fin >= nomination.debut, (r.status_code, nomination and (nomination.debut, nomination.fin))
 
 
-@CONSTAT("nommer accepte une fin à 34 ans pour un rôle à mandat de 3 ans (art. 72 à 75 de la charte) : à trancher avec la FENAMO")
 def test_F02_2e_nommer_fin_au_dela_de_la_duree_de_la_charte(client, monde):
     client.force_login(monde['comptes']['pr'])
     client.post(reverse('utilisateurs-nommer'), {'membre': monde['m']['actif_a'].id, 'role': 'AT', 'antenne': monde['A'].id,
                                                 'debut': '01/01/2026', 'fin': '01/01/2060'})
     nomination = Nomination.objects.filter(membre=monde['m']['actif_a']).first()
     assert nomination is None or (nomination.fin - nomination.debut).days <= 3 * 366
+
+
+def test_F02_2e_service_fin_de_mandat_bornee_par_la_charte(monde):
+    from datetime import date
+    su = monde['comptes']['su']
+    for role, ans, kw in (('AT', 3, {'antenne': monde['A']}), ('VP', 4, {'coordination': monde['P']}) if 'P' in monde else ('AT', 3, {'antenne': monde['A']})):
+        cible = Compte.objects.create_user(f'borne-{role}-{ans}', password='x')
+        debut = date(2026, 1, 1)
+        with pytest.raises(noms.RegleMetier):
+            creer_nomination_verifiee(su, cible, role, kw, debut, date(2025, 12, 31))
+        with pytest.raises(noms.RegleMetier):
+            creer_nomination_verifiee(su, cible, role, kw, debut, date(2026 + ans, 1, 2))
+        assert creer_nomination_verifiee(su, cible, role, kw, debut, date(2026 + ans, 1, 1)).fin == date(2026 + ans, 1, 1)
+
+
+def creer_nomination_verifiee(auteur, cible, role, kw, debut, fin):
+    return creer_nomination(auteur, cible, role, debut=debut, fin=fin, **kw)

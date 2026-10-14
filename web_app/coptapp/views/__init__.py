@@ -109,10 +109,11 @@ def statistiqueMoto(an=False, mois=False, structure=None):
 #Notification recupération
 def myNotify(request):
     user = request.user
-    if user.privilege5 or user.is_superuser:
-        return Notification.objects.order_by('-id')
+    from compte.services.perimetre import notifications_du_perimetre, voit_toutes_notifications
+    if voit_toutes_notifications(user):
+        return notifications_du_perimetre(user).order_by('-id')
     else:
-        data = Notification.objects.filter(user=user).order_by('-id')
+        data = notifications_du_perimetre(user).order_by('-id')
         if user.membreId:
             membre = Membre.objects.filter(id=user.membreId).first()
             if membre:

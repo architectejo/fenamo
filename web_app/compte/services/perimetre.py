@@ -28,16 +28,20 @@ def role_et_perimetre(user):
     return _('Compte'), lieu
 
 
+def voit_toutes_notifications(user):
+    """SU, rôle PR, ou (compte sans nomination, droits hérités actifs) privilege5."""
+    from compte.services.droits import profil_de
+    profil = profil_de(user)
+    return profil.mode == 'su' or (profil.mode == 'nomination' and profil.role == 'PR') or (
+        profil.mode == 'herite' and bool(user.privilege5))
+
+
 def notifications_du_perimetre(user):
     """Notifications visibles par `user` : toutes pour un SU, un PR (ou privilege5 hérité), les siennes sinon.
 
     Même périmètre que l'écran hérité des notifications (coptapp.views.myNotify, au filtre par fiche près)."""
-    from compte.services.droits import profil_de
     from coptapp.models import Notification
-    profil = profil_de(user)
-    voit_tout = profil.mode == 'su' or (profil.mode == 'nomination' and profil.role == 'PR') or (
-        profil.mode == 'herite' and bool(user.privilege5))
-    if voit_tout:
+    if voit_toutes_notifications(user):
         return Notification.objects.all()
     return Notification.objects.filter(user=user)
 
