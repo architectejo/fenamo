@@ -1,11 +1,25 @@
 {% extends "base.html" %}
-{% load i18n %}{% comment %}Liste des engins (F-30) : gabarit provisoire, à remplacer par la version du design (frontend-htmx).{% endcomment %}
+{% load i18n design %}{% comment %}
+Liste des engins (F-30, maquette liste-membres adaptée). La vue enginListe fournit page_obj, filtres, filtres_actifs, choix.
+Un seul formulaire #filtres-engins (recherche + coordination + antenne) envoie toutes les valeurs ; #engins-zone est la zone remplacée.
+{% endcomment %}
 {% block titre %}{% translate "Engins" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<h1 class="page-titre">{% translate "Engins" %}</h1>
-<form method="get" action="{% url 'engin-liste' %}" role="search">
-  <input type="search" name="q" value="{{ filtres.q }}" maxlength="100" aria-label="{% translate 'Rechercher un engin' %}">
-  <button type="submit">{% translate "Rechercher" %}</button>
+<div hidden hx-history="false"></div>
+<div class="page-tete"><div class="page-tete-texte">
+  <h1 class="page-titre">{% translate "Engins" %}</h1>
+  <p class="page-contexte">{% icone "motorbike" %}{% translate "Motos et tricycles de votre périmètre" %}</p>
+</div></div>
+<form id="filtres-engins" method="get" action="{% url 'engin-liste' %}" role="search" hx-boost="false" hx-get="{% url 'engin-liste' %}"
+      hx-trigger="input changed delay:300ms from:#e-q, change, submit" hx-target="#engins-zone" hx-push-url="true" hx-indicator="#engins-zone" hx-sync="this:replace">
+  <div class="filtres">
+    <div class="recherche">{% icone "search" %}<label class="lecteur" for="e-q">{% translate "Rechercher un engin" %}</label><input id="e-q" type="search" name="q" value="{{ filtres.q }}" maxlength="100" placeholder="{% translate 'Numéro, plaque, châssis, propriétaire' %}" autocomplete="off"></div>
+    <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus">{% icone "sliders-horizontal" %}<span>{% translate "Filtres" %}</span></button>
+  </div>
+  <div class="filtres-plus" id="filtres-plus">
+    <div class="champ"><label class="champ-libelle" for="e-coord">{% translate "Coordination" %}</label><select id="e-coord" name="coordination"><option value="">{% translate "Toutes" %}</option>{% for c in choix.coordinations %}<option value="{{ c.id }}"{% if filtres.coordination == c.id %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+    <div class="champ"><label class="champ-libelle" for="e-antenne">{% translate "Antenne" %}</label><select id="e-antenne" name="antenne"><option value="">{% translate "Toutes" %}</option>{% for a in choix.antennes %}<option value="{{ a.id }}"{% if filtres.antenne == a.id %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select></div>
+  </div>
 </form>
-<div id="liste-zone">{% include "coptapp/engins/partials/_liste.html" %}</div>
+<div id="engins-zone" class="zone-rafraichie">{% include "coptapp/engins/partials/_liste.html" %}</div>
 {% endblock %}

@@ -1,8 +1,26 @@
-{% load i18n %}{% comment %}Fragment de la liste des engins : gabarit provisoire (frontend-htmx).{% endcomment %}
-{% for engin in page_obj %}
-<p><a href="{% url 'view-moto' engin.id %}">{{ engin.numero }}</a> {{ engin.marque|default:"" }} {{ engin.proprietaire.nom|default:"" }}</p>
-{% empty %}
-<p>{% if filtres_actifs %}{% translate "Aucun engin ne correspond." %}{% else %}{% translate "Aucun engin dans votre périmètre." %}{% endif %}</p>
-{% endfor %}
-{% if page_obj.has_previous %}<a href="?q={{ filtres.q|urlencode }}&page={{ page_obj.previous_page_number }}">{% translate "Précédent" %}</a>{% endif %}
-{% if page_obj.has_next %}<a href="?q={{ filtres.q|urlencode }}&page={{ page_obj.next_page_number }}">{% translate "Suivant" %}</a>{% endif %}
+{% load i18n design %}{% comment %}Zone des résultats de la liste des engins : tableau devenu cartes sous 576 px, 25 par page. Contexte : page_obj, filtres, filtres_actifs.{% endcomment %}
+<p class="resume-liste" role="status"><span>{% if filtres_actifs %}{% translate "Résultats filtrés" %}{% endif %}</span><span>{% if page_obj.paginator.count %}{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}{% else %}{% translate "Aucun engin ne correspond" %}{% endif %}</span></p>
+{% if page_obj.paginator.count %}
+<div class="liste-enveloppe">
+  <table class="liste">
+    <caption class="lecteur">{% translate "Liste des engins" %}</caption>
+    <thead><tr><th scope="col">{% translate "Numéro" %}</th><th scope="col">{% translate "Engin" %}</th><th scope="col">{% translate "Propriétaire" %}</th><th scope="col">{% translate "Antenne" %}</th><th scope="col">{% translate "Fin d'identification" %}</th><th scope="col">{% translate "État" %}</th></tr></thead>
+    <tbody>
+      {% for engin in page_obj %}
+      <tr>
+        <td data-role="titre"><a class="lien-ligne" href="{% url 'view-moto' engin.id %}">{% include "components/_plaque.html" with numero=engin.numero|default:"—" code=engin.province.code %}</a></td>
+        <td data-libelle="{% translate 'Engin' %}">{{ engin.marque|default:"—" }}{% if engin.couleur %} <span class="doux">· {{ engin.couleur }}</span>{% endif %}{% if engin.num_plaque %}<span class="meta ident">{{ engin.num_plaque }}</span>{% endif %}</td>
+        <td data-libelle="{% translate 'Propriétaire' %}">{% if engin.proprietaire %}<a href="{% url 'membre-view' engin.proprietaire.id %}">{{ engin.proprietaire.nom|default:"—" }}</a>{% else %}—{% endif %}</td>
+        <td data-libelle="{% translate 'Antenne' %}">{{ engin.antenne.nom|default:"—" }}</td>
+        <td data-libelle="{% translate 'Fin d’identification' %}" class="chiffres">{{ engin.abonnement|date:"d/m/Y"|default:"—" }}</td>
+        <td data-libelle="{% translate 'État' %}">{% with code=engin|etat_membre %}{% badge_etat code %}{% endwith %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/_pagination.html" with page_obj=page_obj cible="#engins-zone" %}
+{% else %}
+{% if filtres_actifs %}{% translate "Aucun engin ne correspond" as t_vide %}{% translate "Modifiez la recherche ou retirez un filtre." as t_msg %}{% else %}{% translate "Aucun engin" as t_vide %}{% translate "Aucun engin n'est enregistré dans votre périmètre." as t_msg %}{% endif %}
+{% include "components/_etat_vide.html" with icone="motorbike" titre=t_vide texte=t_msg %}
+{% endif %}

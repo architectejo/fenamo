@@ -12,6 +12,7 @@
 
     <p class="menu-groupe">{% translate "Dossiers" %}</p>
     <a class="menu-lien" href="{% url 'liste-membre' %}" data-prefixe="/membres/"{% if nom == 'liste-membre' or nom == 'membre-view' %} aria-current="page"{% endif %}>{% icone "users" %}<span>{% translate "Membres" %}</span></a>
+    {% if fn_droits.voit_membres %}<a class="menu-lien" href="{% url 'engin-liste' %}" data-prefixe="/engins/"{% if nom == 'engin-liste' %} aria-current="page"{% endif %}>{% icone "motorbike" %}<span>{% translate "Engins" %}</span></a>{% endif %}
     <a class="menu-lien" hx-boost="false" href="{% url 'str-list' %}" data-prefixe="/associations/">{% icone "building-2" %}<span>{% translate "Associations membres" %}</span></a>
 
     {% if fn_droits|peut_nommer %}
