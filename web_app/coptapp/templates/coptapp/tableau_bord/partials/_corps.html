@@ -15,7 +15,7 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
   <div>
     <span class="chiffre-valeur" data-compteur="{{ ind.en_attente_total }}">{{ ind.en_attente_total }}</span>
     <h2 id="a-traiter-titre">{% blocktranslate count n=ind.en_attente_total %}dossier de membre attend une validation{% plural %}dossiers de membres attendent une validation{% endblocktranslate %}</h2>
-    <div class="a-traiter-detail"><span>{% blocktranslate count n=ind.saisis %}{{ n }} saisi{% plural %}{{ n }} saisis{% endblocktranslate %}</span><span>{% blocktranslate count n=ind.valides_antenne %}{{ n }} validé antenne{% plural %}{{ n }} validés antenne{% endblocktranslate %}</span></div>
+    <div class="a-traiter-detail"><span>{% blocktranslate count n=ind.saisis %}{{ n }} saisi{% plural %}{{ n }} saisis{% endblocktranslate %}</span><span>{% blocktranslate count n=ind.valides_antenne %}{{ n }} validé antenne{% plural %}{{ n }} validés antenne{% endblocktranslate %}</span><span>{% blocktranslate count n=ind.valides_province %}{{ n }} validé province{% plural %}{{ n }} validés province{% endblocktranslate %}</span></div>
   </div>
   <a class="bouton" href="{% url 'liste-membre' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{% icone "users" %}<span>{% translate "Ouvrir la liste des membres" %}</span></a>
 </section>
@@ -25,13 +25,14 @@ Variante « agent » (renvois, dossiers de la semaine) : non intégrée, ces don
   {% translate "Membres actifs" as t_actifs %}{% include "components/_chiffre.html" with valeur=ind.actifs libelle=t_actifs %}
   {% translate "Engins" as t_engins %}{% include "components/_chiffre.html" with valeur=ind.engins libelle=t_engins %}
   {% translate "Associations membres" as t_assoc %}{% include "components/_chiffre.html" with valeur=ind.associations libelle=t_assoc %}
+  {% translate "Dossiers renvoyés" as t_renvoyes %}{% url 'liste-membre' as u_liste %}{% with lien_renvoyes=u_liste|add:"?etat=renvoye" %}{% include "components/_chiffre.html" with valeur=ind.renvoyes libelle=t_renvoyes lien_url=lien_renvoyes lien_libelle=_("Voir la liste") %}{% endwith %}
 </div>
 
 <div class="grille grille--principale u-mt-7">
   <section class="panneau" aria-labelledby="titre-repartition">
     <div class="panneau-tete"><h2 id="titre-repartition">{% translate "Membres par étape du circuit de validation" %}</h2></div>
     <div class="panneau-corps">
-      {% if ind.graphique.valeurs.0 or ind.graphique.valeurs.1 or ind.graphique.valeurs.2 %}
+      {% if ind.actifs or ind.saisis or ind.valides_antenne or ind.valides_province or ind.renvoyes %}
       <ul class="barres">
         {% for ligne in ind.graphique.lignes %}
         <li><span>{{ ligne.libelle }}</span><span class="chiffres">{{ ligne.valeur }}</span><span class="barre barre--{{ ligne.etat }}"><span class="part-{{ ligne.valeur|part_du_max:ind.graphique.valeurs|palier_5 }}"></span></span></li>
