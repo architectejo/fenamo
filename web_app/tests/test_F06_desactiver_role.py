@@ -46,8 +46,8 @@ def test_F06_desactiver_puis_reactiver_journal_et_connexion(equipe):
 
 
 def test_F06_idempotent_pas_de_double_journal(equipe):
-    N.desactiver(equipe['PR'], equipe['VN'])
-    N.desactiver(equipe['PR'], Compte.objects.get(pk=equipe['VN'].pk))
+    N.desactiver(equipe['PR'], equipe['VN'], 'Motif')
+    N.desactiver(equipe['PR'], Compte.objects.get(pk=equipe['VN'].pk), 'Motif')
     assert JournalAction.objects.filter(action=A.DESACTIVATION_COMPTE).count() == 1
     N.reactiver(equipe['PR'], Compte.objects.get(pk=equipe['VN'].pk))
     N.reactiver(equipe['PR'], Compte.objects.get(pk=equipe['VN'].pk))
@@ -58,7 +58,7 @@ def test_F06_idempotent_pas_de_double_journal(equipe):
 def test_F06_refus_role_egal_ou_superieur_et_soi_meme(equipe, auteur, cible):
     # le président et le validateur provincial d'une autre portée sont « hors périmètre » du VA (404), les autres cas sont des refus de droit
     with pytest.raises((DroitInsuffisant, HorsPerimetre)):
-        N.desactiver(equipe[auteur], equipe[cible])
+        N.desactiver(equipe[auteur], equipe[cible], 'Motif')
     assert not N.peut_gerer(equipe[auteur], equipe[cible])
     equipe[cible].refresh_from_db()
     assert equipe[cible].is_active
@@ -66,31 +66,31 @@ def test_F06_refus_role_egal_ou_superieur_et_soi_meme(equipe, auteur, cible):
 
 def test_F06_un_su_ne_se_desactive_pas_par_un_autre_role_ni_lui_meme(monde, equipe):
     with pytest.raises(HorsPerimetre):
-        N.desactiver(equipe['PR'], monde['compte'])
+        N.desactiver(equipe['PR'], monde['compte'], 'Motif')
     with pytest.raises(DroitInsuffisant):
-        N.desactiver(monde['compte'], monde['compte'])
+        N.desactiver(monde['compte'], monde['compte'], 'Motif')
     monde['compte'].refresh_from_db()
     assert monde['compte'].is_active
-    assert N.desactiver(monde['compte'], equipe['PR'])  # le SU désactive un président
+    assert N.desactiver(monde['compte'], equipe['PR'], 'Motif')  # le SU désactive un président
 
 
 def test_F06_hors_perimetre_404_et_compte_sans_nomination_reserve_au_su(monde, equipe):
     at_q = _nommer(monde, roles.AT, antenne=monde['antenne_q'])
     with pytest.raises(HorsPerimetre):
-        N.desactiver(equipe['VP'], at_q)
+        N.desactiver(equipe['VP'], at_q, 'Motif')
     with pytest.raises(HorsPerimetre):
-        N.desactiver(equipe['VA'], at_q)
+        N.desactiver(equipe['VA'], at_q, 'Motif')
     legacy = _compte('legacy-6', privilege2=True)
     with pytest.raises(HorsPerimetre):
-        N.desactiver(equipe['PR'], legacy)
-    assert N.desactiver(monde['compte'], legacy)
+        N.desactiver(equipe['PR'], legacy, 'Motif')
+    assert N.desactiver(monde['compte'], legacy, 'Motif')
 
 
 def test_F06_celui_qui_a_nomme_peut_desactiver(monde):
     va = _nommer(monde, roles.VA, antenne=monde['antenne_p'])
     cible = _compte('nomme-6')
     N.creer_nomination(va, cible, roles.AT, antenne=monde['antenne_p'])
-    assert N.desactiver(va, Compte.objects.get(pk=cible.pk)).is_active is False
+    assert N.desactiver(va, Compte.objects.get(pk=cible.pk), 'Motif').is_active is False
 
 
 # ---------------------------------------------------------------- terminer
