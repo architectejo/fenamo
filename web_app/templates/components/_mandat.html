@@ -1,0 +1,11 @@
+{% load i18n design %}{% comment %}
+Mandat d'une nomination (§ 4.2) : date de fin, temps restant en toutes lettres, jauge du temps écoulé.
+Paramètres (préparés par la vue ou un service, pas calculés dans le gabarit) :
+  variante  "cours" | "bientot" (fin dans JOURS_ALERTE = 60 jours) | "echu" (fin dépassée, accès conservé) | "sans" (pas de date de fin : VI, ED, SU)
+  fin       texte de la date de fin, JJ/MM/AAAA (ou « Sans date de fin ») ; prefixe facultatif, ex. « Fin le »
+  reste     phrase : « dans 37 jours », « dans 2 ans et 4 mois », « échu depuis 14 jours », « compte désactivé le 02/09/2026 »
+  part      temps écoulé arrondi au palier de 5 (filtre palier_5), 0 à 100 ; ignoré si variante="sans"
+  jauge     False pour la masquer (onglet « Mandats à traiter », où toutes les jauges seraient pleines)
+La phrase porte le sens ; la couleur (jaune, rouge) et la jauge l'appuient seulement.
+Usage : {% include "components/_mandat.html" with variante=m.variante fin=m.fin|date:"d/m/Y" reste=m.reste part=m.part jauge=True %}
+{% endcomment %}<div class="mandat{% if variante and variante != 'cours' %} mandat--{{ variante }}{% endif %}"><span class="mandat-fin">{% if variante == "echu" %}{% icone "circle-alert" %}{% elif variante == "bientot" %}{% icone "clock" %}{% else %}{% icone "calendar" %}{% endif %}<span>{% if prefixe %}{{ prefixe }} {% endif %}{{ fin }}</span></span>{% if jauge is not False %}<span class="mandat-jauge" aria-hidden="true"><span class="part-{% if variante == 'sans' %}0{% else %}{{ part|default:0 }}{% endif %}"></span></span>{% endif %}<span class="mandat-reste">{{ reste }}</span></div>

@@ -15,7 +15,7 @@ Ce document est la référence de `frontend-htmx` : il applique ce qui est écri
 | Captures des maquettes, 360 px et 1280 px, clair et sombre | `docs/design/captures/` |
 | Captures des écrans intégrés (application réelle), 360 px et 1280 px | `docs/design/captures-integration/` |
 
-Pour ouvrir les maquettes avec les polices : depuis `web_app/`, `python -m http.server 8078`, puis `http://localhost:8078/docs/design/maquettes/`. Paramètres utiles : `?theme=sombre`, `?modale=modale-renvoi`, `?menu=ouvert`, `?bulle=1`, `?etat=invalide` (vérification).
+Pour ouvrir les maquettes avec les polices : depuis `web_app/`, `python -m http.server 8078`, puis `http://localhost:8078/docs/design/maquettes/`. Paramètres utiles : `?theme=sombre`, `?modale=modale-renvoi`, `?menu=ouvert`, `?bulle=1`, `?etat=invalide` (vérification) ; écran Utilisateurs : `?onglet=mandats`, `?filtres=ouverts`, `?modale=modale-nommer&etape=2`.
 
 ---
 
@@ -165,6 +165,13 @@ Chaque gabarit de `templates/components/` documente ses paramètres en tête de 
 | `_erreur.html` | `.alerte--danger/alerte/info/succes`, `.alerte-titre` | Bouton « Réessayer » intégré (connexion perdue). |
 | `_squelette.html` | `.squelette`, `--ligne`, `--chiffre`, `--titre`, `--champ` | `lignes`, `chiffres`, `modale`. |
 | `_chiffre.html` | `.affichage`, `.chiffre-valeur`, `.chiffre-libelle`, `.chiffre-ecart` | Compteur animé (`data-compteur`). 4 chiffres au plus par rangée. |
+| `_badge_role.html` | `.role`, `.role-code`, `.role-libelle`, `.role--externe` | Code de deux lettres en négatif (esprit du numéro de gilet) + libellé. **Neutre** : pas de couleur par rôle. VI et ED (comptes sans fiche membre) : bordure et code en tirets. En tuile de choix : `.choix--roles` (une colonne sur téléphone, deux dès 576 px). Tuile indisponible : `<input disabled>` + raison en `.choix-sous` (bordure tiretée, cadenas). |
+| `_badge_compte.html` | `.etat--actif`, `.etat--a_renouveler`, `.etat--supprime` | État d'un compte : « Actif » (circle-check), « Mot de passe temporaire » (key-round), « Désactivé » (ban). Toujours une icône, jamais les pastilles (réservées au circuit). `change=True` : tampon. |
+| `_mandat.html` | `.mandat`, `--bientot`, `--echu`, `--sans`, `.mandat-jauge` | Date de fin + phrase (« dans 37 jours », « échu depuis 14 jours ») + jauge du temps écoulé (`.part-*`). « Bientôt » = 60 jours (`JOURS_ALERTE`). `jauge=False` dans les listes d'échéances. |
+| `_mot_de_passe_temporaire.html` | `.mdp-temp`, `.mdp-temp-valeur`, `.mdp-temp-identifiant` | Lecture unique : identifiant, mot de passe en 3 groupes de 4 (chiffres en `<b>`, bleus), bouton Copier (`data-copier`), alerte « Affiché une seule fois ». Pied : un seul bouton « J'ai transmis le mot de passe ». |
+| `_choix_membre.html` | `.choix-membre`, `.choix-membre-raison`, `.membre-retenu` | Résultats de recherche en radios de 64 px ; un membre non nommable reste visible, désactivé, avec sa raison. `.membre-retenu` : rappel du membre choisi à l'étape 2, avec « Changer ». |
+
+Motifs ajoutés pour l'écran Utilisateurs : `.nomination` (rôle, périmètre et « nommé par » dans une seule cellule), `.actions-ligne` + `.action-ligne` (icônes avec `title` sur grand écran ; trois boutons libellés de 56 px en bas de la carte sous 576 px ; `.action-ligne--danger`, `.actions-ligne--seule`), `.filtres-plus` (filtres secondaires repliés derrière le bouton `.filtres-deplier` sous 768 px, en ligne au-dessus), `.section-titre` (intertitre + effectif).
 
 Autres motifs CSS prêts, montrés dans les maquettes : `.page-tete` (titre + contexte + actions), `.fil` (fil d'Ariane), `.panneau`, `.grille--principale` (2/3 + 1/3), `.grille--2`, `.definitions` (liste clé/valeur), `.a-traiter`, `.barres` (répartition sans Chart.js), `.onglets`, `.puce` (filtres), `.defile-horizontal`, `.historique`, `.journal` (+ `.journal-diff` avant/après), `.flottant` + `.notif` (notifications), `.recherche` + `.recherche-resultats`, `.porte` (connexion), `.verif` (vérification), `.chargement` (barre de requête), `.bandeau-reseau`, `.zone-rafraichie`.
 
@@ -189,6 +196,9 @@ Durées : `--d-court` 120 ms (survol, appui), `--d-moyen` 200 ms (bulles, tiroir
 | Menu latéral (téléphone) | Tiroir depuis la gauche + voile ; focus dans le menu ; Échap ou voile ferment | `data-menu-ouvrir`, `data-menu-fermer` | Instantané |
 | Notifications | Le panneau se déroule ; la pastille rebondit quand le nombre change | `.flottant`, `majCompteur()` | Instantané |
 | Appui | Bouton enfoncé de 1 px | `:active` | Aucun |
+| Copier (mot de passe, identifiant) | Le libellé passe à « Copié » et l'icône à une coche pendant 2 s ; le cadre `.mdp-temp` devient vert | `data-copier="#cible"` (valeur : `data-valeur` de la cible, sinon son texte sans espaces) ; `data-copier-fait`, `data-copier-message` (bulle) facultatifs ; `FenamoDesign.copier(bouton)`. Repli `execCommand` hors HTTPS ; échec : bulle « Copie impossible » | Pas de transition |
+| Déplier un bloc (filtres sur téléphone) | Le bloc se déroule (200 ms), focus sur son premier champ | `data-deplier="#bloc"` + `aria-expanded` + `aria-controls` ; classe `.est-deplie` ; `FenamoDesign.deplier(bouton)` | Instantané |
+| Désactivation, réactivation d'un compte | Le badge d'état change avec le « tampon » ; dans l'onglet Mandats, la ligne glisse et se replie | Fragment de ligne renvoyé avec `change=True` ; `retirerDossier()` dans l'onglet Mandats | Immédiat |
 
 ---
 
@@ -252,6 +262,7 @@ Durées : `--d-court` 120 ms (survol, appui), `--d-moyen` 200 ms (bulles, tiroir
 | Liste des membres (F-28) | `liste-membres.html` | Recherche pendant la frappe (`hx-trigger="input changed delay:300ms"`), bouton Filtres (modale), puces d'état avec effectifs, résumé « 1 à 25 sur 12 018 », `tableau_base.html` (cartes sous 576 px), `_pagination.html`, export. |
 | Enregistrer un membre (F-20) | `modale-enregistrer-membre.html` | `modale_base.html` avec `large=True` et `.etapes` : 1 Identité (nom, postnom, prénom, naissance, sexe en tuiles, téléphone avec préfixe +243, qualité en tuiles), 2 Rattachement (antenne, parking facultatif, association membre ; alerte de doublon possible), 3 Pièces (photo avec aperçu, cases des pièces). Bouton « Continuer » puis « Enregistrer le membre ». Même gabarit pour la nomination (F-02) : membre actif, rôle en tuiles, périmètre, dates de mandat. |
 | Journal d'activités (F-70, F-71) | `journal.html` | Filtres en puces + recherche ; jours en intertitres collants ; entrées `.journal` (heure, auteur, rôle, type d'action, objet, lieu) et `.journal-diff` pour l'avant/après ; pagination « Plus récent / Plus ancien ». |
+| Utilisateurs (F-02, F-03, F-05, F-06, § 4.2) | `utilisateurs.html` | Voir § 8.4. |
 | Vérification d'une carte (aperçu, futur site) | `verification.html` | `.verif` : verdict plein (valide / non valide) en titre, photo, nom, identifiant, gilet, validité, coordination, engin en plaque ; **aucune donnée personnelle** au-delà (§ API) ; contraste AAA. |
 
 ### 8.3 État de l'intégration (application web)
@@ -270,9 +281,34 @@ Durées : `--d-court` 120 ms (survol, appui), `--d-moyen` 200 ms (bulles, tiroir
 
 Points à garder en tête : l'aide des pièces jointes (« PDF, JPEG ou PNG, 3 Mo ») est écrite en dur dans les pages d'ajout héritées, la limite `UPLOAD_PIECE_MAX_MO` n'étant pas exposée aux gabarits.
 
+### 8.4 Écran Utilisateurs (sous-lot 2e)
+
+Maquette : `maquettes/utilisateurs.html` ; captures `captures/utilisateurs-*.png`, `captures/modale-{nommer-etape-1,nommer-etape-2,compte-externe,mot-de-passe,reinitialiser,desactiver,reactiver,changer-role,renouveler}-*.png`, `captures/interaction-*.png` (désactivation avec motif manquant puis réussie, mot de passe copié). Vue type : président, périmètre national.
+
+- **En-tête** : titre, périmètre et effectif ; « Nommer un membre » (principal, `badge-check`) et « Ajouter un compte externe » (secondaire, `user-plus`), ce dernier **seulement pour PR et SU** ; la tuile « Éditeur » n'est active que pour le SU, sinon désactivée avec « Créé par le super-utilisateur seulement ».
+- **Onglets** `.onglets` : « Comptes » (effectif) et « Mandats à traiter » (échus + fin dans 60 jours). Ce nombre figure aussi sur le lien « Utilisateurs » du menu. Flèches gauche / droite au clavier. Dans l'application : `?onglet=mandats` servi par HTMX (ou Alpine `onglets`).
+- **Comptes** : recherche (nom, identifiant, MBR) pendant la frappe ; filtres rôle, lieu, mandat en `.filtres-plus` (le bouton « Filtres » affiche le nombre de filtres actifs) ; puces d'état (Tous, Actifs, Mot de passe temporaire, Désactivés) ; `tableau_base.html` à **quatre colonnes** : Compte (avatar, nom, identifiant de connexion et MBR, ou « compte externe » + organisme ; `_badge_compte.html` dessous), Nomination (`.nomination`), Mandat (`_mandat.html`), actions (`.actions-ligne` : Rôle, Mot de passe, Désactiver). Sous 576 px : cartes. Les actions n'apparaissent que si l'utilisateur en a le droit (celui qui a nommé, ou un rôle supérieur dans le même périmètre, § 4.2) ; sa propre ligne affiche « Votre compte » sans action ; un compte désactivé n'a que « Réactiver ».
+- **Mandats à traiter** : `.affichage` (échus, fin dans 60 jours, en cours, sans date de fin), alerte info « Un mandat échu ne coupe pas l'accès… » (décision FENAMO, `Nomination.est_echue`), puis deux listes `.file` de `.dossier` : « Mandats échus » (le plus ancien d'abord) et « Fin dans les 60 jours » (le plus proche d'abord), actions « Renouveler » et « Désactiver ».
+- **Modales** (toutes sur `modale_base.html`, POST avec CSRF) :
+
+| Id maquette | Titre | Contenu | Bouton → retour |
+| --- | --- | --- | --- |
+| `modale-nommer` (`large=True`, `.etapes` à 2 barres) | Nommer un membre | Étape 1 : recherche + `_choix_membre.html`. Étape 2 : `.membre-retenu` ; rôle en `.choix--roles` (seulement `roles.roles_nommables_par(mon rôle)`) ; périmètre selon le rôle (VN : aucun ; VP : coordination ; VA : antenne ; AT : antenne + association membre facultative) ; début et fin du mandat (fin préremplie avec `roles.duree_par_defaut`, aide citant la charte, art. 72 à 75) ; alerte info sur le mot de passe | « Continuer » puis « Nommer le membre » → modale du mot de passe titrée « Membre nommé » |
+| `modale-externe` | Ajouter un compte externe | Type (Visiteur / Éditeur), nom et postnom, prénom, organisme ou fonction, téléphone +243, e-mail facultatif, périmètre du visiteur en tuiles (tout le pays, une coordination, une antenne) + liste, identifiant proposé, fin d'accès facultative | « Créer le compte » → modale du mot de passe titrée « Compte créé » |
+| `modale-mdp` | Membre nommé / Compte créé / Mot de passe réinitialisé | `_mot_de_passe_temporaire.html` | « J'ai transmis le mot de passe » (ferme) |
+| `modale-reinitialiser` | Réinitialiser le mot de passe | Conséquence (l'ancien cesse tout de suite) + rappel du journal | « Réinitialiser le mot de passe » → modale du mot de passe |
+| `modale-desactiver` | Désactiver le compte | Alerte (ne pourra plus se connecter, données conservées, réactivable), motif obligatoire (500 caractères, compteur, suggestions en `.puce`) | « Désactiver le compte » (`danger-plein`) → bulle « Compte désactivé » |
+| `modale-reactiver` | Réactiver le compte | Rôle et périmètre retrouvés, case « Créer un mot de passe temporaire » | « Réactiver le compte » → bulle « Compte réactivé » (puis modale du mot de passe si la case est cochée) |
+| `modale-changer` | Changer de rôle ou de périmètre | Rôle et périmètre actuels (`.definitions`), nouveau rôle en tuiles, périmètre, dates du nouveau mandat, motif facultatif, alerte « la nomination actuelle prend fin aujourd'hui et reste dans l'historique » | « Enregistrer le changement » → bulle « Changement enregistré » |
+| `modale-renouveler` | Renouveler le mandat | Fin passée, nouvelles dates (durée de la charte) ; rôle et périmètre inchangés | « Renouveler le mandat » → bulle « Mandat renouvelé » |
+
+- **Mot de passe temporaire** : généré par le service (12 caractères, alphabet sans `0 O 1 l I`) ; affiché une seule fois dans la réponse au POST (`Cache-Control: no-store`, `hx-history="false"`), jamais relu ensuite. Pas de bulle en plus : le titre de la modale reprend le verbe.
+- **Points à trancher avec l'utilisateur** (le cahier des charges ne les fixe pas ; la maquette propose) : motif obligatoire à la désactivation ; case « Créer un mot de passe temporaire » à la réactivation ; « Renouveler » comme action distincte du changement de rôle.
+
 ## 9. Autocritique après captures
 
 - Corrigé à la vérification visuelle : fond du menu interrompu sur les pages longues ; marque coupée en deux lignes dans la barre haute à 360 px ; icône de contexte isolée sur sa ligne ; pagination repliée à 360 px ; formulaire de modale étiré sur toute la hauteur ; focus initial de la modale sur « Fermer » au lieu du premier champ ; en-tête de tableau collant qui masquait la première ligne ; QR code qui chevauchait le texte de la carte ; cellules à deux valeurs mal alignées en mode carte.
 - Ornement retiré : le liseré tricolore de la page de connexion.
 - Ce qui peut encore faire « modèle » : la succession de panneaux blancs de même rayon sur la fiche membre. Acceptable parce qu'ils portent des titres d'action différents et pas d'ombre ; à surveiller quand la fiche engin et la fiche association membre s'ajouteront.
+- Écran Utilisateurs : la première version à 7 colonnes (rôle, périmètre, « nommé par » et état séparés) débordait à 1 280 px (menu de 264 px) et coupait les actions ; ramenée à 4 colonnes (état sous le nom, nomination regroupée). Corrigé aussi : le texte `.lecteur` d'un en-tête de tableau sortait du défilement (`.liste-enveloppe` est maintenant `position: relative`). Ornements retirés : les jauges de l'onglet « Mandats à traiter » (toutes pleines, elles n'apprenaient rien) et la bulle « Membre nommé » qui masquait le mot de passe à 360 px.
 - Points ouverts : format exact du numéro d'engin (F-31) ; délai à partir duquel une attente passe en rouge (5 jours dans les maquettes). La photo sur la page de vérification est conforme au cahier des charges du site (données affichées : photo, nom, identifiant, qualité, association membre, coordination, antenne, parking, état, validité).

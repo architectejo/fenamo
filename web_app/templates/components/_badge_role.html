@@ -1,0 +1,9 @@
+{% comment %}
+Badge de rôle (F-02 à F-06) : code de deux lettres en négatif + libellé. Neutre : la couleur reste réservée aux états.
+Paramètres :
+  code     "SU" | "PR" | "VN" | "VP" | "VA" | "AT" | "VI" | "ED" (compte.roles)
+  libelle  libellé du rôle (compte.roles.LIBELLES[code] ou nomination.get_role_display)
+Variante automatique : VI et ED (comptes externes, sans fiche membre) ont la bordure et le code en tirets (.role--externe).
+Le code est aria-hidden : le libellé seul est lu.
+Usage : {% include "components/_badge_role.html" with code=nomination.role libelle=nomination.get_role_display %}
+{% endcomment %}<span class="role{% if code == 'VI' or code == 'ED' %} role--externe{% endif %}"><span class="role-code" aria-hidden="true">{{ code }}</span><span class="role-libelle">{{ libelle }}</span></span>

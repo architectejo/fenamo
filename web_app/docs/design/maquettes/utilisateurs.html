@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Utilisateurs · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>File de validation</span><span class="nombre">24</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg><span>Associations membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-wallet"></use></svg><span>Paiements</span></a><p class="menu-groupe">Organisation</p><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map"></use></svg><span>Coordinations et antennes</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-square-parking"></use></svg><span>Parkings</span></a><a class="menu-lien" href="utilisateurs.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span>Utilisateurs</span><span class="nombre" data-demo-compte-mandats>8</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-file-text"></use></svg><span>Rapport hebdomadaire</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Président</span><strong>National</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="#"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg><label class="lecteur" for="recherche-globale">Rechercher</label><input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off"></div>
+      <div class="rangee rangee--serree pousse">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <button type="button" class="bouton-icone" aria-label="Notifications, 3 non lues"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille">3</span></button>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar" aria-hidden="true">JI</span><span class="profil-texte"><strong>Jean-Marie Ilunga</strong><span class="meta bloc">Président</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">Utilisateurs</h1>
+    <p class="page-contexte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>National · <span class="chiffres texte-plein">214</span> comptes dans votre périmètre</p>
+  </div>
+  <div class="page-actions">
+    <button class="bouton" type="button" data-ouvre-modale="#modale-externe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-plus"></use></svg>Ajouter un compte externe</button>
+    <button class="bouton bouton--principal" type="button" data-ouvre-modale="#modale-nommer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-badge-check"></use></svg>Nommer un membre</button>
+  </div>
+</div>
+
+<div class="onglets" role="tablist" aria-label="Vues" data-demo-onglets>
+  <button class="onglet" role="tab" id="onglet-comptes" aria-controls="panneau-comptes" aria-selected="true">Comptes <span class="nombre">214</span></button>
+  <button class="onglet" role="tab" id="onglet-mandats" aria-controls="panneau-mandats" aria-selected="false" tabindex="-1">Mandats à traiter <span class="nombre" data-demo-compte-mandats>8</span></button>
+</div>
+
+<section id="panneau-comptes" role="tabpanel" aria-labelledby="onglet-comptes">
+  <div class="filtres">
+    <div class="recherche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg><label class="lecteur" for="q">Rechercher un utilisateur</label><input id="q" type="search" placeholder="Nom, identifiant ou MBR"></div>
+    <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-sliders-horizontal"></use></svg>Filtres<span class="ident">1</span></button>
+  </div>
+  <div class="filtres-plus" id="filtres-plus">
+    <div class="champ"><label class="champ-libelle" for="f-role">Rôle</label><select class="champ-saisie" id="f-role"><option>Tous les rôles</option><option>Validateur national</option><option>Validateur provincial</option><option>Validateur d'antenne</option><option>Agent de terrain</option><option>Visiteur</option></select></div>
+    <div class="champ"><label class="champ-libelle" for="f-lieu">Lieu</label><select class="champ-saisie" id="f-lieu"><option>Tous les lieux</option><option>National</option><option>Coordination Kinshasa-Est</option><option>Coordination Haut-Katanga</option><option>Antenne de Lemba</option></select></div>
+    <div class="champ"><label class="champ-libelle" for="f-mandat">Mandat</label><select class="champ-saisie" id="f-mandat"><option>Tous</option><option>En cours</option><option>Fin dans les 60 jours</option><option>Échu</option><option>Sans date de fin</option></select></div>
+  </div>
+  <div class="defile-horizontal u-mb-4" data-demo-puces>
+    <button class="puce" aria-pressed="true">Tous <span class="nombre">214</span></button>
+    <button class="puce" aria-pressed="false">Actifs <span class="nombre">196</span></button>
+    <button class="puce" aria-pressed="false">Mot de passe temporaire <span class="nombre">9</span></button>
+    <button class="puce" aria-pressed="false">Désactivés <span class="nombre">9</span></button>
+  </div>
+  <p class="resume-liste"><span>Rôle : tous · Lieu : tous · Mandat : tous</span><span>1 à 8 sur 214</span></p>
+  <div class="zone-rafraichie">
+    <div class="liste-enveloppe">
+      <table class="liste" data-demo-file>
+        <caption class="lecteur">Comptes utilisateurs de votre périmètre</caption>
+        <thead><tr><th scope="col">Compte</th><th scope="col">Nomination</th><th scope="col">Mandat</th><th scope="col"><span class="lecteur">Actions</span></th></tr></thead>
+        <tbody>
+<tr data-demo-ligne="Jean-Marie Ilunga Kabongo">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">JI</span><div><a class="lien-ligne" href="fiche-membre.html">Jean-Marie Ilunga Kabongo</a> <span class="meta u-inline">(vous)</span><span class="meta"><span class="ident">jm.ilunga</span> · <span class="ident">MBR0000102</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Actif</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">PR</span><span class="role-libelle">Président</span></span><span>National</span><span class="meta">nommé par Super-utilisateur</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar"></use></svg><span>01/03/2031</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-10"></span></span><span class="mandat-reste">dans 4 ans et 4 mois</span></div></td>
+  <td data-role="actions" data-demo-actions><span class="meta">Votre compte</span></td>
+</tr><tr data-demo-ligne="Sylvie Nsimba Lukeni">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">SN</span><div><a class="lien-ligne" href="fiche-membre.html">Sylvie Nsimba Lukeni</a><span class="meta"><span class="ident">s.nsimba</span> · <span class="ident">MBR0000233</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Actif</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">VN</span><span class="role-libelle">Validateur national</span></span><span>National</span><span class="meta">nommé par vous</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar"></use></svg><span>15/07/2030</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-25"></span></span><span class="mandat-reste">dans 3 ans et 9 mois</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-changer" data-demo-nom="Sylvie Nsimba Lukeni" title="Changer le rôle ou le périmètre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-cog"></use></svg><span class="action-ligne-texte">Rôle<span class="lecteur"> ou périmètre de Sylvie Nsimba Lukeni</span></span></button><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reinitialiser" data-demo-nom="Sylvie Nsimba Lukeni" title="Réinitialiser le mot de passe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span class="action-ligne-texte">Mot de passe<span class="lecteur"> de Sylvie Nsimba Lukeni : réinitialiser</span></span></button><button type="button" class="bouton action-ligne action-ligne--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Sylvie Nsimba Lukeni" title="Désactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg><span class="action-ligne-texte">Désactiver<span class="lecteur"> le compte de Sylvie Nsimba Lukeni</span></span></button></div></td>
+</tr><tr data-demo-ligne="Christian Kabeya Mutombo">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">CK</span><div><a class="lien-ligne" href="fiche-membre.html">Christian Kabeya Mutombo</a><span class="meta"><span class="ident">c.kabeya</span> · <span class="ident">MBR0000418</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Actif</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">VP</span><span class="role-libelle">Validateur provincial</span></span><span>Coordination Kinshasa-Est</span><span class="meta">nommé par Sylvie Nsimba</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar"></use></svg><span>03/02/2029</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-40"></span></span><span class="mandat-reste">dans 2 ans et 4 mois</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-changer" data-demo-nom="Christian Kabeya Mutombo" title="Changer le rôle ou le périmètre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-cog"></use></svg><span class="action-ligne-texte">Rôle<span class="lecteur"> ou périmètre de Christian Kabeya Mutombo</span></span></button><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reinitialiser" data-demo-nom="Christian Kabeya Mutombo" title="Réinitialiser le mot de passe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span class="action-ligne-texte">Mot de passe<span class="lecteur"> de Christian Kabeya Mutombo : réinitialiser</span></span></button><button type="button" class="bouton action-ligne action-ligne--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Christian Kabeya Mutombo" title="Désactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg><span class="action-ligne-texte">Désactiver<span class="lecteur"> le compte de Christian Kabeya Mutombo</span></span></button></div></td>
+</tr><tr data-demo-ligne="Rachel Mujinga Kapinga">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">RM</span><div><a class="lien-ligne" href="fiche-membre.html">Rachel Mujinga Kapinga</a><span class="meta"><span class="ident">r.mujinga</span> · <span class="ident">MBR0001196</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Actif</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span><span>Antenne de Ngaba · Kinshasa-Est</span><span class="meta">nommé par Christian Kabeya</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>27/10/2026</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-100"></span></span><span class="mandat-reste">dans 13 jours</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-changer" data-demo-nom="Rachel Mujinga Kapinga" title="Changer le rôle ou le périmètre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-cog"></use></svg><span class="action-ligne-texte">Rôle<span class="lecteur"> ou périmètre de Rachel Mujinga Kapinga</span></span></button><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reinitialiser" data-demo-nom="Rachel Mujinga Kapinga" title="Réinitialiser le mot de passe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span class="action-ligne-texte">Mot de passe<span class="lecteur"> de Rachel Mujinga Kapinga : réinitialiser</span></span></button><button type="button" class="bouton action-ligne action-ligne--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Rachel Mujinga Kapinga" title="Désactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg><span class="action-ligne-texte">Désactiver<span class="lecteur"> le compte de Rachel Mujinga Kapinga</span></span></button></div></td>
+</tr><tr data-demo-ligne="Grâce Mbombo Tshala">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">GM</span><div><a class="lien-ligne" href="fiche-membre.html">Grâce Mbombo Tshala</a><span class="meta"><span class="ident">g.mbombo</span> · <span class="ident">MBR0002046</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Actif</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span><span>Antenne de Lemba · ALEMO asbl</span><span class="meta">nommé par Bernadette Kalala</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>20/11/2026</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-95"></span></span><span class="mandat-reste">dans 37 jours</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-changer" data-demo-nom="Grâce Mbombo Tshala" title="Changer le rôle ou le périmètre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-cog"></use></svg><span class="action-ligne-texte">Rôle<span class="lecteur"> ou périmètre de Grâce Mbombo Tshala</span></span></button><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reinitialiser" data-demo-nom="Grâce Mbombo Tshala" title="Réinitialiser le mot de passe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span class="action-ligne-texte">Mot de passe<span class="lecteur"> de Grâce Mbombo Tshala : réinitialiser</span></span></button><button type="button" class="bouton action-ligne action-ligne--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Grâce Mbombo Tshala" title="Désactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg><span class="action-ligne-texte">Désactiver<span class="lecteur"> le compte de Grâce Mbombo Tshala</span></span></button></div></td>
+</tr><tr data-demo-ligne="Patrick Lunda Mwamba">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">PL</span><div><a class="lien-ligne" href="fiche-membre.html">Patrick Lunda Mwamba</a><span class="meta"><span class="ident">p.lunda</span> · <span class="ident">MBR0001877</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Actif</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span><span>Antenne de Kampemba · Haut-Katanga</span><span class="meta">nommé par Félix Kasongo</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat mandat--echu"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg><span>30/09/2026</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-100"></span></span><span class="mandat-reste">échu depuis 14 jours</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-changer" data-demo-nom="Patrick Lunda Mwamba" title="Changer le rôle ou le périmètre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-cog"></use></svg><span class="action-ligne-texte">Rôle<span class="lecteur"> ou périmètre de Patrick Lunda Mwamba</span></span></button><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reinitialiser" data-demo-nom="Patrick Lunda Mwamba" title="Réinitialiser le mot de passe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span class="action-ligne-texte">Mot de passe<span class="lecteur"> de Patrick Lunda Mwamba : réinitialiser</span></span></button><button type="button" class="bouton action-ligne action-ligne--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Patrick Lunda Mwamba" title="Désactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg><span class="action-ligne-texte">Désactiver<span class="lecteur"> le compte de Patrick Lunda Mwamba</span></span></button></div></td>
+</tr><tr data-demo-ligne="Dieudonné Kalala Ngoy">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">DK</span><div><strong>Dieudonné Kalala Ngoy</strong><span class="meta"><span class="ident">vi.kalala</span> · compte externe</span><span class="meta">Division provinciale des Transports</span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg>Mot de passe temporaire</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role role--externe"><span class="role-code" aria-hidden="true">VI</span><span class="role-libelle">Visiteur</span></span><span>Coordination Haut-Katanga</span><span class="meta">nommé par vous</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat mandat--sans"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar"></use></svg><span>Sans date de fin</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-0"></span></span><span class="mandat-reste">accès en lecture seule</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-changer" data-demo-nom="Dieudonné Kalala Ngoy" title="Changer le rôle ou le périmètre"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-cog"></use></svg><span class="action-ligne-texte">Rôle<span class="lecteur"> ou périmètre de Dieudonné Kalala Ngoy</span></span></button><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reinitialiser" data-demo-nom="Dieudonné Kalala Ngoy" title="Réinitialiser le mot de passe"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><span class="action-ligne-texte">Mot de passe<span class="lecteur"> de Dieudonné Kalala Ngoy : réinitialiser</span></span></button><button type="button" class="bouton action-ligne action-ligne--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Dieudonné Kalala Ngoy" title="Désactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg><span class="action-ligne-texte">Désactiver<span class="lecteur"> le compte de Dieudonné Kalala Ngoy</span></span></button></div></td>
+</tr><tr data-demo-ligne="Junior Mbuyi Kanku">
+  <td data-role="titre"><div class="cellule-personne"><span class="avatar" aria-hidden="true">JM</span><div><a class="lien-ligne" href="fiche-membre.html">Junior Mbuyi Kanku</a><span class="meta"><span class="ident">j.mbuyi</span> · <span class="ident">MBR0002390</span></span><span class="bloc u-mt-2" data-demo-etat><span class="etat etat--supprime"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-ban"></use></svg>Désactivé</span></span></div></div></td>
+  <td data-libelle="Nomination"><div class="nomination"><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span><span>Antenne de Masina · Kinshasa-Est</span><span class="meta">nommé par Christian Kabeya</span></div></td>
+  <td data-libelle="Mandat"><div class="mandat mandat--sans"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar"></use></svg><span>15/06/2027</span></span><span class="mandat-jauge" aria-hidden="true"><span class="part-0"></span></span><span class="mandat-reste">compte désactivé le 02/09/2026</span></div></td>
+  <td data-role="actions" data-demo-actions><div class="actions-ligne actions-ligne--seule"><button type="button" class="bouton action-ligne" data-ouvre-modale="#modale-reactiver" data-demo-nom="Junior Mbuyi Kanku" title="Réactiver le compte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span class="action-ligne-texte">Réactiver<span class="lecteur"> le compte de Junior Mbuyi Kanku</span></span></button></div></td>
+</tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="file" data-demo-squelette hidden aria-hidden="true"><li class="squelette squelette--ligne"></li><li class="squelette squelette--ligne"></li><li class="squelette squelette--ligne"></li></ul>
+  </div>
+  <nav class="pages" aria-label="Pagination">
+    <a class="bouton" href="#" aria-disabled="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-left"></use></svg><span class="pages-libelle">Précédent</span></a>
+    <span class="pages-position">Page 1 sur 27</span>
+    <ol class="pages-numeros"><li><span aria-current="page">1</span></li><li><a href="#">2</a></li><li><a href="#">3</a></li><li><span>…</span></li><li><a href="#">27</a></li></ol>
+    <a class="bouton" href="#"><span class="pages-libelle">Suivant</span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-right"></use></svg></a>
+  </nav>
+</section>
+
+<section id="panneau-mandats" role="tabpanel" aria-labelledby="onglet-mandats" hidden>
+  <div class="affichage">
+    <div><span class="chiffre-valeur" data-compteur="3">3</span><span class="chiffre-libelle">Mandats échus</span></div>
+    <div><span class="chiffre-valeur" data-compteur="5">5</span><span class="chiffre-libelle">Fin dans les 60 jours</span></div>
+    <div><span class="chiffre-valeur" data-compteur="183">183</span><span class="chiffre-libelle">Mandats en cours</span></div>
+    <div><span class="chiffre-valeur" data-compteur="14">14</span><span class="chiffre-libelle">Sans date de fin</span></div>
+  </div>
+  <div class="alerte alerte--info u-mt-5"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-info"></use></svg><div>Un mandat échu ne coupe pas l'accès. Renouvelez-le ou désactivez le compte. Vous êtes prévenu 60 jours avant l'échéance, puis le jour même.</div></div>
+  <h2 class="section-titre">Mandats échus <span class="meta">3 comptes, le plus ancien d'abord</span></h2>
+  <ul class="file" data-demo-file-mandats>
+<li class="dossier">
+  <span class="avatar" aria-hidden="true">CB</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Clémentine Banza Ngalula</a><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Kenya · Haut-Katanga</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Patrick Lunda</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--echu"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg><span>Fin le 03/09/2026</span></span><span class="mandat-reste">échu depuis 41 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Clémentine Banza Ngalula" data-demo-fin="03/09/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Clémentine Banza Ngalula"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar" aria-hidden="true">PL</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Patrick Lunda Mwamba</a><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Kampemba · Haut-Katanga</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Félix Kasongo</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--echu"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg><span>Fin le 30/09/2026</span></span><span class="mandat-reste">échu depuis 14 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Patrick Lunda Mwamba" data-demo-fin="30/09/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Patrick Lunda Mwamba"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar" aria-hidden="true">ÉT</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Éric Tshibangu Mulamba</a><span class="role"><span class="role-code" aria-hidden="true">VP</span><span class="role-libelle">Validateur provincial</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Coordination Kasaï-Oriental</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Sylvie Nsimba</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--echu"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg><span>Fin le 12/10/2026</span></span><span class="mandat-reste">échu depuis 2 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Éric Tshibangu Mulamba" data-demo-fin="12/10/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Éric Tshibangu Mulamba"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li>
+  </ul>
+  <h2 class="section-titre">Fin dans les 60 jours <span class="meta">5 comptes, le plus proche d'abord</span></h2>
+  <ul class="file">
+<li class="dossier">
+  <span class="avatar" aria-hidden="true">RM</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Rachel Mujinga Kapinga</a><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Ngaba · Kinshasa-Est</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Christian Kabeya</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>Fin le 27/10/2026</span></span><span class="mandat-reste">dans 13 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Rachel Mujinga Kapinga" data-demo-fin="27/10/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Rachel Mujinga Kapinga"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar" aria-hidden="true">PL</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Pitshou Lokwa Bolamba</a><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Mbandaka · Équateur</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Odette Bokele</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>Fin le 02/11/2026</span></span><span class="mandat-reste">dans 19 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Pitshou Lokwa Bolamba" data-demo-fin="02/11/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Pitshou Lokwa Bolamba"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar" aria-hidden="true">GM</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Grâce Mbombo Tshala</a><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Lemba · ALEMO asbl</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Bernadette Kalala</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>Fin le 20/11/2026</span></span><span class="mandat-reste">dans 37 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Grâce Mbombo Tshala" data-demo-fin="20/11/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Grâce Mbombo Tshala"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar" aria-hidden="true">JM</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Josué Mavungu Phambu</a><span class="role"><span class="role-code" aria-hidden="true">VP</span><span class="role-libelle">Validateur provincial</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Coordination Kongo-Central</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par vous</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>Fin le 08/12/2026</span></span><span class="mandat-reste">dans 55 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Josué Mavungu Phambu" data-demo-fin="08/12/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Josué Mavungu Phambu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li><li class="dossier">
+  <span class="avatar" aria-hidden="true">AK</span>
+  <div>
+    <div class="dossier-titre"><a href="fiche-membre.html">Aimé Kayembe Ntumba</a><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span></div>
+    <div class="dossier-lieu"><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-map-pin"></use></svg>Antenne de Ndjili · Kinshasa-Est</span><span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user"></use></svg>nommé par Christian Kabeya</span></div>
+    <div class="dossier-etat"><div class="mandat mandat--bientot"><span class="mandat-fin"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg><span>Fin le 11/12/2026</span></span><span class="mandat-reste">dans 58 jours</span></div></div>
+  </div>
+  <div class="dossier-actions">
+    <button type="button" class="bouton" data-ouvre-modale="#modale-renouveler" data-demo-nom="Aimé Kayembe Ntumba" data-demo-fin="11/12/2026"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-calendar-clock"></use></svg>Renouveler</button>
+    <button type="button" class="bouton bouton--danger" data-ouvre-modale="#modale-desactiver" data-demo-nom="Aimé Kayembe Ntumba"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-x"></use></svg>Désactiver</button>
+  </div>
+</li>
+  </ul>
+</section>
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>À valider</span><span class="compteur-pastille">24</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+<div class="bulles" aria-live="polite"></div>
+<div class="modale" id="modale-nommer" role="dialog" aria-modal="true" aria-labelledby="modale-nommer-titre" hidden data-demo-nommer>
+  <div class="modale-voile"></div>
+  <form class="feuille feuille--large" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-nommer-titre">Nommer un membre<span class="sous-titre"><span data-demo-etape-libelle>Étape 1 sur 2 · Membre</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="etapes" aria-hidden="true"><span class="fait"></span><span></span></div>
+    <div class="feuille-corps">
+      <div class="formulaire etape-panneau" data-etape="1">
+        <div class="champ">
+          <label class="champ-libelle" for="cherche-membre">Rechercher un membre actif</label>
+          <div class="recherche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg><input id="cherche-membre" type="search" placeholder="Nom, MBR ou téléphone" value="Kasongo" autocomplete="off" aria-describedby="cherche-membre-aide" data-demo-cherche-membre></div>
+          <p class="champ-aide" id="cherche-membre-aide">Seul un membre actif, sans nomination en cours, peut être nommé.</p>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle">4 membres trouvés</legend>
+          <ul class="choix-membre" data-demo-resultats>
+            <li><label><input type="radio" name="membre" value="MBR0004127" checked data-demo-membre="Héritier Mukendi Kasongo"><span class="avatar" aria-hidden="true">HM</span><span><span class="choix-membre-nom">Héritier Mukendi Kasongo</span><span class="meta"><span class="ident">MBR0004127</span> · Antenne de Lemba</span><span class="bloc u-mt-2"><span class="etat etat--actif"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i class="plein"></i></span>Actif</span></span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label></li>
+            <li><label><input type="radio" name="membre" value="MBR0002210" data-demo-membre="Faustin Kasongo Ilunga"><span class="avatar" aria-hidden="true">FK</span><span><span class="choix-membre-nom">Faustin Kasongo Ilunga</span><span class="meta"><span class="ident">MBR0002210</span> · Antenne de Matete</span><span class="bloc u-mt-2"><span class="etat etat--actif"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i class="plein"></i></span>Actif</span></span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label></li>
+            <li><label><input type="radio" name="membre" value="MBR0003377" disabled data-demo-membre="Merveille Kasongo Mbuyi"><span class="avatar" aria-hidden="true">MK</span><span><span class="choix-membre-nom">Merveille Kasongo Mbuyi</span><span class="meta"><span class="ident">MBR0003377</span> · Antenne de Ngaba</span><span class="bloc u-mt-2"><span class="etat etat--valide_province"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i></i></span>Validé province</span></span><span class="choix-membre-raison"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock"></use></svg>Pas encore actif : la validation nationale manque.</span></span></label></li>
+            <li><label><input type="radio" name="membre" value="MBR0000977" disabled data-demo-membre="Félix Kasongo Banza"><span class="avatar" aria-hidden="true">FK</span><span><span class="choix-membre-nom">Félix Kasongo Banza</span><span class="meta"><span class="ident">MBR0000977</span> · Coordination Haut-Katanga</span><span class="bloc u-mt-2"><span class="etat etat--actif"><span class="etat-pastilles" aria-hidden="true"><i class="plein"></i><i class="plein"></i><i class="plein"></i></span>Actif</span></span><span class="choix-membre-raison"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock"></use></svg>Déjà nommé : validateur provincial du Haut-Katanga.</span></span></label></li>
+          </ul>
+        </fieldset>
+      </div>
+      <div class="formulaire etape-panneau" data-etape="2" hidden>
+        <div class="membre-retenu">
+          <span class="avatar" aria-hidden="true" data-demo-retenu-initiales>HK</span>
+          <div><strong class="bloc" data-demo-retenu-nom>Héritier Mukendi Kasongo</strong><span class="meta"><span class="ident">MBR0004127</span> · Antenne de Lemba</span></div>
+          <button type="button" class="bouton bouton--discret" data-demo-precedent-membre>Changer</button>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle">Rôle</legend>
+          <div class="choix choix--roles" data-demo-roles>
+            <label><input type="radio" name="role" value="VN"><span><span class="role"><span class="role-code" aria-hidden="true">VN</span><span class="role-libelle">Validateur national</span></span><span class="choix-sous">National · mandat de 5 ans</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="role" value="VP"><span><span class="role"><span class="role-code" aria-hidden="true">VP</span><span class="role-libelle">Validateur provincial</span></span><span class="choix-sous">Une coordination · 4 ans</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="role" value="VA"><span><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span><span class="choix-sous">Une antenne · 3 ans</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="role" value="AT" checked><span><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span><span class="choix-sous">Une antenne · 3 ans</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+          </div>
+          <p class="champ-aide">Vous nommez un rôle situé en dessous du vôtre, dans votre périmètre.</p>
+        </fieldset>
+        <div class="formulaire-ligne" data-demo-perimetre>
+          <div class="champ" data-demo-champ="coordination" hidden><label class="champ-libelle" for="n-coord">Coordination provinciale</label><select class="champ-saisie" id="n-coord"><option>Kinshasa-Est</option><option>Kinshasa-Ouest</option><option>Kongo-Central</option><option>Haut-Katanga</option><option>Kasaï-Oriental</option><option>Équateur</option></select></div>
+          <div class="champ" data-demo-champ="antenne"><label class="champ-libelle" for="n-antenne">Antenne</label><select class="champ-saisie" id="n-antenne"><option>Lemba</option><option>Limete</option><option>Matete</option><option>Ngaba</option><option>Kisenso</option><option>Masina</option><option>Ndjili</option></select></div>
+          <div class="champ" data-demo-champ="association"><label class="champ-libelle" for="n-asso">Association membre <span class="facultatif">(facultatif)</span></label><select class="champ-saisie" id="n-asso"><option>Toutes celles de l'antenne</option><option selected>ALEMO asbl</option><option>LITATSHA asbl</option></select></div>
+          <p class="champ-aide champ--plein" data-demo-champ="national" hidden>Le validateur national exerce sur tout le pays : pas de périmètre à choisir.</p>
+        </div>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="n-debut">Début du mandat</label><input class="champ-saisie" id="n-debut" inputmode="numeric" placeholder="JJ/MM/AAAA" value="14/10/2026"></div>
+          <div class="champ"><label class="champ-libelle" for="n-fin">Fin du mandat</label><input class="champ-saisie" id="n-fin" inputmode="numeric" placeholder="JJ/MM/AAAA" value="14/10/2029" aria-describedby="n-fin-aide" data-demo-fin><p class="champ-aide" id="n-fin-aide" data-demo-fin-aide>Comité d'antenne : 3 ans (charte, art. 72 à 75).</p></div>
+        </div>
+        <div class="alerte alerte--info"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-key-round"></use></svg><div>Un mot de passe temporaire est créé avec le compte. Il s'affiche une seule fois, juste après.</div></div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-demo-precedent>Annuler</button>
+      <button type="button" class="bouton bouton--principal" data-demo-suivant><span class="roue" aria-hidden="true"></span><span>Continuer</span></button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-externe" role="dialog" aria-modal="true" aria-labelledby="modale-externe-titre" hidden data-demo-mdp-apres="Compte créé">
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-externe-titre">Ajouter un compte externe<span class="sous-titre">Visiteur ou éditeur, sans fiche membre</span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <fieldset>
+          <legend class="champ-libelle">Type de compte</legend>
+          <div class="choix choix--roles">
+            <label><input type="radio" name="type" value="VI" checked><span><span class="role role--externe"><span class="role-code" aria-hidden="true">VI</span><span class="role-libelle">Visiteur</span></span><span class="choix-sous">Lecture seule : effectifs et listes nominatives</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="type" value="ED" disabled aria-describedby="ed-raison"><span><span class="role role--externe"><span class="role-code" aria-hidden="true">ED</span><span class="role-libelle">Éditeur</span></span><span class="choix-sous" id="ed-raison">Créé par le super-utilisateur seulement</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock"></use></svg></label>
+          </div>
+        </fieldset>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="x-nom">Nom et postnom</label><input class="champ-saisie" id="x-nom" value="Kalala Ngoy" autocomplete="family-name"></div>
+          <div class="champ"><label class="champ-libelle" for="x-prenom">Prénom</label><input class="champ-saisie" id="x-prenom" value="Dieudonné" autocomplete="given-name"></div>
+        </div>
+        <div class="champ"><label class="champ-libelle" for="x-org">Organisme ou fonction</label><input class="champ-saisie" id="x-org" value="Division provinciale des Transports" autocomplete="organization"><p class="champ-aide">Affiché à côté de son nom dans la liste des utilisateurs.</p></div>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="x-tel">Téléphone</label><div class="champ-prefixe"><span>+243</span><input class="champ-saisie" id="x-tel" type="tel" inputmode="tel" value="997 410 286" autocomplete="tel-national"></div></div>
+          <div class="champ"><label class="champ-libelle" for="x-mail">E-mail <span class="facultatif">(facultatif)</span></label><input class="champ-saisie" id="x-mail" type="email" inputmode="email" autocomplete="email"></div>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle">Ce qu'il peut consulter</legend>
+          <div class="choix" data-demo-portee>
+            <label><input type="radio" name="portee" value="national">Tout le pays<span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="portee" value="coordination" checked>Une coordination<span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="portee" value="antenne">Une antenne<span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+          </div>
+          <div class="champ" data-demo-portee-champ="coordination"><label class="champ-libelle" for="x-coord">Coordination provinciale</label><select class="champ-saisie" id="x-coord"><option>Haut-Katanga</option><option>Kinshasa-Est</option><option>Kinshasa-Ouest</option><option>Kongo-Central</option><option>Haut-Katanga</option><option>Kasaï-Oriental</option><option>Équateur</option></select></div>
+          <div class="champ" data-demo-portee-champ="antenne" hidden><label class="champ-libelle" for="x-antenne">Antenne</label><select class="champ-saisie" id="x-antenne"><option>Lemba</option><option>Limete</option><option>Matete</option><option>Ngaba</option><option>Kisenso</option><option>Masina</option><option>Ndjili</option></select></div>
+          <p class="champ-aide">Le périmètre d'un visiteur est fixé à la création.</p>
+        </fieldset>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="x-ident">Identifiant de connexion</label><input class="champ-saisie" id="x-ident" value="vi.kalala" autocapitalize="none" spellcheck="false"><p class="champ-aide">Proposé à partir du nom. Vous pouvez le changer.</p></div>
+          <div class="champ"><label class="champ-libelle" for="x-fin">Fin de l'accès <span class="facultatif">(facultatif)</span></label><input class="champ-saisie" id="x-fin" inputmode="numeric" placeholder="JJ/MM/AAAA"><p class="champ-aide">Laissez vide pour un accès sans date de fin.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Créer le compte</span></button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-mdp" role="dialog" aria-modal="true" aria-labelledby="modale-mdp-titre" hidden>
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-mdp-titre"><span data-demo-mdp-titre>Membre nommé</span><span class="sous-titre"><span data-demo-mdp-nom>Héritier Mukendi Kasongo · agent de terrain, antenne de Lemba</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <div class="mdp-temp">
+          <div class="mdp-temp-identifiant"><span class="mdp-temp-libelle">Identifiant</span><strong class="ident" data-demo-mdp-ident>h.mukendi</strong></div>
+          <div>
+            <p class="mdp-temp-libelle u-mb-2" id="mdp-libelle">Mot de passe temporaire</p>
+            <p class="mdp-temp-valeur" id="mdp-valeur" aria-labelledby="mdp-libelle" data-valeur="Rk7Pmq4XwT9e" data-demo-mdp><span>Rk<b>7</b>P</span><span>mq<b>4</b>X</span><span>wT<b>9</b>e</span></p>
+          </div>
+          <button type="button" class="bouton bouton--bloc" data-copier="#mdp-valeur"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-copy"></use></svg><span class="copier-texte">Copier le mot de passe</span></button>
+        </div>
+        <div class="alerte alerte--alerte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-eye-off"></use></svg><div><strong class="alerte-titre">Affiché une seule fois.</strong>Transmettez-le en main propre ou par appel, jamais dans un groupe de discussion. Il devra le changer à sa première connexion.</div></div>
+        <p class="meta">Chiffres en bleu. Le mot de passe ne contient ni 0, ni O, ni 1, ni l, ni I, pour être dicté sans erreur.</p>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton bouton--principal" data-ferme-modale data-demo-mdp-fin>J'ai transmis le mot de passe</button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-reinitialiser" role="dialog" aria-modal="true" aria-labelledby="modale-reinitialiser-titre" hidden data-demo-mdp-apres="Mot de passe réinitialisé">
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-reinitialiser-titre">Réinitialiser le mot de passe<span class="sous-titre"><span data-demo-sous-titre>Dieudonné Kalala Ngoy</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <p>L'ancien mot de passe de <strong data-demo-nom-cible>Dieudonné Kalala Ngoy</strong> cesse de fonctionner tout de suite. Un mot de passe temporaire s'affiche ensuite, une seule fois.</p>
+        <div class="alerte alerte--info"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-history"></use></svg><div>L'action est inscrite au journal d'activités, avec votre nom.</div></div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Réinitialiser le mot de passe</span></button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-desactiver" role="dialog" aria-modal="true" aria-labelledby="modale-desactiver-titre" hidden data-demo-desactiver>
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-desactiver-titre">Désactiver le compte<span class="sous-titre"><span data-demo-sous-titre>Grâce Mbombo Tshala</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <div class="alerte alerte--alerte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-triangle-alert"></use></svg><div><strong data-demo-nom-cible>Grâce Mbombo Tshala</strong> ne pourra plus se connecter. Ses dossiers, sa fiche et son historique sont conservés. Vous pourrez réactiver le compte.</div></div>
+        <div class="champ" data-demo-champ-motif>
+          <label class="champ-libelle" for="d-motif">Motif</label>
+          <textarea class="champ-saisie" id="d-motif" rows="3" maxlength="500" aria-describedby="d-motif-compte d-motif-erreur"></textarea>
+          <div class="rangee"><button type="button" class="puce" data-demo-motif-puce>Fin de mandat</button><button type="button" class="puce" data-demo-motif-puce>A quitté l'association membre</button><button type="button" class="puce" data-demo-motif-puce>Démission</button></div>
+          <p class="champ-aide" id="d-motif-compte">0 / 500</p>
+          <p class="champ-erreur" id="d-motif-erreur" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Indiquez le motif avant de désactiver le compte.</p>
+        </div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><span>Désactiver le compte</span></button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-reactiver" role="dialog" aria-modal="true" aria-labelledby="modale-reactiver-titre" hidden data-demo-simple="Compte réactivé|Il peut de nouveau se connecter.">
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-reactiver-titre">Réactiver le compte<span class="sous-titre"><span data-demo-sous-titre>Junior Mbuyi Kanku</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <p><strong data-demo-nom-cible>Junior Mbuyi Kanku</strong> pourra de nouveau se connecter, avec son rôle et son périmètre :</p>
+        <p><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span> <span class="doux">Antenne de Masina</span></p>
+        <label class="case"><input type="checkbox" checked>Créer un mot de passe temporaire <span class="doux">· conseillé après une longue désactivation</span></label>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Réactiver le compte</span></button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-changer" role="dialog" aria-modal="true" aria-labelledby="modale-changer-titre" hidden data-demo-simple="Changement enregistré|Grâce Mbombo Tshala est maintenant validatrice d'antenne à Lemba.">
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-changer-titre">Changer de rôle ou de périmètre<span class="sous-titre"><span data-demo-sous-titre>Grâce Mbombo Tshala</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <dl class="definitions">
+          <div><dt>Rôle actuel</dt><dd><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span></dd></div>
+          <div><dt>Périmètre actuel</dt><dd>Antenne de Lemba · ALEMO asbl</dd></div>
+        </dl>
+        <fieldset>
+          <legend class="champ-libelle">Nouveau rôle</legend>
+          <div class="choix choix--roles">
+            <label><input type="radio" name="c-role" value="VP"><span><span class="role"><span class="role-code" aria-hidden="true">VP</span><span class="role-libelle">Validateur provincial</span></span><span class="choix-sous">Une coordination · 4 ans</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="c-role" value="VA" checked><span><span class="role"><span class="role-code" aria-hidden="true">VA</span><span class="role-libelle">Validateur d'antenne</span></span><span class="choix-sous">Une antenne · 3 ans</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="c-role" value="AT"><span><span class="role"><span class="role-code" aria-hidden="true">AT</span><span class="role-libelle">Agent de terrain</span></span><span class="choix-sous">Rôle actuel</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+          </div>
+        </fieldset>
+        <div class="champ"><label class="champ-libelle" for="c-antenne">Antenne</label><select class="champ-saisie" id="c-antenne"><option>Lemba</option><option>Limete</option><option>Matete</option><option>Ngaba</option><option>Kisenso</option><option>Masina</option><option>Ndjili</option></select></div>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="c-debut">Début du nouveau mandat</label><input class="champ-saisie" id="c-debut" inputmode="numeric" value="14/10/2026"></div>
+          <div class="champ"><label class="champ-libelle" for="c-fin">Fin du nouveau mandat</label><input class="champ-saisie" id="c-fin" inputmode="numeric" value="14/10/2029"></div>
+        </div>
+        <div class="champ"><label class="champ-libelle" for="c-motif">Motif <span class="facultatif">(facultatif)</span></label><textarea class="champ-saisie" id="c-motif" rows="2" maxlength="500">Élue superviseure principale par le comité d'antenne.</textarea></div>
+        <div class="alerte alerte--info"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-history"></use></svg><div>La nomination actuelle prend fin aujourd'hui et reste dans l'historique. Le changement est inscrit au journal (avant / après).</div></div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Enregistrer le changement</span></button>
+    </div>
+  </form>
+</div>
+<div class="modale" id="modale-renouveler" role="dialog" aria-modal="true" aria-labelledby="modale-renouveler-titre" hidden data-demo-renouveler>
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate>
+    <div class="feuille-tete">
+      <h2 id="modale-renouveler-titre">Renouveler le mandat<span class="sous-titre"><span data-demo-sous-titre>Patrick Lunda Mwamba</span></span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <p>Le mandat de <strong data-demo-nom-cible>Patrick Lunda Mwamba</strong> a pris fin le <span class="chiffres" data-demo-fin-cible>30/09/2026</span>. Le rôle et le périmètre restent les mêmes.</p>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="r-debut">Début du nouveau mandat</label><input class="champ-saisie" id="r-debut" inputmode="numeric" value="01/10/2026"></div>
+          <div class="champ"><label class="champ-libelle" for="r-fin">Fin du nouveau mandat</label><input class="champ-saisie" id="r-fin" inputmode="numeric" value="01/10/2029" aria-describedby="r-fin-aide"><p class="champ-aide" id="r-fin-aide">Comité d'antenne : 3 ans (charte, art. 72 à 75).</p></div>
+        </div>
+        <p class="meta">Pour changer de rôle ou de périmètre, utilisez « Rôle » dans la liste des comptes.</p>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Renouveler le mandat</span></button>
+    </div>
+  </form>
+</div>
+
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+</body>
+</html>

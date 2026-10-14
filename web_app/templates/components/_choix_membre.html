@@ -1,0 +1,16 @@
+{% load i18n design %}{% comment %}
+Résultats de recherche d'un membre à nommer (F-02, étape 1 de la modale « Nommer un membre »), en boutons radio.
+Fragment rendu par la recherche (hx-get, hx-trigger="input changed delay:300ms", cible = cette liste).
+Paramètre : resultats = liste de dicts préparés par le service :
+  id, nom, identifiant (MBR…), lieu (« Antenne de Lemba »), etat (code du circuit), nommable (bool), raison (texte si non nommable)
+Un membre non nommable reste VISIBLE, désactivé, avec sa raison (« Pas encore actif : la validation nationale manque. »,
+« Déjà nommé : validateur provincial du Haut-Katanga. ») : l'utilisateur comprend pourquoi il ne peut pas le choisir.
+Le serveur revérifie à l'envoi (membre actif, aucune nomination active, périmètre de celui qui nomme).
+Usage : {% include "components/_choix_membre.html" with resultats=resultats choisi=form.membre.value %}
+{% endcomment %}<ul class="choix-membre" id="resultats-membres">{% for m in resultats %}
+  <li><label><input type="radio" name="membre" value="{{ m.id }}"{% if m.id|stringformat:"s" == choisi|stringformat:"s" %} checked{% endif %}{% if not m.nommable %} disabled{% endif %}>{% avatar m.nom %}
+    <span><span class="choix-membre-nom">{{ m.nom }}</span><span class="meta"><span class="ident">{{ m.identifiant }}</span> · {{ m.lieu }}</span>
+      <span class="bloc u-mt-2">{% badge_etat m.etat %}</span>{% if not m.nommable %}<span class="choix-membre-raison">{% icone "lock" %}{{ m.raison }}</span>{% endif %}</span>
+    {% if m.nommable %}<span class="coche">{% icone "check" %}</span>{% endif %}</label></li>{% empty %}
+  <li>{% translate "Aucun membre actif ne correspond. Vérifiez l'orthographe ou cherchez par MBR." as texte_vide %}{% include "components/_etat_vide.html" with titre=_("Aucun membre trouvé") texte=texte_vide icone="search" %}</li>{% endfor %}
+</ul>

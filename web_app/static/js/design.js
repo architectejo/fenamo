@@ -136,10 +136,49 @@
     el.classList.remove('bondit'); void el.offsetWidth; el.classList.add('bondit');
   }
 
+  /* ---------- Copier dans le presse-papiers : [data-copier="#cible"] (valeur : data-valeur de la cible, sinon son texte) ----------
+     Le libellé du bouton (.copier-texte) passe à « Copié » 2 s, l'icône devient une coche ; la cible (et son .mdp-temp) prend .est-copie.
+     data-copier-message : bulle de confirmation facultative. Repli execCommand si l'API Clipboard est refusée (HTTP, ancien navigateur). */
+  function copierTexte(texte) {
+    if (navigator.clipboard && window.isSecureContext) { return navigator.clipboard.writeText(texte); }
+    return new Promise(function (ok, ko) {
+      var z = document.createElement('textarea'); z.value = texte; z.setAttribute('readonly', ''); z.className = 'lecteur';
+      document.body.appendChild(z); z.select();
+      try { if (document.execCommand('copy')) { ok(); } else { ko(new Error('copie refusée')); } } catch (err) { ko(err); } finally { z.remove(); }
+    });
+  }
+  function copier(b) {
+    var cible = document.querySelector(b.getAttribute('data-copier'));
+    if (!cible) { return; }
+    var texte = cible.getAttribute('data-valeur') || cible.textContent.replace(/\s+/g, '');
+    var libelle = b.querySelector('.copier-texte'), use = b.querySelector('use');
+    copierTexte(texte).then(function () {
+      var avant = libelle ? libelle.textContent : '', icone = use ? use.getAttribute('href') : '';
+      b.classList.add('est-copie'); if (libelle) { libelle.textContent = b.getAttribute('data-copier-fait') || 'Copié'; }
+      if (use) { use.setAttribute('href', sprite + '#i-check'); }
+      var bloc = cible.closest('.mdp-temp') || cible; bloc.classList.add('est-copie');
+      if (b.hasAttribute('data-copier-message')) { bulle({ message: b.getAttribute('data-copier-message'), niveau: 'success', duree: 3000 }); }
+      setTimeout(function () { b.classList.remove('est-copie'); if (libelle) { libelle.textContent = avant; } if (use) { use.setAttribute('href', icone); } }, 2000);
+    }, function () {
+      bulle({ message: 'Copie impossible', detail: 'Sélectionnez le texte et copiez-le à la main.', niveau: 'alerte' });
+    });
+  }
+
+  /* ---------- Déplier / replier un bloc : [data-deplier="#bloc"] (aria-expanded tenu à jour, classe .est-deplie sur le bloc) ---------- */
+  function deplier(b) {
+    var bloc = document.querySelector(b.getAttribute('data-deplier'));
+    if (!bloc) { return; }
+    var ouvert = !bloc.classList.contains('est-deplie');
+    bloc.classList.toggle('est-deplie', ouvert); b.setAttribute('aria-expanded', String(ouvert));
+    if (ouvert) { var f = bloc.querySelector(FOCUSABLES); if (f) { f.focus({ preventScroll: true }); } }
+  }
+
   /* ---------- Délégation des clics ---------- */
   document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-ouvre-modale], [data-ferme-modale], [data-menu-ouvrir], [data-menu-fermer], [data-theme-basculer], .modale-voile, .voile--menu');
+    var t = e.target.closest('[data-ouvre-modale], [data-ferme-modale], [data-menu-ouvrir], [data-menu-fermer], [data-theme-basculer], [data-copier], [data-deplier], .modale-voile, .voile--menu');
     if (!t) { return; }
+    if (t.hasAttribute('data-copier')) { e.preventDefault(); copier(t); return; }
+    if (t.hasAttribute('data-deplier')) { e.preventDefault(); deplier(t); return; }
     if (t.hasAttribute('data-ouvre-modale')) { e.preventDefault(); ouvrirModale(t.getAttribute('data-ouvre-modale')); }
     else if (t.hasAttribute('data-ferme-modale') || t.classList.contains('modale-voile')) { e.preventDefault(); fermerModale(t.closest('.modale')); }
     else if (t.hasAttribute('data-menu-ouvrir')) { menu(true); }
@@ -157,5 +196,5 @@
   document.addEventListener('htmx:afterSettle', function (e) { compter(e.target); });
   document.addEventListener('DOMContentLoaded', function () { compter(document); });
 
-  window.FenamoDesign = { bulle: bulle, ouvrirModale: ouvrirModale, fermerModale: fermerModale, menu: menu, retirerDossier: retirerDossier, compter: compter, majCompteur: majCompteur, icone: icone };
+  window.FenamoDesign = { bulle: bulle, ouvrirModale: ouvrirModale, fermerModale: fermerModale, menu: menu, retirerDossier: retirerDossier, compter: compter, majCompteur: majCompteur, icone: icone, copier: copier, deplier: deplier };
 })();

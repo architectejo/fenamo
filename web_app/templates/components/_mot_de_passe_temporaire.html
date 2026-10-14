@@ -1,0 +1,22 @@
+{% load i18n design %}{% comment %}
+Mot de passe temporaire à lecture unique (F-02, F-03, F-05). Contenu du corps d'une modale dont le titre reprend le verbe de
+l'action (« Membre nommé », « Compte créé », « Mot de passe réinitialisé ») et dont le pied n'a qu'un bouton :
+« J'ai transmis le mot de passe » (bouton--principal, data-ferme-modale).
+Paramètres :
+  identifiant  compte.username
+  valeur       le mot de passe entier (data-valeur : c'est lui qui est copié)
+  groupes      le même mot de passe découpé en groupes de 4 (liste de chaînes préparée par la vue) ; le gabarit met les chiffres en <b>
+Règles :
+  - Le mot de passe est généré par le service sans 0 O 1 l I (dictée au téléphone) ; les chiffres sont balisés en <b> (bleu).
+  - Il n'est jamais stocké en clair ni renvoyé une deuxième fois : la réponse porte Cache-Control: no-store et hx-history="false".
+  - Bouton Copier : data-copier (static/js/design.js) ; libellé « Copié » 2 s, cadre vert. Pas de bulle : le titre suffit.
+{% endcomment %}<div class="mdp-temp" hx-history="false">
+  <div class="mdp-temp-identifiant"><span class="mdp-temp-libelle">{% translate "Identifiant" %}</span><strong class="ident">{{ identifiant }}</strong></div>
+  <div>
+    <p class="mdp-temp-libelle u-mb-2" id="mdp-libelle">{% translate "Mot de passe temporaire" %}</p>
+    <p class="mdp-temp-valeur" id="mdp-valeur" aria-labelledby="mdp-libelle" data-valeur="{{ valeur }}">{% for groupe in groupes %}<span>{% for c in groupe %}{% if c.isdigit %}<b>{{ c }}</b>{% else %}{{ c }}{% endif %}{% endfor %}</span>{% endfor %}</p>
+  </div>
+  <button type="button" class="bouton bouton--bloc" data-copier="#mdp-valeur">{% icone "copy" %}<span class="copier-texte">{% translate "Copier le mot de passe" %}</span></button>
+</div>
+{% translate "Affiché une seule fois." as titre_alerte %}{% translate "Transmettez-le en main propre ou par appel, jamais dans un groupe de discussion. Il devra le changer à sa première connexion." as texte_alerte %}{% include "components/_erreur.html" with niveau="alerte" titre=titre_alerte texte=texte_alerte %}
+<p class="meta">{% translate "Chiffres en bleu. Le mot de passe ne contient ni 0, ni O, ni 1, ni l, ni I, pour être dicté sans erreur." %}</p>

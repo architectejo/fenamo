@@ -463,11 +463,14 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .choix label:has(input:checked) { border: 2px solid var(--encre); background: var(--fond); font-weight: var(--graisse-forte); }
 :root[data-theme="sombre"] .choix label:has(input:checked) { border-color: var(--texte); }
 .choix label:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--focus-halo); }
-.choix .coche { margin-left: auto; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--trait-fort); display: grid; place-items: center; }
-.choix label:has(input:checked) .coche { border-color: var(--encre); background: var(--encre); color: var(--sur-encre); }
-:root[data-theme="sombre"] .choix label:has(input:checked) .coche { border-color: var(--texte); background: var(--texte); }
-.choix .coche .ic { width: 12px; height: 12px; stroke-width: 3; opacity: 0; }
-.choix label:has(input:checked) .coche .ic { opacity: 1; }
+.choix .coche, .choix-membre .coche { margin-left: auto; width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid var(--trait-fort); display: grid; place-items: center; }
+:is(.choix, .choix-membre) label:has(input:checked) .coche { border-color: var(--encre); background: var(--encre); color: var(--sur-encre); }
+:root[data-theme="sombre"] :is(.choix, .choix-membre) label:has(input:checked) .coche { border-color: var(--texte); background: var(--texte); }
+:is(.choix, .choix-membre) .coche .ic { width: 12px; height: 12px; stroke-width: 3; opacity: 0; }
+:is(.choix, .choix-membre) label:has(input:checked) .coche .ic { opacity: 1; }
+/* Tuile indisponible (rôle réservé à un rang supérieur) : visible, expliquée, non cliquable */
+.choix label:has(input:disabled) { border-style: dashed; color: var(--texte-doux); cursor: not-allowed; background: var(--surface-2); }
+.choix label:has(input:disabled):hover { border-color: var(--trait-fort); }
 .choix-sous { display: block; font-size: var(--t-1); color: var(--texte-doux); font-weight: var(--graisse-normale); }
 
 /* Dépôt de photo avec aperçu */
@@ -604,7 +607,7 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
   .liste .lien-ligne::after { content: ""; position: absolute; inset: 0; } /* toute la carte est cliquable */
   .liste-enveloppe { border: 0 !important; background: none !important; }
 }
-.liste-enveloppe { border: 1px solid var(--trait); border-radius: var(--r-panneau); background: var(--surface); overflow: clip; }
+.liste-enveloppe { position: relative; /* garde les textes .lecteur des cellules dans le défilement */ border: 1px solid var(--trait); border-radius: var(--r-panneau); background: var(--surface); overflow: clip; }
 @media (min-width: 576px) { .liste-enveloppe { overflow-x: auto; } }
 
 /* Barre de filtres */
@@ -801,6 +804,94 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .mob .bouton, .mob form .bouton { min-height: var(--cible-confort); }
 /* Champ piège antirobot : hors écran et hors navigation, jamais display:none seul */
 .piege { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+/* =========================================================
+   16 ter. Utilisateurs (F-02 à F-06) : rôle, mandat, actions de ligne, mot de passe temporaire, choix d'un membre
+   ========================================================= */
+/* Badge de rôle : code de deux lettres en négatif (esprit du numéro de gilet) + libellé. Neutre : la couleur reste aux états.
+   Compte externe (VI, ED, sans fiche membre) : bordure et code en tirets. */
+.role { display: inline-flex; align-items: stretch; max-width: 100%; border: 1px solid var(--texte); border-radius: var(--r-plaque); background: var(--surface); font-size: var(--t-2); line-height: 1.2; overflow: hidden; vertical-align: middle; text-align: left; }
+.role-code { display: grid; place-items: center; flex: none; min-width: 2.25rem; padding: 2px 6px; background: var(--texte); color: var(--surface); font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); font-size: var(--t-3); letter-spacing: .08em; }
+.role-libelle { display: flex; align-items: center; padding: 3px var(--e-2); font-weight: var(--graisse-forte); }
+.role--externe { border-style: dashed; border-color: var(--trait-fort); }
+.role--externe .role-code { background: transparent; color: var(--texte); border-right: 1px dashed var(--trait-fort); }
+/* Tuiles de rôle : une par ligne sur téléphone (libellés longs), deux colonnes dès 576 px */
+.choix--roles { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 576px) { .choix--roles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.choix--roles .choix-sous { margin-top: var(--e-1); }
+
+/* Nomination dans une liste : rôle, périmètre, qui a nommé (une seule colonne) */
+.nomination { display: grid; gap: 2px; justify-items: start; min-width: 12rem; }
+.nomination .role { margin-bottom: var(--e-1); }
+@media (max-width: 575.98px) { .nomination { justify-items: end; min-width: 0; text-align: right; } }
+
+/* Mandat : date de fin, temps restant en toutes lettres, jauge du temps écoulé (paliers .part-*). La phrase porte le sens, la jauge l'appuie. */
+.mandat { display: grid; gap: var(--e-1); min-width: 9.5rem; font-size: var(--t-2); text-align: left; }
+.mandat-fin { display: flex; align-items: center; gap: var(--e-1); font-weight: var(--graisse-forte); white-space: nowrap; }
+.mandat-fin .ic { width: 1em; height: 1em; }
+.mandat-reste { font-size: var(--t-1); color: var(--texte-doux); }
+.mandat-jauge { height: 4px; border-radius: var(--r-plaque); background: var(--surface-creuse); overflow: hidden; }
+.mandat-jauge span { display: block; height: 100%; width: var(--part, 0%); background: var(--texte-doux); border-radius: inherit; transform-origin: left; animation: remplit var(--d-compteur) var(--courbe-sortie) both; }
+.mandat--bientot .mandat-reste { color: var(--jaune-texte); font-weight: var(--graisse-forte); }
+.mandat--bientot .mandat-jauge span { background: var(--jaune); }
+.mandat--echu .mandat-reste { color: var(--rouge); font-weight: var(--graisse-forte); }
+.mandat--echu .mandat-jauge span { background: var(--rouge); }
+.mandat--sans .mandat-jauge { background: repeating-linear-gradient(90deg, var(--trait-fort) 0 4px, transparent 4px 8px); opacity: .6; }
+
+/* Actions d'une ligne : icônes avec infobulle sur grand écran, trois boutons libellés en bas de la carte sous 576 px */
+.actions-ligne { display: flex; gap: var(--e-1); justify-content: flex-end; }
+.action-ligne { --b-fond: transparent; --b-bord: transparent; z-index: 1; min-width: var(--cible); padding: 0 var(--e-2); }
+.action-ligne:hover { --b-fond: var(--surface-creuse); --b-bord: transparent; box-shadow: none; }
+.action-ligne--danger { --b-texte: var(--rouge); }
+@media (min-width: 576px) { .action-ligne-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+@media (max-width: 575.98px) {
+  .actions-ligne { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-2); }
+  .action-ligne { --b-bord: var(--trait); flex-direction: column; gap: 2px; min-height: 56px; padding: var(--e-1); font-size: var(--t-1); white-space: normal; text-align: center; }
+  .action-ligne:hover { --b-bord: var(--trait-fort); }
+  .actions-ligne--seule { grid-template-columns: minmax(0, 1fr); }
+  .actions-ligne--seule .action-ligne { flex-direction: row; min-height: var(--cible); font-size: var(--t-2); }
+}
+
+/* Filtres secondaires (rôle, lieu, mandat) : repliés derrière « Filtres » sous 768 px, en ligne au-dessus */
+.filtres-plus { display: grid; gap: var(--e-3); margin-bottom: var(--e-4); }
+.filtres-plus .champ-libelle { font-size: var(--t-2); }
+@media (max-width: 767.98px) {
+  .filtres-plus:not(.est-deplie) { display: none; }
+  .filtres-plus.est-deplie { padding: var(--e-4); border: 1px solid var(--trait); border-radius: var(--r-panneau); background: var(--surface); animation: deroule var(--d-moyen) var(--courbe-sortie); transform-origin: top; }
+}
+@media (min-width: 768px) { .filtres-plus { grid-template-columns: repeat(3, minmax(0, 1fr)); } .filtres-deplier { display: none; } }
+
+/* Mot de passe temporaire : affiché une seule fois, groupé par quatre pour la dictée, chiffres en bleu */
+.mdp-temp { display: grid; gap: var(--e-3); padding: var(--e-4); border: 2px solid var(--texte); border-radius: var(--r-panneau); background: var(--surface-2); transition: border-color var(--d-moyen); }
+.mdp-temp.est-copie { border-color: var(--vert); }
+.mdp-temp-libelle { font-size: var(--t-2); font-weight: var(--graisse-forte); color: var(--texte-doux); }
+.mdp-temp-valeur { display: flex; flex-wrap: wrap; gap: var(--e-2); margin: 0; font-family: var(--police-texte); font-weight: var(--graisse-forte); font-size: var(--t-5); line-height: 1.2; letter-spacing: .1em; font-variant-numeric: tabular-nums slashed-zero; }
+.mdp-temp-valeur > span { padding: var(--e-1) var(--e-2); border: 1px solid var(--trait); border-radius: var(--r-plaque); background: var(--surface); }
+.mdp-temp-valeur b { color: var(--lien); font-weight: inherit; }
+.mdp-temp-identifiant { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--e-1) var(--e-3); }
+.bouton.est-copie { --b-bord: var(--vert); --b-texte: var(--vert); }
+
+/* Choix d'un membre à nommer : résultats de recherche en boutons radio ; un membre non nommable reste visible avec sa raison */
+.choix-membre { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.choix-membre label {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--e-3);
+  min-height: 64px; padding: var(--e-2) var(--e-3); border: 1px solid var(--trait-fort); border-radius: var(--r-champ); background: var(--surface); cursor: pointer;
+  transition: border-color var(--d-court), background var(--d-court);
+}
+.choix-membre input { position: absolute; opacity: 0; pointer-events: none; }
+.choix-membre label:hover { border-color: var(--texte); }
+.choix-membre label:has(input:checked) { border: 2px solid var(--encre); padding: calc(var(--e-2) - 1px) calc(var(--e-3) - 1px); background: var(--fond); }
+:root[data-theme="sombre"] .choix-membre label:has(input:checked) { border-color: var(--texte); }
+.choix-membre label:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--focus-halo); }
+.choix-membre label:has(input:disabled) { cursor: not-allowed; border-style: dashed; background: var(--surface-2); }
+.choix-membre label:has(input:disabled):hover { border-color: var(--trait-fort); }
+.choix-membre-nom { display: block; font-weight: var(--graisse-forte); }
+.choix-membre-raison { display: flex; align-items: flex-start; gap: var(--e-1); margin-top: 2px; font-size: var(--t-1); }
+.choix-membre-raison .ic { width: 1em; height: 1em; margin-top: .2em; }
+.membre-retenu { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-3); border: 1px solid var(--trait); border-radius: var(--r-champ); background: var(--surface-2); }
+.membre-retenu > div { flex: 1; min-width: 0; }
+.section-titre { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--e-1) var(--e-3); margin: var(--e-6) 0 var(--e-3); font-size: var(--t-4); }
+.section-titre .meta { font-weight: var(--graisse-normale); }
 
 /* =========================================================
    17. Animations (toutes neutralisées par prefers-reduced-motion via les jetons de durée)

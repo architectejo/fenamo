@@ -1,0 +1,9 @@
+{% load i18n design %}{% comment %}
+État d'un compte utilisateur (F-05, F-06). Réutilise les classes .etat du circuit, avec une icône (jamais les pastilles,
+qui comptent les validations d'un dossier) :
+  etat = "actif"          compte actif                         -> .etat--actif + circle-check   « Actif »
+  etat = "mdp_temporaire" doit_changer_mot_de_passe            -> .etat--a_renouveler + key-round « Mot de passe temporaire »
+  etat = "desactive"      is_active faux                       -> .etat--supprime + ban          « Désactivé »
+Facultatif : change=True (animation « tampon » dans le fragment renvoyé après désactivation ou réactivation).
+Usage : {% include "components/_badge_compte.html" with etat=compte_etat %}
+{% endcomment %}{% if etat == "desactive" %}<span class="etat etat--supprime{% if change %} change{% endif %}">{% icone "ban" %}{% translate "Désactivé" %}</span>{% elif etat == "mdp_temporaire" %}<span class="etat etat--a_renouveler{% if change %} change{% endif %}">{% icone "key-round" %}{% translate "Mot de passe temporaire" %}</span>{% else %}<span class="etat etat--actif{% if change %} change{% endif %}">{% icone "circle-check" %}{% translate "Actif" %}</span>{% endif %}
