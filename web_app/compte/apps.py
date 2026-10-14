@@ -6,4 +6,4 @@ class CompteConfig(AppConfig):
     name = 'compte'
 
     def ready(self):
-        from compte import signals  # noqa: F401  (enregistre les récepteurs du journal)
+        from compte import checks, signals  # noqa: F401  (enregistre les contrôles de déploiement et les récepteurs du journal)

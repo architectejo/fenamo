@@ -5,6 +5,8 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from compte import roles
+
 # Create your models here.
 class Compte(AbstractUser, models.Model):
     membreId = models.IntegerField(null=True, blank=True)
@@ -92,19 +94,9 @@ class Nomination(models.Model):
     on ne l'efface pas. La cohérence rôle / périmètre est contrôlée par ``compte.services.nominations``.
     """
 
-    class Role(models.TextChoices):
-        SU = 'SU', _('Super-utilisateur')
-        PR = 'PR', _('Président')
-        VN = 'VN', _('Validateur national')
-        VP = 'VP', _('Validateur provincial')
-        VA = 'VA', _("Validateur d'antenne")
-        AT = 'AT', _('Agent de terrain')
-        VI = 'VI', _('Visiteur')
-        ED = 'ED', _('Éditeur')
-
     compte = models.ForeignKey(Compte, on_delete=models.CASCADE, related_name='nominations')
     membre = models.ForeignKey('coptapp.Membre', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
-    role = models.CharField(max_length=2, choices=Role.choices)
+    role = models.CharField(max_length=2, choices=roles.CHOICES)
     coordination = models.ForeignKey('coptapp.Province', on_delete=models.RESTRICT, null=True, blank=True, related_name='+')
     antenne = models.ForeignKey('coptapp.Antenne', on_delete=models.RESTRICT, null=True, blank=True, related_name='+')
     association = models.ForeignKey('coptapp.AssociationMembre', on_delete=models.RESTRICT, null=True, blank=True, related_name='+')

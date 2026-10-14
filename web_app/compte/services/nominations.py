@@ -21,11 +21,14 @@ from compte.models import JournalAction, Nomination
 from compte.services.journal import journaliser
 
 
-def valider_coherence(role, coordination_id=None, antenne_id=None, association_id=None):
-    """Lève ValidationError si le périmètre ne convient pas au rôle."""
+def valider_coherence(role, coordination_id=None, antenne_id=None, association_id=None, compte=None):
+    """Lève ValidationError si le périmètre ne convient pas au rôle (et, si `compte` est donné, si le rôle SU est réservé à un
+    compte super-utilisateur : un compte ordinaire n'obtient jamais le rôle SU par nomination)."""
     if role not in roles.ROLES:
         raise ValidationError({'role': _("Rôle inconnu.")})
     erreurs = {}
+    if role == roles.SU and compte is not None and not compte.is_superuser:
+        erreurs['role'] = _("Le rôle super-utilisateur est réservé aux comptes super-utilisateurs.")
     if role in (roles.SU, roles.PR, roles.VN, roles.ED):
         if coordination_id or antenne_id or association_id:
             erreurs['__all__'] = _("Ce rôle n'a pas de périmètre géographique.")
@@ -67,18 +70,39 @@ def _ajouter_annees(jour, annees):
         return date(jour.year + annees, 3, 1)
 
 
+def fin_de_mandat(role, debut=None):
+    """Date de fin d'un mandat commençant à `debut` (aujourd'hui par défaut) pour `role`, d'après la charte ; None sans mandat."""
+    duree = roles.duree_par_defaut(role)
+    return _ajouter_annees(debut or timezone.localdate(), duree) if duree else None
+
+
 @transaction.atomic
 def creer_nomination(auteur, compte, role, *, membre=None, coordination=None, antenne=None, association=None,
                      debut=None, fin=None, duree_mandat_ans=None):
-    """Nomme `compte` dans `role` ; retourne la Nomination. Une seule nomination active par compte (ValidationError sinon).
+    """Nomme `compte` dans `role` ; retourne la Nomination. Une seule nomination active par compte.
 
-    Sans `fin`, elle est calculée à partir de la durée de mandat du rôle (``roles.duree_par_defaut``) quand il en a une.
+    UN SEUL type d'exception : RegleMetier (périmètre incohérent, rôle SU pour un compte ordinaire, nomination déjà active, début
+    ou fin hors des bornes). La ligne du compte est verrouillée avant le test d'unicité : deux nominations simultanées du même compte
+    ne peuvent pas toutes deux réussir. Sans `fin`, elle est calculée à partir de la durée de mandat du rôle. `debut` : au plus un an
+    dans le futur, au plus un an dans le passé (sauf pour un super-utilisateur ou une commande sans auteur).
     `auteur` est inscrit comme ayant nommé et au journal d'activités (NOMINATION).
     """
-    valider_coherence(role, getattr(coordination, 'pk', None), getattr(antenne, 'pk', None), getattr(association, 'pk', None))
+    try:
+        valider_coherence(role, getattr(coordination, 'pk', None), getattr(antenne, 'pk', None), getattr(association, 'pk', None),
+                          compte=compte)
+    except ValidationError as erreur:
+        raise RegleMetier(' '.join(erreur.messages)) from erreur
+    if getattr(compte, 'pk', None):
+        type(compte).objects.select_for_update().filter(pk=compte.pk).first()  # verrou de la ligne Compte
     if Nomination.objects.select_for_update().filter(compte=compte, active=True).exists():
-        raise ValidationError(_("Ce compte a déjà une nomination active : terminez-la d'abord."))
-    debut = debut or timezone.localdate()
+        raise RegleMetier(_("Ce compte a déjà une nomination active : terminez-la d'abord."))
+    aujourdhui = timezone.localdate()
+    debut = debut or aujourdhui
+    if debut > _ajouter_annees(aujourdhui, 1):
+        raise RegleMetier(_("Le début du mandat ne peut pas dépasser un an dans le futur."))
+    privilegie = auteur is None or not getattr(auteur, 'pk', None) or getattr(auteur, 'is_superuser', False)
+    if not privilegie and debut < aujourdhui.replace(year=aujourdhui.year - 1, day=min(aujourdhui.day, 28)):
+        raise RegleMetier(_("Le début du mandat ne peut pas remonter à plus d'un an."))
     duree = duree_mandat_ans if duree_mandat_ans is not None else roles.duree_par_defaut(role)
     if fin is not None:
         if fin < debut:
@@ -147,14 +171,15 @@ class RegleMetier(ErreurNomination):
     """Donnée ou état refusés (membre non actif, nomination déjà active, rôle de compte externe invalide…)."""
 
 
-def _role_de(auteur):
-    from compte.services.droits import role_de
-    return role_de(auteur)
+def role_de(auteur):
+    """Code du rôle effectif de `auteur` (SU, PR…), '' sans nomination."""
+    from compte.services.droits import role_de as role_effectif
+    return role_effectif(auteur)
 
 
 def roles_nommables(auteur):
     """Rôles que `auteur` peut nommer (SU : tous sauf SU ; PR, VN, VP, VA : voir roles.NOMMABLES ; autres : aucun)."""
-    return roles.roles_nommables_par(_role_de(auteur))
+    return roles.roles_nommables_par(role_de(auteur))
 
 
 def _dans_portee_auteur(auteur, coordination=None, antenne=None, association=None):
@@ -198,7 +223,7 @@ def _nomination_active(compte):
     return Nomination.objects.filter(compte=compte, active=True).select_related('coordination', 'antenne', 'association').first()
 
 
-def _verifier_gestion(auteur, compte):
+def verifier_gestion(auteur, compte):
     """Lève HorsPerimetre ou DroitInsuffisant si `auteur` ne peut pas gérer `compte` (réinitialiser, désactiver, changer, terminer).
 
     Jamais soi-même ; jamais un SU sans l'être ; SU : tout autre compte ; sinon la nomination active du compte doit porter un rôle
@@ -226,7 +251,7 @@ def _verifier_gestion(auteur, compte):
 def peut_gerer(auteur, compte):
     """Vrai si `auteur` peut gérer `compte` (jamais soi-même, jamais un SU sans l'être, rôle supérieur dans le périmètre)."""
     try:
-        _verifier_gestion(auteur, compte)
+        verifier_gestion(auteur, compte)
     except ErreurNomination:
         return False
     return True
@@ -234,7 +259,8 @@ def peut_gerer(auteur, compte):
 
 def comptes_gerables(auteur):
     """Comptes que `auteur` peut gérer : tous les autres comptes non SU pour un SU ; sinon ceux dont la nomination active porte un
-    rôle nommable par `auteur` dans son périmètre, plus ceux qu'il a nommés lui-même. Jamais lui-même, jamais un SU."""
+    rôle nommable par `auteur` dans son périmètre ACTUEL (avoir nommé un compte ne donne aucun droit propre : un rôle rétrogradé perd
+    la main sur ses anciens subordonnés). Jamais lui-même, jamais un SU."""
     from django.contrib.auth import get_user_model
     Compte = get_user_model()
     base = Compte.objects.exclude(pk=auteur.pk).exclude(is_superuser=True)
@@ -248,6 +274,21 @@ def comptes_gerables(auteur):
     return base.filter(pk__in=ids)
 
 
+def compte_a_privileges_herites(compte):
+    """Vrai si le compte porte un privilège hérité (privilege1 à privilege5) ou le drapeau ``editor`` : nommer un tel compte
+    ajouterait un rôle à des droits hérités (cumul), ce que seul un super-utilisateur peut décider (et il est journalisé)."""
+    return any(getattr(compte, f'privilege{n}', False) for n in range(1, 6)) or bool(getattr(compte, 'editor', False))
+
+
+def _motif_compte_non_nommable(compte):
+    """Raison pour laquelle un compte EXISTANT ne peut pas être nommé par un non-SU ('' si rien ne s'y oppose)."""
+    if not compte.is_active:
+        return _("compte inactif")
+    if compte_a_privileges_herites(compte):
+        return _("privilèges hérités")
+    return ''
+
+
 def membres_nommables(auteur):
     """Membres que `auteur` peut choisir pour une nomination : ACTIFS (validés au dernier niveau), non supprimés, de son périmètre,
     sans compte SU et sans nomination active. Vide si `auteur` ne peut nommer aucun rôle."""
@@ -257,10 +298,18 @@ def membres_nommables(auteur):
         return Membre.objects.none()
     avec_nomination = Nomination.objects.filter(active=True).values('compte__membreId')
     from django.contrib.auth import get_user_model
-    superutilisateurs = get_user_model().objects.filter(is_superuser=True).values('membreId')
-    return (membres_du_perimetre(auteur).filter(is_validate3=True, is_delete=False)
-            .exclude(pk__in=[m for m in avec_nomination.values_list('compte__membreId', flat=True) if m])
-            .exclude(pk__in=[m for m in superutilisateurs.values_list('membreId', flat=True) if m]))
+    Compte = get_user_model()
+    superutilisateurs = Compte.objects.filter(is_superuser=True).values('membreId')
+    membres = (membres_du_perimetre(auteur).filter(is_validate3=True, is_delete=False)
+               .exclude(pk__in=[m for m in avec_nomination.values_list('compte__membreId', flat=True) if m])
+               .exclude(pk__in=[m for m in superutilisateurs.values_list('membreId', flat=True) if m]))
+    if not auteur.is_superuser:  # mêmes refus que `nommer` : compte existant inactif ou à privilèges hérités
+        from django.db.models import Q
+        non_nommables = Compte.objects.filter(
+            Q(is_active=False) | Q(privilege1=True) | Q(privilege2=True) | Q(privilege3=True) | Q(privilege4=True)
+            | Q(privilege5=True) | Q(editor=True)).exclude(membreId=None).values_list('membreId', flat=True)
+        membres = membres.exclude(pk__in=list(non_nommables))
+    return membres
 
 
 @transaction.atomic
@@ -283,13 +332,22 @@ def nommer(auteur, membre, role, *, coordination=None, antenne=None, association
         valider_coherence(role, getattr(coordination, 'pk', None), getattr(antenne, 'pk', None), getattr(association, 'pk', None))
     except ValidationError as erreur:
         raise RegleMetier(' '.join(erreur.messages)) from erreur
+    from coptapp.models import Membre
+    Membre.objects.select_for_update().filter(pk=membre.pk).first()  # verrou : un seul compte par membre, même en simultané
     compte, mot_de_passe = creer_compte_pour_membre(membre, auteur=auteur)
     if compte.is_superuser:
         raise RegleMetier(_("Un compte super-utilisateur ne se nomme pas."))
+    derogation = '' if mot_de_passe else _motif_compte_non_nommable(compte)  # un compte tout juste créé n'a ni privilège ni retard
+    if derogation and not auteur.is_superuser:
+        raise RegleMetier(_("Ce compte existant ne peut pas être nommé par vous (%(motif)s) : demandez à un super-utilisateur.")
+                          % {'motif': derogation})
     if Nomination.objects.select_for_update().filter(compte=compte, active=True).exists():
         raise RegleMetier(_("Ce compte a déjà une nomination active : changez son rôle au lieu d'en créer une autre."))
     nomination = creer_nomination(auteur, compte, role, membre=membre, coordination=coordination, antenne=antenne,
                                   association=association, debut=debut, fin=fin)
+    if derogation:  # dérogation du super-utilisateur : tracée à part
+        journaliser(auteur, JournalAction.Action.NOMINATION, compte, apres={'role': role, 'derogation': str(derogation)},
+                    motif=_("Dérogation du super-utilisateur : %(motif)s") % {'motif': derogation}, libelle=compte.username)
     return nomination, mot_de_passe
 
 
@@ -321,9 +379,9 @@ def creer_compte_externe(auteur, username, role, *, email='', coordination=None,
 @transaction.atomic
 def reinitialiser_mot_de_passe(auteur, compte):
     """F-05 : génère un mot de passe temporaire (retourné UNE fois), change forcé à la prochaine connexion ; journalisé sans le mot
-    de passe. Droits : voir `_verifier_gestion` (celui qui a nommé, rôles supérieurs dans le périmètre, SU)."""
+    de passe. Droits : voir `verifier_gestion` (celui qui a nommé, rôles supérieurs dans le périmètre, SU)."""
     from compte.services.comptes import mot_de_passe_temporaire
-    _verifier_gestion(auteur, compte)
+    verifier_gestion(auteur, compte)
     mot_de_passe = mot_de_passe_temporaire()
     compte.set_password(mot_de_passe)
     compte.doit_changer_mot_de_passe = True
@@ -337,7 +395,7 @@ def reinitialiser_mot_de_passe(auteur, compte):
 def desactiver(auteur, compte, motif):
     """F-06 : désactive le compte (jamais supprimé). Le MOTIF est obligatoire (RegleMetier s'il est vide) et conservé au journal.
     La nomination est conservée ; le compte ne se connecte plus."""
-    _verifier_gestion(auteur, compte)
+    verifier_gestion(auteur, compte)
     motif = (motif or '').strip()
     if not motif:
         raise RegleMetier(_("Indiquez le motif de la désactivation."))
@@ -355,7 +413,7 @@ def desactiver(auteur, compte, motif):
 def reactiver(auteur, compte, motif=''):
     """F-06 : réactive un compte désactivé. Ne génère PAS de mot de passe temporaire : le mot de passe du compte est conservé (pour
     en donner un nouveau, utiliser `reinitialiser_mot_de_passe`)."""
-    _verifier_gestion(auteur, compte)
+    verifier_gestion(auteur, compte)
     if compte.is_active:
         return compte
     compte.is_active = True
@@ -369,7 +427,7 @@ def reactiver(auteur, compte, motif=''):
 @transaction.atomic
 def terminer(auteur, compte, motif=''):
     """F-06 : met fin à la nomination active de `compte` (droits de rôle retirés) ; elle est conservée."""
-    _verifier_gestion(auteur, compte)
+    verifier_gestion(auteur, compte)
     nomination = Nomination.objects.select_for_update().filter(compte=compte, active=True).first()
     if nomination is None:
         raise RegleMetier(_("Ce compte n'a pas de nomination active."))
@@ -380,7 +438,7 @@ def terminer(auteur, compte, motif=''):
 def changer_role_perimetre(auteur, compte, role, *, coordination=None, antenne=None, association=None, motif='', fin=None):
     """F-06 : clôt la nomination en cours de `compte` et en ouvre une autre (nouveau rôle ou nouveau périmètre) dans UNE transaction,
     sous verrou. Il faut pouvoir gérer le compte ET nommer le nouveau rôle dans le nouveau périmètre. Retourne la nouvelle nomination."""
-    _verifier_gestion(auteur, compte)
+    verifier_gestion(auteur, compte)
     _verifier_nommable(auteur, role, coordination, antenne, association)
     ancienne = Nomination.objects.select_for_update().filter(compte=compte, active=True).first()
     if ancienne is None:
@@ -475,6 +533,12 @@ def alertes_de_mandat(aujourdhui=None, jours=JOURS_ALERTE, dry_run=False):
         else:
             titre = _("Mandat bientôt échu : %(compte)s (%(role)s)") % donnees
             description = _("Le mandat de %(compte)s (%(role)s) prend fin le %(fin)s (dans %(jours)s jours).") % donnees
+        if not destinataires:  # personne à prévenir : l'alerte n'est PAS notée envoyée (elle sera retentée), mais le fait est tracé
+            rapport['envoyees'].remove(nomination)
+            rapport.setdefault('sans_destinataire', []).append(nomination)
+            journaliser(None, JournalAction.Action.ALERTE_MANDAT, nomination.compte, apres={'fin': nomination.fin, 'sans_destinataire': True},
+                        motif=_("Aucun destinataire pour l'alerte de fin de mandat."), libelle=nomination.compte.username)
+            continue
         for destinataire in destinataires:
             Notification.objects.create(user=destinataire, membre=nomination.membre, titre=titre, description=description)
         Nomination.objects.filter(pk=nomination.pk).update(alerte_envoyee_le=jour)
@@ -498,7 +562,7 @@ def renouveler_mandat(auteur, compte, motif=''):
     Mêmes contrôles de droit que `changer_role_perimetre` (gérer le compte ET pouvoir nommer ce rôle dans ce périmètre).
     RegleMetier si le compte n'a pas de nomination active ou si son rôle n'a pas de mandat (SU, VI, ED). Journal : CHANGEMENT_ROLE
     (rôle identique avant / après, fin avant / après, motif « renouvellement »). Retourne la nouvelle nomination."""
-    _verifier_gestion(auteur, compte)
+    verifier_gestion(auteur, compte)
     ancienne = Nomination.objects.select_for_update().select_related('coordination', 'antenne', 'association').filter(
         compte=compte, active=True).first()
     if ancienne is None:

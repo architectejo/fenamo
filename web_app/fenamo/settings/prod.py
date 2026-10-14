@@ -19,6 +19,10 @@ if len(SECRET_KEY) < 50 or SECRET_KEY.lower().startswith(('changer', 'dev', 'dja
     )
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
+# Droits hérités (privilege1 à privilege5) : COUPÉS par défaut en production (un compte sans nomination ne voit que sa propre fiche).
+# Les réactiver est une décision explicite de transition (FENAMO_DROITS_HERITES=True dans .env) ; `check --deploy` avertit alors.
+FENAMO_DROITS_HERITES = env.bool('FENAMO_DROITS_HERITES', default=False)
+
 # WhiteNoise sert les fichiers statiques depuis Passenger, juste après SecurityMiddleware.
 MIDDLEWARE = [
     MIDDLEWARE[0],
