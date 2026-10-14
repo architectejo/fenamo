@@ -5,7 +5,7 @@ Ouverte sur l'étape 2 quand membre_retenu est fourni (bouton « Nommer » de la
 Contexte : action, roles_choix, coordinations, antennes, associations, durees, membre_retenu, saisie, erreur.
 {% endcomment %}
 <form class="feuille feuille--large" method="post" action="{{ action }}" hx-post="{{ action }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find [type=submit]" hx-disinherit="hx-target hx-swap hx-disabled-elt" novalidate
-      x-data="nommer({ etape: {% if membre_retenu %}2{% else %}1{% endif %}, role: '{{ saisie.role|default:roles_choix.0.0 }}', durees: { {% for code, d in durees.items %}{% if d %}{{ code }}: {{ d }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %} }, debut: '{{ debut_texte }}', fin: '{{ saisie.fin }}', nom: '{{ membre_retenu.nom|escapejs }}' })">
+      x-data="nommer($el.dataset)" data-etape="{% if membre_retenu %}2{% else %}1{% endif %}" data-role="{{ saisie.role|default:roles_choix.0.0 }}" data-durees="{{ durees_json }}" data-debut="{{ debut_texte }}" data-fin="{{ saisie.fin }}" data-nom="{{ membre_retenu.nom }}">
   {% csrf_token %}
   <div class="feuille-tete">
     <h2 id="modale-titre">{% translate "Nommer un membre" %}<span class="sous-titre" x-text="etape === 1 ? '{% translate "Étape 1 sur 2 · Membre" %}' : '{% translate "Étape 2 sur 2 · Rôle et mandat" %}'">{% translate "Étape 1 sur 2 · Membre" %}</span></h2>

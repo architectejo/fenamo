@@ -35,7 +35,14 @@
     });
 
     // Modale « Nommer un membre » : deux étapes, rôle, fin de mandat proposée selon la durée de la charte (modifiable)
-    Alpine.data('nommer', function (init) {
+    // Les valeurs viennent d'attributs data-* (jamais d'une expression construite par le gabarit) : aucune injection possible.
+    Alpine.data('choixRole', function (d) { return { role: d.role || '' }; });
+    Alpine.data('choixExterne', function (d) { return { type: d.type || 'VI', portee: d.portee || 'national' }; });
+    Alpine.data('motifCompteur', function (d) { return { motif: d.motif || '' }; });
+    Alpine.data('nommer', function (d) {
+      var durees = {};
+      try { durees = JSON.parse(d.durees || '{}'); } catch (e) { durees = {}; }
+      var init = { etape: parseInt(d.etape, 10) === 2 ? 2 : 1, role: d.role || '', durees: durees, debut: d.debut || '', fin: d.fin || '', nom: d.nom || '' };
       return {
         etape: init.etape, role: init.role, durees: init.durees, debut: init.debut, fin: init.fin, nom: init.nom,
         membre: '', manque: false,

@@ -9,6 +9,7 @@ Règles :
 - le mot de passe temporaire n'existe que dans la réponse au POST (``Cache-Control: no-store``, ``hx-history="false"``) : jamais
   dans un message, une session, un en-tête, le journal ni un second affichage.
 """
+import json
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
@@ -349,7 +350,7 @@ def nommer(request):
     auteur = _auteur_autorise(request)
     contexte = {
         'action': request.path, 'roles_choix': _roles_choisissables(auteur), **_choix_perimetre(auteur),
-        'durees': {code: roles.duree_par_defaut(code) for code in roles.ROLES}, 'aujourdhui': timezone.localdate(),
+        'durees_json': json.dumps({code: roles.duree_par_defaut(code) for code in roles.ROLES if roles.duree_par_defaut(code)}), 'aujourdhui': timezone.localdate(),
     }
     if request.method == 'GET':
         membre = None

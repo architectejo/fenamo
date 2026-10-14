@@ -5,7 +5,7 @@ Contexte : action, compte, cible, roles_choix, coordinations, antennes, associat
 {% endcomment %}
 {% block titre %}{% translate "Changer de rôle ou de périmètre" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
 {% block corps %}
-<div x-data="{ role: '{{ saisie.role|default:cible.role }}' }" class="formulaire">
+<div x-data="choixRole($el.dataset)" data-role="{{ saisie.role|default:cible.role }}" class="formulaire">
   {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
   <dl class="definitions">
     <div><dt>{% translate "Rôle actuel" %}</dt><dd>{{ cible.role_libelle|default:"—" }}</dd></div>

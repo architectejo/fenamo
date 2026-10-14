@@ -6,7 +6,7 @@ conservés (aucun champ côté serveur) et ne sont donc pas demandés.
 {% endcomment %}
 {% block titre %}{% translate "Ajouter un compte externe" %}<span class="sous-titre">{% translate "Visiteur ou éditeur, sans fiche membre" %}</span>{% endblock %}
 {% block corps %}
-<div x-data="{ type: '{{ saisie.type|default:'VI' }}', portee: '{{ saisie.portee|default:'national' }}' }" class="formulaire">
+<div x-data="choixExterne($el.dataset)" data-type="{{ saisie.type|default:'VI' }}" data-portee="{{ saisie.portee|default:'national' }}" class="formulaire">
   {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
   <fieldset>
     <legend class="champ-libelle">{% translate "Type de compte" %}</legend>
