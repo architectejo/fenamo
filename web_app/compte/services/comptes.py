@@ -22,6 +22,21 @@ def generer_mot_de_passe(longueur=12):
             return mdp
 
 
+LONGUEUR_TEMPORAIRE = 12
+CARACTERES_INTERDITS = '0O1lI'  # ambigus à l'écrit ou à l'oral : jamais dans un mot de passe temporaire
+
+
+def mot_de_passe_temporaire():
+    """Mot de passe temporaire : 12 caractères tirés avec ``secrets`` dans un alphabet sans 0, O, 1, l, I, avec minuscule,
+    majuscule et chiffre. Utilisé par la nomination (F-02), la création de compte externe (F-03) et la réinitialisation (F-05)."""
+    return generer_mot_de_passe(LONGUEUR_TEMPORAIRE)
+
+
+def en_groupes(mot_de_passe, taille=4):
+    """Mot de passe présenté par groupes de `taille` caractères (``abcd efgh ijkl``), pour la lecture à voix haute ou la copie."""
+    return ' '.join(mot_de_passe[i:i + taille] for i in range(0, len(mot_de_passe), taille))
+
+
 def _base_pseudo(nom, membre_id):
     brut = unicodedata.normalize('NFKD', (nom or '').split(' ')[0]).encode('ascii', 'ignore').decode()
     brut = re.sub(r'[^a-z0-9]', '', brut.lower())
@@ -35,7 +50,7 @@ def creer_compte(username, email='', membre=None, auteur=None):
     Retourne (compte, mot_de_passe_en_clair) : le mot de passe n'est connu qu'ici, à afficher une fois.
     """
     Compte = get_user_model()
-    mdp = generer_mot_de_passe()
+    mdp = mot_de_passe_temporaire()
     compte = Compte.objects.create_user(
         username=username, email=email or '', password=mdp,
         membreId=membre.id if membre else None, doit_changer_mot_de_passe=True,

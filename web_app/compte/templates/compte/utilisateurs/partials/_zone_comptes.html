@@ -1,0 +1,20 @@
+{% load i18n design %}{% comment %}
+Zone de la liste des comptes (tableau devenu cartes sous 576 px, 25 par page). Contexte : lignes, page_obj, filtres, filtres_actifs.
+Les actions d'une ligne n'apparaissent que si le service dit que l'utilisateur peut gérer ce compte ; sa propre ligne : « Votre compte ».
+{% endcomment %}
+<p class="resume-liste" role="status"><span>{% if filtres_actifs %}{% translate "Résultats filtrés" %}{% endif %}</span><span>{% if page_obj.paginator.count %}{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}{% else %}{% translate "Aucun utilisateur ne correspond" %}{% endif %}</span></p>
+{% if lignes %}
+<div class="liste-enveloppe">
+  <table class="liste">
+    <caption class="lecteur">{% translate "Comptes utilisateurs de votre périmètre" %}</caption>
+    <thead><tr><th scope="col">{% translate "Compte" %}</th><th scope="col">{% translate "Nomination" %}</th><th scope="col">{% translate "Mandat" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th></tr></thead>
+    <tbody id="resultats-lignes">
+      {% for l in lignes %}{% include "compte/utilisateurs/partials/_ligne.html" %}{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/_pagination.html" with page_obj=page_obj cible="#comptes-zone" %}
+{% else %}
+{% translate "Aucun utilisateur ne correspond" as t_vide %}{% translate "Modifiez la recherche ou retirez un filtre." as t_msg %}
+{% include "components/_etat_vide.html" with icone="search" titre=t_vide texte=t_msg %}
+{% endif %}

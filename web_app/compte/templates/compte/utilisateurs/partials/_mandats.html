@@ -1,0 +1,17 @@
+{% load i18n design %}{% comment %}
+Onglet « Mandats à traiter » (maquette) : chiffres, rappel de la règle (un mandat échu ne coupe pas l'accès), mandats échus puis à venir.
+Contexte : echus, bientot, nb_echus, nb_bientot, nb_en_cours, nb_sans_fin.
+{% endcomment %}
+<div class="affichage">
+  {% translate "Mandats échus" as t1 %}{% include "components/_chiffre.html" with valeur=nb_echus libelle=t1 %}
+  {% translate "Fin dans les 60 jours" as t2 %}{% include "components/_chiffre.html" with valeur=nb_bientot libelle=t2 %}
+  {% translate "Mandats en cours" as t3 %}{% include "components/_chiffre.html" with valeur=nb_en_cours libelle=t3 %}
+  {% translate "Sans date de fin" as t4 %}{% include "components/_chiffre.html" with valeur=nb_sans_fin libelle=t4 %}
+</div>
+<div class="u-mt-5">{% translate "Un mandat échu ne coupe pas l'accès. Renouvelez-le ou désactivez le compte. Vous êtes prévenu 60 jours avant l'échéance, puis le jour même." as t_info %}{% include "components/_erreur.html" with niveau="info" titre=t_info %}</div>
+<h2 class="section-titre">{% translate "Mandats échus" %} <span class="meta">{% blocktranslate count n=nb_echus %}{{ n }} compte, le plus ancien d'abord{% plural %}{{ n }} comptes, le plus ancien d'abord{% endblocktranslate %}</span></h2>
+{% if echus %}<ul class="file">{% for l in echus %}{% include "compte/utilisateurs/partials/_mandat_ligne.html" %}{% endfor %}</ul>
+{% else %}{% translate "Aucun mandat échu" as t_vide %}{% include "components/_etat_vide.html" with icone="check-check" titre=t_vide %}{% endif %}
+<h2 class="section-titre">{% translate "Fin dans les 60 jours" %} <span class="meta">{% blocktranslate count n=nb_bientot %}{{ n }} compte, le plus proche d'abord{% plural %}{{ n }} comptes, le plus proche d'abord{% endblocktranslate %}</span></h2>
+{% if bientot %}<ul class="file">{% for l in bientot %}{% include "compte/utilisateurs/partials/_mandat_ligne.html" %}{% endfor %}</ul>
+{% else %}{% translate "Aucun mandat à échéance proche" as t_vide2 %}{% include "components/_etat_vide.html" with icone="check-check" titre=t_vide2 %}{% endif %}

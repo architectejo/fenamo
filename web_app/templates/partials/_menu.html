@@ -14,6 +14,11 @@
     <a class="menu-lien" href="{% url 'liste-membre' %}" data-prefixe="/membres/"{% if nom == 'liste-membre' or nom == 'membre-view' %} aria-current="page"{% endif %}>{% icone "users" %}<span>{% translate "Membres" %}</span></a>
     <a class="menu-lien" hx-boost="false" href="{% url 'str-list' %}" data-prefixe="/associations/">{% icone "building-2" %}<span>{% translate "Associations membres" %}</span></a>
 
+    {% if fn_droits|peut_nommer %}
+    <p class="menu-groupe">{% translate "Organisation" %}</p>
+    <a class="menu-lien" href="{% url 'utilisateurs' %}" data-prefixe="/utilisateurs/"{% if nom == 'utilisateurs' %} aria-current="page"{% endif %}>{% icone "user-check" %}<span>{% translate "Utilisateurs" %}</span></a>
+    {% endif %}
+
     <p class="menu-groupe">{% translate "Communication" %}</p>
     <a class="menu-lien" hx-boost="false" href="{% url 'list-message' %}" data-prefixe="/communiques/">{% icone "megaphone" %}<span>{% translate "Communiqués" %}</span></a>
     <a class="menu-lien" hx-boost="false" href="{% url 'notifys' %}">{% icone "bell" %}<span>{% translate "Notifications" %}</span>{% if fn_notifs_total %}<span class="nombre">{{ fn_notifs_total }}</span>{% endif %}</a>

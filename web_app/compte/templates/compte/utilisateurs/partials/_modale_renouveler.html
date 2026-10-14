@@ -1,0 +1,13 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}Renouveler le mandat (F-06) : même rôle, même périmètre ; nouvelle fin = aujourd'hui + durée de la charte. Distinct du changement de rôle.{% endcomment %}
+{% block titre %}{% translate "Renouveler le mandat" %}<span class="sous-titre">{{ cible.nom }} · {{ cible.role_libelle }}</span>{% endblock %}
+{% block corps %}
+{% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+<dl class="definitions">
+  <div><dt>{% translate "Rôle et périmètre" %}</dt><dd>{{ cible.role_libelle }} · {{ cible.lieu }}</dd></div>
+  <div><dt>{% translate "Fin actuelle" %}</dt><dd>{{ cible.mandat.fin }} <span class="doux">({{ cible.mandat.reste }})</span></dd></div>
+  {% if nouvelle_fin %}<div><dt>{% translate "Nouvelle fin" %}</dt><dd>{{ nouvelle_fin|date:"d/m/Y" }} <span class="doux">({% blocktranslate with n=duree %}{{ n }} ans, durée de la charte{% endblocktranslate %})</span></dd></div>{% endif %}
+</dl>
+<p class="meta">{% translate "Le rôle et le périmètre ne changent pas. L'ancien mandat reste dans l'historique." %}</p>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Renouveler le mandat" %}</span></button>{% endblock %}

@@ -34,6 +34,33 @@
       }
     });
 
+    // Modale « Nommer un membre » : deux étapes, rôle, fin de mandat proposée selon la durée de la charte (modifiable)
+    Alpine.data('nommer', function (init) {
+      return {
+        etape: init.etape, role: init.role, durees: init.durees, debut: init.debut, fin: init.fin, nom: init.nom,
+        membre: '', manque: false,
+        init: function () { this.membre = this.$refs.membre ? this.$refs.membre.value : ''; if (this.etape === 2 && !this.fin) { this.majFin(); } },
+        choisir: function (e) {
+          var radio = e.target;
+          if (!radio || radio.name !== 'membre') { return; }
+          this.membre = radio.value;
+          var nom = radio.closest('label').querySelector('.choix-membre-nom');
+          this.nom = nom ? nom.textContent.trim() : '';
+          this.manque = false;
+        },
+        suivant: function () {
+          if (!this.membre) { this.manque = true; return; }
+          this.etape = 2; this.majFin();
+        },
+        majFin: function () {
+          var annees = this.durees[this.role];
+          var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((this.debut || '').trim());
+          if (!annees || !m) { this.fin = ''; return; }
+          this.fin = m[1] + '/' + m[2] + '/' + (parseInt(m[3], 10) + annees);
+        }
+      };
+    });
+
     // Onglets accessibles (rôle tablist) ; l'onglet actif peut venir de l'ancre de l'adresse
     Alpine.data('onglets', function (defaut) {
       return {
@@ -153,6 +180,16 @@
   });
   window.addEventListener('pageshow', function (e) {
     if (e.persisted) { document.querySelectorAll('button[aria-busy=true]').forEach(function (b) { b.disabled = false; b.removeAttribute('aria-busy'); }); }
+  });
+
+  /* ------------------------------------------------------------------ Filtres repliables : [data-deplier="#zone"] */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-deplier]');
+    if (!b) { return; }
+    var zone = document.querySelector(b.getAttribute('data-deplier'));
+    if (!zone) { return; }
+    var ouvert = zone.classList.toggle('est-deplie');
+    b.setAttribute('aria-expanded', String(ouvert));
   });
 
   /* ------------------------------------------------------------------ Suppression d'un membre : modale de confirmation avec action et motif */

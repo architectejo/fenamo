@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n design %}{% comment %}
+Écran « Utilisateurs » (maquette utilisateurs.html, F-02, F-03, F-05, F-06). Contexte : voir compte/views_utilisateurs.py.
+Deux zones se rafraîchissent seules après une action (événement utilisateursModifies) : #comptes-zone et #mandats-zone.
+Les modales (nommer, compte externe, réinitialiser, désactiver, réactiver, changer, renouveler) sont servies par HTMX dans la modale commune.
+Données personnelles : hx-history="false".
+{% endcomment %}
+{% block titre %}{% translate "Utilisateurs" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div hidden hx-history="false"></div>
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">{% translate "Utilisateurs" %}</h1>
+    <p class="page-contexte">{% icone "map-pin" %}{{ perimetre_libelle }} · {% blocktranslate count n=total_comptes %}<span class="chiffres texte-plein">{{ n }}</span> compte dans votre périmètre{% plural %}<span class="chiffres texte-plein">{{ n }}</span> comptes dans votre périmètre{% endblocktranslate %}</p>
+  </div>
+  <div class="page-actions">
+    {% if peut_externe %}<button class="bouton" type="button" hx-get="{% url 'utilisateurs-externe' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "user-plus" %}<span>{% translate "Ajouter un compte externe" %}</span></button>{% endif %}
+    <button class="bouton bouton--principal" type="button" hx-get="{% url 'utilisateurs-nommer' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "badge-check" %}<span>{% translate "Nommer un membre" %}</span></button>
+  </div>
+</div>
+
+<div x-data="onglets('{{ onglet }}')" @keydown.arrow-right="cle($event)" @keydown.arrow-left="cle($event)">
+  <div class="onglets" role="tablist" aria-label="{% translate 'Vues' %}">
+    <button type="button" class="onglet" role="tab" id="onglet-comptes" data-onglet="comptes" aria-controls="panneau-comptes" :aria-selected="(actif === 'comptes').toString()" :tabindex="actif === 'comptes' ? 0 : -1" @click="choisir('comptes')">{% translate "Comptes" %} <span class="nombre">{{ total_comptes }}</span></button>
+    <button type="button" class="onglet" role="tab" id="onglet-mandats" data-onglet="mandats" aria-controls="panneau-mandats" :aria-selected="(actif === 'mandats').toString()" :tabindex="actif === 'mandats' ? 0 : -1" @click="choisir('mandats')">{% translate "Mandats à traiter" %} <span class="nombre">{{ nb_echus|add:nb_bientot }}</span></button>
+  </div>
+
+  <section id="panneau-comptes" role="tabpanel" aria-labelledby="onglet-comptes" x-show="actif === 'comptes'">
+    <form id="filtres-utilisateurs" method="get" action="{% url 'utilisateurs' %}" role="search" hx-boost="false"
+          hx-get="{% url 'utilisateurs' %}" hx-trigger="input changed delay:300ms from:#q, change, submit, utilisateursModifies from:body"
+          hx-vals='{"zone": "comptes"}' hx-target="#comptes-zone" hx-push-url="false" hx-indicator="#comptes-zone" hx-sync="this:replace">
+      <div class="filtres">
+        <div class="recherche">{% icone "search" %}<label class="lecteur" for="q">{% translate "Rechercher un utilisateur" %}</label><input id="q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Nom, identifiant ou MBR' %}" autocomplete="off"></div>
+        <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus">{% icone "sliders-horizontal" %}<span>{% translate "Filtres" %}</span>{% if nb_filtres %}<span class="ident">{{ nb_filtres }}</span>{% endif %}</button>
+      </div>
+      <div class="filtres-plus" id="filtres-plus">
+        <div class="champ"><label class="champ-libelle" for="f-role">{% translate "Rôle" %}</label><select id="f-role" name="role"><option value="">{% translate "Tous les rôles" %}</option>{% for code, libelle in roles_filtre %}<option value="{{ code }}"{% if filtres.role == code %} selected{% endif %}>{{ libelle }}</option>{% endfor %}</select></div>
+        <div class="champ"><label class="champ-libelle" for="f-coord">{% translate "Coordination" %}</label><select id="f-coord" name="coordination"><option value="">{% translate "Toutes" %}</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if filtres.coordination == c.id %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+        <div class="champ"><label class="champ-libelle" for="f-lieu">{% translate "Antenne" %}</label><select id="f-lieu" name="antenne"><option value="">{% translate "Toutes" %}</option>{% for a in antennes %}<option value="{{ a.id }}"{% if filtres.antenne == a.id %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select></div>
+        <div class="champ"><label class="champ-libelle" for="f-mandat">{% translate "Mandat" %}</label><select id="f-mandat" name="mandat"><option value="">{% translate "Tous" %}</option><option value="a_echoir"{% if filtres.mandat == "a_echoir" %} selected{% endif %}>{% translate "Fin dans les 60 jours" %}</option><option value="echu"{% if filtres.mandat == "echu" %} selected{% endif %}>{% translate "Échu" %}</option><option value="sans_fin"{% if filtres.mandat == "sans_fin" %} selected{% endif %}>{% translate "Sans date de fin" %}</option></select></div>
+      </div>
+      <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état du compte' %}">
+        {% for code, libelle in puces %}<label class="puce"><input type="radio" name="etat" value="{{ code }}"{% if filtres.etat == code %} checked{% endif %}><span>{{ libelle }}</span></label>{% endfor %}
+      </div>
+    </form>
+    <div id="comptes-zone" class="zone-rafraichie">{% include "compte/utilisateurs/partials/_zone_comptes.html" %}</div>
+  </section>
+
+  <section id="panneau-mandats" role="tabpanel" aria-labelledby="onglet-mandats" x-show="actif === 'mandats'" x-cloak>
+    <div id="mandats-zone" hx-get="{% url 'utilisateurs' %}?zone=mandats" hx-trigger="utilisateursModifies from:body" hx-swap="innerHTML">{% include "compte/utilisateurs/partials/_mandats.html" %}</div>
+  </section>
+</div>
+{% endblock %}

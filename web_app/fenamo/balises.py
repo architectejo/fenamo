@@ -181,3 +181,9 @@ assert set(LIBELLES_PLURIELS) == set(ETATS), 'LIBELLES_PLURIELS doit couvrir exa
 def libelle_pluriel_etat(code):
     """Libellé d'un code d'état au pluriel (puces de filtre) ; à défaut, le libellé au singulier de la table unique."""
     return LIBELLES_PLURIELS.get(code) or LIBELLES.get(code, code)
+
+
+@register.filter
+def peut_nommer(droits):
+    """Vrai si le contexte de droits de la coque (fn_droits) permet de nommer des utilisateurs : SU, PR, VN, VP, VA (compte.roles.NOMMABLES)."""
+    return bool(droits) and bool(droits.get('est_su') or droits.get('role') in ('PR', 'VN', 'VP', 'VA'))

@@ -1,0 +1,24 @@
+{% load i18n design %}{% comment %}Ligne de la liste des comptes (maquette). Contexte : l (dictionnaire préparé par views_utilisateurs._ligne).{% endcomment %}
+<tr>
+  <td data-role="titre"><div class="cellule-personne">{% avatar l.nom "" 40 %}<div>
+    {% if l.membre %}<a class="lien-ligne" href="{% url 'membre-view' l.membre.id %}">{{ l.nom }}</a>{% else %}<strong>{{ l.nom }}</strong>{% endif %}{% if l.soi %} <span class="meta u-inline">({% translate "vous" %})</span>{% endif %}
+    <span class="meta"><span class="ident">{{ l.compte.username }}</span>{% if l.membre.idf %} · <span class="ident">{{ l.membre.idf }}</span>{% elif l.externe %} · {% translate "compte externe" %}{% endif %}</span>
+    <span class="bloc u-mt-2">{% include "components/_badge_compte.html" with etat=l.etat %}</span>
+  </div></div></td>
+  <td data-libelle="{% translate 'Nomination' %}">{% if l.nomination %}<div class="nomination">{% include "components/_badge_role.html" with code=l.role libelle=l.role_libelle %}<span>{{ l.lieu }}</span>{% if l.nomme_par %}<span class="meta">{{ l.nomme_par }}</span>{% endif %}</div>{% else %}<span class="meta">{% translate "Aucune nomination en cours" %}</span>{% endif %}</td>
+  <td data-libelle="{% translate 'Mandat' %}">{% include "components/_mandat.html" with variante=l.mandat.variante fin=l.mandat.fin reste=l.mandat.reste part=l.mandat.part|palier_5 jauge=True %}</td>
+  <td data-role="actions">
+    {% if l.soi %}<span class="meta">{% translate "Votre compte" %}</span>
+    {% elif l.peut_gerer %}
+    {% if l.etat == "desactive" %}
+    <div class="actions-ligne actions-ligne--seule"><button type="button" class="bouton action-ligne" hx-get="{% url 'utilisateurs-reactiver' l.compte.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this" title="{% translate 'Réactiver le compte' %}">{% icone "user-check" %}<span class="action-ligne-texte">{% translate "Réactiver" %}<span class="lecteur"> {% blocktranslate with nom=l.nom %}le compte de {{ nom }}{% endblocktranslate %}</span></span></button></div>
+    {% else %}
+    <div class="actions-ligne">
+      <button type="button" class="bouton action-ligne" hx-get="{% url 'utilisateurs-role' l.compte.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this" title="{% translate 'Changer le rôle ou le périmètre' %}">{% icone "user-cog" %}<span class="action-ligne-texte">{% translate "Rôle" %}<span class="lecteur"> {% blocktranslate with nom=l.nom %}ou périmètre de {{ nom }}{% endblocktranslate %}</span></span></button>
+      <button type="button" class="bouton action-ligne" hx-get="{% url 'utilisateurs-reinitialiser' l.compte.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this" title="{% translate 'Réinitialiser le mot de passe' %}">{% icone "key-round" %}<span class="action-ligne-texte">{% translate "Mot de passe" %}<span class="lecteur"> {% blocktranslate with nom=l.nom %}de {{ nom }} : réinitialiser{% endblocktranslate %}</span></span></button>
+      <button type="button" class="bouton action-ligne action-ligne--danger" hx-get="{% url 'utilisateurs-desactiver' l.compte.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this" title="{% translate 'Désactiver le compte' %}">{% icone "user-x" %}<span class="action-ligne-texte">{% translate "Désactiver" %}<span class="lecteur"> {% blocktranslate with nom=l.nom %}le compte de {{ nom }}{% endblocktranslate %}</span></span></button>
+    </div>
+    {% endif %}
+    {% endif %}
+  </td>
+</tr>

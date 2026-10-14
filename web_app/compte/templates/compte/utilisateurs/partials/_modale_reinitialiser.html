@@ -1,0 +1,10 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}Réinitialiser le mot de passe (F-05) : confirmation, puis modale du mot de passe temporaire (lecture unique).{% endcomment %}
+{% block titre %}{% translate "Réinitialiser le mot de passe" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block corps %}
+{% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+{% translate "L'ancien mot de passe cesse de fonctionner tout de suite. Un nouveau mot de passe temporaire s'affiche une seule fois ; le compte devra le changer à sa prochaine connexion." as t_msg %}
+{% include "components/_erreur.html" with niveau="alerte" titre=_("Le mot de passe actuel sera remplacé.") texte=t_msg %}
+<p class="meta">{% translate "L'opération est inscrite au journal, sans le mot de passe." %}</p>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span>{% icone "key-round" %}<span>{% translate "Réinitialiser le mot de passe" %}</span></button>{% endblock %}

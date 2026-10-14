@@ -1,0 +1,13 @@
+{% load i18n design %}{% comment %}Mandat à traiter (maquette : .dossier). Contexte : l.{% endcomment %}
+<li class="dossier">
+  {% avatar l.nom "" 40 %}
+  <div>
+    <div class="dossier-titre">{% if l.membre %}<a href="{% url 'membre-view' l.membre.id %}">{{ l.nom }}</a>{% else %}<strong>{{ l.nom }}</strong>{% endif %}{% include "components/_badge_role.html" with code=l.role libelle=l.role_libelle %}</div>
+    <div class="dossier-lieu"><span>{% icone "map-pin" %}{{ l.lieu }}</span>{% if l.nomme_par %}<span>{% icone "user" %}{{ l.nomme_par }}</span>{% endif %}</div>
+    <div class="dossier-etat">{% translate "Fin le" as t_fin %}{% include "components/_mandat.html" with variante=l.mandat.variante fin=l.mandat.fin prefixe=t_fin reste=l.mandat.reste jauge=False %}</div>
+  </div>
+  {% if l.peut_gerer %}<div class="dossier-actions">
+    {% if l.peut_renouveler %}<button type="button" class="bouton" hx-get="{% url 'utilisateurs-renouveler' l.compte.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "calendar-clock" %}<span>{% translate "Renouveler" %}</span></button>{% endif %}
+    <button type="button" class="bouton bouton--danger" hx-get="{% url 'utilisateurs-desactiver' l.compte.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "user-x" %}<span>{% translate "Désactiver" %}</span></button>
+  </div>{% endif %}
+</li>

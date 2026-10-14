@@ -313,9 +313,9 @@ def creer_compte_externe(auteur, username, role, *, email='', coordination=None,
 def reinitialiser_mot_de_passe(auteur, compte):
     """F-05 : génère un mot de passe temporaire (retourné UNE fois), change forcé à la prochaine connexion ; journalisé sans le mot
     de passe. Droits : voir `_verifier_gestion` (celui qui a nommé, rôles supérieurs dans le périmètre, SU)."""
-    from compte.services.comptes import generer_mot_de_passe
+    from compte.services.comptes import mot_de_passe_temporaire
     _verifier_gestion(auteur, compte)
-    mot_de_passe = generer_mot_de_passe()
+    mot_de_passe = mot_de_passe_temporaire()
     compte.set_password(mot_de_passe)
     compte.doit_changer_mot_de_passe = True
     compte.save(update_fields=['password', 'doit_changer_mot_de_passe'])
@@ -325,22 +325,27 @@ def reinitialiser_mot_de_passe(auteur, compte):
 
 
 @transaction.atomic
-def desactiver(auteur, compte, motif=''):
-    """F-06 : désactive le compte (jamais supprimé). La nomination est conservée ; le compte ne se connecte plus."""
+def desactiver(auteur, compte, motif):
+    """F-06 : désactive le compte (jamais supprimé). Le MOTIF est obligatoire (RegleMetier s'il est vide) et conservé au journal.
+    La nomination est conservée ; le compte ne se connecte plus."""
     _verifier_gestion(auteur, compte)
+    motif = (motif or '').strip()
+    if not motif:
+        raise RegleMetier(_("Indiquez le motif de la désactivation."))
     if not compte.is_active:
         return compte
     compte.is_active = False
     compte.save(update_fields=['is_active'])
     oublier_profil(compte)
     journaliser(auteur, JournalAction.Action.DESACTIVATION_COMPTE, compte, avant={'is_active': True}, apres={'is_active': False},
-                motif=motif or '', libelle=compte.username)
+                motif=motif, libelle=compte.username)
     return compte
 
 
 @transaction.atomic
 def reactiver(auteur, compte, motif=''):
-    """F-06 : réactive un compte désactivé."""
+    """F-06 : réactive un compte désactivé. Ne génère PAS de mot de passe temporaire : le mot de passe du compte est conservé (pour
+    en donner un nouveau, utiliser `reinitialiser_mot_de_passe`)."""
     _verifier_gestion(auteur, compte)
     if compte.is_active:
         return compte
@@ -472,3 +477,121 @@ def alertes_de_mandat(aujourdhui=None, jours=JOURS_ALERTE, dry_run=False):
 def _comptes_avec_role(role):
     from django.contrib.auth import get_user_model
     return get_user_model().objects.filter(is_active=True, nominations__active=True, nominations__role=role).distinct()
+
+
+# ================================================================ renouvellement, listes pour l'écran Utilisateurs
+
+@transaction.atomic
+def renouveler_mandat(auteur, compte, motif=''):
+    """Renouvelle le mandat de `compte` : MÊME rôle et MÊME périmètre ; la nomination en cours est clôturée (motif « renouvellement »)
+    et une nouvelle est ouverte, avec une nouvelle fin (début aujourd'hui + durée du rôle), dans UNE transaction sous verrou.
+
+    Mêmes contrôles de droit que `changer_role_perimetre` (gérer le compte ET pouvoir nommer ce rôle dans ce périmètre).
+    RegleMetier si le compte n'a pas de nomination active ou si son rôle n'a pas de mandat (SU, VI, ED). Journal : CHANGEMENT_ROLE
+    (rôle identique avant / après, fin avant / après, motif « renouvellement »). Retourne la nouvelle nomination."""
+    _verifier_gestion(auteur, compte)
+    ancienne = Nomination.objects.select_for_update().select_related('coordination', 'antenne', 'association').filter(
+        compte=compte, active=True).first()
+    if ancienne is None:
+        raise RegleMetier(_("Ce compte n'a pas de nomination active."))
+    if roles.duree_par_defaut(ancienne.role) is None:
+        raise RegleMetier(_("Ce rôle n'a pas de mandat à renouveler."))
+    _verifier_nommable(auteur, ancienne.role, ancienne.coordination, ancienne.antenne, ancienne.association)
+    raison = (motif or '').strip() or _("renouvellement")
+    terminer_nomination(auteur, ancienne, raison)
+    nouvelle = creer_nomination(auteur, compte, ancienne.role, membre=ancienne.membre, coordination=ancienne.coordination,
+                                antenne=ancienne.antenne, association=ancienne.association)
+    journaliser(auteur, JournalAction.Action.CHANGEMENT_ROLE, compte, avant={'role': ancienne.role, 'fin': ancienne.fin},
+                apres={'role': nouvelle.role, 'fin': nouvelle.fin}, motif=raison, libelle=compte.username)
+    return nouvelle
+
+
+ETATS_COMPTE = ('actif', 'temporaire', 'desactive')
+ETATS_MANDAT = ('echu', 'a_echoir', 'sans_fin')
+
+
+def lister_comptes_gerables(auteur, filtres=None):
+    """Comptes que `auteur` peut gérer (voir `comptes_gerables`), filtrés, triés par nom d'utilisateur, prêts à paginer.
+
+    ``filtres`` (dict ; toute clé absente ou vide est ignorée) :
+    - ``q`` : texte cherché dans le nom d'utilisateur, l'e-mail, le prénom, le nom et le nom du membre lié ;
+    - ``role`` : code du rôle de la nomination active (PR, VN…) ; la valeur ``sans`` : comptes sans nomination active ;
+    - ``coordination`` : identifiant d'une coordination (nomination dans cette coordination ou dans une de ses antennes) ;
+    - ``antenne`` : identifiant d'une antenne ;
+    - ``etat`` : ``actif`` (actif, mot de passe déjà changé), ``temporaire`` (actif, mot de passe temporaire à changer),
+      ``desactive`` ;
+    - ``mandat`` : ``echu`` (fin dépassée), ``a_echoir`` (fin dans les 60 jours), ``sans_fin``.
+    Chaque compte porte ``nomination_active_liste`` (liste d'au plus une Nomination, ses lieux déjà chargés : aucune requête de plus
+    par ligne)."""
+    from datetime import timedelta
+
+    from django.db.models import Prefetch, Q
+
+    from coptapp.models import Membre
+    filtres = filtres or {}
+    comptes = comptes_gerables(auteur)
+    q = (filtres.get('q') or '').strip()
+    if q:
+        comptes = comptes.filter(Q(username__icontains=q) | Q(email__icontains=q) | Q(first_name__icontains=q)
+                                 | Q(last_name__icontains=q) | Q(membreId__in=Membre.objects.filter(nom__icontains=q).values('pk')))
+    role = (filtres.get('role') or '').strip().upper()
+    if role == 'SANS':
+        comptes = comptes.exclude(pk__in=Nomination.objects.filter(active=True).values('compte_id'))
+    etat = filtres.get('etat')
+    if etat == 'actif':
+        comptes = comptes.filter(is_active=True, doit_changer_mot_de_passe=False)
+    elif etat == 'temporaire':
+        comptes = comptes.filter(is_active=True, doit_changer_mot_de_passe=True)
+    elif etat == 'desactive':
+        comptes = comptes.filter(is_active=False)
+    # filtres sur la nomination ACTIVE : tous dans UN seul filter(), pour qu'ils portent sur la même ligne de nomination
+    conditions = Q(nominations__active=True)
+    voulu = False
+    if role and role != 'SANS':
+        conditions &= Q(nominations__role=role)
+        voulu = True
+    if filtres.get('coordination'):
+        coordination = filtres['coordination']
+        conditions &= Q(nominations__coordination_id=coordination) | Q(nominations__antenne__coordination_id=coordination)
+        voulu = True
+    if filtres.get('antenne'):
+        conditions &= Q(nominations__antenne_id=filtres['antenne'])
+        voulu = True
+    jour = timezone.localdate()
+    mandat = filtres.get('mandat')
+    if mandat == 'echu':
+        conditions &= Q(nominations__fin__lt=jour)
+        voulu = True
+    elif mandat == 'a_echoir':
+        conditions &= Q(nominations__fin__gte=jour, nominations__fin__lte=jour + timedelta(days=JOURS_ALERTE))
+        voulu = True
+    elif mandat == 'sans_fin':
+        conditions &= Q(nominations__fin__isnull=True)
+        voulu = True
+    if voulu:
+        comptes = comptes.filter(conditions)
+    active = Nomination.objects.filter(active=True).select_related('coordination', 'antenne', 'association', 'nomme_par')
+    return (comptes.distinct().order_by('username')
+            .prefetch_related(Prefetch('nominations', queryset=active, to_attr='nomination_active_liste')))
+
+
+def etat_mandat(nomination, aujourdhui=None, jours=JOURS_ALERTE):
+    """'echu' (fin dépassée), 'a_echoir' (fin dans les `jours` jours), 'en_cours' ou 'sans_fin'."""
+    from datetime import timedelta
+    jour = aujourdhui or timezone.localdate()
+    if nomination.fin is None:
+        return 'sans_fin'
+    if nomination.fin < jour:
+        return 'echu'
+    return 'a_echoir' if nomination.fin - jour <= timedelta(days=jours) else 'en_cours'
+
+
+def mandats_a_traiter(auteur, jours=JOURS_ALERTE):
+    """Nominations ACTIVES des comptes gérables par `auteur` dont le mandat est échu ou finit dans les `jours` jours, triées par fin
+    (les plus urgentes d'abord). QuerySet avec ``select_related`` du compte, du périmètre et de qui a nommé : prêt à paginer.
+    Utiliser ``etat_mandat`` pour distinguer 'echu' et 'a_echoir'."""
+    from datetime import timedelta
+    limite = timezone.localdate() + timedelta(days=jours)
+    return (Nomination.objects.filter(active=True, fin__isnull=False, fin__lte=limite, compte__in=comptes_gerables(auteur))
+            .select_related('compte', 'coordination', 'antenne', 'association', 'nomme_par', 'membre')
+            .order_by('fin', 'pk'))

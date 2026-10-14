@@ -1,0 +1,33 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}
+Ajouter un compte externe (F-03, PR et SU) : visiteur (périmètre fixé à la création) ou éditeur (SU seulement). POST vers utilisateurs-externe.
+Le service n'enregistre que l'identifiant, l'e-mail, le type et le périmètre : nom, organisme, téléphone et fin d'accès de la maquette ne sont pas
+conservés (aucun champ côté serveur) et ne sont donc pas demandés.
+{% endcomment %}
+{% block titre %}{% translate "Ajouter un compte externe" %}<span class="sous-titre">{% translate "Visiteur ou éditeur, sans fiche membre" %}</span>{% endblock %}
+{% block corps %}
+<div x-data="{ type: '{{ saisie.type|default:'VI' }}', portee: '{{ saisie.portee|default:'national' }}' }" class="formulaire">
+  {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+  <fieldset>
+    <legend class="champ-libelle">{% translate "Type de compte" %}</legend>
+    <div class="choix choix--roles">
+      <label><input type="radio" name="type" value="VI" x-model="type"><span>{% include "components/_badge_role.html" with code="VI" libelle=_("Visiteur") %}<span class="choix-sous">{% translate "Lecture seule : effectifs et listes nominatives" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="type" value="ED" x-model="type"{% if not peut_editeur %} disabled aria-describedby="ed-raison"{% endif %}><span>{% include "components/_badge_role.html" with code="ED" libelle=_("Éditeur") %}<span class="choix-sous" id="ed-raison">{% if peut_editeur %}{% translate "Gère le contenu du site public" %}{% else %}{% translate "Créé par le super-utilisateur seulement" %}{% endif %}</span></span>{% if peut_editeur %}<span class="coche">{% icone "check" %}</span>{% else %}{% icone "lock" %}{% endif %}</label>
+    </div>
+  </fieldset>
+  <div class="champ"><label class="champ-libelle" for="x-ident">{% translate "Identifiant de connexion" %}</label><input id="x-ident" name="username" value="{{ saisie.username }}" autocapitalize="none" spellcheck="false" autocomplete="off" required><p class="champ-aide">{% translate "Lettres, chiffres et points, sans espace. Il ne pourra pas être changé." %}</p></div>
+  <div class="champ"><label class="champ-libelle" for="x-mail">{% translate "E-mail" %} <span class="facultatif">({% translate "facultatif" %})</span></label><input id="x-mail" name="email" type="email" inputmode="email" value="{{ saisie.email }}" autocomplete="off"></div>
+  <fieldset x-show="type === 'VI'">
+    <legend class="champ-libelle">{% translate "Ce qu'il peut consulter" %}</legend>
+    <div class="choix">
+      <label><input type="radio" name="portee" value="national" x-model="portee">{% translate "Tout le pays" %}<span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="portee" value="coordination" x-model="portee">{% translate "Une coordination" %}<span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="portee" value="antenne" x-model="portee">{% translate "Une antenne" %}<span class="coche">{% icone "check" %}</span></label>
+    </div>
+    <div class="champ" x-show="portee === 'coordination'" x-cloak><label class="champ-libelle" for="x-coord">{% translate "Coordination provinciale" %}</label><select id="x-coord" name="coordination" :disabled="portee !== 'coordination'"><option value="">—</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if saisie.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+    <div class="champ" x-show="portee === 'antenne'" x-cloak><label class="champ-libelle" for="x-antenne">{% translate "Antenne" %}</label><select id="x-antenne" name="antenne" :disabled="portee !== 'antenne'"><option value="">—</option>{% for a in antennes %}<option value="{{ a.id }}"{% if saisie.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select></div>
+    <p class="champ-aide">{% translate "Le périmètre d'un visiteur est fixé à la création." %}</p>
+  </fieldset>
+</div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Créer le compte" %}</span></button>{% endblock %}

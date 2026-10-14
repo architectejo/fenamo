@@ -18,6 +18,10 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     <button type="button" class="bouton bouton--principal" data-modale-locale="#modale-modifier">{% icone "square-pen" %}<span>{% translate "Modifier" %}</span></button>
     {% endif %}
 
+    {% if membre.is_validate3 and not membre.is_delete and fn_droits|peut_nommer %}
+    <button type="button" class="bouton" hx-get="{% url 'utilisateurs-nommer' %}?membre={{ membre.id }}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "badge-check" %}<span>{% translate "Nommer" %}</span></button>
+    {% endif %}
+
     {% if peut_demander_modification %}
     <button type="button" class="bouton" data-modale-locale="#modale-demande">{% icone "send" %}<span>{% translate "Demander une modification" %}</span></button>
     {% endif %}

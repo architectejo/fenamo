@@ -1,0 +1,21 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}
+Désactiver le compte (F-06) : motif obligatoire (500 caractères au plus, compteur, suggestions). Le compte n'est jamais supprimé ; la nomination est conservée.
+Contexte : action, compte, cible, motif, motif_max, suggestions, erreur.
+{% endcomment %}
+{% block titre %}{% translate "Désactiver le compte" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block corps %}
+<div x-data="{ motif: '{{ motif|escapejs }}' }" class="formulaire">
+  {% if erreur and not erreur_motif %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+  {% translate "Il ne pourra plus se connecter. Ses données sont conservées et vous pouvez le réactiver." as t_msg %}
+  {% include "components/_erreur.html" with niveau="alerte" titre=_("Le compte sera désactivé.") texte=t_msg %}
+  <div class="champ{% if erreur_motif %} champ--erreur{% endif %}">
+    <label class="champ-libelle" for="d-motif">{% translate "Motif" %}</label>
+    <textarea id="d-motif" name="motif" rows="3" maxlength="{{ motif_max }}" required x-model="motif"{% if erreur_motif %} aria-invalid="true" aria-describedby="d-motif-erreur"{% endif %} aria-describedby="d-motif-compte">{{ motif }}</textarea>
+    <p class="champ-aide" id="d-motif-compte"><span x-text="motif.length">0</span> / {{ motif_max }}</p>
+    {% if erreur_motif %}<p class="champ-erreur" id="d-motif-erreur" role="alert">{% icone "circle-alert" %}{{ erreur }}</p>{% endif %}
+    <div class="defile-horizontal">{% for s in suggestions %}<button type="button" class="puce" @click="motif = '{{ s|escapejs }}'">{{ s }}</button>{% endfor %}</div>
+  </div>
+</div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><span>{% translate "Désactiver le compte" %}</span></button>{% endblock %}

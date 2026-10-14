@@ -1,0 +1,75 @@
+{% load i18n design %}{% comment %}
+Modale « Nommer un membre » (maquette modale-nommer, F-02) : 2 étapes dans une seule feuille (Alpine), POST vers utilisateurs-nommer.
+Étape 1 : recherche d'un membre (fragment components/_choix_membre.html, HTMX). Étape 2 : rôle (tuiles), périmètre selon le rôle, mandat.
+Ouverte sur l'étape 2 quand membre_retenu est fourni (bouton « Nommer » de la fiche). Erreur de règle : statut 422, saisie conservée.
+Contexte : action, roles_choix, coordinations, antennes, associations, durees, membre_retenu, saisie, erreur.
+{% endcomment %}
+<form class="feuille feuille--large" method="post" action="{{ action }}" hx-post="{{ action }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find [type=submit]" novalidate
+      x-data="nommer({ etape: {% if membre_retenu %}2{% else %}1{% endif %}, role: '{{ saisie.role|default:roles_choix.0.0 }}', durees: { {% for code, d in durees.items %}{% if d %}{{ code }}: {{ d }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %} }, debut: '{{ debut_texte }}', fin: '{{ saisie.fin }}', nom: '{{ membre_retenu.nom|escapejs }}' })">
+  {% csrf_token %}
+  <div class="feuille-tete">
+    <h2 id="modale-titre">{% translate "Nommer un membre" %}<span class="sous-titre" x-text="etape === 1 ? '{% translate "Étape 1 sur 2 · Membre" %}' : '{% translate "Étape 2 sur 2 · Rôle et mandat" %}'">{% translate "Étape 1 sur 2 · Membre" %}</span></h2>
+    <button type="button" class="bouton-icone" data-ferme-modale aria-label="{% translate 'Fermer' %}">{% icone "x" %}</button>
+  </div>
+  <div class="etapes" aria-hidden="true"><span class="fait"></span><span :class="{ fait: etape === 2 }"></span></div>
+  <div class="feuille-corps">
+    <div class="formulaire">
+      {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+
+      <div class="formulaire etape-panneau" x-show="etape === 1" {% if membre_retenu %}x-cloak{% endif %}>
+        <div class="champ">
+          <label class="champ-libelle" for="cherche-membre">{% translate "Rechercher un membre actif" %}</label>
+          <div class="recherche">{% icone "search" %}<input id="cherche-membre" type="search" name="q" placeholder="{% translate 'Nom, MBR ou téléphone' %}" autocomplete="off" aria-describedby="cherche-membre-aide"
+               hx-get="{% url 'utilisateurs-membres-nommables' %}" hx-trigger="input changed delay:300ms, search" hx-target="#resultats-membres-zone" hx-indicator="#resultats-membres-zone" hx-sync="this:replace"></div>
+          <p class="champ-aide" id="cherche-membre-aide">{% translate "Seul un membre actif, sans nomination en cours, peut être nommé." %}</p>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle">{% translate "Résultats" %}</legend>
+          <div id="resultats-membres-zone" class="zone-rafraichie" @change="choisir($event)" aria-live="polite">
+            <p class="meta">{% translate "Saisissez au moins une lettre du nom, ou un numéro MBR." %}</p>
+          </div>
+        </fieldset>
+        <input type="hidden" name="membre" :value="membre" x-ref="membre" value="{{ membre_retenu.id|default:'' }}">
+        <p class="champ-erreur" x-show="manque" x-cloak role="alert">{% icone "circle-alert" %}{% translate "Choisissez un membre dans la liste." %}</p>
+      </div>
+
+      <div class="formulaire etape-panneau" x-show="etape === 2" {% if not membre_retenu %}x-cloak{% endif %}>
+        <div class="membre-retenu">
+          <span class="avatar" aria-hidden="true" x-text="(nom || '?').charAt(0).toUpperCase()"></span>
+          <div><strong class="bloc" x-text="nom"></strong></div>
+          <button type="button" class="bouton bouton--discret" @click="etape = 1">{% translate "Changer" %}</button>
+        </div>
+        <fieldset>
+          <legend class="champ-libelle">{% translate "Rôle" %}</legend>
+          <div class="choix choix--roles">
+            {% for code, libelle, sous in roles_choix %}
+            <label><input type="radio" name="role" value="{{ code }}" x-model="role" @change="majFin()"><span>{% include "components/_badge_role.html" with code=code libelle=libelle %}<span class="choix-sous">{{ sous }}</span></span><span class="coche">{% icone "check" %}</span></label>
+            {% endfor %}
+          </div>
+          <p class="champ-aide">{% translate "Vous nommez un rôle situé en dessous du vôtre, dans votre périmètre." %}</p>
+        </fieldset>
+        <div class="formulaire-ligne">
+          <div class="champ" x-show="role === 'VP'" x-cloak><label class="champ-libelle" for="n-coord">{% translate "Coordination provinciale" %}</label>
+            <select id="n-coord" name="coordination" :disabled="role !== 'VP'"><option value="">—</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if saisie.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+          <div class="champ" x-show="role === 'VA' || role === 'AT'" x-cloak><label class="champ-libelle" for="n-antenne">{% translate "Antenne" %}</label>
+            <select id="n-antenne" name="antenne" :disabled="role !== 'VA' && role !== 'AT'"><option value="">—</option>{% for a in antennes %}<option value="{{ a.id }}"{% if saisie.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select></div>
+          <div class="champ" x-show="role === 'AT'" x-cloak><label class="champ-libelle" for="n-asso">{% translate "Association membre" %} <span class="facultatif">({% translate "facultatif" %})</span></label>
+            <select id="n-asso" name="association" :disabled="role !== 'AT'"><option value="">{% translate "Toutes celles de l'antenne" %}</option>{% for s in associations %}<option value="{{ s.id }}"{% if saisie.association == s.id|stringformat:"s" %} selected{% endif %}>{% firstof s.sigle s.nom %}</option>{% endfor %}</select></div>
+          <p class="champ-aide champ--plein" x-show="role === 'PR' || role === 'VN'" x-cloak>{% translate "Ce rôle exerce sur tout le pays : pas de périmètre à choisir." %}</p>
+        </div>
+        <div class="formulaire-ligne">
+          <div class="champ"><label class="champ-libelle" for="n-debut">{% translate "Début du mandat" %}</label><input id="n-debut" name="debut" inputmode="numeric" placeholder="JJ/MM/AAAA" x-model="debut" @change="majFin()"></div>
+          <div class="champ"><label class="champ-libelle" for="n-fin">{% translate "Fin du mandat" %}</label><input id="n-fin" name="fin" inputmode="numeric" placeholder="JJ/MM/AAAA" x-model="fin" aria-describedby="n-fin-aide">
+            <p class="champ-aide" id="n-fin-aide">{% translate "Durée de la charte (art. 72 à 75) : 3 ans pour une antenne, 4 ans pour une coordination, 5 ans pour le comité national." %}</p></div>
+        </div>
+        {% include "components/_erreur.html" with niveau="info" icone="key-round" titre=_("Un mot de passe temporaire est créé avec le compte.") texte=_("Il s'affiche une seule fois, juste après.") %}
+      </div>
+    </div>
+  </div>
+  <div class="feuille-pied">
+    <button type="button" class="bouton" x-show="etape === 1" data-ferme-modale>{% translate "Annuler" %}</button>
+    <button type="button" class="bouton" x-show="etape === 2" x-cloak @click="etape = 1">{% translate "Précédent" %}</button>
+    <button type="button" class="bouton bouton--principal" x-show="etape === 1" @click="suivant()"><span>{% translate "Continuer" %}</span></button>
+    <button type="submit" class="bouton bouton--principal" x-show="etape === 2" x-cloak><span class="roue" aria-hidden="true"></span><span>{% translate "Nommer le membre" %}</span></button>
+  </div>
+</form>

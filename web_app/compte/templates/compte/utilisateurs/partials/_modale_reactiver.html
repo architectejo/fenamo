@@ -1,0 +1,9 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}Réactiver le compte (F-06) : rôle et périmètre retrouvés ; mot de passe temporaire seulement si la case est cochée (décision par défaut : non).{% endcomment %}
+{% block titre %}{% translate "Réactiver le compte" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block corps %}
+{% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+<p>{% blocktranslate with nom=cible.nom %}{{ nom }} pourra de nouveau se connecter et retrouvera son rôle et son périmètre.{% endblocktranslate %}</p>
+<label class="case"><input type="checkbox" name="nouveau_mdp" value="1"><span>{% translate "Créer un mot de passe temporaire" %}<span class="champ-aide bloc">{% translate "À cocher si le compte a perdu son mot de passe. Il s'affichera une seule fois." %}</span></span></label>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Réactiver le compte" %}</span></button>{% endblock %}

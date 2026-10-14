@@ -1,0 +1,32 @@
+{% extends "components/modale_base.html" %}
+{% load i18n design %}{% comment %}
+Changer de rôle ou de périmètre (F-06) : la nomination actuelle prend fin aujourd'hui (historique conservé), une nouvelle est ouverte.
+Contexte : action, compte, cible, roles_choix, coordinations, antennes, associations, durees, saisie, erreur.
+{% endcomment %}
+{% block titre %}{% translate "Changer de rôle ou de périmètre" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block corps %}
+<div x-data="{ role: '{{ saisie.role|default:cible.role }}' }" class="formulaire">
+  {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
+  <dl class="definitions">
+    <div><dt>{% translate "Rôle actuel" %}</dt><dd>{{ cible.role_libelle|default:"—" }}</dd></div>
+    <div><dt>{% translate "Périmètre actuel" %}</dt><dd>{{ cible.lieu|default:"—" }}</dd></div>
+  </dl>
+  <fieldset>
+    <legend class="champ-libelle">{% translate "Nouveau rôle" %}</legend>
+    <div class="choix choix--roles">
+      {% for code, libelle, sous in roles_choix %}
+      <label><input type="radio" name="role" value="{{ code }}" x-model="role"><span>{% include "components/_badge_role.html" with code=code libelle=libelle %}<span class="choix-sous">{{ sous }}</span></span><span class="coche">{% icone "check" %}</span></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <div class="formulaire-ligne">
+    <div class="champ" x-show="role === 'VP'" x-cloak><label class="champ-libelle" for="c-coord">{% translate "Coordination provinciale" %}</label><select id="c-coord" name="coordination" :disabled="role !== 'VP'"><option value="">—</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if saisie.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+    <div class="champ" x-show="role === 'VA' || role === 'AT'" x-cloak><label class="champ-libelle" for="c-antenne">{% translate "Antenne" %}</label><select id="c-antenne" name="antenne" :disabled="role !== 'VA' && role !== 'AT'"><option value="">—</option>{% for a in antennes %}<option value="{{ a.id }}"{% if saisie.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}</option>{% endfor %}</select></div>
+    <div class="champ" x-show="role === 'AT'" x-cloak><label class="champ-libelle" for="c-asso">{% translate "Association membre" %} <span class="facultatif">({% translate "facultatif" %})</span></label><select id="c-asso" name="association" :disabled="role !== 'AT'"><option value="">{% translate "Toutes celles de l'antenne" %}</option>{% for s in associations %}<option value="{{ s.id }}"{% if saisie.association == s.id|stringformat:"s" %} selected{% endif %}>{% firstof s.sigle s.nom %}</option>{% endfor %}</select></div>
+  </div>
+  <div class="champ"><label class="champ-libelle" for="c-fin">{% translate "Fin du nouveau mandat" %} <span class="facultatif">({% translate "facultatif" %})</span></label><input id="c-fin" name="fin" inputmode="numeric" placeholder="JJ/MM/AAAA" value="{{ saisie.fin }}"><p class="champ-aide">{% translate "Laissez vide pour la durée de la charte." %}</p></div>
+  <div class="champ"><label class="champ-libelle" for="c-motif">{% translate "Motif" %} <span class="facultatif">({% translate "facultatif" %})</span></label><textarea id="c-motif" name="motif" rows="2" maxlength="500">{{ saisie.motif }}</textarea></div>
+  {% include "components/_erreur.html" with niveau="info" titre=_("La nomination actuelle prend fin aujourd'hui.") texte=_("Elle reste dans l'historique.") %}
+</div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Enregistrer le changement" %}</span></button>{% endblock %}
