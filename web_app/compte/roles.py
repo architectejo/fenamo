@@ -34,6 +34,16 @@ DUREE_DU_ROLE = {VA: DUREES_MANDAT_ANS[ANTENNE], AT: DUREES_MANDAT_ANS[ANTENNE],
 # Rang hiérarchique (plus petit = plus haut) : qui peut nommer qui (§ 4.2, appliqué aux nominations au sous-lot suivant).
 RANG = {SU: 0, PR: 1, VN: 2, VP: 3, VA: 4, AT: 5, VI: 6, ED: 6}
 
+# Qui peut nommer quel rôle (§ 4.3, ligne « Nommer des utilisateurs »). Le rôle SU n'est jamais nommable : les comptes SU sont
+# réservés au prestataire technique (F-07) ; ED se nomme par SU seulement ; VI par PR et SU.
+NOMMABLES = {
+    SU: (PR, VN, VP, VA, AT, VI, ED),
+    PR: (VN, VP, VA, AT, VI),
+    VN: (VP, VA, AT),
+    VP: (VA, AT),
+    VA: (AT,),
+}
+
 PREFIXE_GROUPE = 'role_'
 
 
@@ -45,3 +55,8 @@ def nom_du_groupe(role):
 def duree_par_defaut(role):
     """Durée de mandat en années pour `role` (None si le rôle n'a pas de mandat : SU, VI, ED)."""
     return DUREE_DU_ROLE.get(role)
+
+
+def roles_nommables_par(role):
+    """Rôles qu'un compte de rôle `role` peut nommer (tuple vide : aucun)."""
+    return NOMMABLES.get(role, ())
