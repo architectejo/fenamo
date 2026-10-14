@@ -41,6 +41,7 @@ urlpatterns = [
 
     # Membres
     path('membres/', membreListe, name="liste-membre"),
+    path('membres/valider-tous/', validerTous, name="valider-tous"),  # POST : « Valider tout le monde » (500 au plus par appel)
     path('membres/ajouter/', add_membre_from_fenamo, name="add-fenamo-membre"),
     path('membres/ajouter/association/<int:id>/', addMembre, name="add-membre"),
     path('membres/<int:id>/', membre_view, name="membre-view"),

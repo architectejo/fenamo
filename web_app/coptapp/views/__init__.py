@@ -28,12 +28,13 @@ from coptapp.services.engins import (
     CoordinationInconnue, EnginDejaEnregistre, attribuer_engin, enregistrer_engin, lister_engins,
 )
 from coptapp.services.fiche_membre import contexte_fiche
+from coptapp.services.transitions import compter_validables, valider_tous
 from coptapp.services.membres import (
     Q_LONGUEUR_MAX, choix_filtres, demander_modification, lister_membres, membres_filtres, modifier_membre,
 )
 
 RESULTATS_MAX = 50
-from fenamo.htmx import veut_fragment
+from fenamo.htmx import reponse_succes, veut_fragment
 from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime
 from calendar import monthrange
@@ -137,6 +138,24 @@ def validate(request, id):
     if not valider_membre(user, membre):
         contrib_messages.info(request, _("Rien à valider pour vous sur ce membre."))
     return _retour(request, 'liste-membre')
+
+@require_POST
+def validerTous(request):
+    """« Valider tout le monde » : valide, à l'étape de l'auteur, tous les membres de son périmètre et des filtres de la liste (POST :
+    q, etat, qualite, antenne, association), 500 au plus par appel. 403 si l'auteur ne valide aucune étape. Requête HTMX : 204 avec
+    toast et événement ``membresMaj`` (la liste se rafraîchit) ; sinon message et retour à la page d'origine."""
+    user = request.user
+    if not droits_membre(user)['peut_valider_tous']:
+        raise PermissionDenied
+    compte_rendu = valider_tous(user, request.POST)
+    message = _("%(n)s membre(s) validé(s).") % {'n': compte_rendu['valides']}
+    if compte_rendu['restants']:
+        message += ' ' + _("%(n)s restant(s) : relancez la validation.") % {'n': compte_rendu['restants']}
+    if veut_fragment(request):
+        return reponse_succes(message, evenements=['membresMaj'])
+    contrib_messages.success(request, message)
+    return _retour(request, 'liste-membre')
+
 
 @require_POST
 def renvoyer(request, id):
@@ -253,7 +272,7 @@ def edit_structure(request, id):
             statut_formulaire = 400
     else:
         form = AssociationMembreForm(instance=structure)
-    membres_association = Membre.objects.filter(structure=structure, is_delete=False)
+    membres_association = Membre.objects.filter(structure=structure).exclude(etat='supprime')
     structure.membres = membres_association.count()
     structure.proprietaires = membres_association.filter(titre='PROPRIETAIRE').count()
     structure.motocyclistes = membres_association.exclude(titre='PROPRIETAIRE').count()
@@ -399,7 +418,7 @@ def sessionById(request, id):
 def antenneView(request, id):
     user = request.user
     antenne = get_object_or_404(antennes_du_perimetre(user), id=id)
-    membres = membres_du_perimetre(user).filter(antenne=antenne, is_validate3=True)
+    membres = membres_du_perimetre(user).filter(antenne=antenne, etat='actif')
     return render(request, 'app/antenne-view.html', locals())
 
 #Ajout d'antenne
@@ -909,6 +928,7 @@ def membreListe(request):
         'filtres': resultat.filtres,
         'filtres_actifs': resultat.filtres_actifs,
         'choix': choix_filtres(user),
+        'nb_validables': compter_validables(user, resultat.filtres) if droits['peut_valider_tous'] else 0,  # modale « Valider tout le monde »
         'droits': droits,
         **droits,
     }
