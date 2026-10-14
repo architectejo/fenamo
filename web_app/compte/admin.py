@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from compte.models import Compte, JournalAction
+from compte.models import Compte, JournalAction, Nomination
 from compte.services.journal import journaliser
 
 
@@ -64,3 +64,31 @@ class JournalActionAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(Nomination)
+class NominationAdmin(admin.ModelAdmin):
+    """Nominations : réservées au super-utilisateur (les nominations courantes passent par le service de nomination)."""
+
+    list_display = ('compte', 'role', 'coordination', 'antenne', 'association', 'debut', 'fin', 'active')
+    list_filter = ('role', 'active')
+    search_fields = ('compte__username',)
+    raw_id_fields = ('compte', 'membre', 'nomme_par', 'terminee_par')
+
+    def _su(self, request):
+        return bool(request.user.is_active and request.user.is_superuser)
+
+    def has_module_permission(self, request):
+        return self._su(request)
+
+    def has_view_permission(self, request, obj=None):
+        return self._su(request)
+
+    def has_add_permission(self, request):
+        return self._su(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self._su(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return False  # une nomination terminée se conserve ; elle ne s'efface pas

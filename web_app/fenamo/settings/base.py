@@ -164,6 +164,9 @@ MEDIA_ROOT = Path(env('MEDIA_ROOT', default='') or BASE_DIR / 'media')
 PRIVATE_MEDIA_ROOT = Path(env('PRIVATE_MEDIA_ROOT', default='') or BASE_DIR / 'media_prive')
 # Taille maximale d'une image téléversée, en Mo (coptapp.validators, § 9.2).
 UPLOAD_IMAGE_MAX_MO = env.float('UPLOAD_IMAGE_MAX_MO', default=3)
+# Droits hérités (privilege1 à privilege5) pour les comptes SANS nomination active. True : comportement d'avant les rôles (développement,
+# transition). False : un compte sans nomination ne voit que sa propre fiche. À passer à False en production quand les nominations sont créées.
+FENAMO_DROITS_HERITES = env.bool('FENAMO_DROITS_HERITES', default=True)
 # Antirobot de l'inscription mobile (/mob/register/) : inscriptions par heure et par adresse IP.
 MOB_INSCRIPTIONS_PAR_HEURE = env.int('MOB_INSCRIPTIONS_PAR_HEURE', default=5)
 # Taille maximale d'une pièce jointe (PDF, JPEG, PNG), en Mo.
