@@ -7,8 +7,12 @@ Le bouton « Auto-identification » du brouillon n'est pas repris : aucune fonct
 {% block coque %}
 <main class="porte" id="contenu">
   <section class="porte-visuel" aria-hidden="true">
-    <img class="porte-logo" src="{% static 'img/logo-160.webp' %}" width="96" height="96" alt="">
-    <p class="devise">{% blocktranslate %}Unité, <em>Discipline</em> et Progrès{% endblocktranslate %}</p>
+    <div class="porte-marque">
+      <img class="porte-logo" src="{% static 'img/logo-160.webp' %}" width="96" height="96" alt="">
+      <div><div class="porte-nom">FENAMO-RDC</div><div class="meta meta--visuel">{% translate "Espace de gestion" %}</div></div>
+    </div>
+    <p class="devise"><span>{% translate "Unité," %}</span> <span>{% translate "Discipline" %}</span> <span>{% translate "et Progrès" %}</span></p>
+    <span class="porte-gilet"></span>
     <p class="meta meta--visuel">{% translate "Fédération nationale des associations des motocyclistes taximen de la RDC" %}</p>
   </section>
   <div class="porte-cadre">
