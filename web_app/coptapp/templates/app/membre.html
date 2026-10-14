@@ -10,7 +10,7 @@ Colonne de droite (carte de membre, historique) : l'historique est un onglet tan
 {% if message and not erreurs_modifier %}<div class="u-mb-4">{% include "components/_erreur.html" with niveau="info" titre=message %}</div>{% endif %}
 
 {% include "coptapp/membres/partials/_fiche_entete.html" %}
-{% if membre.renvoye and membre.motif_renvoi %}<div class="u-mb-4">{% translate "Dossier renvoyé" as t_titre_renvoye %}{% include "components/_erreur.html" with niveau="danger" icone="undo-2" titre=t_titre_renvoye texte=membre.motif_renvoi %}</div>{% endif %}
+{% if membre.motif_renvoi and membre.etat != "actif" and membre.etat != "supprime" %}<div class="u-mb-4">{% if membre.etat == "renvoye" %}{% translate "Dossier renvoyé" as t_titre_renvoye %}{% else %}{% translate "Dossier reculé d'un cran" as t_titre_renvoye %}{% endif %}{% include "components/_erreur.html" with niveau="danger" icone="undo-2" titre=t_titre_renvoye texte=membre.motif_renvoi %}</div>{% endif %}
 
 <div x-data="onglets('informations')" @keydown.arrow-right="cle($event)" @keydown.arrow-left="cle($event)" @keydown.home="cle($event)" @keydown.end="cle($event)">
   <div class="onglets" role="tablist" aria-label="{% translate 'Sections de la fiche' %}">
