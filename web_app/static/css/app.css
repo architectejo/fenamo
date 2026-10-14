@@ -843,6 +843,7 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .action-ligne { --b-fond: transparent; --b-bord: transparent; z-index: 1; min-width: var(--cible); padding: 0 var(--e-2); }
 .action-ligne:hover { --b-fond: var(--surface-creuse); --b-bord: transparent; box-shadow: none; }
 .action-ligne--danger { --b-texte: var(--rouge); }
+@media (min-width: 576px) { .liste td[data-role="actions"] { width: 1%; white-space: nowrap; } .liste td[data-role="actions"] .meta { white-space: nowrap; } }
 @media (min-width: 576px) { .action-ligne-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
 @media (max-width: 575.98px) {
   .actions-ligne { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-2); }
