@@ -1,127 +1,36 @@
-{% extends 'base-app.html' %}
-
-{% load static %}{% load fichiers %}{% load design %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-  <div class="row">
-    <div class="col-4">
-      <div class="pagetitle">
-        <h1><a href="{% url 'ville-view' ville.id %}">{{ville.nom}}</a></h1>
-        <nav>
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-            <li class="breadcrumb-item active">Antenne</li>
-          </ol>
-        </nav>
-      </div><!-- End Page Title -->
-    </div>
-    <div class="col-8">
-      {# add-antenne et add-membre prennent l'identifiant d'une ASSOCIATION MEMBRE (jamais celui de la ville) #}
-      {% if association_de_la_ville %}
-      {% if fn_droits.peut_ecrire_referentiel %}
-      <a href="{% url 'add-antenne' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout antenne</button></a>
-      {% endif %}
-      {% if fn_droits.peut_creer_membre %}
-        <a href="{% url 'add-membre' association_de_la_ville.id %}"><button class="btn btn-primary">Ajout membre</button></a>
-      {% endif %}
-      {% endif %}
-    </div>
-  </div>
-
-  <section class="section dashboard">
-    <div class="row">
-      <!-- Recent Sales -->
-      <div class="col-12">
-        <div class="card recent-sales top-selling overflow-auto">
-
-          <div class="filter">
-            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li class="dropdown-header text-start">
-                <h6>Filter</h6>
-              </li>
-
-              <li><a class="dropdown-item" href="#">Liste des membres de l'antenne</a></li>
-            </ul>
-          </div>
-
-          <div class="card-body pb-0">
-            <h5 class="card-title">Liste des membres <span>| actif</span></h5>
-
-            <table class="table table-borderless datatable">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Nom</th>
-                  {% if fn_droits.peut_creer_membre %}
-                    <th scope="col">Association membre</th>
-                  {% endif %}
-                  <th scope="col">Antenne</th>
-                  <th scope="col">Status</th>
-                  {% if fn_droits|peut_nommer %}
-                    <th scope="col">Utilisateur</th>
-                  {% endif %}
-                </tr>
-              </thead>
-              <tbody>
-                {% for membre in membres %}
-                  {% if membre.nom %}
-                      <tr>
-                        <th scope="row"><a href="#">
-                          {% if membre.photo %}
-                            <img src="{% url_fichier membre "photo" vignette=True %}" alt=""></a>
-                          {% endif %}
-                        </th>
-                        <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>
-                        {% if fn_droits.peut_creer_membre %}
-
-                          {% if fn_droits.peut_creer_membre %}
-                            <td scope="col">
-                                {{membre.structure.nom}}
-                            </td>
-                          {% endif %}
-
-                        {% endif %}
-                        <td>{{membre.antenne.nom}}</td>
-                        {% if membre.is_validate3 %}
-                          <td><span class="badge bg-success">Validé</span></td>
-                        {% elif membre.is_validate2 %}
-                          <td><span class="badge bg-warning">En cours</span></td>
-                        {% else %}
-                          <td><span class="badge bg-danger">Non validé</span></td>
-                        {% endif %}
-
-                        {% if fn_droits|peut_nommer %}
-                          <td scope="col">
-                            <p class="alert alert-warning text-secondary">
-                              {{membre.user.username}}
-                            </p>
-                          </td>
-                      {% endif %}
-                      </tr>
-                  {% endif %}
-                {% endfor %}
-              </tbody>
-            </table>
-
-          </div>
-
-        </div>
-      </div><!-- End Recent Sales -->
-
-    </div>
-    </div><!-- End Left side columns -->
-
-    </div>
-  </section>
-
-</main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design fichiers %}{% comment %}
+Membres rattachés à une antenne (écran migré ; l'objet hérité « ville » est présenté comme une antenne). La vue fournit ville, membres, association_de_la_ville.
+add-antenne et add-membre prennent l'identifiant d'une ASSOCIATION MEMBRE (jamais celui de la ville) ; ils s'ouvrent dans la modale commune.
+{% endcomment %}
+{% block titre %}{% blocktranslate with nom=ville.nom %}Antenne de {{ nom }}{% endblocktranslate %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><span>{% translate "Antenne" %}</span></nav>
+<div class="page-tete">
+  <div class="page-tete-texte"><h1 class="page-titre">{% blocktranslate with nom=ville.nom %}Antenne de {{ nom }}{% endblocktranslate %}</h1><p class="page-contexte">{% icone "radio-tower" %}{% translate "Membres rattachés à cette antenne" %}</p></div>
+  {% if association_de_la_ville %}<div class="page-actions">
+    {% if fn_droits.peut_ecrire_referentiel %}<a class="bouton" href="{% url 'add-antenne' association_de_la_ville.id %}" hx-get="{% url 'add-antenne' association_de_la_ville.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Ajouter une antenne" %}</span></a>{% endif %}
+    {% if fn_droits.peut_creer_membre %}<a class="bouton bouton--principal" href="{% url 'add-membre' association_de_la_ville.id %}" hx-get="{% url 'add-membre' association_de_la_ville.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "user-plus" %}<span>{% translate "Ajouter un membre" %}</span></a>{% endif %}
+  </div>{% endif %}
+</div>
+{% if membres %}
+<div class="liste-enveloppe"><table class="liste">
+  <caption class="lecteur">{% translate "Membres de l'antenne" %}</caption>
+  <thead><tr><th scope="col">{% translate "Membre" %}</th>{% if fn_droits.peut_creer_membre %}<th scope="col">{% translate "Association membre" %}</th>{% endif %}<th scope="col">{% translate "Antenne" %}</th><th scope="col">{% translate "État" %}</th>{% if fn_droits|peut_nommer %}<th scope="col">{% translate "Identifiant" %}</th>{% endif %}</tr></thead>
+  <tbody>
+  {% for membre in membres %}{% if membre.nom %}
+  <tr>
+    <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a></div></div></td>
+    {% if fn_droits.peut_creer_membre %}<td data-libelle="{% translate 'Association membre' %}">{{ membre.structure.nom|default:"—" }}</td>{% endif %}
+    <td data-libelle="{% translate 'Antenne' %}">{{ membre.antenne.nom|default:"—" }}</td>
+    <td data-libelle="{% translate 'État' %}">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</td>
+    {% if fn_droits|peut_nommer %}<td data-libelle="{% translate 'Identifiant' %}" class="ident">{{ membre.user.username|default:"—" }}</td>{% endif %}
+  </tr>
+  {% endif %}{% endfor %}
+  </tbody>
+</table></div>
+{% else %}
+{% translate "Aucun membre" as t_vide %}{% translate "Aucun membre n'est rattaché à cette antenne dans votre périmètre." as t_msg %}
+{% include "components/_etat_vide.html" with icone="users" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endblock %}

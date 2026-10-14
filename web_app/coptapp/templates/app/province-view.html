@@ -1,87 +1,20 @@
-{% extends 'base-app.html' %}
-
-{% load static %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-  <main id="main" class="main">
-
-    <div class="row">
-      <div class="col-6">
-        <div class="pagetitle">
-          <h1><a href="{% url 'province-view' province.id %}">{{province.nom}}</a></h1>
-          <nav>
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-              <li class="breadcrumb-item active">Province</li>
-            </ol>
-          </nav>
-        </div><!-- End Page Title -->
-      </div>
-      {% if fn_droits.peut_ecrire_referentiel %}
-        <div class="col-6">
-          <a href="{% url 'add-ville' province.id %}"><button class="btn btn-primary">Ajouter une antenne</button></a>
-        </div>
-      {% endif %}
-  </div>
-
-    <section class="section dashboard">
-      <div class="row">
-
-            <!-- Recent Sales -->
-            <div class="col-12">
-              <div class="card recent-sales top-selling overflow-auto">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6>Filter</h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Today</a></li>
-                    <li><a class="dropdown-item" href="#">This Month</a></li>
-                    <li><a class="dropdown-item" href="#">This Year</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body pb-0">
-                  <h5 class="card-title">Liste des antennes <span>| en numerisation</span></h5>
-
-                  <table class="table table-borderless datatable">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Antenne</th>
-                        <th scope="col">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for ville in villes %}
-                        <tr>
-                            <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
-                            <td><a href="{% url 'ville-view' ville.id %}">{{ville.nom}}</a></td>
-                            <td><span class="badge bg-success">En cours</span></td>
-                        </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-
-                </div>
-
-              </div>
-            </div><!-- End Recent Sales -->
-            
-          </div>
-        </div><!-- End Left side columns -->
-
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design %}{% comment %}Coordination provinciale et ses antennes (écran migré). La vue fournit province, villes (antennes héritées du périmètre).{% endcomment %}
+{% block titre %}{{ province.nom }} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><span>{% translate "Coordination provinciale" %}</span></nav>
+<div class="page-tete">
+  <div class="page-tete-texte"><h1 class="page-titre">{{ province.nom }}</h1><p class="page-contexte">{% icone "map" %}{% translate "Coordination provinciale" %}{% if province.code %} · <span class="ident texte-plein">{{ province.code }}</span>{% endif %}</p></div>
+  {% if fn_droits.peut_ecrire_referentiel %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'add-ville' province.id %}" hx-get="{% url 'add-ville' province.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Ajouter une antenne" %}</span></a></div>{% endif %}
+</div>
+{% if villes %}
+<div class="liste-enveloppe"><table class="liste">
+  <caption class="lecteur">{% translate "Antennes de la coordination" %}</caption>
+  <thead><tr><th scope="col">{% translate "Antenne" %}</th></tr></thead>
+  <tbody>{% for ville in villes %}<tr><td data-role="titre"><div class="cellule-personne"><span class="avatar">{% icone "radio-tower" %}</span><div><a class="lien-ligne" href="{% url 'ville-view' ville.id %}">{{ ville.nom }}</a></div></div></td></tr>{% endfor %}</tbody>
+</table></div>
+{% else %}
+{% translate "Aucune antenne" as t_vide %}{% translate "Les antennes de cette coordination apparaîtront ici." as t_msg %}
+{% include "components/_etat_vide.html" with icone="radio-tower" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endblock %}

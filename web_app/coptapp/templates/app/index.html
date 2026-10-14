@@ -1,283 +1,66 @@
-{% extends 'base-app.html' %}
-
-{% load static i18n %}{% load fichiers %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-<main id="main" class="main">
-
-  <div class="pagetitle">
-    <h1>{{structure.sigle}}</h1>
-    <nav>
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-        <li class="breadcrumb-item active">{{structure.nom}}</li>
-      </ol>
-    </nav>
-  </div><!-- End Page Title -->
-
-  <section class="section dashboard">
-    <div class="row">
-
-      <!-- Left side columns -->
-      <div class="col-lg-12">
-        <div class="row">
-
-          <!-- Sales Card -->
-          <div class="col-xxl-3 col-xl-3 col-lg-3">
-            <div class="card info-card sales-card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Nombre des motos en activité</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body">
-                <h5 class="card-title">Motos <span>| Active</span></h5>
-
-                <div class="d-flex align-items-center">
-                  <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="ri-motorbike-fill"></i>
-                  </div>
-                  <div class="ps-3">
-                    <h6>{{nbr_moto}}</h6>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div><!-- End Sales Card -->
-
-          <!-- Customers Card -->
-          <div class="col-xxl-3 col-xl-3 col-lg-3">
-
-            <div class="card info-card customers-card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Nombre total des membres</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body">
-                <h5 class="card-title">Membre <span>| Total</span></h5>
-
-                <div class="d-flex align-items-center">
-                  <div style="background-color:#fbff00;"
-                    class="card-icon text-primary rounded-circle d-flex align-items-center justify-content-center">
-                    <a href="{% url 'liste-membre' %}">
-                      <i class="bi bi-people"></i>
-                    </a>
-                  </div>
-                  <div class="ps-3">
-                    <a href="{% url 'liste-membre' %}">
-                      <h6>{{nbr_membre}}</h6>
-                    </a>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-          </div><!-- End Customers Card -->
-
-          <!-- Customers Card -->
-          <div class="col-xxl-3 col-xl-3 col-lg-3">
-
-            <div class="card info-card customers-card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Nombre total des motards</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body">
-                <h5 class="card-title">Motard <span>| actif</span></h5>
-
-                <div class="d-flex align-items-center">
-                  <div style="background-color:#040b6d;"
-                    class="card-icon text-primary rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-people"></i>
-                  </div>
-                  <div class="ps-3">
-                    <h6>{{nbr_motard}}</h6>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-          </div><!-- End Customers Card -->
-
-          <!-- Customers Card -->
-          <div class="col-xxl-3 col-xl-3 col-lg-3">
-
-            <div class="card info-card customers-card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Nombre total des proprietaires</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body">
-                <h5 class="card-title">Proprietaire <span>| actif</span></h5>
-
-                <div class="d-flex align-items-center">
-                  <div style="background-color:#181a3f;"
-                    class="card-icon text-primary rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-people"></i>
-                  </div>
-                  <div class="ps-3">
-                    <h6>{{nbr_proprietaire}}</h6>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-          </div><!-- End Customers Card -->
-
-          <!-- Reports -->
-          <div class="col-12">
-            <div class="card">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Evolution de l'effectif</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body">
-                <h5 class="card-title">Evolution <span>/{{an}}</span></h5>
-                <div style="height:350px"><canvas id="reportsChart" role="img" aria-label="Évolution des motos et des membres"></canvas></div>
-
-                <script>
-                  document.addEventListener("DOMContentLoaded", () => {
-                    new Chart(document.getElementById("reportsChart"), {
-                      type: 'line',
-                      data: {
-                        labels: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
-                        datasets: [
-                          {label: 'Motos', data: [{{ motoDuMois.janvier }}, {{ motoDuMois.fevrier }}, {{ motoDuMois.mars }}, {{ motoDuMois.avril }}, {{ motoDuMois.mai }}, {{ motoDuMois.juin }}, {{ motoDuMois.juillet }}, {{ motoDuMois.aout }}, {{ motoDuMois.septembre }}, {{ motoDuMois.octobre }}, {{ motoDuMois.novembre }}, {{ motoDuMois.decembre }}], borderColor: '#4154f1', backgroundColor: 'rgba(65,84,241,.25)', fill: true, tension: .4},
-                          {label: 'Membres', data: [{{ membreDuMois.janvier }}, {{ membreDuMois.fevrier }}, {{ membreDuMois.mars }}, {{ membreDuMois.avril }}, {{ membreDuMois.mai }}, {{ membreDuMois.juin }}, {{ membreDuMois.juillet }}, {{ membreDuMois.aout }}, {{ membreDuMois.septembre }}, {{ membreDuMois.octobre }}, {{ membreDuMois.novembre }}, {{ membreDuMois.decembre }}], borderColor: '#b58105', backgroundColor: 'rgba(252,209,22,.3)', fill: true, tension: .4}
-                        ]
-                      },
-                      options: {maintainAspectRatio: false}
-                    });
-                  });
-                </script>
-                <!-- End Line Chart -->
-
-              </div>
-
-            </div>
-          </div><!-- End Reports -->
-
-          <!-- Recent Sales -->
-          <div class="col-12">
-            <div class="card recent-sales top-selling overflow-auto">
-
-              <div class="filter">
-                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                  <li class="dropdown-header text-start">
-                    <h6></h6>
-                  </li>
-
-                  <li><a class="dropdown-item" href="#">Liste des membre</a></li>
-                </ul>
-              </div>
-
-              <div class="card-body pb-0">
-                <h5 class="card-title">Membres <span>| Enregistré</span></h5>
-
-                <table class="table table-borderless datatable">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Nom</th>
-                      <th scope="col">Genre</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for membre in membres %}
-                    <tr>
-                      {% if membre.photo %}
-                      <th scope="row"><a href="#"><img src="{% url_fichier membre "photo" vignette=True %}"
-                            alt="Membre FENAMO {{membre.nom}}"></a></th>
-                      {% else %}
-                      <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
-                      {% endif %}
-                      <td>
-                        <a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a>
-                      </td>
-                      <td>
-                        <a href="{% url 'membre-view' membre.id %}">{{membre.genre}}</a>
-                      </td>
-                      {% if membre.is_validate3 %}
-                      <td><span class="badge bg-success">Validé</span></td>
-                      {% elif membre.is_validate2 %}
-                      <td><span class="badge bg-warning">En cours</span></td>
-                      {% else %}
-                      <td><span class="badge bg-danger">Effectif</span></td>
-                      {% endif %}
-                      {% if membre.is_validate3 %}
-                      <td>
-                        {% url 'validate' membre.id as url_valider %}
-                        {% translate "Invalider" as t_libelle %}{% include "partials/_bouton_post.html" with url=url_valider libelle=t_libelle classe="btn btn-sm btn-danger" %}
-                      </td>
-                      {% else %}
-                      <td>
-                        {% url 'validate' membre.id as url_valider %}
-                        {% translate "Valider" as t_libelle %}{% include "partials/_bouton_post.html" with url=url_valider libelle=t_libelle classe="btn btn-sm btn-success" %}
-                      </td>
-                      {% endif %}
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-
-              </div>
-
-            </div>
-          </div><!-- End Recent Sales -->
-
-        </div>
-      </div><!-- End Left side columns -->
-
+{% extends "base.html" %}
+{% load i18n static design fichiers %}{% comment %}
+Tableau de bord d'une association membre (« mon association », écran migré). La vue fournit structure, nbr_moto, nbr_membre, nbr_motard, nbr_proprietaire,
+an, membreDuMois et motoDuMois (effectifs par mois), membres. Validation : POST + CSRF (partials/_bouton_post.html). Plus de graphique Chart.js : tableau mensuel.
+{% endcomment %}
+{% block titre %}{% firstof structure.sigle structure.nom %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete page-tete--haut">
+  <span class="avatar avatar--grand">{% if structure.logo %}<img src="{{ structure.logo.url }}" alt="" width="88" height="88">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="88" height="88">{% endif %}</span>
+  <div class="page-tete-texte"><h1 class="page-titre">{{ structure.nom }}</h1><p class="page-contexte"><span class="ident texte-plein">{{ structure.sigle }}</span> · {% translate "Mon association" %}</p></div>
+  {% if structure and fn_droits.peut_creer_membre %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'add-membre' structure.id %}" hx-get="{% url 'add-membre' structure.id %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "user-plus" %}<span>{% translate "Ajouter un membre" %}</span></a></div>{% endif %}
+</div>
+<div class="affichage">
+  {% translate "Engins" as t1 %}{% include "components/_chiffre.html" with valeur=nbr_moto libelle=t1 %}
+  {% translate "Membres" as t2 %}{% include "components/_chiffre.html" with valeur=nbr_membre libelle=t2 %}
+  {% translate "Motards" as t3 %}{% include "components/_chiffre.html" with valeur=nbr_motard libelle=t3 %}
+  {% translate "Propriétaires" as t4 %}{% include "components/_chiffre.html" with valeur=nbr_proprietaire libelle=t4 %}
+</div>
+<div class="grille grille--principale u-mt-6">
+  <section class="panneau" aria-labelledby="t-membres">
+    <div class="panneau-tete"><h2 id="t-membres">{% translate "Membres de l'association" %}</h2></div>
+    <div class="panneau-corps">
+    {% if membres %}
+      <table class="liste">
+        <caption class="lecteur">{% translate "Membres de l'association" %}</caption>
+        <thead><tr><th scope="col">{% translate "Membre" %}</th><th scope="col">{% translate "État" %}</th><th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th></tr></thead>
+        <tbody>
+        {% for membre in membres %}
+          <tr>
+            <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a><span class="meta">{{ membre.genre|default:"" }}</span></div></div></td>
+            <td data-libelle="{% translate 'État' %}">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</td>
+            <td data-role="actions">{% if fn_droits.peut_creer_membre and not membre.is_validate3 %}{% url 'validate' membre.id as url_valider %}{% translate "Valider le membre" as t_valider %}{% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--petit bouton--valider" %}{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      {% translate "Aucun membre" as t_vide %}{% include "components/_etat_vide.html" with icone="users" titre=t_vide %}
+    {% endif %}
     </div>
   </section>
-
-</main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
-{% block scripts %}<script src="{% static 'vendor/chartjs/chart.min.js' %}"></script>{% endblock %}
+  <section class="panneau" aria-labelledby="t-evolution">
+    <div class="panneau-tete"><h2 id="t-evolution">{% blocktranslate %}Évolution {{ an }}{% endblocktranslate %}</h2></div>
+    <div class="panneau-corps">
+      <table class="liste">
+        <caption class="lecteur">{% translate "Nouveaux membres et engins par mois" %}</caption>
+        <thead><tr><th scope="col">{% translate "Mois" %}</th><th scope="col" class="num">{% translate "Membres" %}</th><th scope="col" class="num">{% translate "Engins" %}</th></tr></thead>
+        <tbody>
+          <tr><td data-role="titre">{% translate "Janvier" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.janvier }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.janvier }}</td></tr>
+          <tr><td data-role="titre">{% translate "Février" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.fevrier }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.fevrier }}</td></tr>
+          <tr><td data-role="titre">{% translate "Mars" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.mars }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.mars }}</td></tr>
+          <tr><td data-role="titre">{% translate "Avril" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.avril }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.avril }}</td></tr>
+          <tr><td data-role="titre">{% translate "Mai" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.mai }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.mai }}</td></tr>
+          <tr><td data-role="titre">{% translate "Juin" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.juin }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.juin }}</td></tr>
+          <tr><td data-role="titre">{% translate "Juillet" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.juillet }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.juillet }}</td></tr>
+          <tr><td data-role="titre">{% translate "Août" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.aout }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.aout }}</td></tr>
+          <tr><td data-role="titre">{% translate "Septembre" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.septembre }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.septembre }}</td></tr>
+          <tr><td data-role="titre">{% translate "Octobre" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.octobre }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.octobre }}</td></tr>
+          <tr><td data-role="titre">{% translate "Novembre" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.novembre }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.novembre }}</td></tr>
+          <tr><td data-role="titre">{% translate "Décembre" %}</td><td data-libelle="{% translate 'Membres' %}" class="num chiffres">{{ membreDuMois.decembre }}</td><td data-libelle="{% translate 'Engins' %}" class="num chiffres">{{ motoDuMois.decembre }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

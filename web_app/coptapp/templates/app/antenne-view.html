@@ -1,84 +1,20 @@
-{% extends 'base-app.html' %}
-
-{% load static %}{% load fichiers %}
-
-{% block body %}
-
-{% include './header.html' %}
-
-  <main id="main" class="main">
-
-    <div class="row">
-      <div class="col-10">
-        <div class="pagetitle">
-          <h1><a href="{% url 'antenne-view' antenne.id %}">{{antenne.nom}}</a></h1>
-          <nav>
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="{% url 'home-session' %}">Accueil</a></li>
-              <li class="breadcrumb-item active">Antenne</li>
-            </ol>
-          </nav>
-        </div><!-- End Page Title -->
-      </div>
-  </div>
-
-    <section class="section dashboard">
-      <div class="row">
-
-            <!-- Recent Sales -->
-            <div class="col-12">
-              <div class="card recent-sales top-selling overflow-auto">
-
-                <div class="filter">
-                  <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                  <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <li class="dropdown-header text-start">
-                      <h6></h6>
-                    </li>
-
-                    <li><a class="dropdown-item" href="#">Liste des membres de l'antenne</a></li>
-                  </ul>
-                </div>
-
-                <div class="card-body pb-0">
-                  <h5 class="card-title">Liste des membres <span>| validés</span></h5>
-
-                  <table class="table table-borderless datatable">
-                    <thead>
-                      <tr>
-                        <th scope="col">Photo</th>
-                        <th scope="col">Nom</th>
-                        <th scope="col">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for membre in membres %}
-                        <tr>
-                            {% if membre.photo %}
-                                <th scope="row"><a href="#"><img src="{% url_fichier membre "photo" vignette=True %}" alt=""></a></th>
-                            {% else %}
-                                <th scope="row"><a href="#"><img src="{% static 'img/logo-48.webp' %}" alt=""></a></th>
-                            {% endif %}
-                            <td><a href="{% url 'membre-view' membre.id %}">{{membre.nom}}</a></td>
-                            <td><span class="badge bg-success">valide</span></td>
-                        </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-
-                </div>
-
-              </div>
-            </div><!-- End Recent Sales -->
-            
-          </div>
-        </div><!-- End Left side columns -->
-
-      </div>
-    </section>
-
-  </main><!-- End #main -->
-
-{% include './footer.html' %}
-
-{% endblock body %}
+{% extends "base.html" %}
+{% load i18n static design fichiers %}{% comment %}Membres actifs d'une antenne (écran migré). La vue fournit antenne, membres.{% endcomment %}
+{% block titre %}{% blocktranslate with nom=antenne.nom %}Antenne de {{ nom }}{% endblocktranslate %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><span>{% translate "Antenne" %}</span></nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% blocktranslate with nom=antenne.nom %}Antenne de {{ nom }}{% endblocktranslate %}</h1><p class="page-contexte">{% icone "radio-tower" %}{% translate "Membres actifs" %}</p></div></div>
+{% if membres %}
+<div class="liste-enveloppe"><table class="liste">
+  <caption class="lecteur">{% translate "Membres actifs de l'antenne" %}</caption>
+  <thead><tr><th scope="col">{% translate "Membre" %}</th><th scope="col">{% translate "État" %}</th></tr></thead>
+  <tbody>{% for membre in membres %}<tr>
+    <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a></div></div></td>
+    <td data-libelle="{% translate 'État' %}">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</td>
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}
+{% translate "Aucun membre actif" as t_vide %}{% translate "Aucun membre actif n'est rattaché à cette antenne dans votre périmètre." as t_msg %}
+{% include "components/_etat_vide.html" with icone="users" titre=t_vide texte=t_msg %}
+{% endif %}
+{% endblock %}

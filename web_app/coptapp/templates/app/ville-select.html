@@ -5,7 +5,7 @@ Les boutons postent vers ville-attr (POST + CSRF) ; le formulaire crée l'antenn
 {% endcomment %}
 {% block titre %}{{ structure.nom }} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'str-list' %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{{ structure.sigle|default:structure.nom }}</span></nav>
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'str-list' %}">{% translate "Associations membres" %}</a><span aria-hidden="true">/</span><span>{% firstof structure.sigle structure.nom %}</span></nav>
 <div class="page-tete page-tete--haut">
   <span class="avatar avatar--grand">{% if structure.logo %}<img src="{{ structure.logo.url }}" alt="" width="88" height="88">{% else %}<img src="{% static 'img/logo-48.webp' %}" alt="" width="88" height="88">{% endif %}</span>
   <div class="page-tete-texte">
