@@ -126,6 +126,73 @@ class Antenne(models.Model):
         super().save(*args, **kwargs)
 
 
+# ---------------------------------------------------------------- état unique du membre (cahier des charges § 4.4)
+
+ETATS_MEMBRE = ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye', 'a_renouveler', 'supprime')
+ETATS_MEMBRE_CHOICES = [
+    ('saisi', _('Saisi')), ('valide_antenne', _('Validé antenne')), ('valide_province', _('Validé province')), ('actif', _('Actif')),
+    ('renvoye', _('Renvoyé')), ('a_renouveler', _('À renouveler')), ('supprime', _('Supprimé')),
+]
+CHAMPS_MIROIRS = ('is_delete', 'is_validate2', 'is_validate3', 'renvoye')
+
+
+def miroirs_de(etat, etat_precedent=''):
+    """Valeurs des anciens booléens (miroirs lus par ``mobapp`` et les gabarits hérités) déduites de l'état UNIQUE.
+
+    Un membre supprimé garde les drapeaux de validation de son état d'avant la suppression."""
+    effectif = etat_precedent if etat == 'supprime' and etat_precedent in ETATS_MEMBRE else etat
+    return {
+        'is_delete': etat == 'supprime',
+        'is_validate2': effectif in ('valide_antenne', 'valide_province', 'actif', 'a_renouveler'),
+        'is_validate3': effectif in ('actif', 'a_renouveler'),
+        'renvoye': etat == 'renvoye',
+    }
+
+
+def etat_depuis_drapeaux(is_delete=False, is_validate2=False, is_validate3=False, renvoye=False):
+    """Règle TRANSITOIRE : état déduit des anciens booléens (écritures héritées, données non migrées)."""
+    if is_delete:
+        return 'supprime'
+    if renvoye:
+        return 'renvoye'
+    if is_validate3:
+        return 'actif'
+    if is_validate2:
+        return 'valide_antenne'
+    return 'saisi'
+
+
+class MembreQuerySet(models.QuerySet):
+    """``update()`` garde l'état unique et ses miroirs cohérents : une écriture héritée des booléens (``update(is_validate2=True)``)
+    est traduite en état ; une écriture de ``etat`` met les miroirs à jour. TRANSITOIRE : à retirer quand plus rien n'écrit les booléens."""
+
+    def update(self, **champs):
+        heritage = [c for c in CHAMPS_MIROIRS if c in champs]
+        if 'etat' in champs:
+            precedent = champs.get('etat_precedent', '')
+            champs = {**{k: v for k, v in miroirs_de(champs['etat'], precedent).items() if k not in champs}, **champs}
+            return super().update(**champs)
+        if not heritage:
+            return super().update(**champs)
+        total = 0
+        lignes = list(self.values('pk', 'etat', 'etat_precedent', *CHAMPS_MIROIRS))
+        groupes = {}
+        for ligne in lignes:
+            nouveau = {c: champs.get(c, ligne[c]) for c in CHAMPS_MIROIRS}
+            etat = etat_depuis_drapeaux(**nouveau)
+            precedent = ligne['etat_precedent']
+            if etat == 'supprime' and ligne['etat'] != 'supprime':
+                precedent = ligne['etat']
+            elif etat != 'supprime':
+                precedent = ''
+            groupes.setdefault((etat, precedent), []).append(ligne['pk'])
+        autres = {k: v for k, v in champs.items() if k not in CHAMPS_MIROIRS}
+        for (etat, precedent), pks in groupes.items():
+            total += models.QuerySet(model=self.model, using=self.db).filter(pk__in=pks).update(
+                etat=etat, etat_precedent=precedent, **miroirs_de(etat, precedent), **autres)
+        return total
+
+
 #Démande du client
 class Membre(models.Model):
     idf = models.CharField(max_length=50, null=True, blank=True)
@@ -173,7 +240,11 @@ class Membre(models.Model):
     motif_suppression = models.TextField(blank=True, default='')
     # Auteur de la demande en cours : lui (ou qui exécute) peut l'annuler.
     suppression_demandee_par = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
-    # Renvoi avec motif (F-23) : le validateur refuse la fiche ; la modification par l'auteur de la saisie la remet dans le circuit.
+    # ÉTAT UNIQUE (§ 4.4) : seule source de vérité du circuit de validation. Les booléens ci-dessous (is_delete, is_validate2,
+    # is_validate3, renvoye) en sont des MIROIRS recalculés par save() pour ``mobapp`` et les écrans hérités : ne les écrire nulle part ailleurs.
+    etat = models.CharField(max_length=20, choices=ETATS_MEMBRE_CHOICES, default='saisi', db_index=True)
+    etat_precedent = models.CharField(max_length=20, blank=True, default='', help_text=_("état d'avant la suppression (restauration)"))
+    # Renvoi avec motif (F-23) : motif affiché au niveau juste en dessous ; vidé quand le dossier avance de nouveau.
     renvoye = models.BooleanField(default=False)
     motif_renvoi = models.TextField(blank=True, default='')
     is_validate1 = models.BooleanField(default=True)
@@ -182,7 +253,48 @@ class Membre(models.Model):
     is_membre = models.BooleanField(default=True)
     mise_a_jour = models.DateField(auto_now=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    
+
+    objects = MembreQuerySet.as_manager()
+
+    class Meta:
+        indexes = [models.Index(fields=['antenne', 'etat'], name='membre_antenne_etat_idx')]
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        membre = super().from_db(db, field_names, values)
+        membre._etat_charge = membre.etat if 'etat' in field_names else None
+        return membre
+
+    def save(self, *args, **kwargs):
+        """Recalcule les miroirs (is_delete, is_validate2, is_validate3, renvoye) depuis ``etat``.
+
+        Règle TRANSITOIRE : si ``etat`` n'a pas été changé par le code (resté à sa valeur chargée, ou à « saisi » pour un membre
+        neuf) alors que les anciens booléens ont changé, l'état est déduit des booléens (écritures héritées, formulaires, tests)."""
+        charge = getattr(self, '_etat_charge', 'saisi' if self._state.adding else None)
+        if charge is not None and self.etat == charge and self._miroirs_actuels() != miroirs_de(self.etat, self.etat_precedent):
+            nouvel = etat_depuis_drapeaux(self.is_delete, self.is_validate2, self.is_validate3, self.renvoye)
+            if nouvel != self.etat:
+                if nouvel == 'supprime':
+                    self.etat_precedent = etat_depuis_drapeaux(False, self.is_validate2, self.is_validate3, False)
+                self.etat = nouvel
+        if self.etat != 'supprime':
+            self.etat_precedent = ''
+        for champ, valeur in miroirs_de(self.etat, self.etat_precedent).items():
+            setattr(self, champ, valeur)
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and ({'etat', *CHAMPS_MIROIRS} & set(update_fields)):
+            kwargs['update_fields'] = list({*update_fields, 'etat', 'etat_precedent', *CHAMPS_MIROIRS})
+        super().save(*args, **kwargs)
+        self._etat_charge = self.etat
+
+    def refresh_from_db(self, using=None, fields=None, **kwargs):
+        super().refresh_from_db(using=using, fields=fields, **kwargs)
+        if fields is None or 'etat' in fields:
+            self._etat_charge = self.etat
+
+    def _miroirs_actuels(self):
+        return {c: getattr(self, c) for c in CHAMPS_MIROIRS}
+
     def __str__(self):
         return f"{self.nom}"
 
