@@ -46,7 +46,7 @@ TROUS_CONNUS = {
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
     'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom', 'mot-de-passe-mobile',
     # écran Utilisateurs (2e) : matrice détaillée par rôle dans test_F21_matrice_roles.py ; ici, profils hérités (sans nomination)
-    'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
+    'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
     'utilisateurs-desactiver', 'utilisateurs-reactiver', 'utilisateurs-role', 'utilisateurs-renouveler',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
@@ -145,6 +145,7 @@ COMPLEMENT = [
     ('securite', 'get', {}, None, S(200)),
     # écran Utilisateurs : un compte sans nomination ne nomme aucun rôle (403) ; seul le SU passe (la matrice par rôle est dans
     # test_F21_matrice_roles.py)
+    ('journal', 'get', {}, None, S(403, su=200)),  # F-71 : super-utilisateur seulement
     ('utilisateurs', 'get', {}, None, S(403, su=200)),
     ('utilisateurs-nommer', 'get', {}, None, S(403, su=200)),
     ('utilisateurs-membres-nommables', 'get', {}, None, S(403, su=200)),
