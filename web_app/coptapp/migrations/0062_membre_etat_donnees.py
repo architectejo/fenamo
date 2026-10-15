@@ -12,7 +12,9 @@ Correspondance (voir docs/correspondance-etat-membre.md), dans cet ordre, par lo
 ORM seulement, modèles historiques, ``queryset.update`` (aucun save()). Les fonctions sont recopiées ici : la
 migration ne dépend pas du code de l'application. Les booléens ne sont jamais modifiés dans le sens direct.
 Rejouable : chaque étape ne retient que les lignes encore non converties (un état déjà posé n'est pas dégradé).
-Sens inverse : les booléens sont recalculés depuis l'état.
+Sens inverse : les booléens sont recalculés depuis l'état, selon la règle des miroirs du modèle (``miroirs_de`` dans
+coptapp/models.py) : seul un membre supprimé garde les validations de son état précédent ; un membre renvoyé a
+is_validate2 et is_validate3 à faux et renvoye à vrai ; un supprimé ancien renvoyé a renvoye à faux.
 """
 from django.db import migrations
 
@@ -22,12 +24,12 @@ ETATS = ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye', 'a_re
 
 def miroirs(etat, etat_precedent=''):
     """Booléens hérités déduits de l'état (copie de la règle de l'application, figée à la date de cette migration)."""
-    base = etat_precedent if etat in ('supprime', 'renvoye') and etat_precedent in ETATS else etat
+    base = etat_precedent if etat == 'supprime' and etat_precedent in ETATS else etat
     return {
         'is_delete': etat == 'supprime',
         'is_validate2': base in ('valide_antenne', 'valide_province', 'actif', 'a_renouveler'),
         'is_validate3': base in ('actif', 'a_renouveler'),
-        'renvoye': etat == 'renvoye' or (etat == 'supprime' and etat_precedent == 'renvoye'),
+        'renvoye': etat == 'renvoye',
     }
 
 

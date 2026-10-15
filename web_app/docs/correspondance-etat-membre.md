@@ -24,4 +24,4 @@ Les booléens ne sont pas modifiés dans ce sens. Les états `valide_province` e
 
 ## Sens inverse
 
-Les booléens sont recalculés depuis `etat` : `valide_province` redevient `is_validate2` seul ; `supprime` et `renvoye` reprennent les validations de `etat_precedent` ; `is_delete` vaut vrai si `etat` = `supprime`.
+Les booléens sont recalculés depuis `etat` : `valide_province` redevient `is_validate2` seul ; seul `supprime` reprend les validations de `etat_precedent` (règle `miroirs_de` du modèle) ; `renvoye` vaut vrai uniquement pour l'état `renvoye`, avec `is_validate2` et `is_validate3` à faux ; `is_delete` vaut vrai si `etat` = `supprime`.

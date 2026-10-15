@@ -78,8 +78,10 @@ def test_migration_0062_correspondance_aller_retour_et_idempotence(base_0061):
             attendu = (False, True, True, False)  # l'ambiguïté est tranchée par l'état : actif => is_validate2
         if nom == 'supprime_v3_seul':
             attendu = (True, True, True, False)
+        if nom in ('renvoye_valide', 'renvoye_actif'):
+            attendu = (False, False, False, True)  # règle des miroirs du modèle : un renvoyé n'a aucune validation
         if nom == 'supprime_renvoye':
-            attendu = (True, False, False, True)  # l'état d'avant la suppression (renvoyé) n'a pas gardé is_validate2
+            attendu = (True, False, False, False)  # supprimé : validations de l'état d'avant (renvoyé : aucune), renvoye faux
         assert inverse[nom][0] == attendu, nom
     # remontée après un retour arrière
     assert {n: v[1] for n, v in _lire(_migrer(APRES)).items()}['actif'] == ('actif', '')
@@ -125,3 +127,12 @@ def test_commande_verifier_etats_membres():
     sortie = StringIO()
     call_command('verifier_etats_membres', stdout=sortie)
     assert 'Écarts état/miroirs : 0' in sortie.getvalue()
+
+
+def test_F23_migration_0062_miroirs_identiques_a_ceux_du_modele():
+    """La copie de la règle dans la migration doit rester identique à miroirs_de() pour toutes les combinaisons."""
+    from coptapp.models import ETATS_MEMBRE, miroirs_de
+    migration = import_module(f'coptapp.migrations.{APRES}')
+    for etat in ETATS_MEMBRE:
+        for precedent in ('',) + ETATS_MEMBRE:
+            assert migration.miroirs(etat, precedent) == miroirs_de(etat, precedent), (etat, precedent)
