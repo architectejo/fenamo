@@ -8,7 +8,7 @@ from django.utils.cache import add_never_cache_headers
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from coptapp.models import Antenne, Province, Reaction
+from coptapp.models import Antenne, Province
 from coptapp.services import communiques as service
 from fenamo.htmx import reponse_succes, veut_fragment
 
@@ -31,22 +31,24 @@ def _modele(request):
 @require_GET
 def listMessage(request):
     """Liste des communiqués visibles. GET : ``q``, ``etat`` (non_lus), ``coordination``, ``antenne``, ``page``. Contexte : page_obj,
-    communiques (= page_obj, compatibilité), filtres, filtres_actifs, nb_non_lus, peut_publier. Fragment HTMX : la zone seule."""
+    communiques (= page_obj, compatibilité), filtres, filtres_actifs, nb_non_lus, peut_publier, choix (``coordinations`` et ``antennes``
+    de ``service.choix_ciblage``, pour les listes de filtre). Fragment HTMX : la zone seule."""
     filtres = {cle: (request.GET.get(cle) or '').strip() for cle in ('q', 'etat', 'coordination', 'antenne')}
     page = service.lister_communiques(request.user, filtres, request.GET.get('page'))
     contexte = {'page_obj': page, 'communiques': page, 'filtres': filtres, 'filtres_actifs': any(filtres.values()),
-                'nb_non_lus': service.nombre_non_lus(request.user), 'peut_publier': service.peut_publier(request.user)}
+                'nb_non_lus': service.nombre_non_lus(request.user), 'peut_publier': service.peut_publier(request.user),
+                'choix': service.choix_ciblage()}
     modele = 'coptapp/communiques/partials/_liste.html' if veut_fragment(request) else 'app/list-message.html'
     return render(request, modele, contexte)
 
 
 @require_GET
 def messageView(request, id):
-    """Lecture d'un communiqué visible (404 sinon). N'écrit rien. Contexte : message (= communique), reactions, lu, peut_publier."""
+    """Lecture d'un communiqué visible (404 sinon). N'écrit rien. Contexte : message (= communique), lu, peut_publier."""
     communique = get_object_or_404(service.communiques_visibles(request.user).select_related('user', 'province', 'antenne'), id=id)
     lu = communique.user_id == request.user.pk or communique.lectures.filter(compte=request.user).exists()
     return render(request, 'app/message-view.html', {
-        'message': communique, 'communique': communique, 'reactions': Reaction.objects.filter(communique=communique), 'lu': lu,
+        'message': communique, 'communique': communique, 'lu': lu,
         'peut_publier': service.peut_publier(request.user)})
 
 
@@ -73,11 +75,10 @@ def compteur(request):
 @require_http_methods(['GET', 'POST'])
 def addCommunique(request):
     """Publication (ED, SU) dans la modale commune. 403 sans droit. POST : ``titre``, ``message``, ``coordination`` et ``antenne`` (facultatifs,
-    identifiants). Erreur : 422 (modale conservée) ; succès : HTMX 204 + toast + ``communiquesMaj``, sinon message et retour à la liste."""
+    identifiants ; le contexte porte ``coordinations`` et ``antennes``, voir ``service.choix_ciblage``). Erreur : 422 (modale conservée) ; succès : HTMX 204 + toast + ``communiquesMaj``, sinon message et retour à la liste."""
     if not service.peut_publier(request.user):
         raise PermissionDenied
-    contexte = {'action': request.path, 'coordinations': Province.objects.filter(code__isnull=False).order_by('ordre', 'nom'),
-                'antennes': Antenne.objects.exclude(nom=None).select_related('coordination').order_by('nom'),
+    contexte = {'action': request.path, **service.choix_ciblage(),
                 'titre_max': service.TITRE_MAX, 'message_max': service.MESSAGE_MAX}
     if request.method == 'GET':
         return render(request, _modele(request), contexte)

@@ -293,7 +293,6 @@ def session(request):
 
     if structure:
         #Configuration
-        messages = Communique.objects.order_by('-id')[0:3]
         if user.membreId:
             userMbr = Membre.objects.filter(id=user.membreId)
             for us in userMbr:
@@ -358,7 +357,6 @@ def sessionById(request, id):
 
     if structure:
         #Configuration
-        messages = Communique.objects.order_by('-id')[0:3]
         if user.membreId:
             userMbr = Membre.objects.filter(id=user.membreId)
             for us in userMbr:
@@ -425,7 +423,6 @@ def antenneView(request, id):
 @referentiel_ecriture_requis
 def addAntenne(request, id):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -534,7 +531,6 @@ def add_membre_from_fenamo(request):
 #Ajout d'une moto
 def addMoto(request, id):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -580,7 +576,6 @@ def addMoto(request, id):
 @referentiel_ecriture_requis
 def addProvince(request):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -615,7 +610,6 @@ def addProvince(request):
 @referentiel_ecriture_requis
 def addVille(request, id):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -658,7 +652,6 @@ def attributMoto(request, id):
 @editeur_requis
 def contact(request):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -672,7 +665,6 @@ def contact(request):
 @editeur_requis
 def contactView(request, id):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -725,7 +717,6 @@ def editFamily(request,id):
 
 def editMoto(request, id):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -857,7 +848,7 @@ def ville_view(request, id):
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     antennes = Antenne.objects.filter(structure=structure).order_by('nom')
     ville = get_object_or_404(villes_du_perimetre(user), id=id)
-    membres = membres_du_perimetre(user).filter(ville=ville).order_by('nom', 'antenne')
+    membres = membres_du_perimetre(user).filter(ville=ville).select_related('user').order_by('nom', 'antenne')
     # les boutons « Ajout antenne » / « Ajout membre » visent une association membre de cette ville (jamais la ville elle-même)
     association_de_la_ville = associations_du_compte(user).filter(ville=ville).first()
     return render(request, 'app/ville-view.html', locals())
@@ -899,7 +890,7 @@ def membreListe(request):
         **droits,
     }
     if droits_menu(user).get('peut_nommer'):  # bouton « Nommer » par ligne : nommable ou raison, rôle déjà porté
-        from compte.views_utilisateurs import annoter_nommage
+        from compte.services.nommage import annoter_nommage
         annoter_nommage(user, resultat.page_obj.object_list)
         contexte['avec_nommage'] = True
     modele = 'coptapp/membres/partials/_liste.html' if veut_fragment(request) else 'app/membre-list.html'
@@ -924,7 +915,6 @@ def enginListe(request):
 
 def notificationsView(request):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = None
     if user.membreId:
@@ -946,7 +936,6 @@ def notificationsView(request):
 @editeur_requis
 def site(request):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None
@@ -1001,7 +990,6 @@ def site(request):
 @editeur_requis
 def article(request, id):
     #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
     villeId = userMembre.ville_id if userMembre else None

@@ -10,7 +10,7 @@ from django.utils import timezone
 from compte import roles
 from compte.models import Compte, JournalAction
 from compte.services.nominations import creer_nomination
-from coptapp.models import Antenne, Communique, LectureCommunique, Notification, Reaction
+from coptapp.models import Antenne, Communique, LectureCommunique, Notification
 from coptapp.services import communiques as S
 from tests.test_F02_droits_roles import _compte, _nommer, acteurs_roles, monde  # noqa: F401
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
@@ -32,7 +32,7 @@ def equipe(monde):
 
 
 def _qui(communique):
-    return set(S.destinataires(communique).values_list('username', flat=True))
+    return set(Compte.objects.filter(pk__in=list(S.destinataires_ids(communique))).values_list('username', flat=True))
 
 
 def _noms(equipe, *cles):
@@ -65,8 +65,8 @@ def test_F40_validation_du_titre_du_message_et_du_ciblage(monde, equipe):
 
 def test_F40_publication_journalisee_et_auteur(monde, equipe):
     c = S.publier(equipe['ED'], 'Réunion', 'Ce jeudi à 10 h.')
-    ligne = JournalAction.objects.get(action=A.MODIFICATION, objet_id=c.pk)
-    assert ligne.auteur == equipe['ED'] and ligne.apres['creation'] is True and ligne.apres['destinataires'] > 0 and ligne.objet_libelle == 'Réunion'
+    ligne = JournalAction.objects.get(action=A.CREATION, objet_id=c.pk)
+    assert ligne.auteur == equipe['ED'] and not ligne.avant and 'creation' not in ligne.apres and ligne.apres['type'] == 'communique' and ligne.apres['destinataires'] > 0 and ligne.objet_libelle == 'Réunion'
     assert c.auteur == equipe['ED'] and c.publie_le is not None and c.titre == 'Réunion'
 
 
@@ -219,16 +219,15 @@ def test_F40_liste_lecture_get_sans_effet_page_et_fragment(client, monde, equipe
     assert lecture.status_code == 200 and lecture.context['lu'] is False and (LectureCommunique.objects.count(), JournalAction.objects.count()) == avant
 
 
-def test_F40_lecture_404_hors_perimetre_et_reactions_conservees(client, monde, equipe):
+def test_F40_lecture_404_hors_perimetre(client, monde, equipe):
     ed = equipe['ED']
     prive = S.publier(ed, 'Pour Q', 'm', coordination=monde['Q'])
     ouvert = S.publier(ed, 'Pour tous', 'm')
-    Reaction.objects.create(user=equipe['VA_P'], communique=ouvert, reaction='Merci')
     client.force_login(equipe['VA_P'])
     assert client.get(reverse('communique', kwargs={'id': prive.pk})).status_code == 404
     assert client.post(reverse('communique-lu', kwargs={'id': prive.pk})).status_code == 404
     lecture = client.get(reverse('communique', kwargs={'id': ouvert.pk}))
-    assert [r.reaction for r in lecture.context['reactions']] == ['Merci']  # F-41 : l'existant reste fonctionnel
+    assert lecture.status_code == 200 and 'reactions' not in lecture.context
 
 
 def test_F40_vue_lu_post_csrf_htmx_et_par_compte(client, monde, equipe):

@@ -7,12 +7,10 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from compte.permissions import superuser_requis
 from fenamo.htmx import reponse_succes
-from virtrine.models import Config
 from virtrine.services import contenu
 from virtrine.services.etat_donnees_reelles import etat_donnees_reelles
 
 EVENEMENT = 'donneesReellesModifiees'
-MOTIF_MAX = 500
 
 
 @require_http_methods(['GET', 'POST'])
@@ -22,8 +20,8 @@ def donnees_reelles(request):
 
     Contexte de la modale : action, actif (état actuel), cible (état demandé), motif_max, erreur. HTMX : 204 + toast + événement
     ``donneesReellesModifiees`` ; sinon message et retour à l'écran du contenu du site."""
-    actuel = Config.instance().donnees_reelles_actif
-    contexte = {'action': request.path, 'actif': actuel, 'cible': not actuel, 'motif_max': MOTIF_MAX}
+    actuel = etat_donnees_reelles()['actif']  # lecture seule : un GET ne crée jamais la ligne de configuration
+    contexte = {'action': request.path, 'actif': actuel, 'cible': not actuel, 'motif_max': contenu.MOTIF_MAX}
     if request.method == 'GET':
         return render(request, 'virtrine/partials/_modale_donnees_reelles.html', contexte)
     voulu = (request.POST.get('actif') or '').strip().lower() in ('1', 'true', 'on', 'oui')

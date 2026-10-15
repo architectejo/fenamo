@@ -27,6 +27,7 @@ from compte.models import Nomination
 from compte.services import nominations as noms
 from compte.services.comptes import en_groupes
 from compte.services.journal import masquer_identifiant_initial
+from compte.services.nommage import annoter_nommage, raison_non_nommable
 from compte.services.droits import antennes_du_perimetre, associations_du_compte, membres_du_perimetre, provinces_du_perimetre
 from coptapp.models import Antenne, AssociationMembre, Membre, Province
 from coptapp.services.etats import etat_de
@@ -269,14 +270,6 @@ def _libelle_perimetre(auteur):
 
 # ---------------------------------------------------------------- recherche d'un membre à nommer
 
-def _raison_non_nommable(membre, avec_nomination):
-    if membre.pk in avec_nomination:
-        return _("Déjà nommé : %(role)s.") % {'role': str(roles.LIBELLES.get(avec_nomination[membre.pk], '')).lower()}
-    if membre.etat != 'actif':
-        return _("Pas encore actif : la validation nationale manque.")
-    return _("Ce membre ne peut pas être nommé.")
-
-
 def _resultats_membres(auteur, trouves):
     """Dictionnaires pour components/_choix_membre.html : les non nommables restent visibles avec leur raison."""
     trouves = list(trouves)
@@ -289,26 +282,9 @@ def _resultats_membres(auteur, trouves):
         resultats.append({
             'id': m.pk, 'nom': m.nom or '—', 'identifiant': m.numero_carte_de_membre or m.idf or f'MBR{m.pk:07d}',
             'lieu': _("Antenne de %(nom)s") % {'nom': m.antenne.nom} if m.antenne_id else '—', 'etat': etat_de(m),
-            'nommable': m.pk in nommables, 'raison': '' if m.pk in nommables else _raison_non_nommable(m, avec_nomination),
+            'nommable': m.pk in nommables, 'raison': '' if m.pk in nommables else raison_non_nommable(m, avec_nomination),
         })
     return resultats
-
-
-def annoter_nommage(auteur, membres):
-    """Pour la liste des membres : pose sur chaque membre de `membres` (liste ou page) ``role_nomme`` (code du rôle actif ou ''),
-    ``nommable`` et ``raison_non_nommable`` (texte du survol). Deux requêtes pour toute la page. Sans droit de nommer : tout reste vide."""
-    membres = list(membres)
-    if not membres:
-        return membres
-    ids = [m.pk for m in membres]
-    par_membre = {n.compte.membreId: n.role for n in Nomination.objects.filter(active=True, compte__membreId__in=ids).select_related('compte')}
-    nommables = set(noms.membres_nommables(auteur).filter(pk__in=ids).values_list('pk', flat=True))
-    for m in membres:
-        m.role_nomme = par_membre.get(m.pk, '')
-        m.role_nomme_libelle = roles.LIBELLES.get(m.role_nomme, '') if m.role_nomme else ''
-        m.nommable = m.pk in nommables
-        m.raison_non_nommable = '' if m.nommable else _raison_non_nommable(m, par_membre)
-    return membres
 
 
 @require_GET

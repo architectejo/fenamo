@@ -37,6 +37,18 @@ def peut_publier(user):
     return bool(user is not None and user.is_authenticated and user.is_active and est_editeur(user))
 
 
+# ---------------------------------------------------------------- choix de ciblage
+
+def choix_ciblage():
+    """Listes pour cibler ou filtrer : ``coordinations`` (coordinations provinciales, ordre officiel) et ``antennes`` (liste de dictionnaires
+    ``id``, ``nom``, ``coordination`` = identifiant de sa coordination), sans les antennes qui n'ont pas de coordination : elles ne peuvent
+    pas être ciblées. Référentiel national, sans donnée personnelle."""
+    coordinations = list(Province.objects.filter(code__isnull=False).order_by('ordre', 'nom'))
+    antennes = [{'id': a.pk, 'nom': a.nom, 'coordination': a.coordination_id}
+                for a in Antenne.objects.exclude(nom=None).filter(coordination__isnull=False).order_by('nom')]
+    return {'coordinations': coordinations, 'antennes': antennes}
+
+
 # ---------------------------------------------------------------- publication
 
 def _cible(coordination, antenne):
@@ -70,8 +82,8 @@ def publier(auteur, titre, message, coordination=None, antenne=None):
     Notification.objects.bulk_create([
         Notification(user_id=compte_id, titre=_("Communiqué : %(titre)s") % {'titre': titre}, description=message[:500])
         for compte_id in destinataires], batch_size=500)
-    journaliser(auteur, JournalAction.Action.MODIFICATION, communique,
-                apres={'creation': True, 'type': 'communique', 'coordination': getattr(coordination, 'pk', None),
+    journaliser(auteur, JournalAction.Action.CREATION, communique,
+                apres={'type': 'communique', 'coordination': getattr(coordination, 'pk', None),
                        'antenne': getattr(antenne, 'pk', None), 'destinataires': len(destinataires)},
                 motif=_("Publication d'un communiqué"), libelle=titre[:200])
     return communique
@@ -100,12 +112,6 @@ def destinataires_ids(communique):
     if communique.user_id:
         ids = ids.exclude(pk=communique.user_id)
     return ids.values_list('pk', flat=True).distinct()
-
-
-def destinataires(communique):
-    """Comptes à alerter (QuerySet de Compte)."""
-    from django.contrib.auth import get_user_model
-    return get_user_model().objects.filter(pk__in=list(destinataires_ids(communique)))
 
 
 # ---------------------------------------------------------------- lecture

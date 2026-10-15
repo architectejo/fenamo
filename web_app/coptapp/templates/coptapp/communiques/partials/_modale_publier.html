@@ -1,6 +1,6 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}
-Publier un communiqué (F-40), dans la modale commune. Contexte : action, coordinations, antennes, titre_max, message_max, valeurs, erreur.
+Publier un communiqué (F-40), dans la modale commune. Contexte : action, coordinations, antennes (liste de dictionnaires id, nom, coordination ; passée à Alpine par json_script), titre_max, message_max, valeurs, erreur.
 Ciblage : national par défaut ; « coordination » ou « antenne » révèle la liste correspondante (Alpine). Le champ masqué est désactivé : il n'est pas envoyé.
 {% endcomment %}
 {% block titre %}{% translate "Publier un communiqué" %}{% endblock %}
@@ -14,7 +14,11 @@ Ciblage : national par défaut ; « coordination » ou « antenne » révèle la
   <textarea id="c-message" name="message" rows="6" maxlength="{{ message_max }}" required data-compte-caracteres="#c-message-compte" aria-describedby="c-message-compte">{{ valeurs.message }}</textarea>
   <p class="champ-aide compte-caracteres u-mb-0" id="c-message-compte"><span data-compte-valeur>0 / {{ message_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
 </div>
-<fieldset class="champ" x-data="{ cible: '{% if valeurs.antenne %}antenne{% elif valeurs.coordination %}coordination{% else %}national{% endif %}' }">
+{{ antennes|json_script:"c-antennes-donnees" }}
+<fieldset class="champ" x-data="{ cible: '{% if valeurs.antenne %}antenne{% elif valeurs.coordination %}coordination{% else %}national{% endif %}', filtre: '{{ valeurs.coordination|default:'' }}', antenne: '{{ valeurs.antenne|default:'' }}',
+  antennes: JSON.parse(document.getElementById('c-antennes-donnees').textContent),
+  get visibles() { return this.filtre ? this.antennes.filter(a => String(a.coordination) === this.filtre) : this.antennes },
+  filtrer() { if (!this.visibles.some(a => String(a.id) === this.antenne)) this.antenne = '' } }">
   <legend class="champ-libelle">{% translate "Destinataires" %}</legend>
   <div class="communique-cibles" role="radiogroup">
     <label class="puce"><input type="radio" name="cible" value="national" x-model="cible"><span>{% translate "National" %}</span></label>
@@ -26,8 +30,10 @@ Ciblage : national par défaut ; « coordination » ou « antenne » révèle la
     <select id="c-coordination" name="coordination" :disabled="cible !== 'coordination'"><option value="">{% translate "Choisir une coordination" %}</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if valeurs.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select>
   </div>
   <div class="champ u-mt-3" x-show="cible === 'antenne'" x-cloak>
-    <label class="champ-libelle" for="c-antenne">{% translate "Antenne" %}</label>
-    <select id="c-antenne" name="antenne" :disabled="cible !== 'antenne'"><option value="">{% translate "Choisir une antenne" %}</option>{% for a in antennes %}<option value="{{ a.id }}"{% if valeurs.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}{% if a.coordination %} · {{ a.coordination.nom }}{% endif %}</option>{% endfor %}</select>
+    <label class="champ-libelle" for="c-antenne-filtre">{% translate "Coordination de l'antenne" %}</label>
+    <select id="c-antenne-filtre" x-model="filtre" @change="filtrer()"><option value="">{% translate "Toutes les coordinations" %}</option>{% for c in coordinations %}<option value="{{ c.id }}">{{ c.nom }}</option>{% endfor %}</select>
+    <label class="champ-libelle u-mt-3" for="c-antenne">{% translate "Antenne" %}</label>
+    <select id="c-antenne" name="antenne" x-model="antenne" :disabled="cible !== 'antenne'"><option value="">{% translate "Choisir une antenne" %}</option><template x-for="a in visibles" :key="a.id"><option :value="a.id" x-text="a.nom"></option></template></select>
   </div>
   <p class="champ-aide">{% translate "Sans choix, le communiqué est reçu par tous les comptes concernés au niveau national." %}</p>
 </fieldset>
