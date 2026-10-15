@@ -1,0 +1,4 @@
+Polices de l'interface FENAMO-RDC (SIL Open Font License 1.1) :
+- Atkinson Hyperlegible Next 400 et 700 : LICENCE-ATKINSON-HYPERLEGIBLE-NEXT.txt
+- Barlow Condensed 600 : LICENCE-BARLOW-CONDENSED.txt
+Fichiers obtenus via les paquets @fontsource (sous-ensemble latin, couvre le français).

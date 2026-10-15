@@ -1,0 +1,190 @@
+/* FENAMO-RDC : jetons du système de design, PARTAGÉS par l'application web et le site public.
+   Ce fichier existe en deux copies strictement identiques :
+     web_app/static/css/tokens.css  et  website/static/css/tokens.css
+   Modifier l'une, copier sur l'autre ; website/tests/test_design_jetons.py échoue sinon.
+   Références : web_app/docs/design/systeme-de-design.md (application), website/docs/design/systeme-de-design.md (site).
+   Aucune couleur, taille, durée ni ombre en dur ailleurs.
+   Thème sombre : attribut data-theme="sombre" sur <html> (static/js/theme.js). */
+
+/* ---------- Polices (servies en local, SIL OFL 1.1, voir static/fonts/LISEZMOI.txt) ---------- */
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("../fonts/atkinson-hyperlegible-next-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("../fonts/atkinson-hyperlegible-next-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../fonts/barlow-condensed-600.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Couleurs nommées (6) ---------- */
+  --encre: #121a26;          /* texte, bouton principal, icônes */
+  --papier: #f4f2ed;         /* fond de l'application (carton de la carte de membre) */
+  --ciel: #0a62b0;           /* liens, information, validé province ; 6,2:1 sur blanc */
+  --jaune: #f2c200;          /* repère « gilet » : élément actif, halo de focus ; jamais du texte sur clair */
+  --rouge: #bf1230;          /* renvoi, suppression, erreur ; 6,3:1 sur blanc */
+  --vert: #0f6e3d;           /* actif, succès ; 6,3:1 sur blanc */
+
+  /* Couleurs du drapeau, réservées au liseré officiel (carte de membre, plaque, connexion) */
+  --drapeau-ciel: #2e9bea;
+  --drapeau-jaune: #f7d618;
+  --drapeau-rouge: #ce1021;
+
+  /* Bande réfléchissante du gilet (pages hors coque : connexion, application suspendue, espace mobile suspendu) : tissu jaune, liseré argent */
+  --gilet-reflet: #d9dde3;
+
+  /* ---------- Rôles dérivés ---------- */
+  --fond: var(--papier);
+  --surface: #ffffff;
+  --surface-2: #faf9f6;          /* en-têtes de tableau, zones calmes */
+  --surface-creuse: #ebe8e0;     /* champ désactivé, squelette */
+  --trait: #ddd8cd;              /* séparateurs */
+  --trait-fort: #8a8371;         /* bordure de champ (3,4:1, contraste non textuel AA) */
+  --texte: var(--encre);
+  --texte-doux: #4f5868;         /* 6,4:1 sur papier */
+  --lien: var(--ciel);
+  --sur-encre: #ffffff;          /* texte posé sur --encre */
+  --action: var(--encre);        /* bouton principal */
+  --action-survol: #26344a;
+  --action-texte: #ffffff;
+  --jaune-texte: #6b4f00;        /* jaune lisible en texte : 7,6:1 sur blanc */
+  --voile: rgba(18, 26, 38, .55);
+  --focus-anneau: var(--encre);
+  --focus-halo: var(--jaune);
+  --selection: #ffe58a;
+  --squelette-reflet: rgba(255, 255, 255, .6);
+
+  /* ---------- États du circuit (texte / fond / pastilles) ---------- */
+  --etat-saisi-fg: #3e4756;           --etat-saisi-bg: #e9e6df;
+  --etat-valide_antenne-fg: #0a4f8f;  --etat-valide_antenne-bg: #e3eef8;
+  --etat-valide_province-fg: #0a4f8f; --etat-valide_province-bg: #cfe2f5;
+  --etat-actif-fg: #0b5e33;           --etat-actif-bg: #ddf2e5;
+  --etat-renvoye-fg: #a3102a;         --etat-renvoye-bg: #fbe3e6;
+  --etat-a_renouveler-fg: #6b4f00;    --etat-a_renouveler-bg: #ffedb0;
+  --etat-supprime-fg: #4f5868;        --etat-supprime-bg: transparent;
+
+  /* Retours de messages (toasts, alertes) */
+  --succes-fg: var(--etat-actif-fg);       --succes-bg: var(--etat-actif-bg);
+  --danger-fg: var(--etat-renvoye-fg);     --danger-bg: var(--etat-renvoye-bg);
+  --alerte-fg: var(--etat-a_renouveler-fg); --alerte-bg: var(--etat-a_renouveler-bg);
+  --info-fg: var(--etat-valide_antenne-fg); --info-bg: var(--etat-valide_antenne-bg);
+
+  /* ---------- Typographie ---------- */
+  --police-texte: "Atkinson Hyperlegible Next", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --police-chiffres: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --t-1: .8125rem;   /* 13 px : métadonnées, horodatage */
+  --t-2: .875rem;    /* 14 px : texte secondaire, libellés de tableau */
+  --t-3: 1rem;       /* 16 px : texte courant, champs (jamais moins sur mobile) */
+  --t-4: 1.125rem;   /* 18 px : titres de section */
+  --t-5: 1.375rem;   /* 22 px : titres de modale et de panneau */
+  --t-6: clamp(1.75rem, 1.45rem + 1.3vw, 2.25rem);   /* titre de page (Barlow) */
+  --t-7: clamp(2.375rem, 1.9rem + 2.2vw, 3.25rem);   /* chiffre clé (Barlow) */
+  --interligne: 1.5;
+  --interligne-serre: 1.15;
+  --graisse-normale: 400;
+  --graisse-forte: 700;
+  --graisse-chiffres: 600;
+
+  /* ---------- Espacements (base 4 px) ---------- */
+  --e-1: .25rem; --e-2: .5rem; --e-3: .75rem; --e-4: 1rem; --e-5: 1.25rem;
+  --e-6: 1.5rem; --e-7: 2rem; --e-8: 3rem; --e-9: 4rem;
+
+  /* ---------- Rayons : plus l'objet est officiel, plus il est carré ---------- */
+  --r-plaque: 4px;     /* badges d'état, plaques, identifiants */
+  --r-champ: 8px;      /* champs, boutons */
+  --r-panneau: 12px;   /* panneaux, cartes de liste mobile */
+  --r-feuille: 20px;   /* haut de la modale en feuille (mobile) */
+  --r-rond: 999px;     /* avatars, compteurs */
+
+  /* ---------- Ombres : réservées à ce qui flotte ---------- */
+  --o-0: none;                                                         /* panneaux : bordure seule */
+  --o-1: 0 1px 2px rgba(18, 26, 38, .08);                              /* bouton, ligne survolée */
+  --o-2: 0 6px 20px rgba(18, 26, 38, .12), 0 1px 3px rgba(18, 26, 38, .08); /* menus, toasts */
+  --o-3: 0 24px 60px rgba(18, 26, 38, .28);                            /* modale */
+
+  /* ---------- Mise en page ---------- */
+  --haut: 56px;            /* barre du haut */
+  --bas: 64px;             /* barre de navigation basse (mobile) */
+  --menu: 264px;           /* menu latéral (≥ 992 px) */
+  --contenu-max: 1120px;
+  --cible: 44px;           /* cible tactile minimale */
+  --cible-confort: 48px;   /* boutons principaux sur mobile */
+
+  /* ---------- Mouvement ---------- */
+  --d-court: 120ms;        /* survol, appui */
+  --d-moyen: 200ms;        /* toasts, tiroir, changement de page */
+  --d-long: 320ms;         /* modale */
+  --d-compteur: 700ms;     /* chiffres clés */
+  --courbe-sortie: cubic-bezier(.2, .8, .2, 1);   /* ce qui arrive */
+  --courbe-entree: cubic-bezier(.4, 0, 1, 1);     /* ce qui part */
+
+  /* ---------- Plans (z-index) ---------- */
+  --z-menu: 30; --z-haut: 40; --z-voile: 50; --z-modale: 60; --z-toast: 70; --z-chargement: 80;
+
+  /* ---------- Site public (fenamordc.cd) : registre éditorial, mêmes couleurs ---------- */
+  --t-8: clamp(2.625rem, 1.6rem + 4.6vw, 5rem);    /* accroche de l'accueil (Barlow), 42 → 80 px */
+  --interligne-lecture: 1.6;                        /* articles, pages institutionnelles */
+  --mesure: 66ch;                                   /* longueur de ligne des textes longs */
+  --sur-encre-fort: #f4f2ed;                        /* texte posé sur un aplat encre (15,6:1) */
+  --sur-encre-doux: #b4bfcc;                        /* texte secondaire sur aplat encre (9,4:1) */
+  --sur-encre-trait: rgba(244, 242, 237, .18);      /* filets sur aplat encre */
+  /* Bande réfléchissante du gilet : tissu jaune, liseré argent, tissu jaune */
+  --bande-gilet: linear-gradient(var(--jaune) 0 30%, var(--gilet-reflet) 30% 70%, var(--jaune) 70%);
+  --gilet-une: 28px;                                /* hauteur de la bande sous l'accroche */
+  --gilet-pied: 12px;                               /* hauteur de la bande en haut du pied de page */
+  /* Échelle de la carte des coordinations (effectifs), du plus clair au plus foncé ; texte encre sur 1 et 2, blanc sur 3 */
+  --echelle-1: #e3eef8;
+  --echelle-2: #9cc8ee;
+  --echelle-3: #0a62b0;
+}
+
+/* ---------- Thème sombre ---------- */
+:root[data-theme="sombre"] {
+  color-scheme: dark;
+  --fond: #0e141d;
+  --surface: #161e2a;
+  --surface-2: #1b2431;
+  --surface-creuse: #222c3a;
+  --trait: #2a3544;
+  --trait-fort: #6b788b;
+  --texte: #eceff3;
+  --texte-doux: #a9b3c1;
+  --lien: #7cbcf5;
+  --ciel: #7cbcf5;
+  --rouge: #ff8f9e;
+  --vert: #74d6a0;
+  --action: #eceff3;
+  --action-survol: #ffffff;
+  --action-texte: #121a26;
+  --sur-encre: #121a26;
+  --jaune-texte: #ffd65c;
+  --voile: rgba(0, 0, 0, .65);
+  --focus-anneau: #ffffff;
+  --selection: #5c4a00;
+  --squelette-reflet: rgba(255, 255, 255, .07);
+  --etat-saisi-fg: #c9d0da;           --etat-saisi-bg: #273242;
+  --etat-valide_antenne-fg: #a9d2fa;  --etat-valide_antenne-bg: #14324f;
+  --etat-valide_province-fg: #a9d2fa; --etat-valide_province-bg: #1b4268;
+  --etat-actif-fg: #8fe3b3;           --etat-actif-bg: #123a27;
+  --etat-renvoye-fg: #ffa3af;         --etat-renvoye-bg: #45161f;
+  --etat-a_renouveler-fg: #ffd65c;    --etat-a_renouveler-bg: #3b300b;
+  --etat-supprime-fg: #a9b3c1;
+  --echelle-1: #14324f; --echelle-2: #2b6299; --echelle-3: #7cbcf5;
+  --o-1: 0 1px 2px rgba(0, 0, 0, .4);
+  --o-2: 0 8px 24px rgba(0, 0, 0, .45);
+  --o-3: 0 24px 60px rgba(0, 0, 0, .6);
+}
+
+/* ---------- Mouvement réduit : tout devient instantané ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root { --d-court: 0ms; --d-moyen: 0ms; --d-long: 0ms; --d-compteur: 0ms; }
+}

@@ -1,5 +1,9 @@
-/* FENAMO-RDC : jetons du système de design (application web et site public).
-   Référence : docs/design/systeme-de-design.md. Aucune couleur, taille, durée ni ombre en dur ailleurs.
+/* FENAMO-RDC : jetons du système de design, PARTAGÉS par l'application web et le site public.
+   Ce fichier existe en deux copies strictement identiques :
+     web_app/static/css/tokens.css  et  website/static/css/tokens.css
+   Modifier l'une, copier sur l'autre ; website/tests/test_design_jetons.py échoue sinon.
+   Références : web_app/docs/design/systeme-de-design.md (application), website/docs/design/systeme-de-design.md (site).
+   Aucune couleur, taille, durée ni ombre en dur ailleurs.
    Thème sombre : attribut data-theme="sombre" sur <html> (static/js/theme.js). */
 
 /* ---------- Polices (servies en local, SIL OFL 1.1, voir static/fonts/LISEZMOI.txt) ---------- */
@@ -125,6 +129,22 @@
 
   /* ---------- Plans (z-index) ---------- */
   --z-menu: 30; --z-haut: 40; --z-voile: 50; --z-modale: 60; --z-toast: 70; --z-chargement: 80;
+
+  /* ---------- Site public (fenamordc.cd) : registre éditorial, mêmes couleurs ---------- */
+  --t-8: clamp(2.625rem, 1.6rem + 4.6vw, 5rem);    /* accroche de l'accueil (Barlow), 42 → 80 px */
+  --interligne-lecture: 1.6;                        /* articles, pages institutionnelles */
+  --mesure: 66ch;                                   /* longueur de ligne des textes longs */
+  --sur-encre-fort: #f4f2ed;                        /* texte posé sur un aplat encre (15,6:1) */
+  --sur-encre-doux: #b4bfcc;                        /* texte secondaire sur aplat encre (9,4:1) */
+  --sur-encre-trait: rgba(244, 242, 237, .18);      /* filets sur aplat encre */
+  /* Bande réfléchissante du gilet : tissu jaune, liseré argent, tissu jaune */
+  --bande-gilet: linear-gradient(var(--jaune) 0 30%, var(--gilet-reflet) 30% 70%, var(--jaune) 70%);
+  --gilet-une: 28px;                                /* hauteur de la bande sous l'accroche */
+  --gilet-pied: 12px;                               /* hauteur de la bande en haut du pied de page */
+  /* Échelle de la carte des coordinations (effectifs), du plus clair au plus foncé ; texte encre sur 1 et 2, blanc sur 3 */
+  --echelle-1: #e3eef8;
+  --echelle-2: #9cc8ee;
+  --echelle-3: #0a62b0;
 }
 
 /* ---------- Thème sombre ---------- */
@@ -158,6 +178,7 @@
   --etat-renvoye-fg: #ffa3af;         --etat-renvoye-bg: #45161f;
   --etat-a_renouveler-fg: #ffd65c;    --etat-a_renouveler-bg: #3b300b;
   --etat-supprime-fg: #a9b3c1;
+  --echelle-1: #14324f; --echelle-2: #2b6299; --echelle-3: #7cbcf5;
   --o-1: 0 1px 2px rgba(0, 0, 0, .4);
   --o-2: 0 8px 24px rgba(0, 0, 0, .45);
   --o-3: 0 24px 60px rgba(0, 0, 0, .6);
