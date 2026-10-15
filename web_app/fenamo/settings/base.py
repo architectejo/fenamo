@@ -183,11 +183,27 @@ UPLOAD_PIECE_MAX_MO = env.float('UPLOAD_PIECE_MAX_MO', default=3)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Caches : `default` reste en mémoire locale (comportement de Django) ; `limites` sert à la limite de débit de l'API du site et doit
+# être partagé entre les processus de Passenger, donc en base. Créer la table une fois : `python manage.py createcachetable`
+# (les tests la créent seuls).
+CACHES = {
+    'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'},
+    'limites': {'BACKEND': 'django.core.cache.backends.db.DatabaseCache', 'LOCATION': 'cache_limites'},
+}
+
 
 # Liaison avec le site public (website/) : clé d'accès à l'API et purge du cache.
 # Laisser vide tant que le site n'est pas branché.
 
+# Repli de développement : en DEBUG seulement, SITE_API_KEY est acceptée comme clé du site. Les clés réelles sont celles du modèle
+# api.CleSite (commande `creer_cle_site`) ; en production (DEBUG faux), SITE_API_KEY n'ouvre plus rien.
 SITE_API_KEY = env('SITE_API_KEY', default='')
+# Limite de débit de l'API du site, par clé et par minute (fenêtre fixe) : lectures (GET) et dépôts (POST).
+SITE_API_LIMITE_GET = env.int('SITE_API_LIMITE_GET', default=300)
+SITE_API_LIMITE_POST = env.int('SITE_API_LIMITE_POST', default=30)
+# Adresse publique (absolue, avec « / » final) des médias servis aux visiteurs : https://app.fenamordc.cd/media/ en production.
+# Vide : l'adresse est déduite de la requête (développement). Ne jamais y mettre le stockage privé.
+PUBLIC_MEDIA_BASE_URL = env('PUBLIC_MEDIA_BASE_URL', default='')
 SITE_PURGE_URL = env('SITE_PURGE_URL', default='')
 SITE_PURGE_SECRET = env('SITE_PURGE_SECRET', default='')
 
