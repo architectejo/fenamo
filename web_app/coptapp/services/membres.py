@@ -126,7 +126,7 @@ def modifier_membre(auteur, membre, donnees, fichiers=None):
     if not formulaire.changed_data:
         return formulaire, False
     formulaire.save()
-    remis = membre.etat == 'renvoye'
+    remis = membre.etat == 'renvoye' and (auteur.is_superuser or membre.user_id == auteur.pk)  # seul l'auteur de la saisie la reprend
     if remis:  # la reprise de la fiche par son auteur la remet dans le circuit (transition journalisée à part)
         transitions.reprendre(auteur, membre)
         membre.refresh_from_db()  # l'état, son motif et les miroirs ont été réécrits par la transition

@@ -232,6 +232,13 @@ def test_F23_liste_ne_montre_pas_de_bouton_d_ecriture_hors_valider(client, acteu
     """La liste n'expose que « Valider » : aucun formulaire POST vers autre chose (suppression, rattachement…)."""
     client.force_login(acteurs['comptes'][profil])
     page = releve(client.get(reverse('liste-membre')).content.decode())
+    from compte.services.droits import droits_membre
+    permis = ('/deconnexion/', '/recherche/')
+    peut_tous = droits_membre(acteurs['comptes'][profil])['peut_valider_tous']
     autres = [f['action'] for f in page.formulaires
-              if f['action'] and not re.fullmatch(r'/membres/\d+/valider/', f['action']) and f['action'] not in ('/deconnexion/', '/recherche/')]
+              if f['action'] and not re.fullmatch(r'/membres/\d+/valider/', f['action']) and f['action'] not in permis]
+    valider_tous = [a for a in autres if a == '/membres/valider-tous/']
+    autres = [a for a in autres if a != '/membres/valider-tous/']
     assert not autres, autres
+    if not peut_tous:  # « Valider tout le monde » n'apparaît que pour qui a le droit (SU, privilege5, validateurs de rôle)
+        assert not valider_tous, profil

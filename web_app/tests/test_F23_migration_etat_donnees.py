@@ -51,7 +51,7 @@ def base_0061():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_migration_0062_correspondance_aller_retour_et_idempotence(base_0061):
+def test_F23_migration_0062_correspondance_aller_retour_et_idempotence(base_0061):
     apres = _migrer(APRES)
     lu = _lire(apres)
     for nom, (b, attendu) in CAS.items():
@@ -88,7 +88,7 @@ def test_migration_0062_correspondance_aller_retour_et_idempotence(base_0061):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_migration_0062_par_lots(base_0061, monkeypatch):
+def test_F23_migration_0062_par_lots(base_0061, monkeypatch):
     migration = import_module(f'coptapp.migrations.{APRES}')
     monkeypatch.setattr(migration, 'LOT', 2)
     migration.vers_etat_unique(base_0061, None)
@@ -96,7 +96,7 @@ def test_migration_0062_par_lots(base_0061, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_commande_verifier_etats_membres():
+def test_F23_commande_verifier_etats_membres():
     ok = Membre.objects.create(nom='Cohérent', idf='IDF-OK')
     Membre.objects.filter(pk=ok.pk).update(etat='actif')  # miroirs recalculés par update()
     base = models.QuerySet(model=Membre)

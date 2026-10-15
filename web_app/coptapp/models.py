@@ -192,7 +192,9 @@ class MembreQuerySet(models.QuerySet):
         for ligne in lignes:
             nouveau = {c: champs.get(c, ligne[c]) for c in CHAMPS_MIROIRS}
             etat = etat_depuis_drapeaux(**nouveau)
-            if nouveau == miroirs_de(ligne['etat'], ligne['etat_precedent']):
+            if ligne['etat'] == 'supprime' and not nouveau['is_delete'] and ligne['etat_precedent'] in ETATS_MEMBRE:
+                etat = ligne['etat_precedent']  # restauration héritée : l'état d'avant la suppression, pas une lecture grossière des booléens
+            elif nouveau == miroirs_de(ligne['etat'], ligne['etat_precedent']):
                 etat = ligne['etat']  # aucun changement réel : l'état fin (valide_province…) n'est pas écrasé par la lecture grossière des booléens
             precedent = ligne['etat_precedent']
             if etat == 'supprime' and ligne['etat'] != 'supprime':
@@ -292,6 +294,8 @@ class Membre(models.Model):
         etat_modifie = charge is not None and self.etat != charge
         if charge is not None and not etat_modifie and self._miroirs_actuels() != miroirs_de(self.etat, self.etat_precedent):
             nouvel = etat_depuis_drapeaux(self.is_delete, self.is_validate2, self.is_validate3, self.renvoye)
+            if self.etat == 'supprime' and not self.is_delete and self.etat_precedent in ETATS_MEMBRE:
+                nouvel = self.etat_precedent  # restauration héritée : l'état d'avant la suppression
             if nouvel != self.etat:
                 logger.warning("Membre %s : écriture héritée des booléens traduite en état %s (règle transitoire).", self.pk, nouvel)
                 if nouvel == 'supprime':

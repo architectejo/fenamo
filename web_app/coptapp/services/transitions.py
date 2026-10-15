@@ -107,12 +107,12 @@ def renvoyer(auteur, membre, motif):
 
 @transaction.atomic
 def reprendre(auteur, membre):
-    """Remet un membre RENVOYÉ dans le circuit (saisi) quand son auteur reprend la fiche ; PermissionDenied sans droit de modifier,
-    EtatIncoherent si le membre n'est pas renvoyé. Journalisé (MODIFICATION, avant / après)."""
+    """Remet un membre RENVOYÉ dans le circuit (saisi) quand l'AUTEUR DE LA SAISIE (ou le SU) reprend la fiche ; PermissionDenied pour
+    tout autre compte ou sans droit de modifier, EtatIncoherent si le membre n'est pas renvoyé. Journalisé (MODIFICATION, avant / après)."""
     membre = _verrouiller(membre)
     if membre.etat != 'renvoye':
         raise EtatIncoherent("Le membre n'a pas été renvoyé.")
-    if not droits_membre(auteur, membre)['peut_modifier']:
+    if not (auteur.is_superuser or membre.user_id == auteur.pk) or not droits_membre(auteur, membre)['peut_modifier']:
         raise PermissionDenied
     journaliser(auteur, JournalAction.Action.MODIFICATION, membre, avant={'etat': 'renvoye'}, apres={'etat': 'saisi'},
                 motif='Fiche reprise après renvoi : remise dans le circuit.')
