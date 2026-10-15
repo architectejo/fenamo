@@ -46,7 +46,7 @@ TROUS_CONNUS = {
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
     'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom', 'mot-de-passe-mobile',
     # écran Utilisateurs (2e) : matrice détaillée par rôle dans test_F21_matrice_roles.py ; ici, profils hérités (sans nomination)
-    'engin-liste', 'donnees-reelles', 'renvoyer-membre', 'valider-tous', 'verrou-application', 'verrou-verrouiller', 'verrou-deverrouiller', 'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
+    'engin-liste', 'donnees-reelles', 'donnees-reelles-etat', 'renvoyer-membre', 'valider-tous', 'verrou-application', 'verrou-verrouiller', 'verrou-deverrouiller', 'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
     'utilisateurs-desactiver', 'utilisateurs-reactiver', 'utilisateurs-role', 'utilisateurs-renouveler',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
@@ -141,6 +141,7 @@ COMPLEMENT = [
     ('engin-liste', 'get', {}, None, S(200)),
     ('donnees-reelles', 'get', {}, None, S(403, su=200)),  # interrupteur « données réelles » du site : super-utilisateur seul
     ('donnees-reelles', 'post', {}, {'actif': '0'}, S(403, su=302)),  # inchangé (déjà faux) : sans effet
+    ('donnees-reelles-etat', 'get', {}, None, S(403, su=200)),  # fragment de la carte d'état : super-utilisateur seul
     ('verrou-application', 'get', {}, None, S(403, su=200)),  # F-07 : super-utilisateur seul
     ('verrou-verrouiller', 'get', {}, None, S(403, su=200)),
     ('verrou-verrouiller', 'post', {}, {}, S(403, su=422)),  # sans message : refusé, rien ne se verrouille
