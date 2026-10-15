@@ -323,6 +323,7 @@ La refonte reprend toutes les fonctionnalités existantes et les complète sur c
 | F-64 | Activer les langues du site | SU | Le français est toujours actif ; chaque langue nationale s'active quand ses textes fixes sont traduits |
 | F-65 | Activer / désactiver le paiement en ligne | SU uniquement | Interrupteur unique ; désactivé, le site masque le paiement et l'API le refuse ; changement journalisé |
 | F-66 | Fixer les montants des frais | PR, SU | Frais d'enregistrement, d'adhésion, de carte, de numérotation et cotisation annuelle, en francs congolais, avec date d'effet (règlement administratif du comité national, art. 9) |
+| F-67 | Activer / désactiver les données réelles du site | SU uniquement | Interrupteur unique, **désactivé par défaut** (identifiant de décision DR-01). Désactivé, le site public affiche un jeu d'exemple fixe, sans aucune donnée réelle, avec un bandeau « Données d'exemple », et les points d'accès de données de l'API répondent 403 `inactif` (seule la configuration minimale reste servie). Activé, le site affiche les données réelles. Confirmation par modale avec avertissement (« visibles par tout le monde »), motif facultatif de 500 caractères, changement journalisé (F-70), purge du cache du site |
 
 ### 5.8 Journal des actions
 

@@ -45,7 +45,7 @@ prénom plus 9000 possibilités). Quiconque connaît ou devine l'identifiant peu
 ## 2026-10-15 : interrupteur « données réelles » et mode exemple du site (identifiant DR-01)
 
 **Extension demandée par `instructions.md`, point 3** : elle ne figure pas dans le cahier des charges (F-60 désigne les articles et la galerie, F-65
-le paiement en ligne) ; elle porte l'identifiant **DR-01** pour ne pas être confondue avec une fonction F-xx.
+le paiement en ligne) ; elle porte l'identifiant **DR-01** ; elle est désormais entrée au cahier des charges sous **F-67** (décision de l'utilisateur du 2026-10-15).
 
 - `Config.donnees_reelles_actif` (faux par défaut) : tant qu'il est faux, le site public affiche son **jeu d'exemple** (mode exemple) et les points
   d'accès `/api/v1/site/` de données répondent 403 ; vrai, le site affiche les données réelles.
