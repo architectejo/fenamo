@@ -1,17 +1,16 @@
 """Indicateurs du tableau de bord (agrégats seulement, aucune donnée personnelle).
 
-PROVISOIRE : membres, engins et associations membres sont comptés dans le MÊME périmètre, celui de
-`compte.services.droits.membres_du_perimetre` (privilèges hérités) :
-- membres : ceux du périmètre ;
-- engins : engins non supprimés dont le propriétaire est dans le périmètre (tous pour SU / privilege5) ;
-- associations membres : celles des membres du périmètre et celles du compte (tous pour SU / privilege5).
-TODO : remplacé par le périmètre des rôles (F-16, F-51) au sous-lot 2e.
+Membres, engins et associations membres sont comptés dans le MÊME périmètre que la liste :
+- membres : ceux de `compte.services.droits.membres_du_perimetre` (rôle, ou droits hérités), comptés par ÉTAT UNIQUE en une seule
+  agrégation ;
+- engins : engins non supprimés dont le propriétaire est dans le périmètre (tous pour qui voit tout) ;
+- associations membres : celles des membres du périmètre et celles du compte (toutes pour qui voit tout).
 """
 from django.db.models import Count
 
 from coptapp.models import AssociationMembre, Moto
 from coptapp.services.etats import LIBELLES
-from compte.services.droits import membres_du_perimetre, voit_tout  # noqa: F401 (membres_du_perimetre réexporté)
+from compte.services.droits import etapes_a_valider, membres_du_perimetre, voit_tout  # noqa: F401 (membres_du_perimetre réexporté)
 
 def engins_du_perimetre(user):
     """Engins non supprimés dont le propriétaire est visible par `user`."""
@@ -38,9 +37,10 @@ ETATS_EN_ATTENTE = ('saisi', 'valide_antenne', 'valide_province')
 def indicateurs_tableau_bord(user):
     membres = membres_du_perimetre(user)
     par_etat = {ligne['etat']: ligne['n'] for ligne in membres.values('etat').annotate(n=Count('pk'))}  # UNE agrégation
-    compte = lambda etat: par_etat.get(etat, 0)  # noqa: E731
     en_attente = list(membres.filter(etat__in=ETATS_EN_ATTENTE).select_related('antenne').order_by('-updated', '-id')[:5])
-    valeurs = {e: compte(e) for e in ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye')}
+    for membre in en_attente:
+        membre.peut_valider = bool(etapes_a_valider(user, membre))  # bouton « Valider » selon CE membre (étape de l'utilisateur)
+    valeurs = {e: par_etat.get(e, 0) for e in ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye')}
     return {
         'actifs': valeurs['actif'],
         'valides_antenne': valeurs['valide_antenne'],

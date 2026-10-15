@@ -29,6 +29,8 @@ admin.site.register(Reaction)
 class MembreAdmin(admin.ModelAdmin):
     # Le hachage de Membre.password (mobapp) ne doit jamais s'afficher ni se modifier ici.
     exclude = ('password',)
+    # L'état ne change que par les transitions (coptapp.services.transitions), jamais à la main : lecture seule, miroirs compris.
+    readonly_fields = ('etat', 'etat_precedent', 'motif_renvoi', 'is_delete', 'is_validate2', 'is_validate3', 'renvoye')
 
 
 admin.site.register(Moto)

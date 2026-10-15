@@ -6,32 +6,14 @@ from compte.models import JournalAction
 from compte.services.journal import journaliser
 from coptapp.models import Membre
 from coptapp.services import transitions
-from coptapp.services.transitions import EtatIncoherent, MOTIF_MAX  # noqa: F401 (réexportés : les vues importent d'ici)
+from coptapp.services.transitions import MOTIF_MAX, EtatIncoherent
 from compte.services.droits import droits_membre
 
-# Nom hérité du drapeau posé par chaque état atteint : le code de retour de ``valider_membre`` reste celui d'avant l'état unique.
-DRAPEAU_DE_L_ETAT = {'valide_antenne': 'is_validate2', 'valide_province': 'valide_province', 'actif': 'is_validate3'}
-
-
-def valider_membre(auteur, membre):
-    """Valide `membre` pour `auteur` (F-23) ; retourne la liste des drapeaux posés (vide : rien à valider).
-
-    Délègue à ``transitions.valider`` (état unique, verrou, droits, une ligne de journal par étape). Codes : 'is_validate2' (validé
-    antenne), 'valide_province', 'is_validate3' (actif)."""
-    return [DRAPEAU_DE_L_ETAT[etat] for etat in transitions.valider(auteur, membre)]
-
-
-def renvoyer_membre(auteur, membre, motif):
-    """Renvoie `membre` un cran en arrière avec un motif (F-23) ; retourne 'renvoye', 'motif_requis' ou 'motif_trop_long'.
-    Délègue à ``transitions.renvoyer`` (PermissionDenied sans droit de validateur sur ce membre)."""
-    return transitions.renvoyer(auteur, membre, motif)
-
-
 def changer_suppression(auteur, objet, supprime, motif=''):
-    """Suppression logique (ou annulation) d'un membre ou d'un engin ; journalisée. Ne contrôle aucun droit :
-    pour un membre, passer par `traiter_suppression_membre`. N'écrit que les colonnes concernées."""
-    if isinstance(objet, Membre):  # un membre : état unique (transitions), jamais un booléen écrit ici
-        return (transitions.supprimer if supprime else transitions.restaurer)(auteur, objet, motif)
+    """Suppression logique (ou annulation) d'un ENGIN ; journalisée. Ne contrôle aucun droit. Un membre se supprime et se
+    restaure par son état unique : ``traiter_suppression_membre`` (actions explicites) ou ``transitions.supprimer`` / ``restaurer``."""
+    if isinstance(objet, Membre):
+        raise TypeError("Un membre se supprime par coptapp.services.transitions (état unique).")
     avant = {'is_delete': bool(objet.is_delete)}
     objet.is_delete = supprime
     champs = ['is_delete', 'mise_a_jour']
@@ -115,7 +97,7 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
             raise PermissionDenied
         if not motif:
             return 'motif_requis'
-        changer_suppression(auteur, membre, True, motif)
+        transitions.supprimer(auteur, membre, motif)
         return 'supprime'
     # restaurer
     if membre.etat != 'supprime':
@@ -124,5 +106,5 @@ def traiter_suppression_membre(auteur, membre, action, motif=''):
         raise PermissionDenied
     if not motif:
         return 'motif_requis'
-    changer_suppression(auteur, membre, False, motif)
+    transitions.restaurer(auteur, membre, motif)
     return 'restaure'

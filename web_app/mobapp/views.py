@@ -149,9 +149,9 @@ def session(request, id):
 
 
 def _deja_valide(membre):
-    """Vrai si le dossier a passé une validation (is_validate2 ou is_validate3) : le membre ne change plus seul ses rattachements
-    (``is_validate1`` vaut True dès la création, il ne signifie pas « validé »)."""
-    return membre.etat not in ('saisi', 'renvoye')
+    """Vrai si le dossier a quitté l'état « saisi » (validé à un niveau, renvoyé, actif, à renouveler…) : le membre ne change plus seul
+    ses rattachements. Seul un dossier encore « saisi » reste modifiable par le membre."""
+    return membre.etat != 'saisi'
 
 
 def _choix_du_membre(membre):

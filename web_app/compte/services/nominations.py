@@ -101,7 +101,7 @@ def creer_nomination(auteur, compte, role, *, membre=None, coordination=None, an
     if debut > _ajouter_annees(aujourdhui, 1):
         raise RegleMetier(_("Le début du mandat ne peut pas dépasser un an dans le futur."))
     privilegie = auteur is None or not getattr(auteur, 'pk', None) or getattr(auteur, 'is_superuser', False)
-    if not privilegie and debut < aujourdhui.replace(year=aujourdhui.year - 1, day=min(aujourdhui.day, 28)):
+    if not privilegie and debut < _ajouter_annees(aujourdhui, -1):
         raise RegleMetier(_("Le début du mandat ne peut pas remonter à plus d'un an."))
     duree = duree_mandat_ans if duree_mandat_ans is not None else roles.duree_par_defaut(role)
     if fin is not None:
@@ -274,10 +274,14 @@ def comptes_gerables(auteur):
     return base.filter(pk__in=ids)
 
 
+# Drapeaux de droits hérités : UNE seule liste (test sur un compte, filtre SQL, résumé).
+PRIVILEGES_HERITES = ('privilege1', 'privilege2', 'privilege3', 'privilege4', 'privilege5', 'editor')
+
+
 def compte_a_privileges_herites(compte):
     """Vrai si le compte porte un privilège hérité (privilege1 à privilege5) ou le drapeau ``editor`` : nommer un tel compte
     ajouterait un rôle à des droits hérités (cumul), ce que seul un super-utilisateur peut décider (et il est journalisé)."""
-    return any(getattr(compte, f'privilege{n}', False) for n in range(1, 6)) or bool(getattr(compte, 'editor', False))
+    return any(getattr(compte, champ, False) for champ in PRIVILEGES_HERITES)
 
 
 def _motif_compte_non_nommable(compte):
@@ -305,9 +309,10 @@ def membres_nommables(auteur):
                .exclude(pk__in=[m for m in superutilisateurs.values_list('membreId', flat=True) if m]))
     if not auteur.is_superuser:  # mêmes refus que `nommer` : compte existant inactif ou à privilèges hérités
         from django.db.models import Q
-        non_nommables = Compte.objects.filter(
-            Q(is_active=False) | Q(privilege1=True) | Q(privilege2=True) | Q(privilege3=True) | Q(privilege4=True)
-            | Q(privilege5=True) | Q(editor=True)).exclude(membreId=None).values_list('membreId', flat=True)
+        condition = Q(is_active=False)
+        for champ in PRIVILEGES_HERITES:
+            condition |= Q(**{champ: True})
+        non_nommables = Compte.objects.filter(condition).exclude(membreId=None).values_list('membreId', flat=True)
         membres = membres.exclude(pk__in=list(non_nommables))
     return membres
 

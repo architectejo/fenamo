@@ -26,13 +26,13 @@ Circuit détaillé (_circuit.html) et carte de membre (_carte_membre.html) : non
     {% url 'renvoyer-membre' membre.id as url_renvoi %}{% translate "Renvoyer" as t_renvoyer %}
     {% if membre.etat == "valide_province" %}{% translate "à la coordination provinciale" as t_destination %}{% elif membre.etat == "valide_antenne" %}{% translate "à l'antenne" as t_destination %}{% else %}{% translate "à l'agent" as t_destination %}{% endif %}
     {% blocktranslate with d=t_destination asvar t_titre_renvoi %}Renvoyer le dossier {{ d }}{% endblocktranslate %}
-    {% blocktranslate with d=t_destination asvar t_msg_renvoi %}Le dossier retourne {{ d }} avec votre motif ; l'auteur de la saisie est prévenu.{% endblocktranslate %}
+    {% blocktranslate with d=t_destination asvar t_msg_renvoi %}Le dossier retourne {{ d }} avec votre motif ; les personnes concernées à ce niveau sont prévenues.{% endblocktranslate %}
     {% blocktranslate with d=t_destination asvar t_envoi_renvoi %}Renvoyer {{ d }}{% endblocktranslate %}
     {% translate "Motif du renvoi" as t_motif_renvoi %}
     {% include "components/_confirmer.html" with prefixe="renvoi" ident=membre.id url=url_renvoi libelle=t_renvoyer titre=t_titre_renvoi message=t_msg_renvoi libelle_envoi=t_envoi_renvoi icone="undo-2" variante="danger" avec_motif=True motif_libelle=t_motif_renvoi %}
     {% endif %}
 
-    {% if membre.is_validate3 and not membre.is_delete and fn_droits|peut_nommer %}
+    {% if membre.etat == "actif" and fn_droits|peut_nommer %}
     <button type="button" class="bouton" hx-get="{% url 'utilisateurs-nommer' %}?membre={{ membre.id }}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "badge-check" %}<span>{% translate "Nommer" %}</span></button>
     {% endif %}
 

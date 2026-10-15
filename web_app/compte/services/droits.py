@@ -35,7 +35,7 @@ from django.utils import timezone
 from compte import roles
 from compte.models import Nomination
 from compte.services import droits_herites as herites
-from coptapp.models import Antenne, AssociationMembre, Membre, Moto, Province, Ville
+from coptapp.models import CIRCUIT, Antenne, AssociationMembre, Membre, Moto, Province, Ville
 
 CLES_DROITS = (
     'peut_creer_membre', 'peut_modifier', 'peut_valider', 'peut_demander_suppression', 'peut_attribuer_privileges',
@@ -45,8 +45,7 @@ CLES_DROITS = (
     'peut_voir_pieces', 'peut_definir_mot_de_passe_mobile', 'peut_valider_tous',
 )
 
-# Étape de chaque rôle : (état de départ, état atteint). PR et SU enchaînent toutes les étapes restantes.
-CIRCUIT = ('saisi', 'valide_antenne', 'valide_province', 'actif')
+# Étape de chaque rôle : (état de départ, état atteint). PR et SU enchaînent toutes les étapes restantes (CIRCUIT : coptapp.models).
 ETAPES_PAR_ROLE = {roles.VA: ('saisi', 'valide_antenne'), roles.VP: ('valide_antenne', 'valide_province'),
                    roles.VN: ('valide_province', 'actif')}
 ROLES_ECRITURE = (roles.AT, roles.VA, roles.VP, roles.VN, roles.PR)

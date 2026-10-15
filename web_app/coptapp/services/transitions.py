@@ -9,17 +9,19 @@ Chaque fonction : ``select_for_update`` sur la ligne du membre, droits relus via
 par étape (auteur, date, objet, avant / après de ``etat``, motif). Les anciens booléens (is_delete, is_validate2, is_validate3,
 renvoye) sont des miroirs recalculés par ``Membre.save`` : jamais écrits ici.
 """
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.db.models import Q
+from django.utils.translation import gettext as _
 
-from compte.models import JournalAction
-from compte.services.droits import droits_membre, etapes_a_valider, etats_de_depart, membres_du_perimetre
+from compte.models import JournalAction, Nomination
+from compte.services.droits import droits_membre, etapes_a_valider, etats_de_depart
 from compte.services.journal import journaliser
-from coptapp.models import Membre, Notification
+from coptapp.models import CIRCUIT, Membre, Notification
 
-CIRCUIT = ('saisi', 'valide_antenne', 'valide_province', 'actif')
 MOTIF_MAX = 500
-PLAFOND_VALIDER_TOUS = 500
+PLAFOND_PAR_DEFAUT = 100  # « Valider tout le monde » : membres par appel (réglage VALIDER_TOUS_PLAFOND)
 # Recul d'un cran lors d'un renvoi : seul « saisi -> renvoye » rend le dossier à l'agent de terrain.
 RECUL = {'saisi': 'renvoye', 'valide_antenne': 'saisi', 'valide_province': 'valide_antenne'}
 
@@ -41,12 +43,6 @@ def _ecrire(membre, etat, precedent='', **champs):
     membre.save(update_fields=['etat', 'etat_precedent', 'mise_a_jour', *champs])
 
 
-def etapes_possibles(auteur, membre):
-    """États que `auteur` peut faire atteindre à `membre` par une validation maintenant (un seul pour VA, VP, VN ; tous les
-    restants pour PR et SU). Liste vide : rien à valider (pas son tour, propre saisie, membre renvoyé, supprimé ou déjà actif)."""
-    return etapes_a_valider(auteur, membre)
-
-
 @transaction.atomic
 def valider(auteur, membre):
     """Valide `membre` pour `auteur` (F-23) et retourne la liste des ÉTATS atteints (vide : rien à valider, rien n'est écrit).
@@ -54,7 +50,7 @@ def valider(auteur, membre):
     Idempotente : ne dévalide jamais. L'état est relu sous verrou ; chaque étape franchie écrit sa propre ligne de journal (VALIDATION,
     avant / après). Le motif de renvoi affiché est effacé dès que le dossier avance."""
     membre = _verrouiller(membre)
-    etapes = etapes_possibles(auteur, membre)
+    etapes = etapes_a_valider(auteur, membre)
     if not etapes:
         return []
     courant = membre.etat
@@ -65,13 +61,33 @@ def valider(auteur, membre):
     return etapes
 
 
+def _destinataires_du_renvoi(membre, cible):
+    """Comptes prévenus d'un renvoi, selon le niveau où le dossier retourne : « renvoye » -> l'auteur de la saisie ; « saisi » (renvoi
+    par le VP) -> les VA de l'antenne du membre ; « valide_antenne » (renvoi par le VN) -> les VP de sa coordination. À défaut de
+    destinataire à ce niveau, l'auteur de la saisie est prévenu (personne ne reste sans nouvelle)."""
+    if cible == 'saisi' and membre.antenne_id:
+        filtre = {'role': 'VA', 'antenne_id': membre.antenne_id}
+    elif cible == 'valide_antenne':
+        coordination = membre.antenne.coordination_id if membre.antenne_id else None
+        coordination = coordination or membre.province_id
+        filtre = {'role': 'VP', 'coordination_id': coordination} if coordination else None
+    else:
+        filtre = None
+    ids = []
+    if filtre:
+        ids = list(Nomination.objects.filter(active=True, compte__is_active=True, **filtre).values_list('compte_id', flat=True).distinct())
+    if not ids and membre.user_id:
+        ids = [membre.user_id]
+    return ids
+
+
 @transaction.atomic
 def renvoyer(auteur, membre, motif):
     """Renvoie `membre` un cran en arrière avec un motif obligatoire (F-23) ; retourne 'renvoye', 'motif_requis' ou 'motif_trop_long'.
 
     Droit : celui de valider ce membre à son étape courante (``peut_renvoyer``), sinon PermissionDenied. Recul : valide_province ->
     valide_antenne, valide_antenne -> saisi, saisi -> renvoye (retour à l'agent de terrain). Journal RENVOI (avant / après / motif) ;
-    l'auteur de la saisie est notifié."""
+    les comptes du niveau destinataire sont notifiés (``_destinataires_du_renvoi``)."""
     membre = _verrouiller(membre)
     if not droits_membre(auteur, membre)['peut_renvoyer']:
         raise PermissionDenied
@@ -83,9 +99,9 @@ def renvoyer(auteur, membre, motif):
     cible = RECUL[membre.etat]
     journaliser(auteur, JournalAction.Action.RENVOI, membre, avant={'etat': membre.etat}, apres={'etat': cible}, motif=motif)
     _ecrire(membre, cible, motif_renvoi=motif)
-    if membre.user_id:
-        Notification.objects.create(user_id=membre.user_id, membre=membre, titre=f'Fiche renvoyée : {membre.nom or membre.idf}',
-                                    description=motif)
+    titre = _("Fiche renvoyée : %(nom)s") % {'nom': membre.nom or membre.idf or membre.pk}
+    for destinataire_id in _destinataires_du_renvoi(membre, cible):
+        Notification.objects.create(user_id=destinataire_id, membre=membre, titre=titre, description=motif)
     return 'renvoye'
 
 
@@ -106,11 +122,13 @@ def reprendre(auteur, membre):
 
 @transaction.atomic
 def supprimer(auteur, membre, motif):
-    """Suppression logique (F-25) : l'état d'avant est gardé pour la restauration. Aucun contrôle de droit ici (voir
-    ``actions.traiter_suppression_membre``). EtatIncoherent si déjà supprimé."""
+    """Suppression logique (F-25) : l'état d'avant est gardé pour la restauration. Droit : exécuter les suppressions
+    (``peut_executer_suppression``), PermissionDenied sinon ; EtatIncoherent si déjà supprimé."""
     membre = _verrouiller(membre)
     if membre.etat == 'supprime':
         raise EtatIncoherent('Membre déjà supprimé.')
+    if not droits_membre(auteur, membre)['peut_executer_suppression']:
+        raise PermissionDenied
     journaliser(auteur, JournalAction.Action.SUPPRESSION, membre, avant={'etat': membre.etat}, apres={'etat': 'supprime'}, motif=motif)
     _ecrire(membre, 'supprime', precedent=membre.etat, suppression_demandee=False, suppression_demandee_par=None, motif_suppression=motif)
     return membre
@@ -118,11 +136,13 @@ def supprimer(auteur, membre, motif):
 
 @transaction.atomic
 def restaurer(auteur, membre, motif):
-    """Annule une suppression : le membre retrouve l'état d'avant la suppression (saisi si on ne le connaît pas). EtatIncoherent si le
-    membre n'est pas supprimé."""
+    """Annule une suppression : le membre retrouve l'état d'avant la suppression (saisi si on ne le connaît pas). Droit :
+    ``peut_restaurer``, PermissionDenied sinon ; EtatIncoherent si le membre n'est pas supprimé."""
     membre = _verrouiller(membre)
     if membre.etat != 'supprime':
         raise EtatIncoherent("Le membre n'est pas supprimé.")
+    if not droits_membre(auteur, membre)['peut_restaurer']:
+        raise PermissionDenied
     retour = membre.etat_precedent if membre.etat_precedent in CIRCUIT + ('renvoye', 'a_renouveler') else 'saisi'
     journaliser(auteur, JournalAction.Action.RESTAURATION, membre, avant={'etat': 'supprime'}, apres={'etat': retour}, motif=motif)
     _ecrire(membre, retour, suppression_demandee=False, suppression_demandee_par=None, motif_suppression='')
@@ -157,14 +177,25 @@ def renouveler(auteur, membre, motif=''):
 
 # ---------------------------------------------------------------- « Valider tout le monde »
 
-def _candidats(auteur, filtres):
-    """Membres du périmètre (mêmes filtres que la liste) que `auteur` peut valider à l'étape courante, hors propres saisies sauf SU."""
+def _a_l_etape(auteur, filtres):
+    """Membres du périmètre, avec les filtres de la liste, qui sont à une étape que `auteur` valide (propres saisies comprises)."""
     from coptapp.services.membres import membres_filtres, normaliser_filtres
-    membres = membres_filtres(auteur, normaliser_filtres(filtres or {})).filter(etat__in=etats_de_depart(auteur))
+    return membres_filtres(auteur, normaliser_filtres(filtres or {})).filter(etat__in=etats_de_depart(auteur))
+
+
+def _candidats_propres(auteur, filtres):
+    """Parmi ces membres, ses propres saisies et sa propre fiche (ignorées, sauf pour le SU) : MÊMES filtres que les candidats."""
+    propres = Q(user=auteur)
+    if auteur.membreId:
+        propres |= Q(pk=auteur.membreId)
+    return _a_l_etape(auteur, filtres).filter(propres)
+
+
+def _candidats(auteur, filtres):
+    """Membres que `auteur` peut valider à l'étape courante, hors propres saisies sauf SU."""
+    membres = _a_l_etape(auteur, filtres)
     if not auteur.is_superuser:
-        membres = membres.exclude(user=auteur)
-        if auteur.membreId:
-            membres = membres.exclude(pk=auteur.membreId)
+        membres = membres.exclude(pk__in=_candidats_propres(auteur, filtres).values('pk'))
     return membres
 
 
@@ -175,32 +206,38 @@ def compter_validables(auteur, filtres=None):
     return _candidats(auteur, filtres).count()
 
 
-def valider_tous(auteur, filtres=None, plafond=PLAFOND_VALIDER_TOUS):
+def plafond_valider_tous():
+    """Membres validés au plus par appel de « Valider tout le monde » (réglage VALIDER_TOUS_PLAFOND, 100 par défaut)."""
+    return max(int(getattr(settings, 'VALIDER_TOUS_PLAFOND', PLAFOND_PAR_DEFAUT)), 1)
+
+
+def valider_tous(auteur, filtres=None, plafond=None):
     """Valide, étape courante comprise, tous les membres du périmètre (et des filtres) que `auteur` a le droit de valider.
 
-    PermissionDenied si l'auteur ne valide aucune étape. Jamais ses propres saisies ni sa propre fiche (sauf le SU), jamais hors de son
-    périmètre. BORNÉ : au plus `plafond` (500) membres par appel, le reste est compté dans ``restants`` ; idempotent (relancer valide la
-    suite, jamais deux fois le même membre). Chaque membre est validé par ``valider`` (verrou, droits relus, une ligne de journal par
-    étape). Compte rendu : {'valides': nb de membres, 'etapes': nb d'étapes franchies, 'restants': membres non traités (plafond),
-    'ignores': {raison: nombre}, 'plafond': plafond}."""
+    Fonction EXPLICITEMENT demandée par la FENAMO (voir docs/valider-tout-le-monde.md). PermissionDenied si l'auteur n'a pas le droit
+    (``peut_valider_tous``). Jamais ses propres saisies ni sa propre fiche (sauf le SU), jamais hors de son périmètre. BORNÉ : au plus
+    `plafond` membres par appel (réglage ``VALIDER_TOUS_PLAFOND``, 100 par défaut), le reste est compté dans ``restants`` ; idempotent
+    (relancer valide la suite, jamais deux fois le même membre). Chaque membre est validé par ``valider`` (verrou, droits relus, une
+    ligne de journal par étape). Compte rendu : {'valides': nb de membres, 'etapes': nb d'étapes franchies, 'restants': membres non
+    traités (plafond), 'ignores': {raison: nombre}, 'plafond': plafond}."""
     if not droits_membre(auteur)['peut_valider_tous']:
         raise PermissionDenied
-    ids = list(_candidats(auteur, filtres).order_by('pk').values_list('pk', flat=True)[:plafond + 1])
-    restants = max(len(ids) - plafond, 0)
-    if restants:
-        restants = compter_validables(auteur, filtres) - plafond
+    plafond = plafond or plafond_valider_tous()
+    candidats = _candidats(auteur, filtres)
+    ids = list(candidats.order_by('pk').values_list('pk', flat=True)[:plafond + 1])
+    restants = 0
+    if len(ids) > plafond:
+        restants = candidats.count() - plafond
         ids = ids[:plafond]
     compte_rendu = {'valides': 0, 'etapes': 0, 'restants': restants, 'ignores': {}, 'plafond': plafond}
-    for pk in ids:
-        membre = Membre.objects.filter(pk=pk).first()
-        etapes = valider(auteur, membre) if membre is not None else []
+    for membre in Membre.objects.select_related('antenne').filter(pk__in=ids).order_by('pk'):
+        etapes = valider(auteur, membre)
         if etapes:
             compte_rendu['valides'] += 1
             compte_rendu['etapes'] += len(etapes)
         else:  # changé entre-temps (autre validateur, renvoi, suppression)
             compte_rendu['ignores']['etat_change'] = compte_rendu['ignores'].get('etat_change', 0) + 1
-    ignores_propres = membres_du_perimetre(auteur).filter(etat__in=etats_de_depart(auteur))
-    ignores_propres = ignores_propres.filter(user=auteur).count() if not auteur.is_superuser else 0
-    if ignores_propres:
-        compte_rendu['ignores']['propres_saisies'] = ignores_propres
+    propres = _candidats_propres(auteur, filtres).count() if not auteur.is_superuser else 0
+    if propres:
+        compte_rendu['ignores']['propres_saisies'] = propres
     return compte_rendu

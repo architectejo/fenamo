@@ -5,6 +5,7 @@ from compte.models import Compte
 from coptapp.validators import valider_image, valider_piece
 from fenamo.storage import stockage_prive
 from datetime import date
+import logging
 
 # Create your models here.
 
@@ -128,12 +129,19 @@ class Antenne(models.Model):
 
 # ---------------------------------------------------------------- état unique du membre (cahier des charges § 4.4)
 
+logger = logging.getLogger(__name__)
+
+# SEULE définition du circuit de validation (droits.py, droits_herites.py et transitions.py l'importent d'ici).
+CIRCUIT = ('saisi', 'valide_antenne', 'valide_province', 'actif')
+
 ETATS_MEMBRE = ('saisi', 'valide_antenne', 'valide_province', 'actif', 'renvoye', 'a_renouveler', 'supprime')
 ETATS_MEMBRE_CHOICES = [
     ('saisi', _('Saisi')), ('valide_antenne', _('Validé antenne')), ('valide_province', _('Validé province')), ('actif', _('Actif')),
     ('renvoye', _('Renvoyé')), ('a_renouveler', _('À renouveler')), ('supprime', _('Supprimé')),
 ]
 CHAMPS_MIROIRS = ('is_delete', 'is_validate2', 'is_validate3', 'renvoye')
+# Colonnes d'état : jamais réécrites par un save() sans update_fields (mise à jour perdue), sauf demande explicite (voir Membre.save).
+CHAMPS_ETAT = ('etat', 'etat_precedent', 'motif_renvoi', *CHAMPS_MIROIRS)
 
 
 def miroirs_de(etat, etat_precedent=''):
@@ -163,26 +171,32 @@ def etat_depuis_drapeaux(is_delete=False, is_validate2=False, is_validate3=False
 
 
 class MembreQuerySet(models.QuerySet):
-    """``update()`` garde l'état unique et ses miroirs cohérents : une écriture héritée des booléens (``update(is_validate2=True)``)
-    est traduite en état ; une écriture de ``etat`` met les miroirs à jour. TRANSITOIRE : à retirer quand plus rien n'écrit les booléens."""
+    """``update()`` garde l'état unique et ses miroirs cohérents : une écriture de ``etat`` met les miroirs à jour et vide
+    ``etat_precedent`` (sauf pour « supprime »), comme ``save()`` ; une écriture HÉRITÉE des booléens (``update(is_validate2=True)``)
+    est traduite en état et AVERTIT dans le journal technique. TRANSITOIRE : voir docs/correspondance-etat-membre.md (plan de retrait)."""
 
     def update(self, **champs):
         heritage = [c for c in CHAMPS_MIROIRS if c in champs]
         if 'etat' in champs:
+            if champs['etat'] != 'supprime':
+                champs.setdefault('etat_precedent', '')
             precedent = champs.get('etat_precedent', '')
             champs = {**{k: v for k, v in miroirs_de(champs['etat'], precedent).items() if k not in champs}, **champs}
             return super().update(**champs)
         if not heritage:
             return super().update(**champs)
+        logger.warning("Membre.objects.update(%s) : écriture héritée des booléens traduite en état (règle transitoire).", ', '.join(heritage))
         total = 0
         lignes = list(self.values('pk', 'etat', 'etat_precedent', *CHAMPS_MIROIRS))
         groupes = {}
         for ligne in lignes:
             nouveau = {c: champs.get(c, ligne[c]) for c in CHAMPS_MIROIRS}
             etat = etat_depuis_drapeaux(**nouveau)
+            if nouveau == miroirs_de(ligne['etat'], ligne['etat_precedent']):
+                etat = ligne['etat']  # aucun changement réel : l'état fin (valide_province…) n'est pas écrasé par la lecture grossière des booléens
             precedent = ligne['etat_precedent']
             if etat == 'supprime' and ligne['etat'] != 'supprime':
-                precedent = ligne['etat']
+                precedent = ligne['etat']  # l'état d'avant la suppression est l'état courant, pas un état recalculé
             elif etat != 'supprime':
                 precedent = ''
             groupes.setdefault((etat, precedent), []).append(ligne['pk'])
@@ -266,24 +280,34 @@ class Membre(models.Model):
         return membre
 
     def save(self, *args, **kwargs):
-        """Recalcule les miroirs (is_delete, is_validate2, is_validate3, renvoye) depuis ``etat``.
+        """Écrit le membre SANS jamais réécrire l'état par inadvertance.
 
-        Règle TRANSITOIRE : si ``etat`` n'a pas été changé par le code (resté à sa valeur chargée, ou à « saisi » pour un membre
-        neuf) alors que les anciens booléens ont changé, l'état est déduit des booléens (écritures héritées, formulaires, tests)."""
+        - ``save()`` sans ``update_fields`` sur un membre existant ne réécrit PAS les colonnes d'état (``etat``, ``etat_precedent``,
+          ``motif_renvoi`` et les miroirs) : une instance lue avant une validation ne l'annule plus (mise à jour perdue). L'état ne
+          change que par ``coptapp.services.transitions`` (qui passe par ``update_fields``), ou si le code a changé ``etat`` lui-même.
+        - Création : l'état vient de ``etat`` ; les miroirs sont recalculés depuis lui.
+        - Règle TRANSITOIRE (écritures héritées) : si ``etat`` n'a pas été touché alors que les anciens booléens ont changé, l'état est
+          déduit des booléens, en prenant ``self.etat`` comme état précédent d'une suppression, et un avertissement est journalisé."""
         charge = getattr(self, '_etat_charge', 'saisi' if self._state.adding else None)
-        if charge is not None and self.etat == charge and self._miroirs_actuels() != miroirs_de(self.etat, self.etat_precedent):
+        etat_modifie = charge is not None and self.etat != charge
+        if charge is not None and not etat_modifie and self._miroirs_actuels() != miroirs_de(self.etat, self.etat_precedent):
             nouvel = etat_depuis_drapeaux(self.is_delete, self.is_validate2, self.is_validate3, self.renvoye)
             if nouvel != self.etat:
+                logger.warning("Membre %s : écriture héritée des booléens traduite en état %s (règle transitoire).", self.pk, nouvel)
                 if nouvel == 'supprime':
-                    self.etat_precedent = etat_depuis_drapeaux(False, self.is_validate2, self.is_validate3, False)
+                    self.etat_precedent = self.etat
                 self.etat = nouvel
+                etat_modifie = True
         if self.etat != 'supprime':
             self.etat_precedent = ''
         for champ, valeur in miroirs_de(self.etat, self.etat_precedent).items():
             setattr(self, champ, valeur)
         update_fields = kwargs.get('update_fields')
-        if update_fields is not None and ({'etat', *CHAMPS_MIROIRS} & set(update_fields)):
-            kwargs['update_fields'] = list({*update_fields, 'etat', 'etat_precedent', *CHAMPS_MIROIRS})
+        if update_fields is not None:
+            if set(CHAMPS_ETAT) & set(update_fields):
+                kwargs['update_fields'] = list({*update_fields, 'etat', 'etat_precedent', *CHAMPS_MIROIRS})
+        elif not self._state.adding and not etat_modifie and charge is not None:  # colonnes d'état figées
+            kwargs['update_fields'] = [f.name for f in self._meta.concrete_fields if not f.primary_key and f.name not in CHAMPS_ETAT]
         super().save(*args, **kwargs)
         self._etat_charge = self.etat
 

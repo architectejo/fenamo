@@ -35,6 +35,8 @@ def lister_journal(filtres, numero_page=None):
         lignes = lignes.filter(Q(auteur__username__icontains=q) | Q(objet_libelle__icontains=q) | Q(motif__icontains=q))
     if filtres.get('role') in roles.ROLES:
         lignes = lignes.filter(role=filtres['role'])
+    elif filtres.get('role') == 'herites':  # auteurs sans nomination : « privilèges P1,P3 » ou « utilisateur »
+        lignes = lignes.filter(Q(role__startswith='privil') | Q(role='utilisateur'))
     for cle in ('coordination', 'antenne'):
         valeur = _entier(filtres.get(cle))
         if valeur:

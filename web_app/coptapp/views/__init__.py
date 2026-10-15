@@ -6,10 +6,9 @@ from compte.models import JournalAction
 from compte.services.comptes import compte_du_membre
 from compte.services.journal import journaliser
 from compte.services.privileges import attribuer_privileges
-from coptapp.services.actions import (
-    changer_suppression, rattacher, renvoyer_membre, traiter_suppression_membre, valider_membre,
-    ACTIONS_SUPPRESSION, EtatIncoherent,
-)
+from coptapp.services import transitions
+from coptapp.services.actions import ACTIONS_SUPPRESSION, changer_suppression, rattacher, traiter_suppression_membre
+from coptapp.services.transitions import EtatIncoherent
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_GET, require_POST
 from coptapp.models import *
@@ -135,7 +134,7 @@ def validate(request, id):
     membre = get_object_or_404(membres_du_perimetre(user), id=id)
     if not droits_membre(user)['peut_valider']:
         raise PermissionDenied
-    if not valider_membre(user, membre):
+    if not transitions.valider(user, membre):
         contrib_messages.info(request, _("Rien à valider pour vous sur ce membre."))
     return _retour(request, 'liste-membre')
 
@@ -163,7 +162,7 @@ def renvoyer(request, id):
     de validateur sur ce membre ; motif vide : message d'erreur, rien ne change. Retour à la page d'origine."""
     user = request.user
     membre = get_object_or_404(membres_du_perimetre(user), id=id)
-    resultat = renvoyer_membre(user, membre, request.POST.get('motif', ''))
+    resultat = transitions.renvoyer(user, membre, request.POST.get('motif', ''))
     if resultat == 'renvoye':
         contrib_messages.success(request, _("Fiche renvoyée à son auteur avec le motif."))
     else:

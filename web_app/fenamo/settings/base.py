@@ -168,6 +168,8 @@ UPLOAD_IMAGE_MAX_MO = env.float('UPLOAD_IMAGE_MAX_MO', default=3)
 # Droits hérités (privilege1 à privilege5) pour les comptes SANS nomination active. True : comportement d'avant les rôles (développement,
 # transition). False : un compte sans nomination ne voit que sa propre fiche. À passer à False en production quand les nominations sont créées.
 FENAMO_DROITS_HERITES = env.bool('FENAMO_DROITS_HERITES', default=True)
+# « Valider tout le monde » : nombre maximal de membres validés par appel (le reste est signalé, on relance).
+VALIDER_TOUS_PLAFOND = env.int('VALIDER_TOUS_PLAFOND', default=100)
 # Antirobot de l'inscription mobile (/mob/register/) : inscriptions par heure et par adresse IP.
 MOB_INSCRIPTIONS_PAR_HEURE = env.int('MOB_INSCRIPTIONS_PAR_HEURE', default=5)
 # Taille maximale d'une pièce jointe (PDF, JPEG, PNG), en Mo.

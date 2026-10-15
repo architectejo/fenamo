@@ -75,7 +75,7 @@ def creer_compte_pour_membre(membre, auteur=None):
         username = f'{base}-{n}'
     compte, mdp = creer_compte(username, membre=membre, auteur=auteur)
     membre.is_user = True
-    membre.save()
+    membre.save(update_fields=['is_user', 'mise_a_jour'])  # jamais l'état ni les miroirs
     if membre.structure:
         membre.structure.users.add(compte)
     return compte, mdp

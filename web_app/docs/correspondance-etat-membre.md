@@ -25,3 +25,17 @@ Les booléens ne sont pas modifiés dans ce sens. Les états `valide_province` e
 ## Sens inverse
 
 Les booléens sont recalculés depuis `etat` : `valide_province` redevient `is_validate2` seul ; seul `supprime` reprend les validations de `etat_precedent` (règle `miroirs_de` du modèle) ; `renvoye` vaut vrai uniquement pour l'état `renvoye`, avec `is_validate2` et `is_validate3` à faux ; `is_delete` vaut vrai si `etat` = `supprime`.
+
+## Plan de retrait de la règle transitoire (écritures héritées des booléens)
+
+Aujourd'hui `Membre.save()` et `Membre.objects.update()` traduisent encore une écriture directe de `is_validate2`, `is_validate3`,
+`is_delete` ou `renvoye` en état (avec un avertissement dans le journal technique `coptapp.models`). Un `save()` sans `update_fields`
+ne réécrit jamais l'état (mise à jour perdue évitée). Pour retirer la règle :
+
+1. Convertir les tests à `tests/conftest.py::forcer_etat` et à `etat=` (créations et `update`), jusqu'à ce que les avertissements
+   « écriture héritée des booléens » disparaissent de la sortie des tests.
+2. Vérifier en production qu'aucun avertissement n'est journalisé pendant un cycle complet (saisie, validation, renvoi, suppression),
+   et que `manage.py verifier_etats_membres` ne signale aucun écart.
+3. Supprimer `etat_depuis_drapeaux`, la branche « héritage » de `MembreQuerySet.update` et la règle de `Membre.save` ; les booléens ne
+   sont alors plus que des miroirs en lecture pour `mobapp`.
+4. Quand `mobapp` ne lit plus les booléens : retirer les colonnes par une migration (hors lot actuel).

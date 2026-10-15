@@ -24,7 +24,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
 from compte.models import JournalAction
-from coptapp.models import Antenne, AssociationMembre, Membre, Province, Ville
+from coptapp.models import CIRCUIT, Antenne, AssociationMembre, Membre, Province, Ville
 
 
 def _actif(user):
@@ -62,7 +62,7 @@ def membres_du_perimetre(user, avec_supprimes=False):
     if user.privilege3:
         filtre |= Q(etat__in=('valide_antenne', 'valide_province', 'actif', 'a_renouveler'))
     if user.privilege4:
-        filtre |= Q(etat__in=('actif', 'a_renouveler'))
+        filtre |= Q(etat='actif')  # comme le visiteur du rôle VI : seulement les membres actifs
     return membres.filter(filtre)
 
 
@@ -133,7 +133,7 @@ def droits_membre(user, membre=None):
         'peut_definir_mot_de_passe_mobile': ecriture,
         'peut_modifier': peut_modifier,
         'peut_valider': peut_valider,
-        'peut_valider_tous': not lecture_seule and (maitre or bool(user.privilege2) or bool(user.privilege3)),
+        'peut_valider_tous': not lecture_seule and maitre,  # SU et privilege5 seulement : jamais privilege2 ou privilege3
         'peut_renvoyer': peut_valider,  # renvoyer = refuser à son niveau : mêmes conditions que valider
         'peut_demander_suppression': ecriture,
         # Réservé aux SU (correctif C1) : le privilege5 hérité ne suffit pas.
@@ -152,9 +152,6 @@ def _a_deja_valide(user, membre):
         action=JournalAction.Action.VALIDATION, auteur=user, objet_id=membre.pk,
         objet_type=ContentType.objects.get_for_model(Membre, for_concrete_model=False),
     ).exists()
-
-
-CIRCUIT = ('saisi', 'valide_antenne', 'valide_province', 'actif')
 
 
 def _etapes(user, membre):

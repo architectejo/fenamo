@@ -24,7 +24,8 @@ from compte import roles
 from compte.models import JournalAction, Nomination
 from compte.services import nominations as noms
 from coptapp.models import Antenne, AssociationMembre, Membre, Moto, Notification, Province
-from coptapp.services.actions import EtatIncoherent, renvoyer_membre, traiter_suppression_membre, valider_membre
+from coptapp.services.actions import traiter_suppression_membre
+from coptapp.services.transitions import EtatIncoherent, renvoyer as renvoyer_membre, valider as valider_membre
 from coptapp.services.engins import enregistrer_engin
 
 PREFIXE = 'DEMO'
