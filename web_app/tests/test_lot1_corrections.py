@@ -102,7 +102,7 @@ def test_htmx_eval_desactive_et_textes_en_json_script(client, jeu):
     config = json.loads(re.search(r"name=\"htmx-config\" content='([^']+)'", html).group(1))
     assert config['allowEval'] is False
     brut = re.search(r'<script id="fenamo-textes" type="application/json">(.*?)</script>', html, re.S).group(1)
-    assert set(json.loads(brut)) == {'connexionPerdue', 'erreurServeur', 'refuse', 'introuvable'}
+    assert set(json.loads(brut)) == {'connexionPerdue', 'erreurServeur', 'refuse', 'introuvable', 'caracteresRestants', 'limiteAtteinte'}
     assert 'FENAMO_TEXTES' not in html
 
 
