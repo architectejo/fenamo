@@ -1,6 +1,8 @@
 """Journal d'activités (F-70) : une fonction pour écrire, une liste noire pour ne jamais stocker de secret."""
 import json
+import re
 
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -21,6 +23,20 @@ def _interdit(cle):
     return any(f in cle for f in CHAMPS_INTERDITS)
 
 
+IDENTIFIANT_INITIAL = re.compile(r'^([a-z0-9]+)\d{4}(@fenamordc\.hub)$', re.IGNORECASE)
+
+
+def masquer_identifiant_initial(valeur):
+    """L'identifiant « prenom1234@fenamordc.hub » d'un compte qui n'a pas encore changé son mot de passe EST son mot de passe initial
+    (dérogation F-02, docs/decisions.md) : il ne s'écrit jamais au journal, remplacé par « prenom****@fenamordc.hub »."""
+    if not isinstance(valeur, str):
+        return valeur
+    trouve = IDENTIFIANT_INITIAL.match(valeur.strip())
+    if trouve and get_user_model().objects.filter(username__iexact=valeur.strip(), doit_changer_mot_de_passe=True).exists():
+        return f'{trouve.group(1)}****{trouve.group(2)}'
+    return valeur
+
+
 def purger(donnees):
     """Copie sérialisable en JSON de `donnees`, sans aucune clé de la liste noire (récursif)."""
     if donnees is None:
@@ -29,6 +45,8 @@ def purger(donnees):
         return {str(k): purger(v) for k, v in dict(donnees).items() if not _interdit(k)}
     if isinstance(donnees, (list, tuple, set)):
         return [purger(v) for v in donnees]
+    if isinstance(donnees, str):
+        return masquer_identifiant_initial(donnees)
     return json.loads(json.dumps(donnees, cls=DjangoJSONEncoder, default=str))
 
 
@@ -92,7 +110,7 @@ def journaliser(auteur, action, objet=None, avant=None, apres=None, motif='', li
                        or getattr(objet, 'username', None) or str(objet))
     return JournalAction.objects.create(
         auteur=auteur, role=role_de(auteur), action=action,
-        objet_type=objet_type, objet_id=objet_id, objet_libelle=str(libelle)[:LIBELLE_MAX],
+        objet_type=objet_type, objet_id=objet_id, objet_libelle=masquer_identifiant_initial(str(libelle))[:LIBELLE_MAX],
         avant=purger(avant), apres=purger(apres), motif=motif or '',
         coordination=coordination, antenne=antenne,
     )

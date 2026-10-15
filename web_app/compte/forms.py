@@ -34,4 +34,7 @@ class ChangementMotDePasseForm(PasswordChangeForm):
         nouveau = self.cleaned_data['new_password1']
         if self.user.check_password(nouveau):
             raise forms.ValidationError(_("Le nouveau mot de passe doit être différent de l'ancien."), code='identique')
+        from compte.services.comptes import mot_de_passe_contient_identifiant
+        if mot_de_passe_contient_identifiant(nouveau, self.user.get_username()):
+            raise forms.ValidationError(_("Le mot de passe ne doit pas contenir votre nom d'utilisateur."), code='contient_identifiant')
         return nouveau

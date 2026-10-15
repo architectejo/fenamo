@@ -2,7 +2,7 @@
 <tr>
   <td data-role="titre"><div class="cellule-personne">{% avatar l.nom "" 40 %}<div>
     {% if l.membre %}<a class="lien-ligne" href="{% url 'membre-view' l.membre.id %}">{{ l.nom }}</a>{% else %}<strong>{{ l.nom }}</strong>{% endif %}{% if l.soi %} <span class="meta u-inline">({% translate "vous" %})</span>{% endif %}
-    <span class="meta"><span class="ident">{{ l.compte.username }}</span>{% if l.membre.idf %} · <span class="ident">{{ l.membre.idf }}</span>{% elif l.externe %} · {% translate "compte externe" %}{% endif %}</span>
+    <span class="meta"><span class="ident">{{ l.identifiant }}</span>{% if l.membre.idf %} · <span class="ident">{{ l.membre.idf }}</span>{% elif l.externe %} · {% translate "compte externe" %}{% endif %}</span>
     <span class="bloc u-mt-2">{% include "components/_badge_compte.html" with etat=l.etat %}</span>
   </div></div></td>
   <td data-libelle="{% translate 'Nomination' %}">{% if l.nomination %}<div class="nomination">{% include "components/_badge_role.html" with code=l.role libelle=l.role_libelle %}<span>{{ l.lieu }}</span>{% if l.nomme_par %}<span class="meta">{{ l.nomme_par }}</span>{% endif %}</div>{% else %}<span class="meta">{% translate "Aucune nomination en cours" %}</span>{% endif %}</td>

@@ -37,20 +37,53 @@ def en_groupes(mot_de_passe, taille=4):
     return ' '.join(mot_de_passe[i:i + taille] for i in range(0, len(mot_de_passe), taille))
 
 
-def _base_pseudo(nom, membre_id):
-    brut = unicodedata.normalize('NFKD', (nom or '').split(' ')[0]).encode('ascii', 'ignore').decode()
-    brut = re.sub(r'[^a-z0-9]', '', brut.lower())
-    return f'{brut or "membre"}{membre_id}'
+DOMAINE_IDENTIFIANT = '@fenamordc.hub'
+TENTATIVES_NOMBRE = 50  # tirages au plus avant de renoncer (boucle bornée)
+_LIGATURES = {'œ': 'oe', 'æ': 'ae', 'ß': 'ss', 'ø': 'o', 'đ': 'd', 'ł': 'l'}
+
+
+def prenom_ascii(nom):
+    """Premier mot du nom, en minuscules ASCII sans accents, espaces, apostrophes ni tirets : « Jean-Pierre » -> « jeanpierre »,
+    « Élise » -> « elise », « N'Golo » -> « ngolo ». « membre » si rien d'exploitable ne reste."""
+    mot = (nom or '').strip().split(' ')[0].lower()
+    for origine, remplacement in _LIGATURES.items():
+        mot = mot.replace(origine, remplacement)
+    brut = unicodedata.normalize('NFKD', mot).encode('ascii', 'ignore').decode()
+    return re.sub(r'[^a-z0-9]', '', brut) or 'membre'
+
+
+def identifiant_de_nomination(nom):
+    """« prenom[nombre]@fenamordc.hub » : prénom translittéré suivi d'un nombre de 4 chiffres (1000 à 9999) tiré avec ``secrets`` (jamais un
+    compteur prévisible), unique sans tenir compte de la casse. Nouveau tirage en cas de collision, au plus TENTATIVES_NOMBRE fois :
+    ensuite RegleMetier explicite. DÉROGATION décidée par l'utilisateur à F-02 : voir docs/decisions.md."""
+    from compte.services.nominations import RegleMetier
+    Compte = get_user_model()
+    base = prenom_ascii(nom)
+    for _tentative in range(TENTATIVES_NOMBRE):
+        candidat = f'{base}{secrets.randbelow(9000) + 1000}{DOMAINE_IDENTIFIANT}'
+        if not Compte.objects.filter(username__iexact=candidat).exists():
+            return candidat
+    raise RegleMetier(_("Impossible de générer un identifiant unique pour ce prénom : réessayez."))
+
+
+def mot_de_passe_contient_identifiant(mot_de_passe, username):
+    """Vrai si le mot de passe contient le nom d'utilisateur entier ou sa partie locale (avant @), sans tenir compte de la casse."""
+    bas = (mot_de_passe or '').lower()
+    nom = (username or '').lower()
+    locale = nom.split('@')[0]
+    # Seuil de 4 caractères : un identifiant très court (« u ») serait contenu dans presque tout mot de passe.
+    return bool(len(nom) >= 4 and nom in bas) or bool(len(locale) >= 4 and locale in bas)
 
 
 @transaction.atomic
-def creer_compte(username, email='', membre=None, auteur=None):
-    """Crée un compte avec un mot de passe aléatoire et doit_changer_mot_de_passe=True.
+def creer_compte(username, email='', membre=None, auteur=None, mot_de_passe=None):
+    """Crée un compte avec un mot de passe aléatoire et doit_changer_mot_de_passe=True (F-03 : compte externe).
 
-    Retourne (compte, mot_de_passe_en_clair) : le mot de passe n'est connu qu'ici, à afficher une fois.
+    `mot_de_passe` n'est donné que par la nomination d'un membre (dérogation F-02 : identifiant = mot de passe initial). Retourne
+    (compte, mot_de_passe_en_clair) : le mot de passe n'est connu qu'ici, à afficher une fois ; le journal ne le contient jamais.
     """
     Compte = get_user_model()
-    mdp = mot_de_passe_temporaire()
+    mdp = mot_de_passe or mot_de_passe_temporaire()
     compte = Compte.objects.create_user(
         username=username, email=email or '', password=mdp,
         membreId=membre.id if membre else None, doit_changer_mot_de_passe=True,
@@ -62,18 +95,26 @@ def creer_compte(username, email='', membre=None, auteur=None):
 
 
 @transaction.atomic
-def creer_compte_pour_membre(membre, auteur=None):
-    """Compte d'un membre ; retourne (compte, mot_de_passe) ou (compte_existant, None)."""
+def creer_compte_pour_membre(membre, auteur=None, identifiants_de_nomination=False):
+    """Compte d'un membre ; retourne (compte, mot_de_passe_initial) ou (compte_existant, None). Avec ``identifiants_de_nomination`` (appelé
+    par ``nominations.nommer`` seulement) le mot de passe initial est égal à l'identifiant « prenom[nombre]@fenamordc.hub » (dérogation décidée
+    par l'utilisateur) ; sinon, mot de passe aléatoire."""
     Compte = get_user_model()
     existant = Compte.objects.filter(membreId=membre.id).first()
     if existant:
         return existant, None
-    base = _base_pseudo(membre.nom, membre.id)
-    username, n = base, 1
-    while Compte.objects.filter(username=username).exists():
-        n += 1
-        username = f'{base}-{n}'
-    compte, mdp = creer_compte(username, membre=membre, auteur=auteur)
+    if identifiants_de_nomination:
+        # DÉROGATION F-02 (décision de l'utilisateur, docs/decisions.md) : identifiant ET mot de passe initial « prenom[nombre]@fenamordc.hub »,
+        # mot de passe à changer à la première connexion ; un compte existant n'est jamais modifié.
+        username = identifiant_de_nomination(membre.nom)
+        compte, mdp = creer_compte(username, membre=membre, auteur=auteur, mot_de_passe=username)
+    else:  # « Créer le compte » par un super-utilisateur (hors nomination) : identifiant « prenomID » et mot de passe aléatoire
+        base = prenom_ascii(membre.nom) + str(membre.id)
+        username, n = base, 1
+        while Compte.objects.filter(username__iexact=username).exists():
+            n += 1
+            username = f'{base}-{n}'
+        compte, mdp = creer_compte(username, membre=membre, auteur=auteur)
     membre.is_user = True
     membre.save(update_fields=['is_user', 'mise_a_jour'])  # jamais l'état ni les miroirs
     if membre.structure:

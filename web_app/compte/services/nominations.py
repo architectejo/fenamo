@@ -339,7 +339,7 @@ def nommer(auteur, membre, role, *, coordination=None, antenne=None, association
         raise RegleMetier(' '.join(erreur.messages)) from erreur
     from coptapp.models import Membre
     Membre.objects.select_for_update().filter(pk=membre.pk).first()  # verrou : un seul compte par membre, même en simultané
-    compte, mot_de_passe = creer_compte_pour_membre(membre, auteur=auteur)
+    compte, mot_de_passe = creer_compte_pour_membre(membre, auteur=auteur, identifiants_de_nomination=True)
     if compte.is_superuser:
         raise RegleMetier(_("Un compte super-utilisateur ne se nomme pas."))
     derogation = '' if mot_de_passe else _motif_compte_non_nommable(compte)  # un compte tout juste créé n'a ni privilège ni retard

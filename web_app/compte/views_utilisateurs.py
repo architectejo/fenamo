@@ -26,6 +26,7 @@ from compte import roles
 from compte.models import Nomination
 from compte.services import nominations as noms
 from compte.services.comptes import en_groupes
+from compte.services.journal import masquer_identifiant_initial
 from compte.services.droits import antennes_du_perimetre, associations_du_compte, membres_du_perimetre, provinces_du_perimetre
 from coptapp.models import Antenne, AssociationMembre, Membre, Province
 from coptapp.services.etats import etat_de
@@ -152,7 +153,9 @@ def _ligne(auteur, compte, nomination=None, aujourdhui=None, membres=None, gerab
     peut = False if soi else (gerable if gerable is not None else noms.peut_gerer(auteur, compte))
     super_utilisateur = nomination is None and compte.is_superuser
     return {
-        'compte': compte, 'nom': nom, 'membre': membre, 'externe': not compte.membreId and not compte.is_superuser, 'soi': soi,
+        'compte': compte, 'nom': nom, 'membre': membre,
+        # Identifiant affiché : masqué (« prenom****@fenamordc.hub ») tant que le mot de passe initial, égal à l'identifiant, n'est pas changé.
+        'identifiant': masquer_identifiant_initial(compte.get_username()) if compte.doit_changer_mot_de_passe else compte.get_username(), 'externe': not compte.membreId and not compte.is_superuser, 'soi': soi,
         'nomination': nomination or ({'role': 'SU'} if super_utilisateur else None),
         'role': nomination.role if nomination else ('SU' if super_utilisateur else ''),
         'role_libelle': nomination.get_role_display() if nomination else (str(roles.LIBELLES[roles.SU]) if super_utilisateur else ''),
@@ -335,10 +338,15 @@ def _perimetre(post):
     return tuple(sortie)
 
 
-def _mdp_reponse(request, compte, mot_de_passe, titre, evenements=True):
-    """Modale du mot de passe temporaire : lecture unique, jamais en cache ni en historique."""
+def _mdp_reponse(request, compte, mot_de_passe, titre, evenements=True, identifiant_initial=False):
+    """Modale du mot de passe temporaire : lecture unique, jamais en cache ni en historique.
+
+    Contexte : titre, compte, valeur (mot de passe), groupes (par 4, pour un mot de passe aléatoire), ``identifiant`` (nom d'utilisateur),
+    ``mot_de_passe_initial`` (= valeur), ``identifiant_initial`` (vrai à la NOMINATION d'un membre : le mot de passe initial est égal à
+    l'identifiant « prenom[nombre]@fenamordc.hub », dérogation F-02 ; faux pour F-03 et F-05, mot de passe aléatoire de 12 caractères)."""
     reponse = render(request, 'compte/utilisateurs/partials/_modale_mdp.html', {
         'titre': titre, 'compte': compte, 'valeur': mot_de_passe, 'groupes': en_groupes(mot_de_passe).split(' '),
+        'identifiant': compte.get_username(), 'mot_de_passe_initial': mot_de_passe, 'identifiant_initial': identifiant_initial,
     })
     add_never_cache_headers(reponse)
     reponse['Cache-Control'] = 'no-store, private'
@@ -406,7 +414,7 @@ def nommer(request):
     except noms.RegleMetier as erreur:
         return _erreur_formulaire(request, 'compte/utilisateurs/partials/_modale_nommer.html', contexte, erreur)
     if mot_de_passe:
-        return _mdp_reponse(request, nomination.compte, mot_de_passe, _("Membre nommé"))
+        return _mdp_reponse(request, nomination.compte, mot_de_passe, _("Membre nommé"), identifiant_initial=True)
     return reponse_succes(_("Membre nommé"), evenements=[EVENEMENT])
 
 
