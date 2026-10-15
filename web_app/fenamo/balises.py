@@ -194,3 +194,14 @@ def niveau_alerte(classe):
     """Niveau du composant d'alerte pour une classe de message héritée (alert-success, alert-info… = « succes », sinon « danger »)."""
     from coptapp.views.modales import niveau_message
     return niveau_message(classe)
+
+
+@register.filter
+def heure_fr(valeur):
+    """Heure locale au format « 07 h 40 » (espaces insécables) : ``{{ etat.depuis|heure_fr }}``. Vide si la valeur est vide."""
+    if not valeur:
+        return ''
+    from django.utils import timezone
+    if timezone.is_aware(valeur):
+        valeur = timezone.localtime(valeur)
+    return format_html('{}&nbsp;h&nbsp;{}', valeur.strftime('%H'), valeur.strftime('%M'))

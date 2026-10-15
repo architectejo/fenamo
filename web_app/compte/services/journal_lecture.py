@@ -41,8 +41,9 @@ def lister_journal(filtres, numero_page=None):
         valeur = _entier(filtres.get(cle))
         if valeur:
             lignes = lignes.filter(**{f'{cle}_id': valeur})
-    if filtres.get('action') in JournalAction.Action.values:
-        lignes = lignes.filter(action=filtres['action'])
+    actions = [a for a in (filtres.get('action') or '').split(',') if a in JournalAction.Action.values]  # une ou plusieurs, séparées par une virgule
+    if actions:
+        lignes = lignes.filter(action__in=actions)
     du, au = _jour(filtres.get('du')), _jour(filtres.get('au'))
     if du:
         lignes = lignes.filter(date__date__gte=du)

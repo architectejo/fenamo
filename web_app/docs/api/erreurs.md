@@ -25,7 +25,7 @@ Pendant le verrouillage, le middleware `compte.middleware.VerrouApplicationMiddl
 ```http
 HTTP/1.1 503 Service Unavailable
 Content-Type: application/json
-Cache-Control: no-store, no-cache, must-revalidate, max-age=0   (contient no-store)
+Cache-Control: no-store
 ```
 
 ```json

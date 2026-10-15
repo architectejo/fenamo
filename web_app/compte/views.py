@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_not_required
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.signals import user_login_failed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
@@ -41,9 +42,12 @@ def connexion(request):
         if ip_bloquee(request):
             return render(request, 'compte/verrou.html', status=429)
         user = authenticate(request, username=username, password=password)
-        if user is not None and verrou_application.est_verrouillee() and not user.is_superuser:
-            # Application verrouillée (F-07) : seuls les super-utilisateurs se connectent ; les autres voient le message du SU.
-            journaliser(None, JournalAction.Action.ECHEC_CONNEXION, libelle=username[:150], motif=_("application verrouillée"))
+        if verrou_application.est_verrouillee() and not (user is not None and user.is_superuser):
+            # Application verrouillée (F-07) : seuls les super-utilisateurs se connectent. MÊME réponse (503, message du SU) pour un mot de
+            # passe faux, un compte inconnu ou un compte non SU au bon mot de passe : la validité des identifiants n'est jamais révélée.
+            if user is not None:  # bon mot de passe d'un non-SU : compté comme échec (axes) et journalisé, sans le dire au visiteur
+                user_login_failed.send(sender=__name__, credentials={'username': username}, request=request)
+                journaliser(None, JournalAction.Action.ECHEC_CONNEXION, libelle=username[:150], motif=_("application verrouillée"))
             return render(request, 'compte/pages-login.html', {'verrou_message': verrou_application.message_public()}, status=503)
         if user is not None:
             login(request, user)

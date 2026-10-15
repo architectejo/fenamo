@@ -4,7 +4,6 @@ from django.contrib.auth import logout
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.cache import add_never_cache_headers
 
 
 class ChangementMotDePasseMiddleware:
@@ -36,8 +35,8 @@ class VerrouApplicationMiddleware:
     """Verrouillage de l'application (F-07), vérifié à CHAQUE requête (lecture en base, aucun cache).
 
     À placer après HtmxSessionMessagesMiddleware et avant LoginRequiredMiddleware. Verrouillée : le super-utilisateur connecté passe
-    partout ; les fichiers statiques, /connexion/, /deconnexion/ et /gestion-technique/ passent toujours (la vue de connexion refuse
-    les comptes non SU) ; tout autre visiteur est refusé : sa session est fermée, puis la réponse dépend du chemin (API : 503 JSON,
+    partout ; les fichiers statiques, /connexion/ et /deconnexion/ passent toujours (la vue de connexion refuse les comptes non SU ;
+    /gestion-technique/ n'est pas exempté : un SU s'y rend connecté) ; tout autre visiteur est refusé : sa session est fermée, puis la réponse dépend du chemin (API : 503 JSON,
     sauf la vue de santé ; /mob/ : 503 HTML et session mobile vidée ; HTMX : redirection vers /connexion/ ; sinon page 503).
     Les réponses n'exposent que le message du super-utilisateur (jamais le motif, l'auteur ni la date) et ne se mettent pas en cache."""
 
@@ -46,8 +45,10 @@ class VerrouApplicationMiddleware:
 
     def __call__(self, request):
         from compte.services import verrou_application as verrou
+        if verrou.chemin_exempte(request.path_info):  # test préalable : connexion et statiques ne coûtent aucune requête en base
+            return self.get_response(request)
         courant = verrou.etat()
-        if not courant.verrouillee or verrou.chemin_exempte(request.path):
+        if not courant.verrouillee:
             return self.get_response(request)
         user = request.user
         if user.is_authenticated and user.is_active and user.is_superuser:
@@ -57,7 +58,7 @@ class VerrouApplicationMiddleware:
         return self._refuser(request, courant.message)
 
     def _refuser(self, request, message):
-        chemin = request.path
+        chemin = request.path_info  # sans préfixe de script : valable même servie sous un sous-dossier
         if chemin.startswith('/api/'):
             if chemin.rstrip('/') == '/api/v1/sante':
                 reponse = JsonResponse({'statut': 'suspendu', 'version': 'v1'})  # 200 : on distingue un verrou d'une panne
@@ -73,6 +74,5 @@ class VerrouApplicationMiddleware:
             reponse.headers['HX-Redirect'] = reverse('application')
         else:
             reponse = render(request, '503.html', {'message': message}, status=503)
-        add_never_cache_headers(reponse)
-        reponse.headers['Cache-Control'] = 'no-store'
+        reponse.headers['Cache-Control'] = 'no-store'  # UNE seule valeur : jamais de page ni de message en cache
         return reponse
