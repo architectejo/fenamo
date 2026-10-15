@@ -102,6 +102,7 @@ def publier(auteur, titre, message, coordination=None, antenne=None, cible=None)
     communique = Communique.objects.create(user=auteur, titre=titre, message=message, publie_le=timezone.now(),
                                            province=coordination, antenne=antenne)
     destinataires = list(destinataires_ids(communique))
+    communique.nb_destinataires = len(destinataires)
     Notification.objects.bulk_create([
         Notification(user_id=compte_id, titre=_("Communiqué : %(titre)s") % {'titre': titre}, description=message[:500])
         for compte_id in destinataires], batch_size=500)
@@ -110,6 +111,29 @@ def publier(auteur, titre, message, coordination=None, antenne=None, cible=None)
                        'antenne': getattr(antenne, 'pk', None), 'destinataires': len(destinataires)},
                 motif=_("Publication d'un communiqué"), libelle=titre[:200])
     return communique
+
+
+def apercu_destinataires(auteur, cible, coordination=None, antenne=None):
+    """Nombre de comptes qui recevraient un communiqué (résumé de la modale), sans rien écrire. Même ciblage que ``publier`` (``_cible``) ;
+    ErreurCommunique si le choix est incomplet. Retourne ``{'nombre', 'coordination', 'antenne'}``."""
+    coordination, antenne = _cible(coordination, antenne, cible)
+    brouillon = Communique(user=auteur, province=coordination, antenne=antenne)
+    return {'nombre': destinataires_ids(brouillon).count(), 'coordination': coordination, 'antenne': antenne}
+
+
+def libelle_envoi(coordination, antenne):
+    """Fin de la phrase du toast : « à toute la fédération », « à la coordination X », « à l'antenne de X »."""
+    if antenne is not None:
+        return _("à l'antenne de %(nom)s") % {'nom': antenne.nom}
+    if coordination is not None:
+        return _("à la coordination %(nom)s") % {'nom': coordination.nom}
+    return _("à toute la fédération")
+
+
+def role_libelle(auteur):
+    """Libellé du rôle de l'auteur (signature d'un communiqué), vide si aucun rôle actif."""
+    role = profil_de(auteur).role if auteur is not None else None
+    return roles.LIBELLES.get(role, '') if role else ''
 
 
 def destinataires_ids(communique):

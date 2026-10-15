@@ -1,7 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages as contrib_messages
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 from compte.models import JournalAction
 from compte.services.comptes import compte_du_membre
 from compte.services.journal import journaliser
@@ -705,7 +705,11 @@ def contactView(request, id):
     modele = _gabarit_contact(request, 'virtrine/partials/_message_expediteur.html', 'app/contact-view.html') if request.method == 'POST' else 'app/contact-view.html'
     reponse = render(request, modele, locals())
     if vient_de_traiter and veut_fragment(request):
-        ajouter_declencheurs(reponse, {'toast': {'message': str(_("Message marqué comme traité.")), 'niveau': 'success'}, 'contactsMaj': True})
+        restants = nb_a_traiter
+        detail = (ngettext("Il reste %(n)d message à traiter.", "Il reste %(n)d messages à traiter.", restants) % {'n': restants}
+                  if restants else _("Aucun message à traiter."))
+        ajouter_declencheurs(reponse, {'toast': {'message': str(_("Message marqué comme traité")), 'niveau': 'success', 'detail': detail},
+                                       'contactsMaj': True})
     return reponse
 
 @require_POST
@@ -1012,6 +1016,7 @@ def site(request):
     
     #Articles
     articles = Article.objects.order_by('-id')
+    nb_a_traiter = contact_service.messages_a_traiter()  # bouton « Messages reçus » (contexte : nb_a_traiter)
     if user.is_superuser:  # interrupteur « données réelles » : visible du super-utilisateur seul
         from virtrine.services.etat_donnees_reelles import etat_donnees_reelles
         donnees_reelles = etat_donnees_reelles()

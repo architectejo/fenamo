@@ -82,6 +82,7 @@ TEMPLATES = [
                 'fenamo.contexte.textes_interface',
                 'fenamo.contexte.coque',
                 'fenamo.contexte.droits_menu',
+                'fenamo.contexte.compteurs_menu',
                 'fenamo.contexte.verrou_application',
             ],
             'libraries': {'design': 'fenamo.balises'},

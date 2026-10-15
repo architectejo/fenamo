@@ -29,10 +29,11 @@ def donnees_reelles(request):
         contenu.definir_donnees_reelles(request.user, voulu, request.POST.get('motif', ''))
     except ValidationError as erreur:
         return render(request, 'virtrine/partials/_modale_donnees_reelles.html', {**contexte, 'erreur': ' '.join(erreur.messages)}, status=422)
-    message = _("Le site affiche maintenant les données réelles.") if voulu else _("Le site affiche maintenant son jeu d'exemple.")
+    detail = _("Le site affiche maintenant les données réelles.") if voulu else _("Le site affiche maintenant son jeu d'exemple.")
+    message = _("Données réelles activées") if voulu else _("Données d'exemple rétablies")
     if request.htmx:
-        return reponse_succes(message, evenements=[EVENEMENT])
-    messages.success(request, message)
+        return reponse_succes(message, evenements=[EVENEMENT], detail=detail)
+    messages.success(request, detail)
     return redirect('site')
 
 

@@ -52,6 +52,23 @@ def droits_menu(request):
     return {'fn_droits': calcul(user)}
 
 
+def compteurs_menu(request):
+    """Nombres du menu : ``nb_a_traiter_menu`` (messages de contact à traiter ; super-utilisateur et éditeur seulement, une requête de
+    comptage) et ``nb_communiques_non_lus`` (communiqués non lus du compte, mêmes règles que la cloche). Rien pour un anonyme ni
+    pour les requêtes HTMX qui ne rendent pas la coque."""
+    from fenamo.htmx import veut_fragment
+    user = getattr(request, 'user', None)
+    if user is None or not user.is_authenticated or veut_fragment(request):
+        return {}
+    from compte.services.droits import est_editeur
+    from coptapp.services.communiques import nombre_non_lus
+    donnees = {'nb_communiques_non_lus': nombre_non_lus(user)}
+    if est_editeur(user):  # le champ « éditeur » couvre ED et SU
+        from virtrine.services.contact import messages_a_traiter
+        donnees['nb_a_traiter_menu'] = messages_a_traiter()
+    return donnees
+
+
 def verrou_application(request):
     """Bandeau du super-utilisateur tant que l'application est verrouillée (variable ``verrou_application``). Lu SEULEMENT pour un
     super-utilisateur connecté : aucune requête de plus pour les autres comptes, les anonymes ni les fragments HTMX."""

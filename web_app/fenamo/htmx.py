@@ -56,15 +56,15 @@ def ajouter_declencheurs(response, declencheurs):
     return response
 
 
-def reponse_succes(message=None, niveau='success', evenements=None):
+def reponse_succes(message=None, niveau='success', evenements=None, detail=None):
     """Réponse 204 d'un formulaire de modale réussi : ferme la modale, toast, rafraîchissement.
 
     ``evenements`` : noms d'événements (liste) ou dict ``{nom: détail}`` à émettre pour que les
-    zones concernées se rafraîchissent.
+    zones concernées se rafraîchissent. ``detail`` : phrase secondaire du toast (clé ``detail`` de l'événement ``toast``).
     """
     declencheurs = {'modaleFermer': True}
     if message:
-        declencheurs['toast'] = {'message': str(message), 'niveau': niveau}
+        declencheurs['toast'] = {'message': str(message), 'niveau': niveau, **({'detail': str(detail)} if detail else {})}
     if isinstance(evenements, dict):
         declencheurs.update(evenements)
     elif evenements:

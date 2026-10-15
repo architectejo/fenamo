@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.cache import add_never_cache_headers
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, ngettext
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from coptapp.models import Antenne, Province
@@ -45,12 +45,12 @@ def listMessage(request):
 
 @require_GET
 def messageView(request, id):
-    """Lecture d'un communiqué visible (404 sinon). N'écrit rien. Contexte : message (= communique), lu, peut_publier, titre_affiche, suivant (prochain non lu ou None)."""
+    """Lecture d'un communiqué visible (404 sinon). N'écrit rien. Contexte : message (= communique), lu, peut_publier, titre_affiche, suivant (prochain non lu ou None), auteur_role (libellé du rôle de l'auteur, peut être vide)."""
     communique = get_object_or_404(service.communiques_visibles(request.user).select_related('user', 'province', 'antenne'), id=id)
     lu = service.est_lu(request.user, communique)
     return render(request, 'app/message-view.html', {
         'message': communique, 'communique': communique, 'lu': lu,
-        'titre_affiche': service.titre_affiche(communique), 'suivant': service.suivant_non_lu(request.user, apres=communique),
+        'titre_affiche': service.titre_affiche(communique), 'auteur_role': service.role_libelle(communique.user), 'suivant': service.suivant_non_lu(request.user, apres=communique),
         'peut_publier': service.peut_publier(request.user)})
 
 
@@ -84,6 +84,14 @@ def addCommunique(request):
     contexte = {'action': request.path, **service.choix_ciblage(),
                 'titre_max': service.TITRE_MAX, 'message_max': service.MESSAGE_MAX}
     if request.method == 'GET':
+        if request.GET.get('cible'):  # résumé « Reçu par N comptes » pendant le choix (nb_destinataires, apercu_erreur)
+            try:
+                apercu = service.apercu_destinataires(
+                    request.user, request.GET['cible'].strip(), Province.objects.filter(pk=_entier(request.GET.get('coordination'))).first(),
+                    Antenne.objects.filter(pk=_entier(request.GET.get('antenne'))).first())
+                contexte['nb_destinataires'] = apercu['nombre']
+            except service.ErreurCommunique as erreur:
+                contexte['apercu_erreur'] = str(erreur)
         return render(request, _modele(request), contexte)
     donnees = {cle: request.POST.get(cle, '') for cle in ('titre', 'message', 'cible', 'coordination', 'antenne')}
     coordination = Province.objects.filter(pk=_entier(donnees['coordination'])).first() if donnees['coordination'] else None
@@ -91,13 +99,16 @@ def addCommunique(request):
     try:
         if (donnees['coordination'] and coordination is None) or (donnees['antenne'] and antenne is None):
             raise service.ErreurCommunique(_("Ciblage inconnu."), 'antenne' if donnees['antenne'] else 'coordination')
-        service.publier(request.user, donnees['titre'], donnees['message'], coordination, antenne,
+        communique = service.publier(request.user, donnees['titre'], donnees['message'], coordination, antenne,
                         cible=donnees['cible'].strip() or None)
     except service.ErreurCommunique as erreur:
         erreurs = {erreur.champ: str(erreur)} if erreur.champ else {}
         return render(request, _modele(request), {**contexte, 'erreur': str(erreur), 'erreurs': erreurs, 'valeurs': donnees}, status=422)
     texte = _("Communiqué publié.")
+    envoi = service.libelle_envoi(communique.province, communique.antenne)
+    detail = (ngettext("Envoyé %(ou)s : %(n)d compte alerté.", "Envoyé %(ou)s : %(n)d comptes alertés.", communique.nb_destinataires)
+              % {'ou': envoi, 'n': communique.nb_destinataires})
     if request.htmx:
-        return reponse_succes(texte, evenements=[EVENEMENT])
+        return reponse_succes(_("Communiqué publié"), evenements=[EVENEMENT], detail=detail)
     messages.success(request, texte)
     return redirect('list-message')
