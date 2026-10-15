@@ -164,6 +164,7 @@ def test_exemple_copies_de_secours_videes_des_que_le_mode_exemple_est_connu(clie
 def test_exemple_403_inactif_vide_les_copies_de_secours(client, api):
     client.get("/actualites/")
     brute = api_client._cle("articles/", {"page": 1, "taille": 12}, "fr")
+    api_client.purger_cache()  # copies fraîches expirées : l'appel repart vers l'API
     api.repondre("articles/", 403, {"statut": "inactif", "detail": "Données réelles désactivées."})
     client.get("/actualites/")
     assert cache.get(api_client.cle_secours(brute)) is None
