@@ -52,7 +52,7 @@ def test_F05_nommer_creer_externe_et_reinitialiser_utilisent_le_meme_generateur(
     appels = []
     vrai = C.mot_de_passe_temporaire
     monkeypatch.setattr(C, 'mot_de_passe_temporaire', lambda: appels.append(1) or vrai())
-    membre = Membre.objects.create(nom='Nouveau', antenne=monde['antenne_p'], province=monde['P'], is_validate2=True, is_validate3=True)
+    membre = Membre.objects.create(nom='Nouveau', antenne=monde['antenne_p'], province=monde['P'], etat='actif')
     _n, mdp1 = N.nommer(equipe['VA'], membre, roles.AT, antenne=monde['antenne_p'])
     _c, _n, mdp2 = N.creer_compte_externe(equipe['PR'], 'externe-gen', roles.VI)
     mdp3 = N.reinitialiser_mot_de_passe(equipe['PR'], equipe['VN'])

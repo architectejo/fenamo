@@ -135,7 +135,7 @@ COMPLEMENT = [
     ('liste-membre', 'get', {}, None, S(200)),
     ('engin-liste', 'get', {}, None, S(200)),
     ('valider-tous', 'get', {}, None, S(405)),
-    ('valider-tous', 'post', {}, {}, S(403, p2=302, p3=302, p5=302, su=302)),  # jamais l'agent, le visiteur ni l'éditeur
+    ('valider-tous', 'post', {}, {}, S(403, p5=302, su=302)),  # SU et privilege5 seulement (jamais privilege2 ni privilege3)
     ('renvoyer-membre', 'get', M, None, S(405)),
     ('renvoyer-membre', 'post', M, {'motif': 'Photo illisible'}, S(302, nu=404, p4=404, ed=404, p1=403, p2=(302, 403), p3=(302, 403))),
     ('recherche', 'get', {}, None, S(200)),

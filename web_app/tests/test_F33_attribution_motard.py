@@ -20,9 +20,9 @@ def test_F33_privilege2_ne_rattache_pas_l_engin_d_un_autre_membre(client, jeu):
     p2 = _compte('p2m', privilege2=True)
     jeu['association'].users.add(p2)
     autre_assoc = AssociationMembre.objects.create(nom='Autre', num_justice='F-5')
-    etranger = Membre.objects.create(nom='Étranger', is_validate2=True, structure=autre_assoc)
+    etranger = Membre.objects.create(nom='Étranger', etat='valide_antenne', structure=autre_assoc)
     moto = Moto.objects.create(proprietaire=etranger, abonnement=date(2030, 1, 1), numero='900ZZ')
-    Membre.objects.filter(pk=jeu['membre'].pk).update(structure=jeu['association'], is_validate2=True)
+    Membre.objects.filter(pk=jeu['membre'].pk).update(structure=jeu['association'], etat='valide_antenne')
     client.force_login(p2)
     assert _attribuer(client, jeu['membre'], '900ZZ').status_code == 403
     moto.refresh_from_db()
@@ -38,7 +38,7 @@ def test_F33_agent_seul_refuse_apres_la_premiere_validation(client, jeu):
     moto.refresh_from_db()
     assert moto.motard_id == str(membre.id)
     Moto.objects.filter(pk=moto.pk).update(motard_id=None)
-    Membre.objects.filter(pk=membre.pk).update(is_validate2=True)
+    Membre.objects.filter(pk=membre.pk).update(etat='valide_antenne')
     assert _attribuer(client, membre, '901AA').status_code == 403
     moto.refresh_from_db()
     assert not moto.motard_id

@@ -13,9 +13,9 @@ def _chercher(client, champ):
 
 
 def _donnees(jeu):
-    actif = Membre.objects.create(nom='Dupont Actif', is_validate2=True, is_validate3=True)
+    actif = Membre.objects.create(nom='Dupont Actif', etat='actif')
     Membre.objects.create(nom='Dupont Saisi')
-    Membre.objects.create(nom='Dupont Supprime', is_delete=True, is_validate2=True, is_validate3=True)
+    Membre.objects.create(nom='Dupont Supprime', etat='supprime', etat_precedent='actif')
     Moto.objects.create(proprietaire=actif, abonnement=date(2030, 1, 1), numero='777AA')
     saisi = Membre.objects.get(nom='Dupont Saisi')
     Moto.objects.create(proprietaire=saisi, abonnement=date(2030, 1, 1), numero='777BB')

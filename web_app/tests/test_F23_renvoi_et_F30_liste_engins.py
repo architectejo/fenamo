@@ -91,7 +91,7 @@ def _engin(membre, auteur, n):
 
 
 def test_F30_liste_engins_perimetre_recherche_pagination(monde, equipe):
-    proprio = _saisi(monde, equipe, 'Proprio Alpha', is_validate2=True, is_validate3=True)
+    proprio = _saisi(monde, equipe, 'Proprio Alpha', etat='actif')
     for n in range(30):
         _engin(proprio, equipe['AT'], n)
     res = lister_engins(equipe['PR'], {}, 1, par_page=25)
@@ -106,7 +106,7 @@ def test_F30_liste_engins_perimetre_recherche_pagination(monde, equipe):
 
 
 def test_F30_vue_liste_engins_get_page_et_fragment(client, monde, equipe):
-    proprio = _saisi(monde, equipe, 'Proprio Beta', is_validate2=True, is_validate3=True)
+    proprio = _saisi(monde, equipe, 'Proprio Beta', etat='actif')
     _engin(proprio, equipe['AT'], 1)
     url = reverse('engin-liste')
     assert client.get(url).status_code == 302  # anonyme : connexion

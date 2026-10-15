@@ -40,7 +40,7 @@ def test_F28_liste_bouton_valider_selon_peut_valider(client, jeu, privileges, vo
     compte = Compte.objects.create_user('lv', password='x', **privileges)
     # Le bouton suit le droit de valider CE membre : l'étape précédente est exigée (privilege2 valide un membre non encore validé
     # par l'antenne ; privilege3 un membre validé par l'antenne) et personne ne valide sa propre fiche.
-    cible = _m(jeu, 'Liste Cible', is_validate2=not privileges.get('privilege2'), user=compte if privileges.get('privilege1') else None)
+    cible = _m(jeu, 'Liste Cible', etat='saisi' if privileges.get('privilege2') else 'valide_antenne', user=compte if privileges.get('privilege1') else None)
     if privileges.get('privilege4'):
         cible.is_validate3 = True
         cible.save()
@@ -71,7 +71,7 @@ def test_F28_liste_contexte_peut_valider_coherent_avec_les_droits(client, jeu):
 
 def test_F28_liste_actif_n_a_pas_de_bouton_valider(client, jeu):
     client.force_login(jeu['compte'])
-    actif = _m(jeu, 'Déjà actif', is_validate2=True, is_validate3=True)
+    actif = _m(jeu, 'Déjà actif', etat='actif')
     corps = client.get('/membres/').content.decode()
     assert reverse('validate', args=[actif.id]) not in corps
     assert reverse('validate', args=[jeu['membre'].id]) in corps
@@ -93,7 +93,7 @@ def test_F28_fiche_su_voit_privileges_et_historique_visiteur_non(client, jeu):
     c = client.get(reverse('membre-view', args=[jeu['membre'].id]))
     assert c.context['peut_attribuer_privileges'] and c.context['peut_voir_historique']
     visiteur = Compte.objects.create_user('vis2', password='x', privilege4=True)
-    actif = _m(jeu, 'Actif', is_validate2=True, is_validate3=True)
+    actif = _m(jeu, 'Actif', etat='actif')
     c2 = Client()
     c2.force_login(visiteur)
     r = c2.get(reverse('membre-view', args=[actif.id]))
@@ -146,7 +146,7 @@ def test_F28_404_membre_inexistant_page_propre(prod, jeu):
 
 def test_F28_403_page_propre(prod, jeu):
     visiteur = Compte.objects.create_user('v403', password='x', privilege4=True)
-    actif = _m(jeu, 'Actif', is_validate2=True, is_validate3=True)
+    actif = _m(jeu, 'Actif', etat='actif')
     c = _client_sans_exception()
     c.force_login(visiteur)
     r = c.post(reverse('delete-membre', args=[actif.id]), {'action': 'demander', 'motif': 'x'})

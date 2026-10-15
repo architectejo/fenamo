@@ -46,7 +46,7 @@ def test_F25_modales_de_suppression_postent_action_et_motif(client, jeu):
     client.force_login(jeu['compte'])
     html = client.get(reverse('membre-view', kwargs={'id': jeu['membre'].id})).content.decode()
     assert 'name="action" value="executer"' in html and 'maxlength="500"' in html and 'data-compteur-motif' in html
-    Membre.objects.filter(pk=jeu['membre'].pk).update(is_delete=True, motif_suppression='Ancien motif')
+    Membre.objects.filter(pk=jeu['membre'].pk).update(etat='supprime', etat_precedent='saisi', motif_suppression='Ancien motif')
     html = client.get(reverse('membre-view', kwargs={'id': jeu['membre'].id})).content.decode()
     assert 'name="action" value="restaurer"' in html
     assert 'Ancien motif' not in html.split('name="action" value="restaurer"')[1].split('</template>')[0]

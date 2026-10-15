@@ -33,7 +33,7 @@ def _pr(jeu):
 def test_F02_nommer_valeur_hostile_pas_dans_une_expression_alpine(client, jeu):
     pr = _pr(jeu)
     membre = Membre.objects.create(nom=HOSTILE, date_naissance=date(1990, 1, 1), province=jeu['province'], antenne=jeu['antenne'],
-                                   structure=jeu['association'], is_validate3=True, is_validate2=True)
+                                   structure=jeu['association'], etat='actif')
     client.force_login(pr)
     for donnees in ({'membre': membre.id, 'role': HOSTILE, 'fin': HOSTILE, 'debut': HOSTILE}, {'role': 'AT', 'fin': HOSTILE}):
         r = client.post(reverse('utilisateurs-nommer'), donnees)

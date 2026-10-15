@@ -37,7 +37,7 @@ def dossiers(settings, tmp_path):
 @pytest.fixture
 def pieces(acteurs, dossiers):
     m, a = acteurs['membre'], acteurs['association']
-    Membre.objects.filter(pk=m.pk).update(is_validate1=True, is_validate2=True, is_validate3=True)
+    Membre.objects.filter(pk=m.pk).update(etat='actif')
     m.refresh_from_db()
     m.fiche_id = SimpleUploadedFile('identite-secrete.pdf', PDF)
     m.photo = SimpleUploadedFile('visage.jpg', _jpeg())

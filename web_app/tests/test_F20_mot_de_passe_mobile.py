@@ -130,7 +130,7 @@ def test_F31_ajout_web_utilise_le_meme_service(client, jeu):
                     {k: 'x' for k in ('plaque', 'chassie', 'moteur', 'marque', 'couleur')})
     assert r.status_code == 200
     assert Moto.objects.filter(proprietaire=jeu['membre']).exclude(pk=jeu['moto'].pk).get().numero == '002PF'
-    sans = Membre.objects.create(nom='Sans coordination', is_validate2=True, user=jeu['compte'])
+    sans = Membre.objects.create(nom='Sans coordination', etat='valide_antenne', user=jeu['compte'])
     r = client.post(reverse('add-moto', kwargs={'id': sans.id}), {k: 'y' for k in ('plaque', 'chassie', 'moteur', 'marque', 'couleur')})
     assert r.status_code == 400 and 'coordination provinciale' in r.content.decode()
 

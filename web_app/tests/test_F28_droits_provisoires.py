@@ -59,7 +59,7 @@ def test_F28_droits_privilege3_modifie_seulement_dans_son_association(jeu):
     droits = droits_membre(p3, jeu['membre'])
     assert droits['peut_modifier'] and droits['peut_ajouter_famille'] and not droits['peut_valider']  # étape 2 pas encore validée
     autre = AssociationMembre.objects.create(nom='Autre', num_justice='F-9')
-    etranger = Membre.objects.create(nom='Etranger', structure=autre, is_validate2=True)
+    etranger = Membre.objects.create(nom='Etranger', structure=autre, etat='valide_antenne')
     assert not droits_membre(p3, etranger)['peut_modifier']
 
 
@@ -78,7 +78,7 @@ def test_F28_droits_liste_sans_membre(jeu):
 
 
 def test_F28_peut_valider_faux_quand_rien_a_valider(jeu):
-    Membre.objects.filter(pk=jeu['membre'].pk).update(is_validate2=True, is_validate3=True)
+    Membre.objects.filter(pk=jeu['membre'].pk).update(etat='actif')
     membre = Membre.objects.get(pk=jeu['membre'].pk)
     assert not droits_membre(jeu['compte'], membre)['peut_valider']
     assert etapes_a_valider(jeu['compte'], membre) == []
@@ -109,7 +109,7 @@ def test_F28_perimetre_agent_ses_saisies_et_sa_fiche(jeu):
 
 
 def test_F28_perimetre_supprimes_exclus_sauf_demande(jeu):
-    Membre.objects.filter(pk=jeu['membre'].pk).update(is_delete=True)
+    Membre.objects.filter(pk=jeu['membre'].pk).update(etat='supprime', etat_precedent='saisi')
     assert membres_du_perimetre(jeu['compte']).count() == 0
     assert membres_du_perimetre(jeu['compte'], avec_supprimes=True).count() == 1
 
@@ -122,7 +122,7 @@ def test_F28_compteurs_engins_et_associations_suivent_le_meme_perimetre(jeu):
     visiteur = _compte('visit', privilege4=True)  # voit seulement les membres actifs
     ind = indicateurs_tableau_bord(visiteur)
     assert (ind['actifs'], ind['engins'], ind['associations']) == (0, 0, 0)
-    Membre.objects.filter(pk=jeu['membre'].pk).update(is_validate3=True)
+    Membre.objects.filter(pk=jeu['membre'].pk).update(etat='actif')
     ind = indicateurs_tableau_bord(visiteur)
     assert (ind['actifs'], ind['engins'], ind['associations']) == (1, 1, 1)
     assert indicateurs_tableau_bord(_compte('nu2'))['engins'] == 0

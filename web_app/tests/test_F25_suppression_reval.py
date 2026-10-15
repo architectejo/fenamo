@@ -141,7 +141,7 @@ def test_F25_tiers_ne_peut_pas_redeposer_une_demande_deja_en_cours(client, acteu
 
 
 def test_F25_visiteur_ne_demande_ni_n_annule(client, acteurs, cible):
-    Membre.objects.filter(pk=cible.pk).update(is_validate3=True)
+    Membre.objects.filter(pk=cible.pk).update(etat='actif')
     assert _agir(client, acteurs, 'p4', cible, 'demander', motif='x').status_code == 403  # visible mais lecture seule
     assert _etat(cible) == (False, False, None)
 

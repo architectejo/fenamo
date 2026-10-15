@@ -19,7 +19,7 @@ def _pr(jeu):
 
 def _membre_actif(jeu, nom='Membre Nommable'):
     return Membre.objects.create(nom=nom, date_naissance=date(1990, 1, 1), province=jeu['province'], antenne=jeu['antenne'],
-                                 structure=jeu['association'], is_validate2=True, is_validate3=True)
+                                 structure=jeu['association'], etat='actif')
 
 
 def _compte_nomme(jeu, auteur, nom='agent', role=roles.AT, **kw):

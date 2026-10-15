@@ -101,7 +101,7 @@ def test_F25_reval_un_tiers_ne_redepose_pas_une_demande_en_cours(client, acteurs
 
 
 def test_F25_reval_visiteur_lecture_seule(client, acteurs, cible):
-    Membre.objects.filter(pk=cible.pk).update(is_validate3=True)
+    Membre.objects.filter(pk=cible.pk).update(etat='actif')
     assert _agir(client, acteurs, 'p4', cible, 'demander', motif='x').status_code == 403
     assert _etat(cible) == (False, False, None)
 

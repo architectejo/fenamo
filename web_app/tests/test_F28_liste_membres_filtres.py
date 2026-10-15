@@ -24,13 +24,13 @@ def _membre(jeu, nom, **kw):
 def liste(jeu):
     autre_assoc = AssociationMembre.objects.create(nom='Autre association', sigle='AA', num_justice='F-0002')
     autre_antenne = Antenne.objects.create(nom='Antenne B', structure=autre_assoc)
-    _membre(jeu, 'Kabila Jean', telephone='+243810000001', idf='MBR0000001', qualite='MOTARD', is_validate2=True)
+    _membre(jeu, 'Kabila Jean', telephone='+243810000001', idf='MBR0000001', qualite='MOTARD', etat='valide_antenne')
     _membre(jeu, 'Mukendi Paul', telephone='+243820000002', idf='MBR0000002', qualite='PROPRIETAIRE',
-            is_validate2=True, is_validate3=True, antenne=autre_antenne, structure=autre_assoc)
+            etat='actif', antenne=autre_antenne, structure=autre_assoc)
     _membre(jeu, 'Tshala Marie', qualite='MOTARD ET PROPRIETAIRE')
     _membre(jeu, None)
     _membre(jeu, '')
-    _membre(jeu, 'Supprime Pierre', is_delete=True)
+    _membre(jeu, 'Supprime Pierre', etat='supprime')
     return {**jeu, 'autre_assoc': autre_assoc, 'autre_antenne': autre_antenne}
 
 

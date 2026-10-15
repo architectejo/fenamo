@@ -41,7 +41,7 @@ def monde(jeu):
     comptes['nu'] = Compte.objects.create_user('nu', password='x')
     cible = nommer('cible-at', roles.AT, antenne=A)
     actif = Membre.objects.create(nom='Actif Nommable', date_naissance=date(1990, 1, 1), province=P, antenne=A,
-                                  structure=jeu['association'], is_validate1=True, is_validate2=True, is_validate3=True)
+                                  structure=jeu['association'], etat='actif')
     return {**jeu, 'comptes': comptes, 'cible': cible, 'P': P, 'Q': Q, 'A': A, 'AQ': AQ, 'membre_actif': actif}
 
 
@@ -249,7 +249,7 @@ def test_F21_roles_liste_limitee_au_perimetre(client, monde):
 
 
 def test_F21_roles_recherche_de_membre_hors_perimetre_vide(client, monde):
-    autre = Membre.objects.create(nom='Zoulou Hors Perimetre', province=monde['Q'], antenne=monde['AQ'], is_validate3=True)
+    autre = Membre.objects.create(nom='Zoulou Hors Perimetre', province=monde['Q'], antenne=monde['AQ'], etat='actif')
     client.force_login(monde['comptes']['vp'])
     corps = client.get(_url('utilisateurs-membres-nommables'), {'q': 'Zoulou'}).content.decode()
     assert 'Zoulou' not in corps

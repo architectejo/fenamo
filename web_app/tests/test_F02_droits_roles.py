@@ -30,7 +30,7 @@ def monde(jeu):
     m = jeu['membre']
     Membre.objects.filter(pk=m.pk).update(user=agent, province=P, antenne=antenne_p)
     m.refresh_from_db()
-    n = Membre.objects.create(nom='Membre Q', province=Q, antenne=antenne_q, ville=ville_q, is_validate2=True, is_validate3=True)
+    n = Membre.objects.create(nom='Membre Q', province=Q, antenne=antenne_q, ville=ville_q, etat='actif')
     nonvalide_q = Membre.objects.create(nom='Saisi Q', province=Q, antenne=antenne_q, ville=ville_q)
     return {**jeu, 'P': P, 'Q': Q, 'antenne_p': antenne_p, 'antenne_q': antenne_q, 'ville_q': ville_q, 'agent': agent,
             'M': m, 'N': n, 'N2': nonvalide_q}
@@ -161,7 +161,7 @@ def test_F02_perimetre_membres_par_role(monde, acteurs_roles):
     assert _ids(acteurs_roles['AT']) == {M}  # ses seules saisies
     assert _ids(acteurs_roles['ED']) == set()  # aucun membre
     # visiteur national : membres actifs seulement
-    assert _ids(acteurs_roles['VI']) == set(Membre.objects.filter(is_validate3=True, is_delete=False).values_list('pk', flat=True))
+    assert _ids(acteurs_roles['VI']) == set(Membre.objects.filter(etat='actif', is_delete=False).values_list('pk', flat=True))
     assert N in _ids(acteurs_roles['VI']) and N2 not in _ids(acteurs_roles['VI']) and M not in _ids(acteurs_roles['VI'])
 
 
@@ -172,7 +172,7 @@ def test_F02_perimetre_vp_dans_une_autre_coordination_et_visiteurs_locaux(monde)
     assert _ids(vi_q) == {monde['N'].id}  # actifs de la coordination Q seulement
     vi_antenne = _nommer(monde, roles.VI, antenne=monde['antenne_q'])
     assert _ids(vi_antenne) == {monde['N'].id}
-    Membre.objects.filter(pk=monde['M'].pk).update(is_validate3=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='actif')
     vi_p = _nommer(monde, roles.VI, antenne=monde['antenne_p'])
     assert _ids(vi_p) == {monde['M'].id}
 
@@ -185,7 +185,7 @@ def test_F02_perimetre_va_suit_la_ville_d_origine_de_l_antenne(monde):
 
 
 def test_F02_membres_supprimes_exclus_sauf_demande_et_propre_fiche_toujours_lisible(monde, acteurs_roles):
-    Membre.objects.filter(pk=monde['M'].pk).update(is_delete=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='supprime', etat_precedent='saisi')
     assert monde['M'].id not in _ids(acteurs_roles['VA']) and monde['M'].id in _ids(acteurs_roles['VA'], avec_supprimes=True)
     ed = acteurs_roles['ED']
     Compte.objects.filter(pk=ed.pk).update(membreId=monde['N'].id)
@@ -225,14 +225,14 @@ def test_F02_matrice_droits_sur_un_membre_saisi(monde, acteurs_roles, role):
 
 @pytest.mark.parametrize('role', ['VI', 'ED'])
 def test_F02_visiteur_et_editeur_n_ont_aucun_droit_sur_un_membre(monde, acteurs_roles, role):
-    Membre.objects.filter(pk=monde['M'].pk).update(is_validate2=True, is_validate3=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='actif')
     membre = Membre.objects.get(pk=monde['M'].pk)
     assert _vrais(D.droits_membre(acteurs_roles[role], membre)) == set()
     assert _vrais(D.droits_membre(acteurs_roles[role])) == set()
 
 
 def test_F02_agent_perd_la_modification_apres_la_premiere_validation(monde, acteurs_roles):
-    Membre.objects.filter(pk=monde['M'].pk).update(is_validate2=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='valide_antenne')
     membre = Membre.objects.get(pk=monde['M'].pk)
     droits = D.droits_membre(acteurs_roles['AT'], membre)
     for cle in ('peut_modifier', 'peut_modifier_engin', 'peut_supprimer_engin', 'peut_modifier_famille', 'peut_supprimer_famille'):
@@ -318,7 +318,7 @@ def test_F02_personne_ne_valide_ses_propres_saisies_ni_sa_fiche_sauf_le_su(monde
 
 
 def test_F02_membre_supprime_non_validable_et_sans_droits_d_ecriture(monde, acteurs_roles):
-    Membre.objects.filter(pk=monde['M'].pk).update(is_delete=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='supprime', etat_precedent='saisi')
     membre = Membre.objects.get(pk=monde['M'].pk)
     for role in ('PR', 'VN', 'VP', 'VA', 'AT'):
         droits = D.droits_membre(acteurs_roles[role], membre)
@@ -387,7 +387,7 @@ def test_F02_acces_par_identifiant_404_hors_perimetre_403_sans_droit(monde, acte
     assert D.membre_pour(va, monde['M'].id).pk == monde['M'].id
     with pytest.raises(Http404):
         D.membre_pour(va, monde['N'].id)
-    Membre.objects.filter(pk=monde['N'].pk).update(is_validate3=True)
+    Membre.objects.filter(pk=monde['N'].pk).update(etat='actif')
     with pytest.raises(Exception) as erreur:
         D.membre_pour(vi, monde['N'].id, 'peut_modifier')
     assert type(erreur.value).__name__ == 'PermissionDenied'
@@ -400,7 +400,7 @@ def test_F02_vues_avec_roles(client, monde, acteurs_roles):
     donnees = {'modifier': '1', 'nom': 'Modifié', 'date': '01-01-1990'}
     assert client.post(url(monde['M']), donnees).status_code == 200
     client.force_login(acteurs_roles['VI'])
-    Membre.objects.filter(pk=monde['N'].pk).update(is_validate3=True)
+    Membre.objects.filter(pk=monde['N'].pk).update(etat='actif')
     assert client.get(url(monde['N'])).status_code == 200
     assert client.post(url(monde['N']), donnees).status_code == 403
     client.force_login(acteurs_roles['ED'])

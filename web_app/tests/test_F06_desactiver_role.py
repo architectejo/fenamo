@@ -129,7 +129,7 @@ def test_F06_changer_de_role_cloture_l_ancienne_et_ouvre_la_nouvelle(monde, equi
 
 def test_F06_changer_de_perimetre_garde_la_fiche_membre(monde, equipe):
     from coptapp.models import Membre
-    membre = Membre.objects.create(nom='Avec fiche', antenne=monde['antenne_p'], province=monde['P'], is_validate2=True, is_validate3=True)
+    membre = Membre.objects.create(nom='Avec fiche', antenne=monde['antenne_p'], province=monde['P'], etat='actif')
     compte = _compte('avec-fiche', membreId=membre.id)
     N.creer_nomination(equipe['VN'], compte, roles.VA, membre=membre, antenne=monde['antenne_p'])
     nouvelle = N.changer_role_perimetre(equipe['VN'], Compte.objects.get(pk=compte.pk), roles.VA, antenne=monde['antenne_q'])

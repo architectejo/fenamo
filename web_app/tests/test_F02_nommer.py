@@ -16,7 +16,7 @@ from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 def actif(monde, nom, antenne=None, province=None, **kw):
     """Un membre ACTIF (validé aux trois niveaux) de l'antenne / coordination donnée."""
     return Membre.objects.create(nom=nom, antenne=antenne or monde['antenne_p'], province=province or monde['P'],
-                                 is_validate2=True, is_validate3=True, **kw)
+                                 etat='actif', **kw)
 
 
 @pytest.fixture
@@ -116,7 +116,7 @@ def test_F02_membre_hors_du_perimetre_de_l_auteur_404(monde, chefs):
         with pytest.raises(HorsPerimetre):
             N.nommer(chefs[auteur], chez_q, role, **kw)
     supprime = actif(monde, 'Supprimé')
-    Membre.objects.filter(pk=supprime.pk).update(is_delete=True)
+    Membre.objects.filter(pk=supprime.pk).update(etat='supprime', etat_precedent='saisi')
     with pytest.raises(HorsPerimetre):
         N.nommer(chefs['PR'], supprime, roles.VN)
 

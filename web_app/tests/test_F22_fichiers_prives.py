@@ -118,7 +118,7 @@ def test_F22_vue_perimetre_droits_et_champs_inconnus(client, pieces):
     assert client.get(_url('membre', membre.id, 'photo')).status_code == 404  # hors périmètre
     assert client.get(_url('association', association.id, 'capture_justice')).status_code == 404
     visiteur = Compte.objects.create_user('visiteur', password='x', privilege4=True)
-    Membre.objects.filter(pk=membre.pk).update(is_validate2=True, is_validate3=True)
+    Membre.objects.filter(pk=membre.pk).update(etat='actif')
     association.users.add(visiteur)
     client.force_login(visiteur)
     assert client.get(_url('membre', membre.id, 'photo')).status_code == 200  # la photo : périmètre suffit

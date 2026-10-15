@@ -154,8 +154,7 @@ def test_F31_2c_mob_coordination_inconnue_message_et_rien_cree(client, jeu):
 
 @pytest.fixture
 def fiche(acteurs):
-    Membre.objects.filter(pk=acteurs['membre'].pk).update(idf='MBR0000009', is_validate1=True, is_validate2=True,
-                                                          is_validate3=True)
+    Membre.objects.filter(pk=acteurs['membre'].pk).update(idf='MBR0000009', etat='actif')
     acteurs['membre'].refresh_from_db()
     return acteurs
 

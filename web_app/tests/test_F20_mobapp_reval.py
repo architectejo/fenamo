@@ -110,7 +110,7 @@ def test_F20_mob_attribution_refusee_si_deja_rattache_ou_valide(client, mob):
     connecter(client, rattache)
     assert client.post(reverse('attribut-str', kwargs={'id': rattache.id, 'id_str': mob['association'].id})).status_code == 403
     assert client.post(reverse('attribut-ville', kwargs={'id': rattache.id, 'id_ville': mob['ville'].id})).status_code == 403
-    valide = Membre.objects.create(nom='Validé', province=mob['province'], is_validate2=True)
+    valide = Membre.objects.create(nom='Validé', province=mob['province'], etat='valide_antenne')
     connecter(client, valide)
     assert client.post(reverse('attribut-str', kwargs={'id': valide.id, 'id_str': mob['association'].id})).status_code == 403
     valide.refresh_from_db()

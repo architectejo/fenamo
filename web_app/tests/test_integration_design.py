@@ -211,7 +211,7 @@ def test_design_badge_rendu_pour_chaque_etat(etat):
 
 def test_design_liste_affiche_les_etats(client, jeu):
     client.force_login(jeu['compte'])
-    Membre.objects.filter(pk=jeu['membre'].pk).update(is_validate2=True)
+    Membre.objects.filter(pk=jeu['membre'].pk).update(etat='valide_antenne')
     html = client.get(reverse('liste-membre')).content.decode()
     assert 'Validé antenne' in html
 

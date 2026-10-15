@@ -56,7 +56,8 @@ Avant de coder une fonction, lis la section du cahier des charges qui la décrit
 |---|---|---|
 | `architecte` | Découpe un lot en tâches, fixe le contrat de l'API | Non |
 | `backend-django` | Modèles, migrations, services, droits (`web_app/`) | Oui |
-| `frontend-htmx` | Templates, fragments, modales, responsive (les deux projets) | Oui |
+| `ui-designer` | Système de design, composants, maquettes des écrans (les deux projets) | Oui (design) |
+| `frontend-htmx` | Intègre les maquettes : templates, fragments, modales, responsive | Oui |
 | `api` | API `/api/v1/` et son contrat avec le site | Oui |
 | `site-web` | Projet `website/` | Oui |
 | `migration-donnees` | Reprise des données de l'ancien projet, SQLite → MySQL | Oui |
@@ -65,7 +66,7 @@ Avant de coder une fonction, lis la section du cahier des charges qui la décrit
 | `relecteur` | Relecture indépendante de chaque modification | Non |
 | `deploiement-cpanel` | Réglages de production, guides de déploiement | Oui (config, docs) |
 
-Enchaînement d'un lot : `architecte` → agents de réalisation → `testeur` → `securite` et `relecteur` (en parallèle) → `deploiement-cpanel` pour les lots de mise en production. Un agent qui a écrit du code ne valide jamais son propre travail.
+Enchaînement d'un lot : `architecte` → `ui-designer` (si le lot touche l'interface) → agents de réalisation → `testeur` → `securite` et `relecteur` (en parallèle) → `deploiement-cpanel` pour les lots de mise en production. Un agent qui a écrit du code ne valide jamais son propre travail.
 
 ## Commandes utiles
 

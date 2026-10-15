@@ -91,7 +91,7 @@ def test_F03_le_visiteur_cree_ne_voit_que_les_membres_actifs_de_son_perimetre(cl
     compte, _n, mdp = N.creer_compte_externe(pr, 'vi-liste', roles.VI, antenne=monde['antenne_p'])
     Compte.objects.filter(pk=compte.pk).update(doit_changer_mot_de_passe=False)  # mot de passe déjà changé
     compte = Compte.objects.get(pk=compte.pk)
-    Membre.objects.filter(pk=monde['M'].pk).update(is_validate2=True, is_validate3=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='actif')
     client.force_login(compte)
     assert 'Membre Fictif' in client.get('/membres/').content.decode()
     assert client.post(f'/membres/{monde["M"].id}/valider/').status_code == 403

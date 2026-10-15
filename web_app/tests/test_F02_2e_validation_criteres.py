@@ -50,11 +50,11 @@ def monde(jeu):
                'ed': nommer('ed', roles.ED), 'vi_a': nommer('vi_a', roles.VI, antenne=A),
                'vi_p': nommer('vi_p', roles.VI, coordination=P), 'vp_q': nommer('vp_q', roles.VP, coordination=Q)}
     membres = {
-        'actif_a': membre('Actif A', A, P, is_validate1=True, is_validate2=True, is_validate3=True),
+        'actif_a': membre('Actif A', A, P, etat='actif'),
         'saisi_a': membre('Saisi A', A, P),  # non actif
-        'v2_a': membre('Valide 2 A', A, P, is_validate2=True),
-        'actif_a2': membre('Actif A2', A2, P, is_validate2=True, is_validate3=True),
-        'actif_q': membre('Actif Q', AQ, Q, ville=ville_q, is_validate2=True, is_validate3=True),
+        'v2_a': membre('Valide 2 A', A, P, etat='valide_antenne'),
+        'actif_a2': membre('Actif A2', A2, P, etat='actif'),
+        'actif_q': membre('Actif Q', AQ, Q, ville=ville_q, etat='actif'),
         'saisi_q': membre('Saisi Q', AQ, Q, ville=ville_q),
     }
     return {**jeu, 'P': P, 'Q': Q, 'A': A, 'A2': A2, 'AQ': AQ, 'comptes': comptes, 'm': membres}
@@ -343,7 +343,7 @@ def test_F02_2e_anti_escalade_personne_ne_se_nomme_ni_ne_se_promeut(client, mond
         r = client.post(reverse('utilisateurs-role', kwargs={'id': moi.id}), {'role': 'AT', 'antenne': monde['A'].id})
         assert r.status_code == 403
     # une nomination ne se crée pas pour un compte qui en a déjà une : changer le rôle au lieu d'en empiler une seconde
-    membre_va = Membre.objects.create(nom='Membre du VA', antenne=monde['A'], province=monde['P'], is_validate3=True)
+    membre_va = Membre.objects.create(nom='Membre du VA', antenne=monde['A'], province=monde['P'], etat='actif')
     Compte.objects.filter(username='va').update(membreId=membre_va.id)
     client.force_login(monde['comptes']['pr'])
     r = client.post(reverse('utilisateurs-nommer'), {'membre': membre_va.id, 'role': 'VN'})

@@ -33,7 +33,7 @@ def equipe(monde):
 
 
 def _actif(monde, nom='Actif', **kw):
-    return Membre.objects.create(nom=nom, antenne=monde['antenne_p'], province=monde['P'], is_validate2=True, is_validate3=True, **kw)
+    return Membre.objects.create(nom=nom, antenne=monde['antenne_p'], province=monde['P'], etat='actif', **kw)
 
 
 # ---------------------------------------------------------------- E1 : compte existant inactif ou à privilèges hérités
@@ -305,7 +305,7 @@ def test_F02_matrice_l_agent_lit_son_antenne_mais_n_ecrit_que_ses_saisies(monde,
         assert droits['peut_demander_modification']  # il peut seulement demander une modification
     propre = D.droits_membre(at, monde['M'])
     assert propre['peut_modifier'] and propre['peut_ajouter_engin'] and propre['peut_demander_suppression']  # sa saisie, avant V1
-    Membre.objects.filter(pk=monde['M'].pk).update(is_validate2=True)
+    Membre.objects.filter(pk=monde['M'].pk).update(etat='valide_antenne')
     apres_v1 = D.droits_membre(at, Membre.objects.get(pk=monde['M'].pk))
     assert not apres_v1['peut_modifier'] and not apres_v1['peut_modifier_engin'] and apres_v1['peut_demander_modification']
 

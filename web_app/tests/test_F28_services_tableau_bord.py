@@ -10,9 +10,9 @@ from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 def _membres(jeu):
     base = dict(province=jeu['province'], ville=jeu['ville'], antenne=jeu['antenne'], structure=jeu['association'])
     from datetime import date
-    Membre.objects.create(nom='Valide A', date_naissance=date(1990, 1, 1), is_validate2=True, **base)
-    Membre.objects.create(nom='Actif', date_naissance=date(1990, 1, 1), is_validate2=True, is_validate3=True, **base)
-    Membre.objects.create(nom='Supprime', date_naissance=date(1990, 1, 1), is_delete=True, **base)
+    Membre.objects.create(nom='Valide A', date_naissance=date(1990, 1, 1), etat='valide_antenne', **base)
+    Membre.objects.create(nom='Actif', date_naissance=date(1990, 1, 1), etat='actif', **base)
+    Membre.objects.create(nom='Supprime', date_naissance=date(1990, 1, 1), etat='supprime', **base)
 
 
 def test_F28_indicateurs_comptent_par_etat(jeu):

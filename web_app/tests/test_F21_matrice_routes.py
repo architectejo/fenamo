@@ -28,7 +28,7 @@ def acteurs(jeu):
     }
     for nom in ('p1', 'p2', 'p3'):
         jeu['association'].users.add(comptes[nom])
-    Membre.objects.filter(pk=jeu['membre'].pk).update(is_validate2=True, user=comptes['p1'])
+    Membre.objects.filter(pk=jeu['membre'].pk).update(etat='valide_antenne', user=comptes['p1'])
     jeu['membre'].refresh_from_db()
     autre = AssociationMembre.objects.create(nom='Autre association', sigle='AB', num_justice='F-0002')
     return {**jeu, 'comptes': comptes, 'autre': autre,
@@ -142,7 +142,7 @@ def test_F21_matrice_anonyme_redirige_vers_la_connexion(client, acteurs, route):
 @pytest.fixture
 def visiteur_cumule(acteurs):
     """Un compte qui cumule tous les privilèges ET la lecture seule, devant un membre actif qu'il voit."""
-    Membre.objects.filter(pk=acteurs['membre'].pk).update(is_validate3=True)
+    Membre.objects.filter(pk=acteurs['membre'].pk).update(etat='actif')
     compte = Compte.objects.create_user('tout4', password='x', privilege1=True, privilege2=True, privilege3=True,
                                         privilege4=True, privilege5=True, editor=True)
     acteurs['association'].users.add(compte)
@@ -194,8 +194,8 @@ def test_F26_agent_ne_gere_que_les_engins_et_familles_de_ses_saisies(client, act
 def test_F21_rattachement_ferme_l_escalade_du_privilege3(client, acteurs):
     """Un privilege3 ne rattache ni un membre d'une autre association, ni à une association qui n'est pas la sienne."""
     p3 = acteurs['comptes']['p3']
-    etranger = Membre.objects.create(nom='Étranger', is_validate1=True, is_validate2=True, structure=acteurs['autre'])
-    sans_structure = Membre.objects.create(nom='Orphelin', is_validate1=True, is_validate2=True)
+    etranger = Membre.objects.create(nom='Étranger', is_validate1=True, etat='valide_antenne', structure=acteurs['autre'])
+    sans_structure = Membre.objects.create(nom='Orphelin', is_validate1=True, etat='valide_antenne')
     client.force_login(p3)
     for membre in (etranger, sans_structure):
         r = client.post(reverse('structure-attribution', kwargs={'idM': membre.id, 'id': acteurs['association'].id}))
@@ -210,7 +210,7 @@ def test_F21_rattachement_ferme_l_escalade_du_privilege3(client, acteurs):
 
 def test_F35_engin_d_un_membre_d_une_autre_association(client, acteurs):
     from coptapp.models import Moto
-    etranger = Membre.objects.create(nom='Étranger', is_validate1=True, is_validate2=True, structure=acteurs['autre'])
+    etranger = Membre.objects.create(nom='Étranger', is_validate1=True, etat='valide_antenne', structure=acteurs['autre'])
     moto = Moto.objects.create(proprietaire=etranger, abonnement=acteurs['moto'].abonnement, numero='999XX')
     client.force_login(acteurs['comptes']['p3'])
     assert client.get(reverse('view-moto', kwargs={'id': moto.id})).status_code == 200  # visible : lecture

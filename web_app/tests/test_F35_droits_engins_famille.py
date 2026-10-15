@@ -38,14 +38,14 @@ def test_F35_agent_modifie_et_supprime_avant_la_premiere_validation(saisie):
 
 
 def test_F35_agent_perd_la_main_apres_la_premiere_validation(saisie):
-    Membre.objects.filter(pk=saisie['membre'].pk).update(is_validate2=True)
+    Membre.objects.filter(pk=saisie['membre'].pk).update(etat='valide_antenne')
     membre = Membre.objects.get(pk=saisie['membre'].pk)
     droits = droits_membre(saisie['agent'], membre)
     assert _vrais(droits) == set() and droits['peut_ajouter_engin'] and droits['peut_ajouter_famille']  # ajouter reste permis
 
 
 def test_F35_roles_superieurs_gardent_la_main(saisie):
-    Membre.objects.filter(pk=saisie['membre'].pk).update(is_validate2=True)
+    Membre.objects.filter(pk=saisie['membre'].pk).update(etat='valide_antenne')
     membre = Membre.objects.get(pk=saisie['membre'].pk)
     p3 = _compte('p3e', privilege3=True)
     saisie['association'].users.add(p3)
@@ -59,7 +59,7 @@ def test_F35_vues_exigent_le_droit_precis(client, saisie):
     client.force_login(saisie['agent'])
     assert client.get(reverse('edit-moto', args=[saisie['moto'].id])).status_code == 200
     assert client.post(reverse('edit-family', args=[saisie['famille'].id]), FAM).status_code == 200
-    Membre.objects.filter(pk=saisie['membre'].pk).update(is_validate2=True)
+    Membre.objects.filter(pk=saisie['membre'].pk).update(etat='valide_antenne')
     assert client.get(reverse('edit-moto', args=[saisie['moto'].id])).status_code == 403
     assert client.post(reverse('edit-moto', args=[saisie['moto'].id]), ENGIN).status_code == 403
     assert client.post(reverse('delete-moto', args=[saisie['moto'].id])).status_code == 403
@@ -81,7 +81,7 @@ def test_F26_agent_supprime_le_proche_de_sa_saisie_avant_validation(client, sais
 
 def test_F35_membre_supprime_ni_ajout_ni_modification_ni_suppression(saisie):
     from compte.services.droits import etapes_a_valider
-    Membre.objects.filter(pk=saisie['membre'].pk).update(is_delete=True)
+    Membre.objects.filter(pk=saisie['membre'].pk).update(etat='supprime', etat_precedent='saisi')
     membre = Membre.objects.get(pk=saisie['membre'].pk)
     cles = CLES + ('peut_ajouter_engin', 'peut_ajouter_famille', 'peut_modifier', 'peut_valider', 'peut_demander_modification')
     for compte in (saisie['compte'], _compte('p5d', privilege5=True), saisie['agent']):

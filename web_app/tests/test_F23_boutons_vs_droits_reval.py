@@ -189,8 +189,8 @@ def membres_de_la_liste(acteurs):
     base = dict(structure=acteurs['association'], province=acteurs['province'], antenne=acteurs['antenne'])
     return {
         'saisi': Membre.objects.create(nom='Liste Saisi', **base),
-        'valide_antenne': Membre.objects.create(nom='Liste Antenne', is_validate2=True, **base),
-        'actif': Membre.objects.create(nom='Liste Actif', is_validate2=True, is_validate3=True, **base),
+        'valide_antenne': Membre.objects.create(nom='Liste Antenne', etat='valide_antenne', **base),
+        'actif': Membre.objects.create(nom='Liste Actif', etat='actif', **base),
         'saisie_de_p2': Membre.objects.create(nom='Liste Saisie P2', user=acteurs['comptes']['p2'], **base),
     }
 

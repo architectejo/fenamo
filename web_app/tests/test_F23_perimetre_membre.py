@@ -68,14 +68,14 @@ def test_F23_agent_ne_voit_que_ses_saisies(client, jeu):
 
 
 def test_F23_visiteur_ne_voit_que_les_actifs(client, jeu):
-    actif = _membre(jeu, 'Actif', is_validate2=True, is_validate3=True)
+    actif = _membre(jeu, 'Actif', etat='actif')
     client.force_login(_compte('vis', privilege4=True))
     assert client.get(url_fiche(actif)).status_code == 200
     assert client.get(url_fiche(jeu['membre'])).status_code == 404
 
 
 def test_F23_privilege3_voit_les_membres_valides_aux_deux_premieres_etapes(client, jeu):
-    avance = _membre(jeu, 'Avancé', is_validate2=True)
+    avance = _membre(jeu, 'Avancé', etat='valide_antenne')
     client.force_login(_compte('p3', privilege3=True))
     assert client.get(url_fiche(avance)).status_code == 200
     assert client.get(url_fiche(jeu['membre'])).status_code == 404
@@ -87,7 +87,7 @@ def test_F23_membre_inexistant_404(client, jeu):
 
 
 def test_F23_membre_supprime_visible_des_seuls_roles_qui_peuvent_annuler(client, jeu):
-    supprime = _membre(jeu, 'Supprimé', is_delete=True, is_validate2=True, is_validate3=True)
+    supprime = _membre(jeu, 'Supprimé', etat='supprime', etat_precedent='actif')
     client.force_login(jeu['compte'])
     assert client.get(url_fiche(supprime)).status_code == 200
     client.force_login(_compte('vis2', privilege4=True))
@@ -114,7 +114,7 @@ def test_F21_modifier_privilege3_hors_de_son_association_403(client, jeu):
     autre = AssociationMembre.objects.create(nom='Autre', num_justice='F-77')
     p3 = _compte('p3x', privilege3=True)
     autre.users.add(p3)
-    etranger = _membre(jeu, 'Chez nous', is_validate2=True)  # visible (étape 2 franchie) mais autre association
+    etranger = _membre(jeu, 'Chez nous', etat='valide_antenne')  # visible (étape 2 franchie) mais autre association
     client.force_login(p3)
     assert client.post(url_fiche(etranger), _donnees_modifier()).status_code == 403
 
@@ -122,7 +122,7 @@ def test_F21_modifier_privilege3_hors_de_son_association_403(client, jeu):
 def test_F21_modifier_privilege3_dans_son_association_autorise(client, jeu):
     p3 = _compte('p3y', privilege3=True)
     jeu['association'].users.add(p3)
-    cible = _membre(jeu, 'À modifier', is_validate2=True)
+    cible = _membre(jeu, 'À modifier', etat='valide_antenne')
     client.force_login(p3)
     r = client.post(url_fiche(cible), _donnees_modifier('Modifié par p3'))
     assert r.status_code == 200
@@ -157,7 +157,7 @@ def test_F23_valider_hors_perimetre_404(client, jeu):
 
 
 def test_F23_valider_refuse_sans_droit_403(client, jeu):
-    actif = _membre(jeu, 'Actif', is_validate2=True, is_validate3=True)
+    actif = _membre(jeu, 'Actif', etat='actif')
     for nom, kw in (('vis3', {'privilege4': True}), ('vis4', {'privilege4': True, 'privilege2': True})):
         client.force_login(_compte(nom, **kw))
         assert client.post(url_valider(actif)).status_code == 403

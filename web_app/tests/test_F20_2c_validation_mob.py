@@ -69,7 +69,7 @@ def test_F20_2c_connexion_refusee_sans_session(client, mob, idf, mdp):
 
 
 def test_F20_2c_connexion_membre_supprime_refusee(client, mob):
-    Membre.objects.filter(pk=mob['avec'].pk).update(is_delete=True)
+    Membre.objects.filter(pk=mob['avec'].pk).update(etat='supprime', etat_precedent='saisi')
     assert _post(client, 'MBR0000002', MDP).status_code == 200 and 'mob_membre_id' not in client.session
 
 

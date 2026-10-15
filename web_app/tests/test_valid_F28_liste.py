@@ -32,9 +32,9 @@ def base(jeu):
     autre = AssociationMembre.objects.create(nom='Seconde asso', sigle='SA', num_justice='F-9')
     ant2 = Antenne.objects.create(nom='Antenne Z', structure=autre)
     _m(jeu, 'Alpha Kasongo', idf='MBR1111111', numero_carte_de_membre='CARTE-777', telephone='+243811111111',
-       qualite='MOTARD', is_validate2=True)
+       qualite='MOTARD', etat='valide_antenne')
     _m(jeu, 'Bravo Ilunga', idf='MBR2222222', numero_carte_de_membre='CARTE-888', telephone='+243822222222',
-       qualite='PROPRIETAIRE', is_validate2=True, is_validate3=True, antenne=ant2, structure=autre)
+       qualite='PROPRIETAIRE', etat='actif', antenne=ant2, structure=autre)
     _m(jeu, 'Charlie 100% Sûr', qualite='MOTARD ET PROPRIETAIRE')
     return {**jeu, 'autre': autre, 'ant2': ant2}
 

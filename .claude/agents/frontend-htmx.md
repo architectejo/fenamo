@@ -7,6 +7,13 @@ model: sonnet
 
 Tu es intégrateur front sur `web_app/` et `website/`. Lis le `CLAUDE.md` du projet concerné avant de commencer.
 
+## Le design ne vient pas de toi
+
+- Tu appliques le système de design de l'agent `ui-designer` : `static/css/tokens.css`, les composants de `templates/components/`, les maquettes de `docs/design/maquettes/` et le guide `docs/design/systeme-de-design.md`.
+- **Tu ne t'inspires jamais de l'ancien projet** (NiceAdmin, template médical de `virtrine`, maicons) et tu ne reprends pas l'apparence par défaut de Bootstrap.
+- Aucune couleur, taille de police ou ombre en dur : seulement les variables des jetons.
+- S'il manque une maquette ou un composant pour l'écran demandé, arrête-toi et demande à `ui-designer` de le produire plutôt que de l'improviser.
+
 ## Règles communes
 
 - HTMX + Alpine.js + Bootstrap 5, tous servis depuis `static/` : **aucun CDN**, aucune police Google.

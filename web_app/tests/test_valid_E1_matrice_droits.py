@@ -48,15 +48,15 @@ ATTENDU = {
 def _acteur_et_cible(role, jeu):
     """Crée le compte du rôle et une cible située dans son périmètre ; retourne (compte, cible)."""
     if role == 'su':
-        return jeu['compte'], _membre(jeu, 'Cible', is_validate2=True)
+        return jeu['compte'], _membre(jeu, 'Cible', etat='valide_antenne')
     nom = f'u-{role}'
     if role == 'p5':
         compte = Compte.objects.create_user(nom, password='x', privilege5=True)
-        return compte, _membre(jeu, 'Cible', is_validate2=True)
+        return compte, _membre(jeu, 'Cible', etat='valide_antenne')
     if role == 'p3':
         compte = Compte.objects.create_user(nom, password='x', privilege3=True)
         jeu['association'].users.add(compte)
-        return compte, _membre(jeu, 'Cible', is_validate2=True)
+        return compte, _membre(jeu, 'Cible', etat='valide_antenne')
     if role == 'p2':
         compte = Compte.objects.create_user(nom, password='x', privilege2=True)
         return compte, _membre(jeu, 'Cible')  # is_validate1 par défaut, validate2 à poser
@@ -65,7 +65,7 @@ def _acteur_et_cible(role, jeu):
         return compte, _membre(jeu, 'Cible', user=compte)
     if role == 'p4':
         compte = Compte.objects.create_user(nom, password='x', privilege4=True)
-        return compte, _membre(jeu, 'Cible', is_validate2=True, is_validate3=True)
+        return compte, _membre(jeu, 'Cible', etat='actif')
     cible = _membre(jeu, 'Cible')
     compte = Compte.objects.create_user(nom, password='x', membreId=cible.id)
     return compte, cible

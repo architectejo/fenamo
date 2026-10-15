@@ -62,10 +62,10 @@ def test_F23_aucune_etape_sautee_pour_p2_et_p3(acteurs):
     sans_v2 = _membre(acteurs)
     assert etapes_a_valider(acteurs['comptes']['p3'], sans_v2) == []  # étape précédente exigée
     assert etapes_a_valider(acteurs['comptes']['p2'], sans_v2) == ['valide_antenne']
-    avec_v2 = _membre(acteurs, 'Deux', is_validate2=True)
+    avec_v2 = _membre(acteurs, 'Deux', etat='valide_antenne')
     assert etapes_a_valider(acteurs['comptes']['p2'], avec_v2) == []
     assert etapes_a_valider(acteurs['comptes']['p3'], avec_v2) == ['actif']
-    termine = _membre(acteurs, 'Fini', is_validate2=True, is_validate3=True)
+    termine = _membre(acteurs, 'Fini', etat='actif')
     for profil in ('p2', 'p3', 'p5', 'su'):
         assert etapes_a_valider(acteurs['comptes'][profil], termine) == []
 
@@ -100,7 +100,7 @@ def test_F23_privilege5_pose_toutes_les_etapes(client, acteurs):
 
 @pytest.mark.parametrize('profil', ['p2', 'p3', 'p5'])
 def test_F23_auto_validation_interdite_sur_sa_propre_fiche(client, acteurs, profil):
-    m = _membre(acteurs, 'Moi', is_validate2=(profil != 'p2'))
+    m = _membre(acteurs, 'Moi', etat='valide_antenne' if profil != 'p2' else 'saisi')
     Compte.objects.filter(pk=acteurs['comptes'][profil].pk).update(membreId=m.id)
     acteurs['comptes'][profil].refresh_from_db()
     avant = _drapeaux(m)
@@ -111,7 +111,7 @@ def test_F23_auto_validation_interdite_sur_sa_propre_fiche(client, acteurs, prof
 
 @pytest.mark.parametrize('profil', ['p2', 'p3', 'p5'])
 def test_F23_auto_validation_interdite_sur_ses_propres_saisies(client, acteurs, profil):
-    m = _membre(acteurs, 'Ma saisie', is_validate2=(profil != 'p2'), user=acteurs['comptes'][profil])
+    m = _membre(acteurs, 'Ma saisie', etat='valide_antenne' if profil != 'p2' else 'saisi', user=acteurs['comptes'][profil])
     avant = _drapeaux(m)
     r = _valider(client, acteurs, profil, m)
     assert r.status_code == 302 and _drapeaux(m) == avant and not _lignes(m).exists()
@@ -140,7 +140,7 @@ def test_F23_refus_de_role_et_de_perimetre(client, acteurs, profil, statut):
 
 
 def test_F23_visiteur_ne_valide_jamais(client, acteurs):
-    m = _membre(acteurs, 'Actif', is_validate2=True, is_validate3=True)
+    m = _membre(acteurs, 'Actif', etat='actif')
     assert _valider(client, acteurs, 'p4', m).status_code == 403
     cumul = Compte.objects.create_user('p2p4', password='x', privilege2=True, privilege4=True)
     client.force_login(cumul)
@@ -149,7 +149,7 @@ def test_F23_visiteur_ne_valide_jamais(client, acteurs):
 
 
 def test_F23_membre_supprime_non_validable(client, acteurs):
-    m = _membre(acteurs, is_delete=True)
+    m = _membre(acteurs, etat='supprime')
     assert _valider(client, acteurs, 'su', m).status_code == 404
     assert _drapeaux(m) == (True, False, False)
 
@@ -231,7 +231,7 @@ def test_F23_validation_n_ecrase_pas_une_modification_concurrente(client, acteur
 
 def test_F23_renvoi_au_niveau_inferieur_pas_encore_livre(client, acteurs):
     """Le renvoi avec motif n'existe pas encore (la vue le dit) : aucune route ne retire une validation."""
-    m = _membre(acteurs, is_validate2=True, is_validate3=True)
+    m = _membre(acteurs, etat='actif')
     for profil in ('su', 'p5', 'p3', 'p2'):
         _valider(client, acteurs, profil, m, motif='Renvoi', renvoyer='1')
         assert _drapeaux(m) == (True, True, True)

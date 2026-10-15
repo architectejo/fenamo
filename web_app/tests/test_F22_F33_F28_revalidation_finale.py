@@ -90,7 +90,7 @@ def test_F33_attribuer_engin_refuse_sans_droit_sur_le_membre_cible(acteurs, prof
 
 def test_F33_attribuer_engin_refuse_pour_un_membre_cible_supprime(acteurs):
     moto = _moto(acteurs)
-    Membre.objects.filter(pk=acteurs['membre'].pk).update(is_delete=True)
+    Membre.objects.filter(pk=acteurs['membre'].pk).update(etat='supprime', etat_precedent='saisi')
     acteurs['membre'].refresh_from_db()
     with pytest.raises(PermissionDenied):
         attribuer_engin(acteurs['comptes']['su'], acteurs['membre'], 'ATT-1')
@@ -101,7 +101,7 @@ def test_F33_attribuer_engin_refuse_pour_un_membre_cible_supprime(acteurs):
 def test_F33_attribuer_engin_exige_aussi_le_droit_sur_l_engin(acteurs):
     """p1 perd le droit de modifier l'engin quand le propriétaire est validé au-delà de son niveau (F-33)."""
     moto = _moto(acteurs)
-    Membre.objects.filter(pk=acteurs['membre'].pk).update(is_validate3=True)
+    Membre.objects.filter(pk=acteurs['membre'].pk).update(etat='actif')
     acteurs['membre'].refresh_from_db()
     with pytest.raises(PermissionDenied):
         attribuer_engin(acteurs['comptes']['p1'], acteurs['membre'], 'ATT-1')

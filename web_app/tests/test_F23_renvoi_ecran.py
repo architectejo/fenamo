@@ -17,7 +17,7 @@ def _valideur(jeu):
 
 def _saisi(jeu, **kw):
     return Membre.objects.create(nom='A Renvoyer', date_naissance=date(1990, 1, 1), province=jeu['province'], antenne=jeu['antenne'],
-                                 structure=jeu['association'], is_validate2=True, **kw)
+                                 structure=jeu['association'], etat='valide_antenne', **kw)
 
 
 def test_F23_fiche_propose_renvoyer_avec_motif_obligatoire(client, jeu):
