@@ -170,6 +170,7 @@ def test_mobapp_inchange(client, db):
 
 
 def test_pages_publiques_hors_racine(client, db):
-    assert reverse('home') == '/ancien-site/'
+    with pytest.raises(NoReverseMatch):  # /ancien-site/ est retiré (le site public passe par l'API)
+        reverse('home')
     with pytest.raises(NoReverseMatch):
         reverse('config', kwargs={'id': 1})

@@ -58,4 +58,4 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='FENAMO-RDC <noreply@fena
 SERVER_EMAIL = env('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # Pas de HSTS « preload » : engagement difficile à annuler, à décider explicitement par la FENAMO-RDC.
-SILENCED_SYSTEM_CHECKS = ['security.W021']
+SILENCED_SYSTEM_CHECKS = ['security.W021', 'axes.W006']

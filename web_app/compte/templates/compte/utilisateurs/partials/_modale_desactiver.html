@@ -3,7 +3,7 @@
 Désactiver le compte (F-06) : motif obligatoire (500 caractères au plus, compteur, suggestions). Le compte n'est jamais supprimé ; la nomination est conservée.
 Contexte : action, compte, cible, motif, motif_max, suggestions, erreur.
 {% endcomment %}
-{% block titre %}{% translate "Désactiver le compte" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block titre %}{% translate "Désactiver le compte" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte|identifiant_affiche }}</span></span>{% endblock %}
 {% block corps %}
 <div x-data="motifCompteur($el.dataset)" data-motif="{{ motif }}" class="formulaire">
   {% if erreur and not erreur_motif %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}

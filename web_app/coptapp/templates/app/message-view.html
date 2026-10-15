@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n design %}{% comment %}
-Lecture d'un communiqué (F-40). Contexte : message (= communique), reactions, lu, peut_publier.
+Lecture d'un communiqué (F-40). Contexte : message (= communique), lu, peut_publier.
 Le GET n'écrit rien : si le communiqué n'est pas lu, un POST HTMX (jeton CSRF posé sur <body>) le marque lu à l'ouverture, puis l'événement communiquesMaj rafraîchit le badge.
 Texte saisi : échappé par Django, retours à la ligne par linebreaksbr (jamais |safe).
 {% endcomment %}
@@ -14,7 +14,7 @@ Texte saisi : échappé par Django, retours à la ligne par linebreaksbr (jamais
     <div class="dossier-lieu">
       <span>{% icone "calendar" %}{{ message.publie_le|date:"d/m/Y · H:i" }}</span>
       <span>{% icone "map-pin" %}{% if message.antenne %}{% blocktranslate with nom=message.antenne.nom %}Antenne {{ nom }}{% endblocktranslate %}{% elif message.province %}{% blocktranslate with nom=message.province.nom %}Coordination {{ nom }}{% endblocktranslate %}{% else %}{% translate "National" %}{% endif %}</span>
-      <span>{% icone "user" %}{{ message.user.get_full_name|default:message.user.get_username|default:"—" }}</span>
+      <span>{% icone "user" %}{{ message.user.get_full_name|default:message.user|identifiant_affiche|default:"—" }}</span>
     </div>
   </header>
   <p class="communique-texte u-mb-0">{{ message.message|linebreaksbr }}</p>

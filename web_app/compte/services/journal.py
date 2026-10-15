@@ -37,6 +37,20 @@ def masquer_identifiant_initial(valeur):
     return valeur
 
 
+def identifiant_affichable(compte):
+    """Identifiant d'un compte à AFFICHER (fiches, listes, modales) : masqué tant que le mot de passe initial n'est pas changé
+    (même règle que `masquer_identifiant_initial`, sans requête). Chaîne vide si `compte` est vide."""
+    if compte is None:
+        return ''
+    if isinstance(compte, str):  # un nom complet déjà choisi par le gabarit : rien à masquer
+        return compte
+    nom = compte.get_username()
+    trouve = IDENTIFIANT_INITIAL.match(nom.strip())
+    if trouve and getattr(compte, 'doit_changer_mot_de_passe', False):
+        return f'{trouve.group(1)}****{trouve.group(2)}'
+    return nom
+
+
 def purger(donnees):
     """Copie sérialisable en JSON de `donnees`, sans aucune clé de la liste noire (récursif)."""
     if donnees is None:

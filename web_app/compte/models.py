@@ -19,6 +19,9 @@ class Compte(AbstractUser, models.Model):
     editor = models.BooleanField(default=False, null=True, blank=True)
     # Vrai après création par un super-utilisateur : changement imposé à la première connexion.
     doit_changer_mot_de_passe = models.BooleanField(default=False)
+    # Date à laquelle le mot de passe temporaire (ou initial) a été posé ; au-delà de MOT_DE_PASSE_INITIAL_JOURS, la connexion exige une
+    # réinitialisation par un supérieur (compte.services.comptes.mot_de_passe_temporaire_expire). Vide : date de création du compte.
+    mot_de_passe_temporaire_le = models.DateTimeField(null=True, blank=True)
 
 
 class JournalAction(models.Model):
@@ -53,6 +56,7 @@ class JournalAction(models.Model):
         VERROUILLAGE_APPLICATION = 'verrouillage_application', _("Verrouillage de l'application")
         DEVERROUILLAGE_APPLICATION = 'deverrouillage_application', _("Déverrouillage de l'application")
         PAIEMENT = 'paiement', _('Paiement')
+        CREATION = 'creation', _('Création')  # objet créé sans action propre (communiqué…) : après = valeurs posées, avant vide
 
     auteur = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     role = models.CharField(max_length=60, blank=True)

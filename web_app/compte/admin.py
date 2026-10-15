@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.utils import timezone
 
 from compte.models import Compte, EtatApplication, JournalAction, Nomination
 from compte.services.journal import journaliser
@@ -23,6 +24,7 @@ class CompteAdmin(UserAdmin):
         if not change:
             # Compte créé par l'administration : mot de passe saisi par un tiers, à changer à la première connexion.
             obj.doit_changer_mot_de_passe = True
+            obj.mot_de_passe_temporaire_le = timezone.now()
         super().save_model(request, obj, form, change)
         if not change:
             journaliser(request.user, JournalAction.Action.CREATION_COMPTE, obj,
@@ -33,7 +35,7 @@ class CompteAdmin(UserAdmin):
         avant = Compte.objects.filter(pk=id).values_list('password', flat=True).first()
         reponse = super().user_change_password(request, id, form_url)
         if request.method == 'POST' and avant is not None:
-            if Compte.objects.filter(pk=id).exclude(password=avant).update(doit_changer_mot_de_passe=True):
+            if Compte.objects.filter(pk=id).exclude(password=avant).update(doit_changer_mot_de_passe=True, mot_de_passe_temporaire_le=timezone.now()):
                 journaliser(request.user, JournalAction.Action.CHANGEMENT_MOT_DE_PASSE,
                             Compte.objects.get(pk=id), apres={'changement_impose': True},
                             motif='Mot de passe changé par un super-utilisateur (gestion technique).')

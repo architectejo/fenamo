@@ -24,7 +24,7 @@ add-antenne et add-membre prennent l'identifiant d'une ASSOCIATION MEMBRE (jamai
     {% if fn_droits.peut_creer_membre %}<td data-libelle="{% translate 'Association membre' %}">{{ membre.structure.nom|default:"—" }}</td>{% endif %}
     <td data-libelle="{% translate 'Antenne' %}">{{ membre.antenne.nom|default:"—" }}</td>
     <td data-libelle="{% translate 'État' %}">{% with code=membre|etat_membre %}{% badge_etat code %}{% endwith %}</td>
-    {% if fn_droits|peut_nommer %}<td data-libelle="{% translate 'Identifiant' %}" class="ident">{{ membre.user.username|default:"—" }}</td>{% endif %}
+    {% if fn_droits|peut_nommer %}<td data-libelle="{% translate 'Identifiant' %}" class="ident">{{ membre.user|identifiant_affiche|default:"—" }}</td>{% endif %}
   </tr>
   {% endif %}{% endfor %}
   </tbody>

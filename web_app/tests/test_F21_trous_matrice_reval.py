@@ -48,9 +48,8 @@ TROUS_CONNUS = {
     # écran Utilisateurs (2e) : matrice détaillée par rôle dans test_F21_matrice_roles.py ; ici, profils hérités (sans nomination)
     'engin-liste', 'communique-lu', 'communique-compteur', 'donnees-reelles', 'donnees-reelles-etat', 'renvoyer-membre', 'valider-tous', 'verrou-application', 'verrou-verrouiller', 'verrou-deverrouiller', 'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
     'utilisateurs-desactiver', 'utilisateurs-reactiver', 'utilisateurs-role', 'utilisateurs-renouveler',
-    # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
+    # hors périmètre de cette matrice (test dédié) : API, mob
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
-    'home', 'vue-article', 'about', 'news', 'portail', 'politique',
     # API du site public : sans connexion (@login_not_required) mais PROTÉGÉE PAR LA CLÉ DU SITE, pas par une session ; matrice dédiée
     # (clé absente, fausse, bonne, méthodes) dans test_api_site_lot2a.py
     'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-inconnu',
@@ -66,7 +65,6 @@ def test_F21_trous_de_matrice_listes_et_couverts():
 
 ROUTES_PUBLIQUES_ATTENDUES = {
     'application', 'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
-    'home', 'vue-article', 'about', 'news', 'portail', 'politique',
     # API du site public : pas de session, clé du site obligatoire (contrôlée par test_api_site_lot2a.py) ; décision validée
     'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-inconnu',
 }
@@ -213,7 +211,7 @@ def _identifiant(r):
 def test_F21_complement_couvre_chaque_trou_de_l_application_web():
     couverts = {r[0] for r in COMPLEMENT}
     a_couvrir = TROUS_CONNUS - {'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str',
-                                'attribut-ville', 'photo-mob', 'deconnexion-mob', 'home', 'vue-article', 'about', 'news', 'portail', 'politique',
+                                'attribut-ville', 'photo-mob', 'deconnexion-mob',
                                 'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-inconnu'}  # API : clé du site, test dédié
     assert a_couvrir <= couverts, sorted(a_couvrir - couverts)
 
@@ -262,11 +260,9 @@ def test_F21_modifier_antenne_inconnue_donne_404(client, acteurs):
     assert r.status_code == 404
 
 
-def test_F21_get_public_ne_cree_pas_de_ligne_config(client, db):
+def test_F21_ancien_site_retire_aucune_route_publique_du_contenu(client, db):
+    """/ancien-site/ n'existe plus (le site public passe par l'API) : plus de brouillon exposé ni de création d'association anonyme."""
+    for adresse in ('/ancien-site/', '/ancien-site/activites/', '/ancien-site/article/1', '/ancien-site/article/999999', '/ancien-site/portail/'):
+        assert client.get(adresse).status_code == 404, adresse
+    assert client.post('/ancien-site/portail/', {'nom': 'x'}).status_code == 404
     assert Config.objects.count() == 0
-    client.get(reverse('portail'))
-    assert Config.objects.count() == 0
-
-
-def test_F21_accueil_ancien_site_sans_image_de_fond_ne_donne_pas_500(client, db):
-    assert client.get(reverse('home')).status_code == 200

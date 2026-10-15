@@ -1,6 +1,6 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}Réactiver le compte (F-06) : rôle et périmètre retrouvés ; mot de passe temporaire seulement si la case est cochée (décision par défaut : non).{% endcomment %}
-{% block titre %}{% translate "Réactiver le compte" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block titre %}{% translate "Réactiver le compte" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte|identifiant_affiche }}</span></span>{% endblock %}
 {% block corps %}
 {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
 <p>{% blocktranslate with nom=cible.nom %}{{ nom }} pourra de nouveau se connecter et retrouvera son rôle et son périmètre.{% endblocktranslate %}</p>

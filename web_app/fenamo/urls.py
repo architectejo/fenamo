@@ -12,7 +12,6 @@ urlpatterns = [
     path('api/v1/', include('api.urls')),
     path('mob/', include('mobapp.urls')),  # inchangé (§ 2.3)
     path('contenu-site/configuration/', include('virtrine.urls_gestion')),
-    path('ancien-site/', include('virtrine.urls')),  # transitoire, voir virtrine/urls.py
     path('', include('compte.urls')),
     path('', include('coptapp.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

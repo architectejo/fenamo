@@ -1,24 +1,13 @@
-{% extends 'base-site.html' %}
-{% load static %}
-
-    {% block 'title' %}Configuration{% endblock 'title' %}
-
-    {% block bodysite %}
-  
-        {% include './header.html' %}
-
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <form class="mb-4 mt-3 main-form" action="" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{form}}
-                        <button class="btn btn-primary">Sauvegarder</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {% include './footer.html' %}
-
-    {% endblock bodysite %}
+{% extends "base.html" %}
+{% load i18n %}{% comment %}
+Configuration du site public (hérité, route « config ») : formulaire simple dans la coque de l'application, en attendant l'écran F-61 en modale.
+{% endcomment %}
+{% block titre %}{% translate "Configuration du site" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Configuration du site" %}</h1></div></div>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_div }}
+  <button type="submit" class="bouton bouton--principal">{% translate "Enregistrer" %}</button>
+</form>
+{% endblock %}

@@ -1,6 +1,6 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}Réinitialiser le mot de passe (F-05) : confirmation, puis modale du mot de passe temporaire (lecture unique).{% endcomment %}
-{% block titre %}{% translate "Réinitialiser le mot de passe" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte.username }}</span></span>{% endblock %}
+{% block titre %}{% translate "Réinitialiser le mot de passe" %}<span class="sous-titre">{{ cible.nom }} · <span class="ident">{{ compte|identifiant_affiche }}</span></span>{% endblock %}
 {% block corps %}
 {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
 {% translate "L'ancien mot de passe cesse de fonctionner tout de suite. Un nouveau mot de passe temporaire s'affiche une seule fois ; le compte devra le changer à sa prochaine connexion." as t_msg %}

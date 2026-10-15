@@ -1,10 +1,13 @@
 """Création de comptes : mot de passe aléatoire à usage unique, changement imposé à la première connexion."""
 import re
 import secrets
+from datetime import timedelta
 import unicodedata
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from compte.models import JournalAction
@@ -86,7 +89,7 @@ def creer_compte(username, email='', membre=None, auteur=None, mot_de_passe=None
     mdp = mot_de_passe or mot_de_passe_temporaire()
     compte = Compte.objects.create_user(
         username=username, email=email or '', password=mdp,
-        membreId=membre.id if membre else None, doit_changer_mot_de_passe=True,
+        membreId=membre.id if membre else None, doit_changer_mot_de_passe=True, mot_de_passe_temporaire_le=timezone.now(),
     )
     journaliser(auteur, JournalAction.Action.CREATION_COMPTE, compte,
                 apres={'username': compte.username, 'membreId': compte.membreId, 'changement_impose': True},
@@ -129,11 +132,21 @@ def changer_mot_de_passe(compte, form):
     form.save()
     if compte.doit_changer_mot_de_passe:
         compte.doit_changer_mot_de_passe = False
-        compte.save(update_fields=['doit_changer_mot_de_passe'])
+        compte.mot_de_passe_temporaire_le = None
+        compte.save(update_fields=['doit_changer_mot_de_passe', 'mot_de_passe_temporaire_le'])
     journaliser(compte, JournalAction.Action.CHANGEMENT_MOT_DE_PASSE, compte,
                 avant=avant, apres={'changement_impose': False},
                 motif=_("Mot de passe modifié par son titulaire."))
     return compte
+
+
+def mot_de_passe_temporaire_expire(compte, maintenant=None):
+    """Vrai si le mot de passe initial ou temporaire de `compte` n'a pas été changé dans les MOT_DE_PASSE_INITIAL_JOURS jours qui suivent
+    sa pose (création, nomination ou réinitialisation). Faux pour un compte qui n'a rien à changer. Dérogation F-02 : voir docs/decisions.md."""
+    if not compte.doit_changer_mot_de_passe:
+        return False
+    depuis = compte.mot_de_passe_temporaire_le or compte.date_joined
+    return (maintenant or timezone.now()) > depuis + timedelta(days=settings.MOT_DE_PASSE_INITIAL_JOURS)
 
 
 def compte_du_membre(membre_id):

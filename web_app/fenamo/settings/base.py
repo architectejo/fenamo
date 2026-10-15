@@ -55,7 +55,7 @@ MIDDLEWARE = [
     # Verrouillage (F-07) : avant LoginRequiredMiddleware, lu en base à chaque requête.
     'compte.middleware.VerrouApplicationMiddleware',
     # Après HtmxSessionMessagesMiddleware : sa redirection vers /connexion/ devient un HX-Redirect en HTMX.
-    # Toute vue exige la connexion, sauf celles marquées @login_not_required (connexion, santé, /mob/, /ancien-site/).
+    # Toute vue exige la connexion, sauf celles marquées @login_not_required (connexion, santé, /mob/).
     'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'compte.middleware.ChangementMotDePasseMiddleware',
     'fenamo.csp.CspReportOnlyMiddleware',
@@ -102,13 +102,16 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
 
 # Mots de passe
 
-# Verrou anti force brute (django-axes) : 5 échecs consécutifs sur le couple nom d'utilisateur + adresse IP.
+# Verrou anti force brute (django-axes) : 5 échecs consécutifs sur le même nom d'utilisateur, d'où qu'ils viennent.
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 AXES_FAILURE_LIMIT = env.int('AXES_FAILURE_LIMIT', default=5)
-AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+# Blocage par identifiant seul : une attaque qui change d'adresse IP à chaque essai ne contourne plus le verrou (le blocage par adresse IP
+# seule est géré à part, IP_ECHECS_MAX). Contrepartie : un tiers peut bloquer 30 minutes un identifiant connu (docs/decisions.md).
+AXES_LOCKOUT_PARAMETERS = ['username']
+SILENCED_SYSTEM_CHECKS = ['axes.W006']  # blocage par adresse IP seule volontairement plus haut (IP_ECHECS_MAX) : voir ci-dessus
 # Nom normalisé (strip + minuscules) : « Admin » et « admin  » comptent pour le même verrou.
 AXES_USERNAME_CALLABLE = 'compte.services.verrou.nom_utilisateur_normalise'
 # Journal des échecs, base du seuil par adresse IP seule (compte/services/verrou.py).
@@ -119,6 +122,9 @@ IP_ECHECS_MAX = env.int('IP_ECHECS_MAX', default=30)
 AXES_COOLOFF_TIME = timedelta(minutes=env.int('AXES_COOLOFF_MINUTES', default=30))
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = 'compte/verrou.html'
+
+# Durée de validité (jours) du mot de passe initial ou temporaire : au-delà, la connexion est refusée tant qu'un supérieur ne l'a pas réinitialisé.
+MOT_DE_PASSE_INITIAL_JOURS = env.int('MOT_DE_PASSE_INITIAL_JOURS', default=7)
 
 # Sessions : expiration après inactivité (secondes), prolongée à chaque requête.
 SESSION_COOKIE_AGE = env.int('SESSION_COOKIE_AGE', default=1800)

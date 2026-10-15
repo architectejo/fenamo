@@ -26,7 +26,7 @@ def _cible(jeu, nom):
 
 
 def _urls_ecrans(jeu):
-    """Annexe B hors exemptions : connexion, santé de l'API, /mob/, /ancien-site/."""
+    """Annexe B hors exemptions : connexion, santé de l'API, /mob/."""
     return [(n, c) for n, _, c in table(jeu) if n != 'application']
 
 
@@ -64,7 +64,7 @@ def test_F01_exemptions_acceptees(client, db):
     assert client.get('/connexion/').status_code == 200
     assert client.get('/api/v1/').status_code == 200
     assert client.get('/mob/').status_code == 200
-    assert client.get('/ancien-site/').status_code == 200
+    assert client.get('/ancien-site/').status_code == 404  # retiré : le site public passe par l'API
 
 
 # ----------------------------------------------------------- (2) routes POST seulement

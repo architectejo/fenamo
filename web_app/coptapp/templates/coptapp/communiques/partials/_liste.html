@@ -17,7 +17,7 @@ Le contenu saisi est échappé par Django (jamais |safe) ; l'aperçu est tronqu�
       <div class="dossier-lieu">
         <span>{% icone "calendar" %}{{ c.publie_le|date:"d/m/Y · H:i" }}</span>
         <span>{% icone "map-pin" %}{% if c.antenne %}{% blocktranslate with nom=c.antenne.nom %}Antenne {{ nom }}{% endblocktranslate %}{% elif c.province %}{% blocktranslate with nom=c.province.nom %}Coordination {{ nom }}{% endblocktranslate %}{% else %}{% translate "National" %}{% endif %}</span>
-        <span>{% icone "user" %}{{ c.user.get_full_name|default:c.user.get_username|default:"—" }}</span>
+        <span>{% icone "user" %}{{ c.user.get_full_name|default:c.user|identifiant_affiche|default:"—" }}</span>
       </div>
     </div>
   </li>

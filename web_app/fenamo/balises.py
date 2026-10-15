@@ -190,6 +190,13 @@ def peut_nommer(droits):
 
 
 @register.filter
+def identifiant_affiche(compte):
+    """Identifiant d'un compte, masqué (« prenom****@fenamordc.hub ») tant que son mot de passe initial (= identifiant) n'est pas changé."""
+    from compte.services.journal import identifiant_affichable
+    return identifiant_affichable(compte)
+
+
+@register.filter
 def niveau_alerte(classe):
     """Niveau du composant d'alerte pour une classe de message héritée (alert-success, alert-info… = « succes », sinon « danger »)."""
     from coptapp.views.modales import niveau_message

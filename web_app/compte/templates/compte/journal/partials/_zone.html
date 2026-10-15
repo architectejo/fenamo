@@ -9,7 +9,7 @@
     <time datetime="{{ e.date|date:'c' }}">{{ e.date|date:"H:i" }}</time>
     <div>
       <p class="journal-quoi"><span class="journal-action">{{ e.get_action_display }}</span>{% if e.objet_libelle %} <span class="journal-objet">{{ e.objet_libelle }}</span>{% endif %}</p>
-      <p class="meta">{% if e.auteur %}<span class="ident">{{ e.auteur.get_username }}</span>{% else %}{% translate "Système" %}{% endif %}{% if e.role %} · {{ e.role }}{% endif %}</p>
+      <p class="meta">{% if e.auteur %}<span class="ident">{{ e.auteur|identifiant_affiche }}</span>{% else %}{% translate "Système" %}{% endif %}{% if e.role %} · {{ e.role }}{% endif %}</p>
       {% if e.motif %}<p class="meta">{{ e.motif|truncatechars:200 }}</p>{% endif %}
     </div>
   </li>

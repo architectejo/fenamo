@@ -21,7 +21,7 @@ def test_F01_exemptions_acceptees(client, db):
     assert client.get('/connexion/').status_code == 200
     assert client.get('/api/v1/').status_code == 200
     assert client.get('/mob/').status_code == 200
-    assert client.get('/ancien-site/').status_code == 200
+    assert client.get('/ancien-site/').status_code == 404  # retiré : le site public passe par l'API
 
 
 def test_F01_anonyme_htmx_recoit_hx_redirect(client, jeu):

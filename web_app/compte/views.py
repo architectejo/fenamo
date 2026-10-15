@@ -13,9 +13,9 @@ from compte.forms import AddUserForm, ChangementMotDePasseForm
 from compte.permissions import superuser_requis
 from compte.models import JournalAction
 from compte.services import verrou_application
-from compte.services.journal import journaliser
+from compte.services.journal import journaliser, masquer_identifiant_initial
 from compte.services.verrou import ip_bloquee
-from compte.services.comptes import changer_mot_de_passe, creer_compte, creer_compte_pour_membre
+from compte.services.comptes import changer_mot_de_passe, creer_compte, mot_de_passe_temporaire_expire, creer_compte_pour_membre
 
 @superuser_requis
 @require_POST
@@ -49,6 +49,12 @@ def connexion(request):
                 user_login_failed.send(sender=__name__, credentials={'username': username}, request=request)
                 journaliser(None, JournalAction.Action.ECHEC_CONNEXION, libelle=username[:150], motif=_("application verrouillée"))
             return render(request, 'compte/pages-login.html', {'verrou_message': verrou_application.message_public()}, status=503)
+        if user is not None and mot_de_passe_temporaire_expire(user):
+            # Mot de passe initial non changé à temps : connexion refusée, un supérieur doit le réinitialiser (F-05). Journalisé, jamais de session.
+            journaliser(None, JournalAction.Action.ECHEC_CONNEXION, libelle=masquer_identifiant_initial(user.get_username())[:150],
+                        motif=_("mot de passe initial expiré"))
+            message = _("Votre mot de passe initial a expiré. Demandez à votre responsable de le réinitialiser.")
+            return render(request, 'compte/pages-login.html', {'message': message}, status=403)
         if user is not None:
             login(request, user)
             return redirect('tableau-bord')

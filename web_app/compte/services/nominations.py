@@ -390,7 +390,8 @@ def reinitialiser_mot_de_passe(auteur, compte):
     mot_de_passe = mot_de_passe_temporaire()
     compte.set_password(mot_de_passe)
     compte.doit_changer_mot_de_passe = True
-    compte.save(update_fields=['password', 'doit_changer_mot_de_passe'])
+    compte.mot_de_passe_temporaire_le = timezone.now()  # la durée de validité repart de la réinitialisation
+    compte.save(update_fields=['password', 'doit_changer_mot_de_passe', 'mot_de_passe_temporaire_le'])
     journaliser(auteur, JournalAction.Action.REINITIALISATION_MOT_DE_PASSE, compte, apres={'changement_impose': True},
                 motif=_("Mot de passe réinitialisé (temporaire, à changer)."), libelle=compte.username)
     return mot_de_passe

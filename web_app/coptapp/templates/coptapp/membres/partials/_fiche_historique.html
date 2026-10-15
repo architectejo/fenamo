@@ -9,7 +9,7 @@ Contexte : historique (lignes du journal fournies par la vue, vide sans le droit
     <ol class="historique">
       {% for l in historique %}
       <li><span class="point">{% icone "history" %}</span><div>
-        <p><strong>{{ l.get_action_display }}</strong>{% if l.auteur %} {% translate "par" %} {{ l.auteur.get_username }}{% endif %}</p>
+        <p><strong>{{ l.get_action_display }}</strong>{% if l.auteur %} {% translate "par" %} {{ l.auteur|identifiant_affiche }}{% endif %}</p>
         {% if l.motif %}<p>{{ l.motif }}</p>{% endif %}
         <p class="meta"><time datetime="{{ l.date|date:'c' }}">{{ l.date|date:"d/m/Y · H:i" }}</time></p>
       </div></li>
