@@ -459,40 +459,6 @@ def editAntenne(request,id):
             form.save()
     return rendre_formulaire(request, 'antenne', locals())
 
-@editeur_requis
-def addCommunique(request):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
-    user = request.user
-    if user.membreId:
-        userMembre = Membre.objects.filter(id=user.membreId).first()
-        if userMembre and userMembre.ville:
-            villeId = userMembre.ville.id
-    
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-
-    membre = None
-    user = request.user
-    if user.membreId:
-        membre = Membre.objects.filter(id=user.membreId).first()
-    if request.method == 'POST':
-        message = (request.POST.get('message') or '').strip()
-        if not message:
-            message = _("Écrivez le communiqué.")
-            classe = 'alert alert-danger text-center'
-            return rendre_formulaire(request, 'communique', locals(), status=400)
-        getter, setter = Communique.objects.get_or_create(user=user, membre=membre, message=message)
-        if setter:
-            message = _('Envoyé !')
-            classe = 'alert alert-success text-center'
-        elif getter:
-            message = _('Vous avez déjà envoyé !')
-            classe = 'alert alert-danger text-center'
-    return rendre_formulaire(request, 'communique', locals())
-
 def addFamily(request,id):
     user = request.user
     membre = membre_pour(user, id, 'peut_ajouter_famille')
@@ -977,36 +943,6 @@ def notificationsView(request):
     notifys = myNotify(request)
     return render(request, 'app/notifications.html', locals())
 
-def listMessage(request):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
-    user = request.user
-    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
-    villeId = userMembre.ville_id if userMembre else None
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-
-    
-    #Traitement des données
-    communiques = Communique.objects.order_by('-id')
-    return render(request, 'app/list-message.html', locals())
-
-def messageView(request, id):
-    #Configuration
-    messages = Communique.objects.order_by('-id')[0:3]
-    user = request.user
-    userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
-    villeId = userMembre.ville_id if userMembre else None
-    notifications = myNotify(request)[0:3]
-    antennes = Antenne.objects.order_by('nom')
-    provinces = provinceSelector()
-    
-    
-    message = get_object_or_404(Communique, id=id)
-    reactions = Reaction.objects.filter(communique=message)
-    return render(request, 'app/message-view.html', locals())
-
 @editeur_requis
 def site(request):
     #Configuration
@@ -1057,6 +993,9 @@ def site(request):
     
     #Articles
     articles = Article.objects.order_by('-id')
+    if user.is_superuser:  # interrupteur « données réelles » : visible du super-utilisateur seul
+        from virtrine.services.etat_donnees_reelles import etat_donnees_reelles
+        donnees_reelles = etat_donnees_reelles()
     return rendre_formulaire(request, 'article', locals(), page='app/site.html')
 
 @editeur_requis

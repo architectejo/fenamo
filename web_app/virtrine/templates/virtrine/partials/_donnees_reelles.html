@@ -1,0 +1,27 @@
+{% load i18n design %}{% comment %}
+Interrupteur « Données réelles du site » (F-60), super-utilisateur seul : carte d'état de l'écran Contenu du site, au style de l'écran de verrouillage.
+Rafraîchie sans rechargement par l'événement donneesReellesModifiees (vue donnees-reelles-etat, change=True : animation du tampon).
+Contexte : donnees_reelles (actif, depuis, par, motif : depuis / par viennent du journal F-70, vides si le site n'a jamais été basculé), change.
+Le motif saisi par le super-utilisateur est affiché échappé, jamais |safe.
+{% endcomment %}
+<section class="panneau{% if donnees_reelles.actif %} verrou--ferme{% endif %}" aria-labelledby="dr-titre">
+  <div class="panneau-corps">
+    <div class="verrou-tete">
+      <span class="verrou-sceau{% if change %} change{% endif %}" aria-hidden="true">{% if donnees_reelles.actif %}{% icone "globe" %}{% else %}{% icone "file-text" %}{% endif %}</span>
+      <div>
+        <h2 id="dr-titre" class="verrou-intertitre u-mb-1">{% translate "Données réelles du site" %}</h2>
+        <p class="verrou-etat u-mb-1{% if change %} change{% endif %}">{% if donnees_reelles.actif %}{% translate "Activées" %}{% else %}{% translate "Désactivées" %}{% endif %}</p>
+        <p class="verrou-depuis meta u-mb-0">{% if donnees_reelles.depuis %}{% translate "Modifié le" %} {{ donnees_reelles.depuis|date:"d/m/Y" }} {% translate "à" %} {{ donnees_reelles.depuis|date:"H" }}&nbsp;h&nbsp;{{ donnees_reelles.depuis|date:"i" }}{% if donnees_reelles.par %}, {% translate "par" %} <strong class="texte-plein">{{ donnees_reelles.par }}</strong>{% endif %}{% else %}{% translate "Réglage d'origine, jamais modifié." %}{% endif %}</p>
+      </div>
+    </div>
+    <p class="u-mt-5 u-mb-0">{% if donnees_reelles.actif %}<strong>{% translate "Le site public affiche les données réelles" %}</strong> : {% translate "articles, galerie, comité et chiffres de l'application web." %}{% else %}<strong>{% translate "Le site public affiche des données d'exemple" %}</strong> : {% translate "un jeu fixe, sans aucune donnée réelle. La vérification des cartes est suspendue." %}{% endif %}</p>
+    {% if donnees_reelles.motif %}<p class="meta u-mt-3 u-mb-0">{% translate "Motif :" %} <span class="texte-saisi">{{ donnees_reelles.motif }}</span></p>{% endif %}
+  </div>
+  <div class="panneau-pied">
+    {% if donnees_reelles.actif %}
+    <button type="button" class="bouton bouton--bloc-mobile" hx-get="{% url 'donnees-reelles' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "file-text" %}<span>{% translate "Revenir aux données d'exemple" %}</span></button>
+    {% else %}
+    <button type="button" class="bouton bouton--danger bouton--bloc-mobile" hx-get="{% url 'donnees-reelles' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "globe" %}<span>{% translate "Activer les données réelles" %}</span></button>
+    {% endif %}
+  </div>
+</section>

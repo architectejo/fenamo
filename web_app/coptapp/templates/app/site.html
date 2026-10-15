@@ -10,6 +10,7 @@ La suppression d'un article passe par la modale commune de confirmation (défini
   <div class="page-actions"><a class="bouton" href="{% url 'contact' %}">{% icone "mail" %}<span>{% translate "Messages reçus" %}</span></a><a class="bouton bouton--principal" href="{% url 'site' %}" hx-get="{% url 'site' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Nouvel article" %}</span></a></div>
 </div>
 {% include "components/_message_vue.html" with message=message classe=classe %}
+{% if fn_droits.est_su and donnees_reelles %}<div id="donnees-reelles-zone" class="u-mb-5" hx-get="{% url 'donnees-reelles-etat' %}" hx-trigger="donneesReellesModifiees from:body" hx-swap="innerHTML">{% include "virtrine/partials/_donnees_reelles.html" %}</div>{% endif %}
 <div>
   <section class="panneau" aria-labelledby="titre-liste-articles">
     <div class="panneau-tete"><h2 id="titre-liste-articles">{% translate "Articles" %}</h2></div>

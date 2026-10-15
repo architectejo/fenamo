@@ -1,13 +1,33 @@
 {% extends "components/modale_base.html" %}
-{% load i18n %}{% comment %}
-Interrupteur « données réelles » du site public (gabarit minimal, le design viendra). Contexte : action, actif (état actuel), cible (état demandé),
-motif_max, erreur. Le formulaire envoie actif=1 (données réelles) ou actif=0 (jeu d'exemple).
+{% load i18n design %}{% comment %}
+Interrupteur « données réelles » du site public (F-60). Contexte : action, actif (état actuel), cible (état demandé), motif_max, erreur.
+Le formulaire envoie actif=1 (données réelles) ou actif=0 (jeu d'exemple) et un motif facultatif (compteur commun data-compte-caracteres).
+Réponse au POST : 204 + toast + événement donneesReellesModifiees (la carte d'état se rafraîchit). Activer = avertissement fort.
 {% endcomment %}
-{% block titre %}{% if cible %}{% translate "Afficher les données réelles sur le site" %}{% else %}{% translate "Revenir au jeu d'exemple" %}{% endif %}{% endblock %}
+{% block titre %}{% if cible %}{% translate "Activer les données réelles" %}{% else %}{% translate "Revenir aux données d'exemple" %}{% endif %}<span class="sous-titre">{% translate "Site public" %}</span>{% endblock %}
 {% block corps %}
 <input type="hidden" name="actif" value="{% if cible %}1{% else %}0{% endif %}">
-<p>{% if cible %}{% translate "Le site public affichera les articles, la galerie, le comité et les chiffres réels de l'application web." %}{% else %}{% translate "Le site public affichera un jeu d'exemple fixe, sans aucune donnée réelle." %}{% endif %}</p>
-<div class="champ"><label class="champ-libelle" for="dr-motif">{% translate "Motif (journal)" %}</label>
-<textarea id="dr-motif" name="motif" rows="2" maxlength="{{ motif_max }}"></textarea></div>
+{% if cible %}
+<div class="alerte alerte--danger">
+  {% icone "triangle-alert" %}
+  <div>
+    <strong class="alerte-titre">{% translate "Les données réelles seront visibles par tout le monde." %}</strong>
+    <ul class="consequences">
+      <li>{% translate "les articles, la galerie, le comité et les chiffres de l'application web s'affichent sur le site public ;" %}</li>
+      <li>{% translate "la vérification des cartes de membre fonctionne pour le public ;" %}</li>
+      <li>{% translate "le changement est inscrit au journal d'activités." %}</li>
+    </ul>
+    <p class="u-mt-2 u-mb-0">{% translate "Activez seulement quand le contenu est prêt à être publié." %}</p>
+  </div>
+</div>
+{% else %}
+<p class="u-mb-0">{% translate "Le site public affichera de nouveau un jeu d'exemple fixe, sans aucune donnée réelle. La vérification des cartes sera suspendue. Aucune donnée de l'application n'est modifiée." %}</p>
+{% endif %}
+<div class="champ">
+  <label class="champ-libelle" for="dr-motif">{% translate "Motif" %} <span class="facultatif">({% translate "facultatif" %})</span></label>
+  <p class="champ-aide u-mb-0" id="dr-motif-aide">{% translate "Inscrit au journal d'activités." %}</p>
+  <textarea class="champ-saisie" id="dr-motif" name="motif" rows="2" maxlength="{{ motif_max }}" aria-describedby="dr-motif-aide dr-motif-compte" data-compte-caracteres="#dr-motif-compte"></textarea>
+  <p class="champ-aide compte-caracteres u-mb-0" id="dr-motif-compte"><span data-compte-valeur>0 / {{ motif_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+</div>
 {% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span>{% translate "Confirmer" %}</span></button>{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton {% if cible %}bouton--danger-plein{% else %}bouton--principal{% endif %}"><span class="roue" aria-hidden="true"></span><span>{% if cible %}{% translate "Activer les données réelles" %}{% else %}{% translate "Revenir aux données d'exemple" %}{% endif %}</span></button>{% endblock %}

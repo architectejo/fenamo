@@ -11,8 +11,9 @@ from django.urls import path
 from coptapp.views import *
 from coptapp.views.mobile import definir_mot_de_passe_mobile
 from coptapp.views.fichiers import fichier_par_nom, fichier_prive
+from coptapp.views import communiques
 from coptapp.views.tableau_bord import tableau_bord
-from virtrine.views_donnees_reelles import donnees_reelles
+from virtrine.views_donnees_reelles import donnees_reelles, donnees_reelles_etat
 
 urlpatterns = [
     # Tableau de bord
@@ -77,13 +78,17 @@ urlpatterns = [
     path('notifications/', notificationsView, name="notifys"),
 
     # Communiqués
-    path('communiques/', listMessage, name="list-message"),
-    path('communiques/ajouter/', addCommunique, name="message"),
-    path('communiques/<int:id>/', messageView, name="communique"),
+    # Communiqués (F-40) : reçus comme notifications dans l'application
+    path('communiques/', communiques.listMessage, name="list-message"),
+    path('communiques/ajouter/', communiques.addCommunique, name="message"),  # GET modale, POST publication (ED, SU)
+    path('communiques/non-lus/', communiques.compteur, name="communique-compteur"),  # fragment du badge, hx-trigger="every 120s"
+    path('communiques/<int:id>/', communiques.messageView, name="communique"),  # lecture seule (GET)
+    path('communiques/<int:id>/lu/', communiques.lu, name="communique-lu"),  # POST : marque lu pour le compte connecté
 
     # Contenu du site public
     path('contenu-site/', site, name="site"),
-    path('contenu-site/donnees-reelles/', donnees_reelles, name="donnees-reelles"),  # super-utilisateur seul, POST + CSRF
+    path('contenu-site/donnees-reelles/', donnees_reelles, name="donnees-reelles"),
+    path('contenu-site/donnees-reelles/etat/', donnees_reelles_etat, name="donnees-reelles-etat"),  # super-utilisateur seul, POST + CSRF
     path('contenu-site/articles/<int:id>/modifier/', article, name="article"),
     path('contenu-site/articles/<int:id>/supprimer/', deleteArticle, name="delete-article"),
     path('contenu-site/messages/', contact, name='contact'),

@@ -3,12 +3,13 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods
 
 from compte.permissions import superuser_requis
 from fenamo.htmx import reponse_succes
 from virtrine.models import Config
 from virtrine.services import contenu
+from virtrine.services.etat_donnees_reelles import etat_donnees_reelles
 
 EVENEMENT = 'donneesReellesModifiees'
 MOTIF_MAX = 500
@@ -35,3 +36,10 @@ def donnees_reelles(request):
         return reponse_succes(message, evenements=[EVENEMENT])
     messages.success(request, message)
     return redirect('site')
+
+
+@require_GET
+@superuser_requis
+def donnees_reelles_etat(request):
+    """Fragment de la carte d'état (rafraîchi par l'événement ``donneesReellesModifiees``) : une seule source de HTML avec l'écran Contenu du site."""
+    return render(request, 'virtrine/partials/_donnees_reelles.html', {'donnees_reelles': etat_donnees_reelles(), 'change': True})
