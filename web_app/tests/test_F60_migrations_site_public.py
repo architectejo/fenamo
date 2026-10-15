@@ -62,7 +62,7 @@ def _etat_0019(base, tmp_path):
 
 def test_F60_0020_0021_donnees_copiees_slugs_uniques_et_brouillons(base, tmp_path):
     _etat_0019(base, tmp_path)
-    _manage(base, 'migrate', 'virtrine', '0021', '--noinput')
+    _manage(base, 'migrate', 'virtrine', '0022', '--noinput')
     r = _script(base, """
         from virtrine.models import Article, Config, Partenaire, TelephoneSite
         print(json.dumps({
@@ -71,7 +71,7 @@ def test_F60_0020_0021_donnees_copiees_slugs_uniques_et_brouillons(base, tmp_pat
             'integration': Article.objects.order_by('pk').first().integration_code,
             'telephones': list(TelephoneSite.objects.values_list('numero', 'ordre')),
             'partenaires': list(Partenaire.objects.values_list('nom', 'lien', 'ordre')),
-            'config': Config.objects.count(), 'langues': Config.instance().langues_actives, 'paiement': Config.instance().paiement_en_ligne_actif,
+            'config': Config.objects.count(), 'langues': Config.instance().langues_actives, 'paiement': Config.instance().paiement_en_ligne_actif, 'reelles': Config.instance().donnees_reelles_actif,
             'anciennes_colonnes': [Config.objects.get().phone1, Config.objects.get().partenaire1, Config.objects.get().link1],
         }))
     """, tmp_path)
@@ -80,13 +80,13 @@ def test_F60_0020_0021_donnees_copiees_slugs_uniques_et_brouillons(base, tmp_pat
     assert r['integration'] == '<iframe src=x></iframe>'  # gardé en base, jamais exposé
     assert r['telephones'] == [['+243810000001', 1], ['+243810000003', 3], ['+243810000007', 7]]
     assert r['partenaires'] == [['Ministère des Transports', 'https://transports.example', 1], ['Partenaire sans lien', '', 4]]
-    assert r['config'] == 1 and r['langues'] == 'fr' and r['paiement'] is False
+    assert r['config'] == 1 and r['langues'] == 'fr' and r['paiement'] is False and r['reelles'] is False  # 0022 : interrupteur faux
     assert r['anciennes_colonnes'] == ['+243810000001', 'Ministère des Transports', 'https://transports.example']  # anciennes colonnes gardées
 
 
 def test_F60_0021_idempotente_et_retour_arriere_garde_les_anciennes_colonnes(base, tmp_path):
     _etat_0019(base, tmp_path)
-    _manage(base, 'migrate', 'virtrine', '0021', '--noinput')
+    _manage(base, 'migrate', 'virtrine', '0022', '--noinput')
     rejeu = _script(base, """
         import importlib
         from django.apps import apps

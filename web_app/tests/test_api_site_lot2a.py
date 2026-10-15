@@ -33,6 +33,10 @@ def media_temporaire(settings, tmp_path):
 
 @pytest.fixture
 def cle(db):
+    from virtrine.models import Config
+    config = Config.instance()
+    config.donnees_reelles_actif = True  # ces tests portent sur les données réelles ; l'interrupteur faux est testé dans test_F60_donnees_reelles.py
+    config.save(update_fields=['donnees_reelles_actif'])
     return cles.creer_cle('Site public')[1]
 
 
@@ -217,7 +221,7 @@ def test_api_site_config_nominale(client, cle):
     assert d['documents'][0]['taille'] == len(b'%PDF-1.4\n%%EOF')
     assert d['application']['version'] == '1.2' and d['application']['url'].endswith('.apk')
     assert set(d) == {'nom', 'nom_complet', 'devise', 'message_accueil', 'logo', 'image_fond', 'siege', 'email', 'telephones', 'reseaux',
-                      'partenaires', 'langues_actives', 'paiement_en_ligne', 'documents', 'application', 'mise_a_jour'}
+                      'partenaires', 'langues_actives', 'paiement_en_ligne', 'documents', 'application', 'mise_a_jour', 'donnees_reelles'}
 
 
 def test_api_site_config_vide_application_nulle_et_adresses_publiques(client, cle):

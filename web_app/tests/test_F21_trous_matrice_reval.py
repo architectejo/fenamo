@@ -46,7 +46,7 @@ TROUS_CONNUS = {
     'application', 'deconnexion', 'adminer', 'add-user', 'securite', 'tableau-bord', 'home-session', 'liste-membre',
     'delete-membre', 'view-user', 'recherche', 'notifys', 'fichier', 'fichier-nom', 'mot-de-passe-mobile',
     # écran Utilisateurs (2e) : matrice détaillée par rôle dans test_F21_matrice_roles.py ; ici, profils hérités (sans nomination)
-    'engin-liste', 'renvoyer-membre', 'valider-tous', 'verrou-application', 'verrou-verrouiller', 'verrou-deverrouiller', 'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
+    'engin-liste', 'donnees-reelles', 'renvoyer-membre', 'valider-tous', 'verrou-application', 'verrou-verrouiller', 'verrou-deverrouiller', 'journal', 'utilisateurs', 'utilisateurs-nommer', 'utilisateurs-membres-nommables', 'utilisateurs-externe', 'utilisateurs-reinitialiser',
     'utilisateurs-desactiver', 'utilisateurs-reactiver', 'utilisateurs-role', 'utilisateurs-renouveler',
     # hors périmètre de cette matrice (test dédié) : API, mob, ancien site
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
@@ -139,6 +139,8 @@ COMPLEMENT = [
     ('home-session', 'get', {}, None, S(200)),
     ('liste-membre', 'get', {}, None, S(200)),
     ('engin-liste', 'get', {}, None, S(200)),
+    ('donnees-reelles', 'get', {}, None, S(403, su=200)),  # interrupteur « données réelles » du site : super-utilisateur seul
+    ('donnees-reelles', 'post', {}, {'actif': '0'}, S(403, su=302)),  # inchangé (déjà faux) : sans effet
     ('verrou-application', 'get', {}, None, S(403, su=200)),  # F-07 : super-utilisateur seul
     ('verrou-verrouiller', 'get', {}, None, S(403, su=200)),
     ('verrou-verrouiller', 'post', {}, {}, S(403, su=422)),  # sans message : refusé, rien ne se verrouille
@@ -233,7 +235,7 @@ def test_F21_matrice_complementaire_page_complete_et_fragment_htmx(client, acteu
     complete = client.get(url)
     fragment = client.get(url, HTTP_HX_REQUEST='true')
     assert complete.status_code == fragment.status_code == 200
-    if nom.startswith(('utilisateurs-', 'verrou-v', 'verrou-d')):  # modales et résultats de recherche de l'écran Utilisateurs : toujours des fragments
+    if nom.startswith(('utilisateurs-', 'verrou-v', 'verrou-d', 'donnees-')):  # modales et résultats de recherche de l'écran Utilisateurs : toujours des fragments
         assert b'<html' not in complete.content and b'<html' not in fragment.content
         return
     assert b'<html' in complete.content
