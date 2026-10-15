@@ -142,3 +142,6 @@ X_FRAME_OPTIONS = "DENY"
 # --- Formulaire de contact (S-07) : limite par adresse IP, à la charge du site (l'API ne voit que le serveur du site) ---
 CONTACT_LIMITE_IP = env.int("CONTACT_LIMITE_IP", default=5)  # envois par fenêtre et par adresse IP
 CONTACT_LIMITE_FENETRE = env.int("CONTACT_LIMITE_FENETRE", default=3600)  # secondes
+# Clé de request.META portant l'IP du visiteur. REMOTE_ADDR convient sans proxy, ou si l'hébergeur y met l'IP réelle ;
+# derrière un proxy/CDN qui écrase l'en-tête, mettre par ex. HTTP_X_FORWARDED_FOR (jamais sinon : falsifiable).
+CONTACT_IP_HEADER = env("CONTACT_IP_HEADER", default="REMOTE_ADDR")

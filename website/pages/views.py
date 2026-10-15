@@ -360,7 +360,7 @@ def contact(request):
     """Contact (S-07) : coordonnées et formulaire. HTMX renvoie seulement le fragment du formulaire."""
     config = site_api.config()
     if request.method == "POST":
-        etat = contact_service.traiter(request.POST, request.META.get("REMOTE_ADDR", ""))
+        etat = contact_service.traiter(request.POST, (request.META.get(settings.CONTACT_IP_HEADER, "") or request.META.get("REMOTE_ADDR", "")).split(",")[0].strip())
     else:
         etat = contact_service.afficher()
     htmx = request.headers.get("HX-Request") and not request.headers.get("HX-History-Restore-Request")

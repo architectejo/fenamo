@@ -956,7 +956,7 @@ msgid "Cookies et stockage dans votre navigateur"
 msgstr ""
 
 #: templates/pages/confidentialite.html
-msgid "Le site n'utilise aucun cookie publicitaire ni de suivi. Il garde dans votre navigateur le thème clair ou sombre que vous choisissez. Les formulaires utilisent un cookie technique de sécurité, le temps de la saisie. La carte Google Maps de la page Contact ne se charge que si vous la demandez."
+msgid "Le site n'utilise aucun cookie publicitaire ni de suivi. Il garde dans votre navigateur le thème clair ou sombre que vous choisissez. Les formulaires, dont celui de la page Contact, posent un cookie technique de sécurité nommé « csrftoken » : il empêche l'envoi d'un formulaire à votre insu, ne contient aucune donnée personnelle, ne sert à aucun suivi et expire à la fermeture de votre navigateur ou au bout d'un an au plus. La carte Google Maps de la page Contact ne se charge que si vous la demandez."
 msgstr ""
 
 #: templates/pages/confidentialite.html
@@ -1020,7 +1020,7 @@ msgid "Afficher la carte"
 msgstr ""
 
 #: templates/pages/contact.html
-msgid "Le site n'enregistre aucune information sur vous quand vous le consultez."
+msgid "Le site n'enregistre aucune information sur vous quand vous le consultez. Le formulaire pose seulement un cookie technique de sécurité (csrftoken), sans suivi."
 msgstr ""
 
 #: templates/pages/coordinations.html
@@ -1254,7 +1254,7 @@ msgstr ""
 msgid "Message de la FENAMO-RDC"
 msgstr ""
 
-#: templates/pages/service_suspendu.html pages/views.py:423 services/contact.py:128 services/contact.py:206
+#: templates/pages/service_suspendu.html pages/views.py:423 services/contact.py:137 services/contact.py:215
 msgid "Service momentanément indisponible"
 msgstr ""
 
@@ -1676,85 +1676,85 @@ msgstr ""
 msgid "coordinations provinciales"
 msgstr ""
 
-#: services/contact.py:129
+#: services/contact.py:138
 msgid "Le service est suspendu pour le moment. Votre message n'a pas été envoyé."
 msgstr ""
 
-#: services/contact.py:207
+#: services/contact.py:216
 msgid "Votre message n'a pas été envoyé. Vos saisies sont conservées : réessayez dans quelques minutes, ou écrivez-nous par e-mail."
 msgstr ""
 
-#: services/contact.py:40
+#: services/contact.py:43
 msgid "Question générale"
 msgstr ""
 
-#: services/contact.py:41
+#: services/contact.py:44
 msgid "Adhésion d'une association"
 msgstr ""
 
-#: services/contact.py:42
+#: services/contact.py:45
 msgid "Identification d'un membre ou d'un engin"
 msgstr ""
 
-#: services/contact.py:43
+#: services/contact.py:46
 msgid "Presse et partenariats"
 msgstr ""
 
-#: services/contact.py:44
+#: services/contact.py:47
 msgid "Autre"
 msgstr ""
 
-#: services/contact.py:164
+#: services/contact.py:173
 msgid "Trop d'envois depuis votre connexion"
 msgstr ""
 
-#: services/contact.py:176
+#: services/contact.py:185
 msgid "Le formulaire est resté ouvert trop longtemps"
 msgstr ""
 
-#: services/contact.py:177
+#: services/contact.py:186
 msgid "Vos saisies sont conservées. Patientez un instant puis envoyez de nouveau le message."
 msgstr ""
 
-#: services/contact.py:232
+#: services/contact.py:241
 msgid "Message trop volumineux"
 msgstr ""
 
-#: services/contact.py:233
+#: services/contact.py:242
 msgid "Raccourcissez votre message puis envoyez-le de nouveau."
 msgstr ""
 
-#: services/contact.py:238
+#: services/contact.py:247
 msgid "Trop de messages envoyés"
 msgstr ""
 
-#: services/contact.py:121
+#: services/contact.py:130
 msgid "Formulaire indisponible pour le moment"
 msgstr ""
 
-#: services/contact.py:122
+#: services/contact.py:131
 msgid "Le formulaire n'est pas encore ouvert. Joignez la FENAMO-RDC par téléphone ou par e-mail, ou rendez-vous au siège national."
 msgstr ""
 
-#: services/contact.py:165
+#: services/contact.py:174
 #, python-format
 msgid "Vous avez envoyé plusieurs messages en peu de temps. Vos saisies sont conservées : réessayez dans %(minutes)s minutes."
 msgstr ""
 
-#: services/contact.py:242
+#: services/contact.py:251
 msgid "Réessayez un peu plus tard. Vos saisies sont conservées."
 msgstr ""
 
-#: services/contact.py:228
+#: services/contact.py:237
 msgid "Le message n'a pas pu être validé. Vérifiez les champs et réessayez."
 msgstr ""
 
-#: services/contact.py:240
+#: services/contact.py:249
 #, python-format
 msgid "Réessayez dans %(minutes)s minutes. Vos saisies sont conservées."
 msgstr ""
 
-#: services/contact.py:147
+#: services/contact.py:156
 #, python-format
 msgid "Ce champ est trop long (%(maxi)s caractères au plus)."
 msgstr ""

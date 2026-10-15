@@ -229,3 +229,16 @@ def test_S07_refus_de_cle_api_n_expose_rien_au_visiteur(client, api):
 def test_S07_page_contact_sans_api_ne_plante_pas(client, api):
     api.coupee()
     assert client.get(URL).status_code == 200
+
+
+def test_S07_limite_ip_lit_l_en_tete_reglable(client, api, settings):
+    settings.CONTACT_LIMITE_IP = 1
+    settings.CONTACT_IP_HEADER = "HTTP_X_REAL_IP"
+    assert envoyer(client, HTTP_X_REAL_IP="1.1.1.1").status_code == 200
+    assert envoyer(client, HTTP_X_REAL_IP="1.1.1.1").status_code == 429
+    assert envoyer(client, HTTP_X_REAL_IP="2.2.2.2").status_code == 200
+
+
+def test_S07_le_cookie_csrf_est_annonce_dans_les_textes(client):
+    assert "csrftoken" in client.get(URL).content.decode()
+    assert "csrftoken" in client.get("/confidentialite/").content.decode()

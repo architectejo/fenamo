@@ -1,9 +1,12 @@
 """Formulaire de contact (S-07) : un service testable, appelé par la vue `pages.views.contact`.
 
 Rôles :
-- poser l'horodatage d'ouverture dans un jeton signé (le visiteur ne peut pas le modifier ; pas de session ni de
-  cookie : le site n'enregistre rien sur un visiteur qui ne fait que lire) ;
-- appliquer la limite par adresse IP (cache local) ;
+- poser l'horodatage d'ouverture dans un jeton signé (le visiteur ne peut pas le modifier ; ni session ni compte :
+  seul le cookie technique de sécurité `csrftoken` de Django est posé avec le formulaire, voir /confidentialite/) ;
+- appliquer la limite par adresse IP (cache local, compteur atomique). L'adresse lue est `request.META[CONTACT_IP_HEADER]`
+  (`REMOTE_ADDR` par défaut) : derrière un proxy ou un CDN, REMOTE_ADDR est l'adresse du proxy et la limite frapperait
+  tous les visiteurs ensemble ; il faut alors que l'hébergeur transmette l'IP réelle dans REMOTE_ADDR, ou régler
+  CONTACT_IP_HEADER (ex. HTTP_X_FORWARDED_FOR, seulement si le proxy écrase cet en-tête : sinon il est falsifiable) ;
 - n'appeler l'API que par `api_client.post` (en-tête X-Site-Key), jamais en mode exemple ;
 - traduire chaque réponse de l'API (201, 400, 413, 429, 503, panne) en un état d'affichage ; le formulaire est
   toujours conservé (valeurs saisies) sauf après un envoi réussi.
@@ -89,17 +92,23 @@ def _cle_ip(ip: str) -> str:
 
 
 def attente_ip(ip: str) -> int | None:
-    """Secondes à attendre si l'adresse a atteint la limite ; sinon None, et l'envoi est compté."""
-    maintenant = time.time()
+    """Secondes à attendre si l'adresse a atteint la limite ; sinon None. Chaque appel compte un envoi.
+
+    Compteur atomique : `cache.add` crée le compteur (et l'instant de début) avec la durée de la fenêtre, `cache.incr`
+    l'augmente sans lecture puis écriture séparées.
+    """
     cle = _cle_ip(ip)
     fenetre = settings.CONTACT_LIMITE_FENETRE
-    etat = cache.get(cle)
-    if not etat or maintenant - etat["debut"] >= fenetre:
-        etat = {"debut": maintenant, "n": 0}
-    if etat["n"] >= settings.CONTACT_LIMITE_IP:
-        return max(1, int(etat["debut"] + fenetre - maintenant))
-    etat["n"] += 1
-    cache.set(cle, etat, fenetre)
+    cache.add(cle + ":debut", time.time(), fenetre)
+    cache.add(cle, 0, fenetre)
+    try:
+        n = cache.incr(cle)
+    except ValueError:  # expiré entre add et incr
+        cache.set(cle, 1, fenetre)
+        n = 1
+    if n > settings.CONTACT_LIMITE_IP:
+        debut = cache.get(cle + ":debut") or time.time()
+        return max(1, int(debut + fenetre - time.time()))
     return None
 
 
