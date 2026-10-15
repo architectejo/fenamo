@@ -1,0 +1,2 @@
+{% load i18n %}{% comment %}Zone de la liste des communiqués (gabarit minimal). Contexte : page_obj (chaque communiqué porte lu), filtres, nb_non_lus.{% endcomment %}
+<ul class="file">{% for c in page_obj %}<li class="dossier{% if not c.lu %} non-lu{% endif %}"><a href="{% url 'communique' c.id %}">{{ c.titre|default:c.message|truncatechars:120 }}</a> · {{ c.publie_le|date:"d/m/Y" }}</li>{% empty %}<li>{% translate "Aucun communiqué" %}</li>{% endfor %}</ul>

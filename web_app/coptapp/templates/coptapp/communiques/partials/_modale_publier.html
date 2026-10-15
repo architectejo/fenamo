@@ -1,0 +1,10 @@
+{% extends "components/modale_base.html" %}
+{% load i18n %}{% comment %}Publier un communiqué (gabarit minimal). Contexte : action, coordinations, antennes, titre_max, message_max, valeurs, erreur.{% endcomment %}
+{% block titre %}{% translate "Publier un communiqué" %}{% endblock %}
+{% block corps %}
+<div class="champ"><label class="champ-libelle" for="c-titre">{% translate "Titre" %}</label><input id="c-titre" name="titre" maxlength="{{ titre_max }}" required value="{{ valeurs.titre }}"></div>
+<div class="champ"><label class="champ-libelle" for="c-message">{% translate "Message" %}</label><textarea id="c-message" name="message" rows="5" maxlength="{{ message_max }}" required>{{ valeurs.message }}</textarea></div>
+<div class="champ"><label class="champ-libelle" for="c-coordination">{% translate "Coordination (facultatif)" %}</label><select id="c-coordination" name="coordination"><option value="">{% translate "National" %}</option>{% for c in coordinations %}<option value="{{ c.id }}">{{ c.nom }}</option>{% endfor %}</select></div>
+<div class="champ"><label class="champ-libelle" for="c-antenne">{% translate "Antenne (facultatif)" %}</label><select id="c-antenne" name="antenne"><option value="">—</option>{% for a in antennes %}<option value="{{ a.id }}">{{ a.nom }}</option>{% endfor %}</select></div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span>{% translate "Publier" %}</span></button>{% endblock %}
