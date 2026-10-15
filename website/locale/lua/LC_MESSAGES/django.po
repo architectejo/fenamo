@@ -1689,7 +1689,7 @@ msgid "Question générale"
 msgstr ""
 
 #: services/contact.py:44
-msgid "Adhésion d'une association"
+msgid "Adhésion d'une association membre"
 msgstr ""
 
 #: services/contact.py:45

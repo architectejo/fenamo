@@ -41,7 +41,7 @@ MAXIMA = {"nom": 100, "mail": 254, "telephone": 20, "objet": 100, "message": 300
 # Valeur envoyée (français, lue par les éditeurs) et libellé affiché (traduit)
 SUJETS = (
     ("Question générale", gettext_lazy("Question générale")),
-    ("Adhésion d'une association", gettext_lazy("Adhésion d'une association")),
+    ("Adhésion d'une association membre", gettext_lazy("Adhésion d'une association membre")),
     ("Identification d'un membre ou d'un engin", gettext_lazy("Identification d'un membre ou d'un engin")),
     ("Presse et partenariats", gettext_lazy("Presse et partenariats")),
     ("Autre", gettext_lazy("Autre")),
