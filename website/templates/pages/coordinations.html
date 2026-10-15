@@ -1,0 +1,48 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil %}<li><a href="{% url 'pages:a-propos' %}">{% translate "La FENAMO-RDC" %}</a></li>{% endblock %}
+{% block fil_courant %}{% translate "Coordinations provinciales" %}{% endblock %}
+{% block h1 %}{% translate "Coordinations provinciales" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Chaque province a sa coordination ; Kinshasa en compte deux, Est et Ouest. Chaque coordination regroupe des antennes, une par commune ou territoire." %}</p>
+{% include "partials/_sousnav_fenamo.html" with actif="coordinations" %}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe{% if lignes %} coord-grille{% endif %}">
+    {% if lignes %}
+    <div class="coord-carte">
+      {% if tuiles %}<svg class="carte-tuiles" viewBox="-4 -4 312 436" role="group" aria-label="{% translate 'Carte schématique des coordinations provinciales' %}">{% for t in tuiles %}<a class="tuile tuile--{{ t.classe }}" href="#coord-{{ t.code }}" aria-label="{{ t.nom }}{% if t.membres is not None %}, {% blocktranslate count n=t.membres %}{{ n }} membre actif{% plural %}{{ n }} membres actifs{% endblocktranslate %}{% endif %}"><rect x="{{ t.x }}" y="{{ t.y }}" width="{{ t.cote }}" height="{{ t.cote }}" rx="4"/><text x="{{ t.tx|stringformat:'.1f' }}" y="{{ t.ty|stringformat:'.1f' }}" text-anchor="middle">{{ t.code }}</text></a>{% endfor %}</svg>
+      <ul class="legende-carte" aria-label="{% translate 'Légende : membres actifs' %}">
+        <li><i aria-hidden="true"></i>{% translate "Aucun membre actif" %}</li>
+        <li><i class="l1" aria-hidden="true"></i>{% translate "Moins de 1 000" %}</li>
+        <li><i class="l2" aria-hidden="true"></i>{% translate "1 000 à 5 000" %}</li>
+        <li><i class="l3" aria-hidden="true"></i>{% translate "Plus de 5 000" %}</li>
+      </ul>
+      <p class="meta espace-haut-3">{% translate "Carte schématique : une case par coordination, placée selon sa position dans le pays. Touchez une case pour voir ses antennes." %}</p>
+      {% endif %}
+    </div>
+    <div>
+      <h2 class="lecteur">{% translate "Liste des coordinations" %}</h2>
+      <div class="coords-tete" aria-hidden="true"><span>{% translate "Code" %}</span><span>{% translate "Coordination" %}</span><span>{% translate "Membres actifs" %}</span><span></span></div>
+      <ul class="coords">
+        {% for c in lignes %}<li><details class="coord" id="coord-{{ c.code }}">
+          <summary><span class="plaque-code"><span>{{ c.code }}</span></span><span class="coord-nom">{{ c.nom }}<br><span class="meta">{% if c.nb_antennes %}{% blocktranslate count n=c.nb_antennes %}{{ n }} antenne{% plural %}{{ n }} antennes{% endblocktranslate %}{% else %}{% translate "pas encore d'antenne" %}{% endif %}</span></span><span class="coord-effectif">{% if c.membres_actifs is None %}<span class="doux">—</span>{% elif c.membres_actifs == 0 %}<span class="doux">0</span>{% else %}{{ c.membres_actifs|nombre }}{% endif %}<span class="lecteur"> {% translate "membres actifs" %}</span></span>{% icone "chevron-down" %}</summary>
+          <div class="coord-detail">
+            {% if c.nb_antennes or c.membres_actifs is not None %}<dl>
+              {% if c.membres_actifs is not None %}<div><dt>{% translate "Membres actifs" %}</dt><dd>{{ c.membres_actifs|nombre }}</dd></div>{% endif %}
+              {% if c.associations_membres is not None %}<div><dt>{% translate "Associations membres" %}</dt><dd>{{ c.associations_membres|nombre }}</dd></div>{% endif %}
+              {% if c.engins_actifs is not None %}<div><dt>{% translate "Engins" %}</dt><dd>{{ c.engins_actifs|nombre }}</dd></div>{% endif %}
+              <div><dt>{% translate "Antennes" %}</dt><dd>{{ c.nb_antennes }}</dd></div>
+            </dl>{% endif %}
+            {% if c.antennes %}<p class="meta espace-bas-2">{% translate "Antennes de la coordination" %}</p>
+            <ul class="antennes">{% for a in c.antennes %}<li><span>{{ a.nom }}</span><span class="meta">{% if a.type == "commune" %}{% translate "commune" %}{% elif a.type == "territoire" %}{% translate "territoire" %}{% endif %}</span></li>{% endfor %}</ul>
+            {% else %}<p class="sans-marge">{% translate "Pas encore d'antenne installée. Les associations de la province peuvent déjà préparer leur demande d'adhésion." %} <a href="{% url 'pages:adhesion' %}">{% translate "Adhérer à la fédération" %}</a></p>{% endif %}
+          </div>
+        </details></li>{% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <div class="vide">{% icone "map" %}<p>{% if indisponible %}{% translate "La liste des coordinations n'est pas disponible pour le moment." %}{% else %}{% translate "Les coordinations provinciales seront publiées prochainement." %}{% endif %}</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

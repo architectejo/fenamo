@@ -1,0 +1,40 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "Confidentialité" %}{% endblock %}
+{% block h1 %}{% translate "Confidentialité" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Ce que le site collecte, à quoi cela sert, qui le conserve et ce que montre la vérification publique." %}</p>
+<div class="alerte alerte--info espace-haut-4">{% icone "info" %}<div><span class="alerte-titre">{% translate "Texte à valider par la FENAMO" %}</span><p>{% translate "Ce texte est provisoire. Il est rédigé à partir du fonctionnement prévu du site et doit être validé par la FENAMO-RDC avant la mise en ligne." %}</p></div></div>{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe grille-lecture">
+    <div class="texte-long">
+      <h2 id="principe" class="premier-titre">{% translate "Le principe" %}</h2>
+      <p>{% translate "Le site ne crée pas de compte et ne garde aucune donnée personnelle. Il ne contient ni publicité ni mesure d'audience. Les informations que vous saisissez dans un formulaire sont transmises à l'application de gestion de la FENAMO-RDC, qui est seule à les traiter et à les conserver." %}</p>
+      <h2 id="formulaires">{% translate "Les formulaires" %}</h2>
+      <p>{% translate "Lorsqu'ils sont ouverts, les formulaires du site collectent seulement ce qui est nécessaire à leur objet :" %}</p>
+      <ul>
+        <li><strong>{% translate "Contact" %}</strong> {% translate ": votre nom, un téléphone ou une adresse e-mail, l'objet et le message, pour vous répondre." %}</li>
+        <li><strong>{% translate "Demande d'adhésion" %}</strong> {% translate ": les informations de l'association et de son responsable, et les pièces jointes (statuts, agrément), pour examiner la demande. Les pièces sont transmises à l'application de gestion puis effacées du serveur du site." %}</li>
+        <li><strong>{% translate "Suivi d'une demande" %}</strong> {% translate ": la référence de la demande et l'adresse e-mail du demandeur, pour afficher l'état de la demande." %}</li>
+      </ul>
+      <h2 id="verification">{% translate "Ce que montre la vérification" %}</h2>
+      <p>{% translate "La vérification d'une carte de membre affiche seulement : la photo, le nom, l'identifiant MBR, la qualité, l'association membre, la coordination, l'antenne, le parking, l'état et la validité de la carte. Pour un engin : le numéro FENAMO, le type, la marque, la couleur, la plaque, le nom du propriétaire, le motocycliste rattaché, l'état et la validité de l'identification." %}</p>
+      <p>{% translate "Elle n'affiche jamais l'adresse, le téléphone, l'adresse e-mail, la date et le lieu de naissance, la filiation, l'état civil, le numéro de carte d'électeur ou de permis, les pièces jointes, la famille, l'historique ni les paiements. Chaque vérification est comptée (date et résultat), sans enregistrer l'identité de la personne qui la fait." %}</p>
+      <h2 id="statistiques">{% translate "Chiffres publiés" %}</h2>
+      <p>{% translate "Les chiffres affichés sur le site (membres actifs, associations membres, coordinations) sont des totaux : ils ne permettent d'identifier personne." %}</p>
+      <h2 id="stockage">{% translate "Cookies et stockage dans votre navigateur" %}</h2>
+      <p>{% translate "Le site n'utilise aucun cookie publicitaire ni de suivi. Il garde dans votre navigateur le thème clair ou sombre que vous choisissez. Les formulaires utilisent un cookie technique de sécurité, le temps de la saisie. La carte Google Maps de la page Contact ne se charge que si vous la demandez." %}</p>
+      <h2 id="conservation">{% translate "Durée de conservation" %}</h2>
+      <p>{% translate "La durée de conservation des messages et des demandes d'adhésion est fixée par la FENAMO-RDC. Elle sera indiquée ici avant l'ouverture des formulaires." %}</p>
+      <h2 id="droits">{% translate "Vos droits" %}</h2>
+      <p>{% translate "Vous pouvez demander à consulter, corriger ou supprimer les informations que vous avez transmises, en contactant la FENAMO-RDC et en précisant la référence de votre message ou de votre demande." %} <a href="{% url 'pages:contact' %}">{% translate "Voir la page Contact" %}</a></p>
+    </div>
+    <aside>
+      <nav class="sommaire" aria-labelledby="sommaire-titre">
+        <h2 id="sommaire-titre" class="h-moyen">{% translate "Sur cette page" %}</h2>
+        <ul class="liste-sommaire"><li><a href="#principe">{% translate "Le principe" %}</a></li><li><a href="#formulaires">{% translate "Les formulaires" %}</a></li><li><a href="#verification">{% translate "Ce que montre la vérification" %}</a></li><li><a href="#statistiques">{% translate "Chiffres publiés" %}</a></li><li><a href="#stockage">{% translate "Cookies et stockage" %}</a></li><li><a href="#conservation">{% translate "Durée de conservation" %}</a></li><li><a href="#droits">{% translate "Vos droits" %}</a></li></ul>
+      </nav>
+    </aside>
+  </div>
+</div>
+{% endblock %}

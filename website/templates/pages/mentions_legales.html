@@ -1,0 +1,30 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "Mentions légales" %}{% endblock %}
+{% block h1 %}{% translate "Mentions légales" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Qui publie ce site, où il est hébergé et à qui appartiennent ses contenus." %}</p>{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe grille-lecture">
+    <div class="texte-long">
+      <h2 id="editeur" class="premier-titre">{% translate "Éditeur du site" %}</h2>
+      <p>{{ config.nom_complet }} (FENAMO-RDC asbl), {{ config.siege }}.</p>
+      <p>{% translate "Responsable de la publication : le président national, représentant légal de la fédération (article 23 de la charte)." %}</p>
+      <h2 id="hebergement">{% translate "Hébergement" %}</h2>
+      <p>{% translate "Le site fenamordc.cd et l'application de gestion app.fenamordc.cd sont hébergés sur un hébergement mutualisé. Le nom et l'adresse de l'hébergeur seront indiqués ici avant la mise en ligne." %}</p>
+      <p class="meta">{% translate "À valider par la FENAMO-RDC." %}</p>
+      <h2 id="contenus">{% translate "Contenus, photos et logo" %}</h2>
+      <p>{% translate "Les textes, photos et vidéos publiés sur ce site appartiennent à la FENAMO-RDC, sauf mention contraire. Pour demander le retrait d'une photo ou signaler un contenu, contactez la FENAMO-RDC." %} <a href="{% url 'pages:contact' %}">{% translate "Voir la page Contact" %}</a></p>
+      <p>{% translate "Le logo officiel de la fédération est décrit à l'article 4 de la charte. Il ne doit être ni déformé ni recoloré." %}</p>
+      <h2 id="donnees">{% translate "Données personnelles" %}</h2>
+      <p>{% translate "Le traitement des informations transmises par les formulaires et ce que montre la vérification publique sont expliqués dans la page Confidentialité." %} <a href="{% url 'pages:confidentialite' %}">{% translate "Lire la confidentialité" %}</a></p>
+    </div>
+    <aside>
+      <nav class="sommaire" aria-labelledby="sommaire-titre">
+        <h2 id="sommaire-titre" class="h-moyen">{% translate "Sur cette page" %}</h2>
+        <ul class="liste-sommaire"><li><a href="#editeur">{% translate "Éditeur du site" %}</a></li><li><a href="#hebergement">{% translate "Hébergement" %}</a></li><li><a href="#contenus">{% translate "Contenus, photos et logo" %}</a></li><li><a href="#donnees">{% translate "Données personnelles" %}</a></li></ul>
+      </nav>
+    </aside>
+  </div>
+</div>
+{% endblock %}

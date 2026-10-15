@@ -1,0 +1,10 @@
+{% load i18n site_tags %}{% if indisponible %}
+<div class="vide">{% icone "wifi-off" %}<h2 class="h-moyen">{% translate "Les actualités ne sont pas disponibles pour le moment" %}</h2><p>{% if q %}{% translate "La recherche est momentanément indisponible. Réessayez dans quelques minutes." %}{% else %}{% translate "Réessayez dans quelques minutes." %}{% endif %}</p><a class="bouton" href="{% url 'pages:actualites' %}">{% translate "Réessayer" %}</a></div>
+{% elif liste.resultats %}
+<p class="resultat-resume">{% if q %}{% blocktranslate with mot=q count n=liste.total %}{{ n }} article contient « {{ mot }} »{% plural %}{{ n }} articles contiennent « {{ mot }} »{% endblocktranslate %}{% else %}{% blocktranslate count n=liste.total %}{{ n }} article, du plus récent au plus ancien{% plural %}{{ n }} articles, du plus récent au plus ancien{% endblocktranslate %}{% endif %}</p>
+<ul class="articles articles--3">{% for a in liste.resultats %}<li>{% include "partials/_article_carte.html" with a=a niveau=2 %}</li>{% endfor %}</ul>
+{% include "partials/_pagination.html" with page=liste.page pages=liste.pages libelle=_("Pages des actualités") %}
+{% else %}
+<div class="vide">{% icone "search-x" %}{% if q %}<h2 class="h-moyen">{% blocktranslate with mot=q %}Aucun article ne contient « {{ mot }} »{% endblocktranslate %}</h2><p>{% translate "Vérifiez l'orthographe ou essayez un mot plus court." %}</p><a class="bouton" href="{% url 'pages:actualites' %}">{% translate "Voir toutes les actualités" %}</a>{% else %}<h2 class="h-moyen">{% translate "Aucun article publié pour le moment" %}</h2><p>{% translate "Les actualités et communiqués de la fédération apparaîtront ici." %}</p>{% endif %}</div>
+{% endif %}
+{% if q_trop_court %}<p class="meta">{% translate "Saisissez au moins deux caractères pour lancer une recherche." %}</p>{% endif %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n static site_tags %}
+{% block content %}
+<div class="erreur">
+  <span class="gilet gilet--fin gilet--deroule" aria-hidden="true"></span>
+  <div class="enveloppe">
+    <section>
+      <p class="erreur-code">{% icone "triangle-alert" %}{% translate "Erreur 500" %}</p>
+      <h1>{% translate "Le site rencontre un problème." %}</h1>
+      <p class="chapo">{% translate "L'erreur est signalée à l'équipe technique. Réessayez dans quelques minutes." %}</p>
+      <div class="boutons"><a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="/">{% icone "refresh-cw" %}<span>{% translate "Réessayer" %}</span></a><a class="bouton bouton--grand bouton--bloc-mobile" href="/">{% translate "Retour à l'accueil" %}</a></div>
+    </section>
+  </div>
+</div>
+{% endblock %}

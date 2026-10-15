@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<header class="page-tete">
+  <div class="enveloppe">
+    <nav aria-label="{% translate "Fil d'Ariane" %}"><ol class="fil"><li><a href="{% url 'pages:accueil' %}">{% translate "Accueil" %}</a></li>{% block fil %}{% endblock %}<li aria-current="page">{% block fil_courant %}{% endblock %}</li></ol></nav>
+    <h1 class="page-titre">{% block h1 %}{% endblock %}</h1>
+    {% block chapo %}{% endblock %}
+    {% block sousnav %}{% endblock %}
+  </div>
+</header>
+{% block corps %}{% endblock %}
+{% endblock %}

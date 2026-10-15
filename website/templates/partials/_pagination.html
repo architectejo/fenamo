@@ -1,0 +1,6 @@
+{% load i18n site_tags %}{% if pages > 1 %}<nav class="pages" aria-label="{{ libelle }}">
+  {% if page > 1 %}<a class="bouton" href="{% lien_page page|add:'-1' %}" rel="prev">{% translate "Précédent" %}</a>{% else %}<span class="bouton pages-masque" aria-hidden="true">{% translate "Précédent" %}</span>{% endif %}
+  <ul class="pages-numeros">{% pages_visibles page pages as visibles %}{% for n in visibles %}{% if n is None %}<li><span>…</span></li>{% elif n == page %}<li><a href="{% lien_page n %}" aria-current="page">{{ n }}</a></li>{% else %}<li><a href="{% lien_page n %}">{{ n }}</a></li>{% endif %}{% endfor %}</ul>
+  <span class="pages-position">{% blocktranslate %}Page {{ page }} sur {{ pages }}{% endblocktranslate %}</span>
+  {% if page < pages %}<a class="bouton" href="{% lien_page page|add:'1' %}" rel="next">{% translate "Suivant" %}</a>{% else %}<span class="bouton pages-masque" aria-hidden="true">{% translate "Suivant" %}</span>{% endif %}
+</nav>{% endif %}

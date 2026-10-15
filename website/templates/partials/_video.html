@@ -1,0 +1,3 @@
+{% load i18n site_tags %}<div class="lecteur-video espace-haut-6" data-video-embed="{{ v.embed }}" data-video-titre="{% translate 'Lecteur vidéo' %}">
+  <a class="lecteur-video-lien" href="{{ v.lien }}" rel="noopener" target="_blank">{% icone "circle-play" %}<span>{% if v.fournisseur == "youtube" %}{% translate "Lire la vidéo sur YouTube" %}{% else %}{% translate "Lire la vidéo sur Facebook" %}{% endif %}</span></a>
+</div>

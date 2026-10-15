@@ -1,0 +1,1 @@
+{% load i18n %}<nav aria-label="{% translate 'Actualités' %}"><ul class="sous-nav"><li><a href="{% url 'pages:actualites' %}"{% if actif == 'actualites' %} aria-current="page"{% endif %}>{% translate "Actualités et communiqués" %}</a></li><li><a href="{% url 'pages:galerie' %}"{% if actif == 'galerie' %} aria-current="page"{% endif %}>{% translate "Galerie" %}</a></li></ul></nav>

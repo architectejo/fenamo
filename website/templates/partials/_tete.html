@@ -1,0 +1,15 @@
+{% load i18n static site_tags %}<header class="site-tete">
+  <div class="enveloppe site-tete-rangee">
+    <a class="site-marque" href="{% url 'pages:accueil' %}">
+      <img src="{% static 'img/logo-160.webp' %}" width="48" height="48" alt="{% translate 'Logo de la FENAMO-RDC' %}">
+      <span class="site-marque-nom">FENAMO-RDC</span>
+    </a>
+    <nav class="site-nav" aria-label="{% translate 'Menu principal' %}"><a href="{% url 'pages:a-propos' %}"{% if rubrique == 'fenamo' %} aria-current="page"{% endif %}><span>{% translate "La FENAMO-RDC" %}</span></a><a href="{% url 'pages:adhesion' %}"{% if rubrique == 'associations' %} aria-current="page"{% endif %}><span>{% translate "Associations membres" %}</span></a><a href="{% url 'pages:actualites' %}"{% if rubrique == 'actualites' %} aria-current="page"{% endif %}><span>{% translate "Actualités" %}</span></a><a href="{% url 'pages:application' %}"{% if rubrique == 'application' %} aria-current="page"{% endif %}><span>{% translate "Application mobile" %}</span></a><a href="{% url 'pages:contact' %}"{% if rubrique == 'contact' %} aria-current="page"{% endif %}><span>{% translate "Contact" %}</span></a></nav>
+    {% if show_language_switcher %}<div class="langue masque-etroit">
+      <button type="button" class="langue-bouton" data-langue aria-expanded="false" aria-controls="langues-tete" aria-label="{% blocktranslate with nom=langue_courante.nom %}Langue : {{ nom }}. Changer de langue{% endblocktranslate %}">{% icone "globe" %}<span class="chiffres">{{ langue_courante.code|upper }}</span>{% icone "chevron-down" "petite" %}</button>
+      <ul class="langue-liste" id="langues-tete" hidden>{% include "partials/_langues.html" %}</ul>
+    </div>{% endif %}
+    <a class="bouton bouton--principal bouton--verifier" href="{% url 'pages:verifier' %}">{% icone "scan-qr-code" %}<span>{% translate "Vérifier" %}</span></a>
+    <button type="button" class="bouton-icone masque-large" data-menu-site aria-controls="menu-site" aria-expanded="false" aria-label="{% translate 'Ouvrir le menu' %}" data-libelle-ouvrir="{% translate 'Ouvrir le menu' %}" data-libelle-fermer="{% translate 'Fermer le menu' %}">{% icone "menu" %}</button>
+  </div>
+</header>

@@ -1,0 +1,15 @@
+{% load i18n site_tags %}<div class="menu-site" id="menu-site" hidden>
+  <nav class="enveloppe menu-site-corps" aria-label="{% translate 'Menu principal' %}">
+    <div class="menu-rubrique"><span>{% translate "La FENAMO-RDC" %}</span><ul><li><a href="{% url 'pages:a-propos' %}">{% translate "Présentation" %}</a></li><li><a href="{% url 'pages:comite' %}">{% translate "Comité exécutif" %}</a></li><li><a href="{% url 'pages:coordinations' %}">{% translate "Coordinations" %}</a></li><li><a href="{% url 'pages:documents' %}">{% translate "Documents" %}</a></li></ul></div>
+    <div class="menu-rubrique"><span>{% translate "Associations membres" %}</span><ul><li><a href="{% url 'pages:adhesion' %}">{% translate "Adhérer à la fédération" %}</a></li></ul></div>
+    <div class="menu-rubrique"><span>{% translate "Actualités" %}</span><ul><li><a href="{% url 'pages:actualites' %}">{% translate "Actualités et communiqués" %}</a></li><li><a href="{% url 'pages:galerie' %}">{% translate "Galerie" %}</a></li></ul></div>
+    <div class="menu-rubrique"><a href="{% url 'pages:application' %}">{% translate "Application mobile" %}</a></div>
+    <div class="menu-rubrique"><a href="{% url 'pages:contact' %}">{% translate "Contact" %}</a></div>
+    {% if show_language_switcher %}<p class="menu-site-titre" id="titre-langues-menu">{% translate "Langue du site" %}</p>
+    <div class="langue langue--plat" role="group" aria-labelledby="titre-langues-menu"><ul class="langue-liste" id="langues-menu">{% include "partials/_langues.html" %}</ul></div>{% endif %}
+    <div class="menu-site-pied">
+      <a class="bouton bouton--grand bouton--bloc" href="{{ app_url }}">{% icone "log-in" %}<span>{% translate "Espace des utilisateurs" %}</span></a>
+      <button type="button" class="bouton bouton--discret bouton--bloc" data-theme-basculer>{% icone "moon" %}<span>{% translate "Thème sombre" %}</span></button>
+    </div>
+  </nav>
+</div>

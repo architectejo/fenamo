@@ -1,0 +1,32 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil %}<li><a href="{% url 'pages:a-propos' %}">{% translate "La FENAMO-RDC" %}</a></li>{% endblock %}
+{% block fil_courant %}{% translate "Adhérer à la fédération" %}{% endblock %}
+{% block h1 %}{% translate "Adhérer à la fédération" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "L'adhésion est libre et garantie par le règlement d'ordre intérieur (article 9 de la charte). La fédération réunit des associations, pas des personnes isolées." %}</p>{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe grille-lecture">
+    <div class="texte-long">
+      <h2 class="premier-titre" id="conditions">{% translate "Les conditions d'enregistrement" %}</h2>
+      <p class="meta">{% translate "Article 9 de la charte." %}</p>
+      <ol class="liste-lettres">
+        <li>{% translate "Être une association des motocyclistes taximen ou propriétaires des motos-taxis ou un regroupement des associations validés détentrice au moins d'un acte notarié des statuts avec accusé de réception F92 du ministère de la justice ou présenter un arrêté ministériel national ou provincial portant autorisation de fonctionnement de l'association ou regroupement." %}</li>
+        <li>{% translate "Présenter un certificat d'enregistrement ou agrément du secrétariat général où division du ministère du transport." %}</li>
+        <li>{% translate "Posséder une adresse du siège social ou administratif de l'association." %}</li>
+        <li>{% translate "Payer les frais d'enregistrement et d'adhésion fixés par le règlement administratif du comité national de la fédération." %}</li>
+      </ol>
+      <h2 id="frais">{% translate "Les frais" %}</h2>
+      <p>{% translate "Le montant des frais d'enregistrement et d'adhésion n'est pas fixé par la charte : il l'est par le règlement administratif du comité national. Renseignez-vous auprès de la FENAMO-RDC pour connaître le montant en vigueur." %}</p>
+      <h2 id="suite">{% translate "Après l'adhésion" %}</h2>
+      <p>{% translate "L'association membre s'engage notamment à payer ses cotisations, à participer aux travaux et réunions de la fédération et à délivrer les cartes de membre à ses membres (article 11). Ses membres jouissent des avantages décidés par le comité exécutif national (article 12)." %}</p>
+    </div>
+    <aside class="encart" aria-labelledby="demande-titre">
+      <h2 class="h-moyen" id="demande-titre">{% translate "Déposer une demande" %}</h2>
+      <div class="alerte alerte--info espace-haut-3">{% icone "info" %}<div><p>{% translate "Le dépôt de la demande en ligne n'est pas encore ouvert. Pour déposer votre demande, contactez la FENAMO-RDC." %}</p></div></div>
+      <a class="bouton bouton--principal bouton--grand bouton--bloc espace-haut-4" href="{% url 'pages:contact' %}">{% translate "Contacter la FENAMO-RDC" %}</a>
+      <a class="bouton bouton--bloc espace-haut-2" href="{% url 'pages:documents' %}">{% icone "file-down" %}<span>{% translate "Charte et formulaires" %}</span></a>
+    </aside>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% load site_tags %}<a class="article" href="{% url 'pages:article' a.slug %}">
+  {% include "partials/_photo_article.html" with a=a format="3x2" %}
+  {% include "partials/_article_meta.html" with a=a %}
+  {% if niveau == 3 %}<h3 class="article-titre">{{ a.titre|surligner:q }}</h3>{% else %}<h2 class="article-titre">{{ a.titre|surligner:q }}</h2>{% endif %}
+  {% if a.resume %}<p class="article-resume">{{ a.resume|surligner:q }}</p>{% endif %}
+</a>

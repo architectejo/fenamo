@@ -1,0 +1,8 @@
+{% load site_tags %}<a class="une-article" href="{% url 'pages:article' a.slug %}">
+  {% include "partials/_photo_article.html" with a=a format="" %}
+  <div>
+    {% include "partials/_article_meta.html" with a=a %}
+    <h3 class="article-titre espace-haut-3">{{ a.titre|surligner:q }}</h3>
+    {% if a.resume %}<p class="article-resume espace-haut-3">{{ a.resume|surligner:q }}</p>{% endif %}
+  </div>
+</a>

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n static site_tags %}
+{% block og_type %}article{% endblock %}
+{% block head_extra %}{% if article.date_publication %}<meta property="article:published_time" content="{{ article.date_publication.isoformat }}">{% endif %}{% endblock %}
+{% block content %}
+<article>
+  <header class="article-tete">
+    <div class="enveloppe">
+      <nav aria-label="{% translate "Fil d'Ariane" %}"><ol class="fil"><li><a href="{% url 'pages:accueil' %}">{% translate "Accueil" %}</a></li><li><a href="{% url 'pages:actualites' %}">{% translate "Actualités" %}</a></li><li aria-current="page">{% if article.type == "communique" %}{% blocktranslate with jour=article.date_publication|date_fr %}Communiqué du {{ jour }}{% endblocktranslate %}{% else %}{% blocktranslate with jour=article.date_publication|date_fr %}Actualité du {{ jour }}{% endblocktranslate %}{% endif %}</li></ol></nav>
+      {% include "partials/_article_meta.html" with a=article %}
+      <h1 class="espace-haut-3">{{ article.titre }}</h1>
+      {% if article.resume %}<p class="chapo">{{ article.resume }}</p>{% endif %}
+      {% if not article.traduit and langue_nom %}<p class="mention-langue">{% icone "globe" "petite" %}<span>{% blocktranslate with langue=langue_nom %}Cet article n'est pas encore traduit en {{ langue }} : il s'affiche en français.{% endblocktranslate %}</span></p>{% endif %}
+    </div>
+  </header>
+  {% if article.image %}<div class="enveloppe">
+    <figure class="article-figure"><figure class="photo"><img src="{{ article.image.url }}"{% if article.image.largeur and article.image.hauteur %} width="{{ article.image.largeur }}" height="{{ article.image.hauteur }}"{% endif %} alt="" decoding="async" fetchpriority="high"></figure></figure>
+  </div>{% endif %}
+  <div class="section section--haut-reduit">
+    <div class="enveloppe grille-lecture">
+      <div>
+        <div class="texte-long">
+          {{ article.texte }}
+        </div>
+        {% if article.video %}{% include "partials/_video.html" with v=article.video %}{% endif %}
+        {% if article.galerie %}<div class="espace-haut-7">
+          <h2 class="h-moyen">{% translate "Photos et vidéos" %}</h2>
+          <ul class="galerie espace-haut-3">{% for g in article.galerie %}{% include "partials/_galerie_element.html" with g=g %}{% endfor %}</ul>
+        </div>{% endif %}
+        <div class="partage espace-haut-7">
+          <span class="partage-titre">{% if article.type == "communique" %}{% translate "Partager ce communiqué" %}{% else %}{% translate "Partager cet article" %}{% endif %}</span>
+          <div class="boutons">
+            <a class="bouton" href="{{ partage.whatsapp }}" rel="noopener" target="_blank">{% icone "message-circle" %}<span>WhatsApp</span></a>
+            <a class="bouton" href="{{ partage.facebook }}" rel="noopener" target="_blank">{% icone "share-2" %}<span>Facebook</span></a>
+            <a class="bouton" href="{{ partage.x }}" rel="noopener" target="_blank">{% icone "share-2" %}<span>X</span></a>
+            <button type="button" class="bouton" data-copier-lien="{{ adresse }}" data-copier-fait="{% translate 'Lien copié' %}">{% icone "link" %}<span data-libelle>{% translate "Copier le lien" %}</span></button>
+          </div>
+        </div>
+      </div>
+      {% if autres %}<aside aria-labelledby="aussi-titre">
+        <h2 id="aussi-titre" class="h-moyen">{% translate "À lire aussi" %}</h2>
+        <ul class="liste-articles">{% for a in autres %}<li><a href="{% url 'pages:article' a.slug %}">{% include "partials/_article_meta.html" with a=a %}<span class="article-titre">{{ a.titre }}</span></a></li>{% endfor %}</ul>
+      </aside>{% endif %}
+    </div>
+  </div>
+</article>
+{% if article.galerie %}{% include "partials/_visionneuse.html" %}{% endif %}
+{% endblock %}

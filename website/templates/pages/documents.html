@@ -1,0 +1,22 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil %}<li><a href="{% url 'pages:a-propos' %}">{% translate "La FENAMO-RDC" %}</a></li>{% endblock %}
+{% block fil_courant %}{% translate "Documents" %}{% endblock %}
+{% block h1 %}{% translate "Documents" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Les textes qui fondent la fédération et les formulaires à télécharger. Tous les fichiers sont au format PDF." %}</p>
+{% include "partials/_sousnav_fenamo.html" with actif="documents" %}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe enveloppe--etroite">
+    {% if aucun %}
+    <div class="vide">{% icone "file-text" %}<p>{% translate "Aucun document n'est publié pour le moment." %}</p><a class="bouton" href="{% url 'pages:contact' %}">{% translate "Contacter la FENAMO-RDC" %}</a></div>
+    {% else %}
+    {% if fondateurs %}<h2 class="groupe-titre">{% translate "Textes fondateurs" %}</h2>
+    <ul class="documents">{% for d in fondateurs %}{% include "partials/_document.html" with d=d %}{% endfor %}</ul>{% endif %}
+    {% if formulaires %}<h2 class="groupe-titre">{% translate "Formulaires et autres documents" %}</h2>
+    <ul class="documents">{% for d in formulaires %}{% include "partials/_document.html" with d=d %}{% endfor %}</ul>{% endif %}
+    {% endif %}
+    {% url 'pages:actualites' as url_actualites %}<p class="meta espace-haut-6">{% blocktranslate with url=url_actualites %}Les communiqués officiels sont publiés dans les <a href="{{ url }}">actualités</a>.{% endblocktranslate %}</p>
+  </div>
+</div>
+{% endblock %}

@@ -693,6 +693,44 @@ a.article:hover .article-titre, a.une-article:hover .article-titre { text-decora
   *, *::before, *::after { animation-duration: 0ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
 }
 
+/* =========================================================
+   Lot 2a : classes d'intégration ajoutées (remplacent les styles en ligne des maquettes ; jetons seulement)
+   ========================================================= */
+.espace-haut-2 { margin-top: var(--e-2); }
+.espace-haut-3 { margin-top: var(--e-3); }
+.espace-haut-4 { margin-top: var(--e-4); }
+.espace-haut-5 { margin-top: var(--e-5); }
+.espace-haut-6 { margin-top: var(--e-6); }
+.espace-haut-7 { margin-top: var(--e-7); }
+.espace-bas-2 { margin-bottom: var(--e-2); }
+.espace-bas-7 { margin-bottom: var(--e-7); }
+.sans-marge { margin: 0; }
+.texte-long .premier-titre { margin-top: 0; }
+.liste-apres-une { margin-top: var(--e-7); }
+.appli--seule { grid-template-columns: minmax(0, 40rem); }
+.enveloppe--etroite { max-width: calc(var(--contenu-max) * .8); }
+.section--haut-reduit { padding-top: var(--e-7); }
+.section-etroite { max-width: 40rem; }
+.pages-masque { visibility: hidden; }
+.bouton-icone--droite { margin-left: auto; }
+.galerie-miniature { position: relative; display: block; }
+.liste-lettres { list-style: lower-alpha; }
+.encart-note { max-width: 40rem; padding-left: var(--e-4); border-left: 4px solid var(--trait-fort); }
+.texte-simple { margin: var(--e-2) 0 0; }
+/* Fonctions du comité (article 19) */
+.fonctions { display: grid; gap: var(--e-6); margin-top: var(--e-5); }
+@media (min-width: 768px) { .fonctions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-8); } }
+.fonctions h3 { margin: var(--e-5) 0 var(--e-2); font-size: var(--t-4); }
+.fonctions > div > h3:first-child { margin-top: 0; }
+.fonctions ul { list-style: none; border-top: 1px solid var(--trait); }
+.fonctions li { padding-block: var(--e-2); border-bottom: 1px solid var(--trait); line-height: 1.35; }
+/* Lecteur vidéo : le lien mène à la vidéo sans JavaScript ; le lecteur n'est chargé qu'au clic (3G, vie privée) */
+.lecteur-video { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-panneau); overflow: hidden; background: var(--surface-creuse); }
+.lecteur-video-lien { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--e-2); padding: var(--e-4); text-align: center; color: var(--texte); font-weight: var(--graisse-forte); text-decoration: none; }
+.lecteur-video-lien .ic { width: 48px; height: 48px; stroke-width: 1.5; }
+.lecteur-video-lien:hover span { text-decoration: underline; }
+.lecteur-video iframe, .visionneuse-image iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
 /* Impression (communiqué, mentions) : texte seul */
 @media print {
   .site-tete, .site-pied, .partage, .sous-nav, .menu-site, .gilet { display: none !important; }

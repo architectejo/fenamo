@@ -1,0 +1,5 @@
+{% load i18n site_tags %}<li class="document">
+  <span class="document-icone" aria-hidden="true">PDF</span>
+  <div><h3 class="document-titre">{{ d.titre }}</h3><p class="meta">PDF{% if d.taille %} · {{ d.taille|taille_fr }}{% endif %}{% if d.date %} · {% blocktranslate with jour=d.date|date_fr %}mis à jour le {{ jour }}{% endblocktranslate %}{% endif %}{% if d.telechargements %} · {% blocktranslate count n=d.telechargements %}{{ n }} téléchargement{% plural %}{{ n }} téléchargements{% endblocktranslate %}{% endif %}</p></div>
+  <a class="bouton" href="{% url 'pages:telecharger' 'document' d.slug %}" aria-label="{% blocktranslate with titre=d.titre %}Télécharger {{ titre }} (PDF){% endblocktranslate %}">{% icone "download" %}<span>{% translate "Télécharger" %}</span></a>
+</li>

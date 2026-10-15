@@ -1,0 +1,31 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "Contact" %}{% endblock %}
+{% block h1 %}{% translate "Contact" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Une question sur l'adhésion, l'identification ou un engin ? Retrouvez ici les coordonnées du siège national." %}</p>{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe grille-2">
+    <div>
+      <address class="coordonnees">
+        <div class="coordonnee">{% icone "map-pin" %}<div><strong>{% translate "Siège national" %}</strong>{{ config.siege }}</div></div>
+        {% if config.telephones %}<div class="coordonnee">{% icone "phone" %}<div><strong>{% translate "Téléphone" %}</strong>{% for t in config.telephones %}<a href="tel:{{ t.numero|tel }}">{{ t.numero }}</a>{% if t.libelle %} <span class="meta">({{ t.libelle }})</span>{% endif %}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div></div>{% endif %}
+        {% if config.email %}<div class="coordonnee">{% icone "mail" %}<div><strong>{% translate "E-mail" %}</strong><a href="mailto:{{ config.email }}">{{ config.email }}</a></div></div>{% endif %}
+        {% if config.reseaux %}<div class="coordonnee">{% icone "external-link" %}<div><strong>{% translate "Réseaux sociaux" %}</strong>{% if config.reseaux.facebook %}<a href="{{ config.reseaux.facebook }}" rel="noopener">Facebook</a><br>{% endif %}{% if config.reseaux.x %}<a href="{{ config.reseaux.x }}" rel="noopener">X</a><br>{% endif %}{% if config.reseaux.youtube %}<a href="{{ config.reseaux.youtube }}" rel="noopener">YouTube</a><br>{% endif %}{% if config.reseaux.instagram %}<a href="{{ config.reseaux.instagram }}" rel="noopener">Instagram</a><br>{% endif %}{% if config.reseaux.linkedin %}<a href="{{ config.reseaux.linkedin }}" rel="noopener">LinkedIn</a>{% endif %}</div></div>{% endif %}
+      </address>
+      {% if carte_url %}<div class="carte-lieu">
+        <div>
+          {% icone "map" "grande" %}
+          <p>{% translate "La carte Google Maps se charge seulement si vous la demandez." %}</p>
+          <button type="button" class="bouton" data-carte-charger="{{ carte_url }}" data-carte-titre="{% translate 'Siège de la FENAMO-RDC sur la carte' %}">{% icone "map-pinned" %}<span>{% translate "Afficher la carte" %}</span></button>
+        </div>
+      </div>{% endif %}
+    </div>
+    <div>
+      <div class="alerte alerte--info">{% icone "info" %}<div><span class="alerte-titre">{% translate "Formulaire de contact" %}</span><p>{% translate "Le formulaire de contact en ligne n'est pas encore ouvert. En attendant, joignez la FENAMO-RDC par téléphone ou par e-mail, ou rendez-vous au siège national." %}</p></div></div>
+      {% if config.email %}<p class="espace-haut-5"><a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="mailto:{{ config.email }}">{% icone "mail" %}<span>{% translate "Écrire par e-mail" %}</span></a></p>{% endif %}
+      <p class="meta espace-haut-5">{% translate "Le site n'enregistre aucune information sur vous quand vous le consultez." %} <a href="{% url 'pages:confidentialite' %}">{% translate "Confidentialité" %}</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

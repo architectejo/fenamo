@@ -1,0 +1,42 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "Application mobile" %}{% endblock %}
+{% block h1 %}{% translate "Application mobile" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "L'application mobile de la FENAMO-RDC, pour les téléphones Android." %}</p>{% endblock %}
+{% block corps %}
+{% if appli %}
+<section class="section" aria-labelledby="telecharger-titre">
+  <div class="enveloppe appli appli--seule">
+    <div>
+      <h2 class="section-titre" id="telecharger-titre">{% translate "Télécharger l'application" %}</h2>
+      <dl class="fiche-technique">
+        <div><dt>{% translate "Version" %}</dt><dd>{{ appli.version }}</dd></div>
+        {% if appli.taille %}<div><dt>{% translate "Taille" %}</dt><dd>{{ appli.taille|taille_fr }}</dd></div>{% endif %}
+        {% if appli.date %}<div><dt>{% translate "Mise à jour" %}</dt><dd>{{ appli.date|date_fr }}</dd></div>{% endif %}
+      </dl>
+      <a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="{% url 'pages:telecharger' 'application' slug %}">{% icone "download" %}<span>{% translate "Télécharger l'application" %}</span></a>
+      <p class="meta espace-haut-3">{% if telechargements %}{% blocktranslate count n=telechargements %}{{ n }} téléchargement. {% plural %}{{ n }} téléchargements. {% endblocktranslate %}{% endif %}{% translate "Téléchargez l'application uniquement depuis cette page." %}</p>
+      {% if appli.notice %}<div class="encart-note espace-haut-6"><h3 class="h-moyen">{% translate "Nouveautés de cette version" %}</h3><p class="texte-simple">{{ appli.notice|linebreaksbr }}</p></div>{% endif %}
+      {% if qr %}<div class="qr-telecharger">{{ qr }}<p class="petit sans-marge">{% translate "Sur ordinateur ? Scannez ce code avec votre téléphone pour télécharger l'application directement." %}</p></div>{% endif %}
+    </div>
+  </div>
+</section>
+<section class="section" id="installer" aria-labelledby="installer-titre">
+  <div class="enveloppe">
+    <h2 class="section-titre" id="installer-titre">{% translate "Installer en quatre étapes" %}</h2>
+    <ol class="etapes-liste espace-haut-6">
+      <li><span><strong>{% translate "Téléchargez le fichier" %}</strong>{% translate "Touchez « Télécharger l'application ». Le fichier APK arrive dans les téléchargements du téléphone." %}</span></li>
+      <li><span><strong>{% translate "Ouvrez le fichier" %}</strong>{% translate "Touchez la notification de fin de téléchargement, ou ouvrez l'application Fichiers." %}</span></li>
+      <li><span><strong>{% translate "Autorisez l'installation" %}</strong>{% translate "Android demande d'autoriser votre navigateur à installer des applications. Acceptez pour cette fois." %}</span></li>
+      <li><span><strong>{% translate "Ouvrez l'application" %}</strong>{% translate "Une fois l'installation terminée, ouvrez l'application FENAMO-RDC depuis l'écran d'accueil." %}</span></li>
+    </ol>
+  </div>
+</section>
+{% else %}
+<section class="section">
+  <div class="enveloppe">
+    <div class="vide">{% icone "smartphone" %}<p>{% translate "L'application mobile n'est pas encore disponible au téléchargement. Elle sera proposée sur cette page dès sa publication." %}</p><a class="bouton" href="{% url 'pages:accueil' %}">{% translate "Retour à l'accueil" %}</a></div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

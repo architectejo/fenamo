@@ -1,0 +1,26 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{{ page_title }}{% endblock %}
+{% block h1 %}{{ page_title }}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe">
+    <section class="section-etroite">
+      {% if cas == "suspendu" %}
+      <div class="alerte alerte--alerte" role="status" id="verif-indispo">{% icone "lock" %}<div><span class="alerte-titre">{% translate "Service suspendu" %}</span><p>{% translate "La plateforme de la FENAMO-RDC est fermée pour un moment. La vérification des cartes et les formulaires reprendront à sa réouverture. Le reste du site reste disponible." %}</p></div></div>
+      {% if message %}<figure class="message-su"><p>{{ message }}</p><figcaption class="message-su-auteur">{% translate "Message de la FENAMO-RDC" %}</figcaption></figure>{% endif %}
+      {% elif cas == "panne" %}
+      <div class="alerte alerte--alerte" role="status" id="verif-indispo">{% icone "wifi-off" %}<div><span class="alerte-titre">{% translate "Service momentanément indisponible" %}</span><p>{% translate "Le service ne répond pas. Réessayez dans quelques minutes." %}</p></div></div>
+      {% else %}
+      <div class="alerte alerte--info" role="status" id="verif-indispo">{% icone "hourglass" %}<div><span class="alerte-titre">{% translate "Vérification en ligne : bientôt disponible" %}</span><p>{% translate "La vérification d'une carte de membre ou d'un engin par numéro ou par QR code n'est pas encore ouverte sur ce site." %}</p></div></div>
+      {% endif %}
+      <form class="verif-suspendue espace-haut-6" aria-describedby="verif-indispo">
+        <div class="champ"><label class="champ-libelle" for="n-susp">{% translate "Numéro de carte ou d'engin" %}</label><input class="champ-saisie" id="n-susp" disabled placeholder="MBR0004127 ou 00147 KN-E"></div>
+        <button class="bouton bouton--grand bouton--bloc-mobile espace-haut-3" type="submit" disabled>{% icone "scan-qr-code" %}<span>{% translate "Vérifier" %}</span></button>
+      </form>
+      {% if cas != "suspendu" %}<div class="boutons espace-haut-5"><a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="{{ request.path }}">{% icone "refresh-cw" %}<span>{% translate "Réessayer" %}</span></a></div>{% endif %}
+      <div class="erreur-aide"><p class="sans-marge"><strong>{% translate "En attendant, au contrôle :" %}</strong> {% translate "la carte de membre et le gilet numéroté permettent d'identifier un motocycliste (article 7 de la charte)." %}</p></div>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n static site_tags %}
+{% block content %}
+<div class="erreur">
+  <span class="gilet gilet--fin gilet--deroule" aria-hidden="true"></span>
+  <div class="enveloppe">
+    <section>
+      <p class="erreur-code">{% icone "signpost" %}{% translate "Erreur 404" %}</p>
+      <h1>{% translate "Cette page n'existe pas ou a changé d'adresse." %}</h1>
+      <p class="chapo">{% translate "Le lien est peut-être ancien : le site de la FENAMO-RDC a été refait." %}</p>
+      <div class="boutons"><a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="{% url 'pages:accueil' %}">{% translate "Retour à l'accueil" %}</a><a class="bouton bouton--grand bouton--bloc-mobile" href="{% url 'pages:verifier' %}">{% icone "scan-qr-code" %}<span>{% translate "Vérifier une carte" %}</span></a></div>
+      <div class="erreur-aide"><p class="sans-marge">{% translate "Vous cherchiez peut-être :" %}</p><ul><li><a href="{% url 'pages:actualites' %}">{% translate "Les actualités et communiqués" %}</a></li><li><a href="{% url 'pages:documents' %}">{% translate "La charte et les formulaires" %}</a></li><li><a href="{% url 'pages:contact' %}">{% translate "Les coordonnées du siège" %}</a></li></ul></div>
+    </section>
+  </div>
+</div>
+{% endblock %}

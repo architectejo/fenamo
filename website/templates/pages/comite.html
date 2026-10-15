@@ -1,0 +1,105 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil %}<li><a href="{% url 'pages:a-propos' %}">{% translate "La FENAMO-RDC" %}</a></li>{% endblock %}
+{% block fil_courant %}{% translate "Comité exécutif national" %}{% endblock %}
+{% block h1 %}{% translate "Comité exécutif national" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Les dirigeants élus pour cinq ans par l'assemblée générale et l'organisation de la fédération, du siège national jusqu'au parking." %}</p>
+{% include "partials/_sousnav_fenamo.html" with actif="comite" %}{% endblock %}
+{% block corps %}
+<section class="section" aria-labelledby="org-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="org-titre">{% translate "Du national au parking" %}</h2></div>
+    <ol class="echelons">
+      <li class="echelon"><span class="echelon-nombre">1</span><span class="echelon-nom">{% translate "Comité exécutif national" %}</span><p>{% translate "Dirige la fédération depuis le siège de Kinshasa." %}</p></li>
+      <li class="echelon"><span class="echelon-nombre">27</span><span class="echelon-nom">{% translate "Coordinations provinciales" %}</span><p>{% translate "Une par province ; deux à Kinshasa, Est et Ouest." %}</p></li>
+      <li class="echelon">{% if nb_antennes is not None %}<span class="echelon-nombre">{{ nb_antennes|nombre }}</span>{% else %}<span class="echelon-nombre" aria-hidden="true">·</span>{% endif %}<span class="echelon-nom">{% translate "Antennes" %}</span><p>{% translate "Une par commune ou territoire." %}</p></li>
+      <li class="echelon"><span class="echelon-nombre" aria-hidden="true">·</span><span class="echelon-nom">{% translate "Parkings" %}</span><p>{% translate "Codifiés et suivis par les inspecteurs de parkings de chaque antenne." %}</p></li>
+    </ol>
+    <p class="meta espace-haut-4">{% translate "Organes et organigramme : article 13 de la charte ; coordinations : articles 14 et 43 ; antennes : article 66." %}</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="dir-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="dir-titre">{% translate "Les membres du comité" %}</h2>
+      <span class="meta">{% if comite.mandat.debut and comite.mandat.fin %}{% blocktranslate with debut=comite.mandat.debut|date_fr fin=comite.mandat.fin|date_fr %}Mandat du {{ debut }} au {{ fin }}{% endblocktranslate %}{% else %}{% translate "Mandat de cinq ans, une fois renouvelable (article 72)" %}{% endif %}</span></div>
+    {% if tete or autres %}
+    <ul class="dirigeants">
+      {% if tete %}<li class="dirigeant dirigeant--tete">{% include "partials/_portrait.html" with m=tete format="4x5" %}<div><span class="dirigeant-nom">{{ tete.nom }}</span><br><span class="dirigeant-fonction">{{ tete.fonction }}</span></div></li>{% endif %}
+      {% for m in autres %}<li class="dirigeant">{% include "partials/_portrait.html" with m=m format="4x5" %}<span class="dirigeant-nom">{{ m.nom }}</span><span class="dirigeant-fonction">{{ m.fonction }}</span></li>{% endfor %}
+    </ul>
+    {% else %}
+    <div class="vide">{% icone "users" %}<p>{% if membres_indisponibles %}{% translate "La liste des membres du comité n'est pas disponible pour le moment." %}{% else %}{% translate "La composition du comité exécutif national sera publiée prochainement." %}{% endif %}</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section--calme" aria-labelledby="fonctions-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="fonctions-titre">{% translate "Les fonctions du comité" %}</h2><span class="meta">{% translate "Article 19 de la charte" %}</span></div>
+    <p class="chapo">{% translate "Le comité exécutif national est composé de quarante fonctions, réparties comme suit." %}</p>
+    <div class="fonctions">
+      <div>
+        <h3>{% translate "Présidence" %}</h3>
+        <ul><li>{% translate "Président national" %}</li></ul>
+        <h3>{% translate "Vice-présidence" %}</h3>
+        <ul>
+          <li>{% translate "Vice-président chargé d'administration et question juridique" %}</li>
+          <li>{% translate "Vice-président chargé des Finances et fiscalité" %}</li>
+          <li>{% translate "Vice-président chargé des Discipline, transport, organisation technique et développement." %}</li>
+          <li>{% translate "Vice-président chargé de relation publique, media et socio-culturelle." %}</li>
+          <li>{% translate "Vice-président chargé de la logistique et engins tricycles" %}</li>
+        </ul>
+        <h3>{% translate "Secrétariat" %}</h3>
+        <ul>
+          <li>{% translate "Secrétaire général" %}</li>
+          <li>{% translate "Secrétaire général chargé des questions administratives et juridique." %}</li>
+          <li>{% translate "Secrétaire général adjoint chargé de transport / social et développement" %}</li>
+          <li>{% translate "Secrétaire général adjoint chargé tricycles et logistique" %}</li>
+          <li>{% translate "Secrétaire général adjoint chargé des finances et fiscalités" %}</li>
+          <li>{% translate "Secrétaire rapporteur" %}</li>
+          <li>{% translate "Secrétaire rapporteur adjoint" %}</li>
+        </ul>
+        <h3>{% translate "Site web et technologie" %}</h3>
+        <ul>
+          <li>{% translate "Administrateur site web/Technologie master base des données identification" %}</li>
+          <li>{% translate "Administrateur gestionnaire adjoint site web/Technologie" %}</li>
+        </ul>
+      </div>
+      <div>
+        <h3>{% translate "Inspection" %}</h3>
+        <ul>
+          <li>{% translate "Inspecteur général chargé des opérations et activités." %}</li>
+          <li>{% translate "Inspecteur général adjoint chargé de discipline et protection" %}</li>
+          <li>{% translate "Inspecteur national chargé des opérations /discipline." %}</li>
+          <li>{% translate "Inspecteur national chargé des finances et activités sociales." %}</li>
+          <li>{% translate "Inspecteur national chargé des question administrations et juridiques." %}</li>
+          <li>{% translate "Inspecteur national chargé de transport et développement." %}</li>
+          <li>{% translate "Inspecteur national chargé tricycle et organisation parkings" %}</li>
+          <li>{% translate "Inspecteur national chargé d'identification des motocyclistes." %}</li>
+          <li>{% translate "Inspecteur national chargé d'enregistrement des engins" %}</li>
+        </ul>
+        <h3>{% translate "Conseillers" %}</h3>
+        <ul>
+          <li>{% translate "Conseiller administration et question juridique" %}</li>
+          <li>{% translate "Conseiller finances et fiscalités" %}</li>
+          <li>{% translate "Conseiller communication / médias" %}</li>
+          <li>{% translate "Conseillère social, femme, enfant / genre et protocole." %}</li>
+          <li>{% translate "Conseiller médical" %}</li>
+          <li>{% translate "Conseiller développement" %}</li>
+          <li>{% translate "Conseiller Community digital manager communication" %}</li>
+        </ul>
+        <h3>{% translate "Trésorerie, contrôle et logistique" %}</h3>
+        <ul>
+          <li>{% translate "Trésorier général chargé des recettes" %}</li>
+          <li>{% translate "Trésorier général chargé des dépenses" %}</li>
+          <li>{% translate "Commissaires aux comptes (cinq)" %}</li>
+          <li>{% translate "Logisticien /intendance charroi" %}</li>
+          <li>{% translate "Logisticien /intendance adjoint" %}</li>
+        </ul>
+      </div>
+    </div>
+    <p class="meta espace-haut-4">{% translate "Le président national est le représentant légal de la fédération (article 23). Les membres du comité sont élus par l'assemblée générale pour un mandat de cinq ans renouvelable (article 20)." %}</p>
+  </div>
+</section>
+{% endblock %}

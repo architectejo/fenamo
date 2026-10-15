@@ -1,0 +1,71 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "La FENAMO-RDC" %}{% endblock %}
+{% block h1 %}{% translate "La FENAMO-RDC" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Fédération nationale des associations des motocyclistes taximen de la République démocratique du Congo : une plateforme associative sans but lucratif, partenaire de l'État congolais à travers le ministère des Transports (article 1)." %}</p>
+{% include "partials/_sousnav_fenamo.html" with actif="a-propos" %}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe grille-lecture">
+    <div class="texte-long">
+      <h2 id="preambule" class="premier-titre">{% translate "Pourquoi la fédération" %}</h2>
+      <p>{% translate "Beaucoup d'associations existent dans le secteur des motos-taxis, créées de fait ou de droit, pour l'encadrement au niveau national comme provincial. La charte pose le constat et la solution choisie par les associations et leurs présidents :" %}</p>
+      <blockquote><p>{% translate "Dans le souci de réorganiser le secteur et jouer l'interface des associations des motocyclistes taximen ainsi que de leurs propriétaires avec l'Etat à tout niveau comme solution […] avons opté et décidé pour la création d'une plate-forme à caractère national partenaire avec l'Etat congolais regroupant à son sein toutes les associations des motocyclistes taximen et propriétaires des motos de la République démocratique du Congo." %}</p><footer>{% translate "Préambule de la charte" %}</footer></blockquote>
+
+      <h2 id="but">{% translate "Notre but" %}</h2>
+      <p>{% translate "Réunir tous les motocyclistes taximen opérationnels non-salariés à travers les associations des motocyclistes et les propriétaires des motos-taxis œuvrant sur l'assemble du territoire national pour l'amélioration des leurs conditions des prestations par la coordination des leurs activités associatives en partenariat officiel avec l'Etat congolais et autres organisations partenaires de l'Etat, en respectant l'autonomie des fonctionnements associatives (article 6)." %}</p>
+
+      <h2 id="objectifs">{% translate "Nos douze objectifs" %}</h2>
+      <p class="meta">{% translate "Article 7 de la charte, texte intégral." %}</p>
+      <ol>
+        <li>{% translate "Enregistrer et valider toutes les associations légales du secteur des motos taxis autorisées par l'autorité compétente." %}</li>
+        <li>{% translate "Identifier annuellement les engins (motos) et les motocyclistes taximen par des signes distinctifs (gilets de prestations, numérotation vinyl autocollant sécurisé) et carte des membres sur présentation d'un jeton de résidence signé par le chef d'avenue et du quartier et autres documents en collaborations avec les associations pour la tenue régulière d'un tableau actualisé des effectifs sur un logiciel internet avec application mobile pour la recherche des informations relatives à l'opération d'identification." %}</li>
+        <li>{% translate "Promouvoir le civisme fiscal avec appui aux techniques de perception des taxes et redevances officielles légales incluant le permis de conduire et carte d'identification annuelle pour prestation des motocyclistes et faciliter l'octroi d'autorisation de circulation-transport en commun aux propriétaires des motos via leurs motards dépendants." %}</li>
+        <li>{% translate "Codifier tous les parkings de stationnement motos avec instauration de la discipline sur des voies publiques en collaboration avec l'autorité compétente." %}</li>
+        <li>{% translate "Emanciper les aptitudes intellectuelles des motocyclistes avec humanisation des mœurs pour le changement de comportement et Education à la bonne citoyenneté des motocyclistes." %}</li>
+        <li>{% translate "Dépolitiser les associations et promouvoir le leadership administratif et électif dans le secteur de transport par motos taxis." %}</li>
+        <li>{% translate "Exécuter les actions sociales de développement a impact visible en collaboration avec les associations légales et les organisations non gouvernementale en partenariat signé avec l'exécutif national de la Fédération Nationale des Associations des Motocyclistes de la République Démocratique du Congo (FENAMO-RDC asbl)." %}</li>
+        <li>{% translate "Participer aux programmes officiels pour la sécurisation sociale des populations." %}</li>
+        <li>{% translate "Fournir une assistance juridique et syndicale aux associations et aux motocyclistes taximen en ordre des cotisations à la caisse de solidarité nationale pour le développement et assistance sociale." %}</li>
+        <li>{% translate "Transmettre les renseignements sécuritaires avérée pour la protection des populations et informations administratives aux services compétents." %}</li>
+        <li>{% translate "Créer le système des motos-écoles Pour la formation continue aux codes de la route et prévention routière et organiser les séminaires de formation de recyclages." %}</li>
+        <li>{% translate "Contribuer à l'assistance médico-sociale des motocyclistes membres en réglé des cotisation / mutuelle de santé et organisation des œuvres sociales d'autofinancement par les projets communs et autres initiatives privées de développement." %}</li>
+      </ol>
+
+      <h2 id="historique">{% translate "Historique" %}</h2>
+      <ol class="jalons">
+        <li><time class="jalon-date" datetime="2024-03-30">30/03/2024</time><span>{% translate "Création de la FENAMO-RDC à Kinshasa, un samedi vers 14 h 00, par les personnalités consultantes et les leaders des associations fondatrices, en partenariat avec l'État à travers le ministère des Transports (articles 1 et 2)." %}</span></li>
+        <li><time class="jalon-date" datetime="2024-06">06/2024</time><span>{% translate "Charte de la FENAMO-RDC : dénomination, siège, devise, but et objectifs, organes, 27 coordinations provinciales." %}</span></li>
+        <li><time class="jalon-date" datetime="2024-08-12">12/08/2024</time><span>{% translate "Authentification de la charte par le ministère de la Justice." %}</span></li>
+      </ol>
+
+      <h2 id="membres">{% translate "Les catégories de membres" %}</h2>
+      <p>{% translate "La fédération comprend cinq catégories de membres (article 8). Les associations agissent par les personnes physiques habilitées à les représenter conformément à leurs statuts." %}</p>
+      <ul>
+        <li><strong>{% translate "Initiateur fondateur" %}</strong> {% translate ": la personne physique ayant initié la vision et qui a mis les moyens pour son efficacité et existence de la Fédération." %}</li>
+        <li><strong>{% translate "Membres fondateurs et co-fondateurs" %}</strong> {% translate ": toute personne physique ou association légale ayant participé à la création de la Fédération et ayant également contribué financièrement comme convenu au démarrage des activités ; est co-fondateur tout leader d'opinion indépendant validé par les fondateurs ou représentant des associations nationales ou provinciales ayant participé à l'adoption et signé la charte pour sa légalisation." %}</li>
+        <li><strong>{% translate "Membres effectifs" %}</strong> {% translate ": toute association ainsi que leurs représentants ayant participé à la création de la Fédération et signé la charte pour sa légalisation ; également toute association ou personnalité qui acquiert cette qualité par son adhésion écrite acceptée à la présente charte et au règlement d'ordre intérieur." %}</li>
+        <li><strong>{% translate "Membres sympathisants" %}</strong> {% translate ": toute personne morale ou physique qui a l'idée de soutenir la Fédération sur tous les plans sans espérer une quelconque rémunération." %}</li>
+        <li><strong>{% translate "Membres d'honneur" %}</strong> {% translate ": toute personne physique ou morale qui sollicite d'accompagner valablement le fonctionnement des comités exécutifs ou structures, ou ayant rendu des services particulièrement non lucratifs appréciés par la Fédération." %}</li>
+      </ul>
+      <p>{% translate "Une association candidate doit remplir les conditions d'enregistrement de l'article 9." %} <a href="{% url 'pages:adhesion' %}">{% translate "Voir les conditions d'adhésion" %}</a></p>
+
+      <h2 id="organes">{% translate "Les organes" %}</h2>
+      <p>{% translate "Article 13 de la charte : l'assemblée générale, le collège des fondateurs et co-fondateurs, le comité exécutif national, le secrétariat général, les comités exécutifs provinciaux, les antennes et l'inspection des parkings." %} <a href="{% url 'pages:comite' %}">{% translate "Voir le comité exécutif et l'organisation" %}</a></p>
+    </div>
+    <aside class="encart" aria-label="{% translate 'La charte en bref' %}">
+      <p class="devise-grande"><span>{% translate "Unité," %}</span> <span>{% translate "Discipline" %}</span> <span>{% translate "et Progrès" %}</span></p>
+      <p class="meta">{% translate "Devise de la fédération, article 5." %}</p>
+      <dl class="encart-faits">
+        <div><dt>{% translate "Créée le" %}</dt><dd>30/03/2024</dd></div>
+        <div><dt>{% translate "Siège" %}</dt><dd>{% translate "Ngiri-Ngiri, Kinshasa" %}</dd></div>
+        <div><dt>{% translate "Coordinations" %}</dt><dd>27</dd></div>
+        {% if stats.associations_membres is not None %}<div><dt>{% translate "Associations membres" %}</dt><dd>{{ stats.associations_membres|nombre }}</dd></div>{% endif %}
+      </dl>
+      {% if charte %}<a class="bouton bouton--bloc" href="{% url 'pages:telecharger' 'document' charte.slug %}">{% icone "file-down" %}<span>{% translate "Lire la charte" %}</span></a>
+      <p class="meta espace-haut-2">PDF{% if charte.taille %} · {{ charte.taille|taille_fr }}{% endif %}</p>
+      {% else %}<a class="bouton bouton--bloc" href="{% url 'pages:documents' %}">{% icone "file-down" %}<span>{% translate "Documents officiels" %}</span></a>{% endif %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

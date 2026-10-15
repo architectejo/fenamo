@@ -1,36 +1,45 @@
-{% load static i18n %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+{% load static i18n site_tags %}{% get_current_language as LANGUAGE_CODE %}<!doctype html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ page_title }} - FENAMO-RDC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f2ed">
+  <title>{{ page_title }} · FENAMO-RDC</title>
   <meta name="description" content="{{ page_description }}">
   {% if noindex or site_noindex %}<meta name="robots" content="noindex, nofollow">{% endif %}
   <link rel="canonical" href="{{ canonical_url }}">
   {% for code, url in hreflang_alternates %}<link rel="alternate" hreflang="{{ code }}" href="{{ url }}">
-  {% endfor %}<link rel="alternate" hreflang="x-default" href="{{ hreflang_default }}">
+  {% endfor %}{% if hreflang_alternates %}<link rel="alternate" hreflang="x-default" href="{{ hreflang_default }}">{% endif %}
   <meta property="og:site_name" content="FENAMO-RDC">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="{{ page_title }} - FENAMO-RDC">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{{ page_title }} · FENAMO-RDC">
   <meta property="og:description" content="{{ page_description }}">
   <meta property="og:url" content="{{ canonical_url }}">
   <meta property="og:locale" content="{{ LANGUAGE_CODE }}">
+  <meta property="og:image" content="{{ og_image|default:og_image_defaut }}">
+  <meta name="twitter:card" content="{% if og_image %}summary_large_image{% else %}summary{% endif %}">
+  <link rel="icon" href="{% static 'img/favicon.png' %}" type="image/png">
+  <script src="{% static 'js/theme.js' %}"></script>
+  <link rel="preload" href="{% static 'fonts/atkinson-hyperlegible-next-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/barlow-condensed-600.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
-  <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+  {% block head_extra %}{% endblock %}
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="entete">
-    <strong>FENAMO-RDC</strong>
-    {% if show_language_switcher %}
-    <nav aria-label="{% translate 'Langue' %}">
-      {% for code, name, url in language_links %}
-      <a href="{{ url }}" hreflang="{{ code }}" lang="{{ code }}">{{ name }}</a>
-      {% endfor %}
-    </nav>
-    {% endif %}
-  </header>
-  <main>{% block content %}{% endblock %}</main>
-  <footer class="pied">{% translate "Unité, Discipline et Progrès" %}</footer>
+<body{% block body_attrs %}{% endblock %}>
+{% typo %}
+<a class="aller-contenu" href="#contenu">{% translate "Aller au contenu" %}</a>
+{% include "partials/_tete.html" %}
+{% include "partials/_menu.html" %}
+{% include "partials/_bandeau.html" %}
+<main id="contenu" tabindex="-1">
+{% block content %}{% endblock %}
+</main>
+{% include "partials/_pied.html" %}
+{% block apres_pied %}{% endblock %}
+{% endtypo %}
+<script src="{% static 'js/site.js' %}" defer></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,6 +1,100 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static site_tags %}
 {% block content %}
-<h1>{% translate "FENAMO-RDC" %}</h1>
-<p>{% translate "Fédération Nationale des Associations des Motocyclistes Taximen de la RDC." %}</p>
+<section class="une" aria-labelledby="une-titre">
+  <div class="enveloppe une-grille">
+    <div>
+      <p class="une-sur">{% if config.message_accueil %}{{ config.message_accueil }}{% else %}{% translate "Fédération nationale, créée le 30 mars 2024 à Kinshasa" %}{% endif %}</p>
+      <h1 class="une-titre" id="une-titre">{% translate "Chaque motard identifié, chaque engin numéroté." %}</h1>
+      <p class="une-chapo">{% blocktranslate trimmed %}La FENAMO-RDC réunit les associations de motocyclistes taximen et de propriétaires d'engins dans les <strong>27 coordinations provinciales</strong>. Elle les enregistre, les identifie chaque année et sert d'interface avec l'État.{% endblocktranslate %}</p>
+      <form class="verif-rapide" id="verifier" action="{% url 'pages:verifier' %}" method="get" role="search">
+        <label for="numero">{% translate "Vérifier une carte ou un engin" %}</label>
+        <div class="verif-rapide-ligne">
+          <input class="champ-saisie" id="numero" name="numero" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="MBR0004127 ou 00147 KN-E" aria-describedby="numero-aide">
+          <button class="bouton bouton--jaune" type="submit">{% icone "scan-qr-code" %}<span>{% translate "Vérifier" %}</span></button>
+        </div>
+        <p class="verif-rapide-aide" id="numero-aide">{% icone "qr-code" "petite" %}<span>{% translate "Le numéro est imprimé sur la carte de membre et sur l'autocollant de l'engin. Vous pouvez aussi scanner le QR code avec l'appareil photo du téléphone." %}</span></p>
+      </form>
+    </div>
+    {% if config.image_fond %}<div class="une-photo">
+      <figure class="photo photo--4x5"><img src="{{ config.image_fond.url }}"{% if config.image_fond.largeur %} width="{{ config.image_fond.largeur }}" height="{{ config.image_fond.hauteur }}"{% endif %} alt="" fetchpriority="high" decoding="async"></figure>
+    </div>{% endif %}
+  </div>
+  <span class="gilet gilet--deroule" aria-hidden="true"></span>
+</section>
+
+<section class="section" aria-labelledby="chiffres-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="chiffres-titre">{% translate "La fédération en chiffres" %}</h2><a class="section-lien" href="{% url 'pages:coordinations' %}">{% translate "Voir chaque coordination" %}</a></div>
+    {% if chiffres %}
+    <div class="affichage">
+      {% for c in chiffres %}<p class="chiffre"><span class="chiffre-valeur"{% if c.compteur %} data-compteur="{{ c.valeur }}"{% endif %}>{{ c.valeur|nombre }}</span><span class="chiffre-libelle">{{ c.libelle }}{% if c.antennes %}{% blocktranslate with n=c.antennes|nombre %}, {{ n }} antennes{% endblocktranslate %}{% endif %}</span></p>{% endfor %}
+    </div>
+    {% if stats.date_calcul %}<p class="meta affichage-source">{% blocktranslate with jour=stats.date_calcul|date_fr %}Chiffres au {{ jour }}. Seuls les membres actifs sont comptés.{% endblocktranslate %}</p>{% endif %}
+    {% else %}
+    <div class="vide">{% icone "users" %}<p>{% translate "Les chiffres de la fédération ne sont pas disponibles pour le moment." %}</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" aria-labelledby="actu-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="actu-titre">{% translate "Actualités" %}</h2><a class="section-lien" href="{% url 'pages:actualites' %}">{% translate "Toutes les actualités" %}</a></div>
+    {% if une %}
+    {% include "partials/_article_une.html" with a=une q="" %}
+    {% if suivants %}<ul class="articles articles--3 liste-apres-une">
+      {% for a in suivants %}<li>{% include "partials/_article_carte.html" with a=a niveau=3 q="" %}</li>{% endfor %}
+    </ul>{% endif %}
+    {% else %}
+    <div class="vide">{% icone "file-text" %}<p>{% if articles_indisponibles %}{% translate "Les actualités ne sont pas disponibles pour le moment." %}{% else %}{% translate "Aucune actualité n'a encore été publiée." %}{% endif %}</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section--calme" aria-labelledby="adhesion-titre">
+  <div class="enveloppe">
+    <div class="appel">
+      <div>
+        <h2 id="adhesion-titre">{% translate "Votre association veut rejoindre la fédération" %}</h2>
+        <p class="espace-haut-4">{% translate "La fédération réunit les associations légales de motocyclistes taximen et de propriétaires de motos-taxis. Découvrez les conditions d'adhésion et les pièces à préparer." %}</p>
+        <div class="boutons espace-haut-6">
+          <a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="{% url 'pages:adhesion' %}">{% translate "Adhérer à la fédération" %}</a>
+        </div>
+      </div>
+      <div>
+        <h3>{% translate "À préparer avant de commencer" %}</h3>
+        <ul class="coches espace-haut-4">
+          <li>{% icone "circle-check" %}<span>{% translate "Les statuts de l'association avec l'accusé de réception F92 du ministère de la Justice, ou un arrêté ministériel d'autorisation de fonctionnement" %}</span></li>
+          <li>{% icone "circle-check" %}<span>{% translate "Un certificat d'enregistrement ou l'agrément du ministère des Transports" %}</span></li>
+          <li>{% icone "circle-check" %}<span>{% translate "L'adresse du siège social ou administratif de l'association" %}</span></li>
+          <li>{% icone "circle-check" %}<span>{% translate "Les frais d'enregistrement et d'adhésion fixés par le règlement administratif du comité national" %}</span></li>
+        </ul>
+        <p class="meta espace-haut-4">{% translate "Conditions fixées par l'article 9 de la charte." %}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="appli-titre">
+  <div class="enveloppe appli appli--seule">
+    <div>
+      <h2 class="section-titre" id="appli-titre">{% translate "L'application FENAMO-RDC" %}</h2>
+      {% if application %}
+      <p class="chapo espace-haut-3">{% translate "L'application mobile de la fédération, pour les téléphones Android." %}</p>
+      <dl class="fiche-technique">
+        <div><dt>{% translate "Version" %}</dt><dd>{{ application.version }}</dd></div>
+        {% if application.taille %}<div><dt>{% translate "Taille" %}</dt><dd>{{ application.taille|taille_fr }}</dd></div>{% endif %}
+        {% if application.date %}<div><dt>{% translate "Mise à jour" %}</dt><dd>{{ application.date|date_fr }}</dd></div>{% endif %}
+      </dl>
+      <div class="boutons">
+        <a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="{% url 'pages:application' %}">{% icone "download" %}<span>{% translate "Télécharger l'application" %}</span></a>
+        <a class="bouton bouton--discret bouton--bloc-mobile" href="{% url 'pages:application' %}#installer">{% translate "Comment l'installer" %}</a>
+      </div>
+      {% else %}
+      <p class="chapo espace-haut-3">{% translate "L'application mobile de la fédération sera proposée au téléchargement dès qu'elle sera publiée." %}</p>
+      <div class="boutons"><a class="bouton bouton--discret bouton--bloc-mobile" href="{% url 'pages:application' %}">{% translate "En savoir plus" %}</a></div>
+      {% endif %}
+    </div>
+  </div>
+</section>
 {% endblock %}

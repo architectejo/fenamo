@@ -1,0 +1,30 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "Actualités et communiqués" %}{% endblock %}
+{% block h1 %}{% translate "Actualités et communiqués" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Les nouvelles de la fédération et de ses coordinations. Un communiqué engage la FENAMO-RDC : il est signalé en noir." %}</p>
+{% include "partials/_sousnav_actualites.html" with actif="actualites" %}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe">
+    <div class="outils-liste">
+      <form class="recherche" role="search" action="{% url 'pages:actualites' %}" method="get">
+        <label class="lecteur" for="q">{% translate "Rechercher dans les actualités" %}</label>
+        {% icone "search" %}
+        <input class="champ-saisie" id="q" name="q" type="search" placeholder="{% translate 'Rechercher un article' %}" value="{{ q }}" autocomplete="off" maxlength="100"
+               hx-get="{% url 'pages:actualites' %}" hx-trigger="input changed delay:300ms, search" hx-target="#resultats" hx-push-url="true" hx-include="[name='type']">
+        {% if type %}<input type="hidden" name="type" value="{{ type }}">{% endif %}
+      </form>
+      <ul class="puces" aria-label="{% translate "Type d'article" %}">
+        <li><a class="puce" href="{% url 'pages:actualites' %}"{% if not type %} aria-current="true"{% endif %}>{% translate "Tout" %}{% if compte.tout is not None %} <span class="nombre">{{ compte.tout|nombre }}</span>{% endif %}</a></li>
+        <li><a class="puce" href="?type=article"{% if type == "article" %} aria-current="true"{% endif %}>{% translate "Actualités" %}{% if compte.article is not None %} <span class="nombre">{{ compte.article|nombre }}</span>{% endif %}</a></li>
+        <li><a class="puce" href="?type=communique"{% if type == "communique" %} aria-current="true"{% endif %}>{% translate "Communiqués" %}{% if compte.communique is not None %} <span class="nombre">{{ compte.communique|nombre }}</span>{% endif %}</a></li>
+      </ul>
+    </div>
+    <div id="resultats" class="zone-rafraichie" aria-live="polite">
+      {% include "partials/_resultats.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'vendor/htmx.min.js' %}" defer></script>{% endblock %}

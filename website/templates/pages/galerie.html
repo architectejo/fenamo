@@ -1,0 +1,25 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil %}<li><a href="{% url 'pages:actualites' %}">{% translate "Actualités" %}</a></li>{% endblock %}
+{% block fil_courant %}{% translate "Galerie" %}{% endblock %}
+{% block h1 %}{% translate "Galerie" %}{% endblock %}
+{% block chapo %}<p class="chapo">{% translate "Les photos et vidéos des activités de la fédération, dans les coordinations et les antennes." %}</p>
+{% include "partials/_sousnav_actualites.html" with actif="galerie" %}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe">
+    <ul class="puces espace-bas-7" aria-label="{% translate 'Type de média' %}">
+      <li><a class="puce" href="{% url 'pages:galerie' %}"{% if not type %} aria-current="true"{% endif %}>{% translate "Tout" %}</a></li>
+      <li><a class="puce" href="?type=photo"{% if type == "photo" %} aria-current="true"{% endif %}>{% translate "Photos" %}</a></li>
+      <li><a class="puce" href="?type=video"{% if type == "video" %} aria-current="true"{% endif %}>{% translate "Vidéos" %}</a></li>
+    </ul>
+    {% if liste.resultats %}
+    <ul class="galerie">{% for g in liste.resultats %}{% include "partials/_galerie_element.html" with g=g %}{% endfor %}</ul>
+    {% include "partials/_pagination.html" with page=liste.page pages=liste.pages libelle=_("Pages de la galerie") %}
+    {% else %}
+    <div class="vide">{% icone "image" %}<p>{% if indisponible %}{% translate "La galerie n'est pas disponible pour le moment." %}{% else %}{% translate "Aucune photo ni vidéo n'est publiée pour le moment." %}{% endif %}</p></div>
+    {% endif %}
+  </div>
+</div>
+{% if liste.resultats %}{% include "partials/_visionneuse.html" %}{% endif %}
+{% endblock %}

@@ -1,0 +1,1 @@
+{% load site_tags %}<figure class="photo{% if format %} photo--{{ format }}{% endif %}">{% if a.image %}<img src="{{ a.image.vignette }}"{% if a.image.largeur and a.image.hauteur %} width="{{ a.image.largeur }}" height="{{ a.image.hauteur }}"{% endif %} alt="" loading="lazy" decoding="async">{% else %}<div class="photo-vide">{% icone "camera" %}</div>{% endif %}</figure>

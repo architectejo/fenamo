@@ -1,0 +1,11 @@
+{% extends "pages/_interieure.html" %}
+{% load i18n static site_tags %}
+{% block fil_courant %}{% translate "Page indisponible" %}{% endblock %}
+{% block h1 %}{% translate "Page momentanément indisponible" %}{% endblock %}
+{% block corps %}
+<div class="section">
+  <div class="enveloppe">
+    <div class="vide">{% icone "wifi-off" %}<p>{% translate "Cette page ne peut pas être affichée pour le moment. Réessayez dans quelques minutes." %}</p><a class="bouton" href="{{ request.path }}">{% translate "Réessayer" %}</a><a class="bouton bouton--principal" href="{% url 'pages:accueil' %}">{% translate "Retour à l'accueil" %}</a></div>
+  </div>
+</div>
+{% endblock %}

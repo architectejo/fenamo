@@ -1,0 +1,54 @@
+{% load i18n static site_tags %}<footer class="site-pied">
+  <span class="gilet gilet--pied" aria-hidden="true"></span>
+  <div class="enveloppe">
+    <div class="pied-devise">
+      <p>{{ config.devise }}<span>{% translate "Devise de la FENAMO-RDC, article 5 de la charte" %}</span></p>
+    </div>
+    <div class="pied-colonnes">
+      <div>
+        <h2 class="pied-titre">{% translate "Siège national" %}</h2>
+        <address class="pied-adresse">
+          <p>{{ config.siege }}</p>
+          {% if config.telephones or config.email %}<p>{% for t in config.telephones %}<a href="tel:{{ t.numero|tel }}">{{ t.numero }}</a><br>{% endfor %}{% if config.email %}<a href="mailto:{{ config.email }}">{{ config.email }}</a>{% endif %}</p>{% endif %}
+        </address>
+      </div>
+      <div>
+        <h2 class="pied-titre">{% translate "La fédération" %}</h2>
+        <ul class="pied-liste">
+          <li><a href="{% url 'pages:a-propos' %}">{% translate "Présentation" %}</a></li>
+          <li><a href="{% url 'pages:comite' %}">{% translate "Comité exécutif" %}</a></li>
+          <li><a href="{% url 'pages:coordinations' %}">{% translate "Coordinations" %}</a></li>
+          <li><a href="{% url 'pages:documents' %}">{% translate "Documents" %}</a></li>
+          <li><a href="{% url 'pages:adhesion' %}">{% translate "Adhérer à la fédération" %}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pied-titre">{% translate "Nous suivre" %}</h2>
+        <ul class="pied-liste">
+          {% if config.reseaux.facebook %}<li><a href="{{ config.reseaux.facebook }}" rel="noopener">Facebook</a></li>{% endif %}
+          {% if config.reseaux.x %}<li><a href="{{ config.reseaux.x }}" rel="noopener">X</a></li>{% endif %}
+          {% if config.reseaux.youtube %}<li><a href="{{ config.reseaux.youtube }}" rel="noopener">YouTube</a></li>{% endif %}
+          {% if config.reseaux.instagram %}<li><a href="{{ config.reseaux.instagram }}" rel="noopener">Instagram</a></li>{% endif %}
+          {% if config.reseaux.linkedin %}<li><a href="{{ config.reseaux.linkedin }}" rel="noopener">LinkedIn</a></li>{% endif %}
+          <li><a href="{% url 'pages:application' %}">{% translate "Application mobile" %}</a></li>
+          <li><a href="{{ app_url }}">{% icone "log-in" "petite" %}{% translate "Espace des utilisateurs" %}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pied-titre">{% translate "Partenaires" %}</h2>
+        <ul class="partenaires">
+          <li>{% translate "Ministère des Transports, Voies de communication et Désenclavement" %}</li>
+          {% for p in config.partenaires %}<li>{% if p.lien %}<a href="{{ p.lien }}" rel="noopener">{{ p.nom }}</a>{% else %}{{ p.nom }}{% endif %}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <ul>
+        <li><a href="{% url 'pages:mentions-legales' %}">{% translate "Mentions légales" %}</a></li>
+        <li><a href="{% url 'pages:confidentialite' %}">{% translate "Confidentialité" %}</a></li>
+        <li><span>© {% now "Y" %} FENAMO-RDC asbl</span></li>
+      </ul>
+      <button type="button" class="pied-theme" data-theme-basculer><svg class="ic i-lune" aria-hidden="true" focusable="false"><use href="{% static 'img/icons.svg' %}#i-moon"></use></svg><svg class="ic i-soleil" aria-hidden="true" focusable="false"><use href="{% static 'img/icons.svg' %}#i-sun"></use></svg><span>{% translate "Changer de thème" %}</span></button>
+    </div>
+  </div>
+</footer>
