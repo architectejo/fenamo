@@ -40,3 +40,6 @@ website/var/
 # Sauvegardes locales des bases de développement
 *.sqlite3.*
 media_prive/
+
+# Archive de design fournie par l'utilisateur (hors dépôt)
+fenamo-ui-designer*.zip
