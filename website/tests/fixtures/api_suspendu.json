@@ -1,0 +1,13 @@
+{
+  "description": "Réponse de toute route /api/ (toute méthode) quand l'application web est verrouillée (F-07). Voir web_app/docs/api/erreurs.md",
+  "status": 503,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store"
+  },
+  "body": {
+    "statut": "suspendu",
+    "detail": "Service suspendu.",
+    "message": "Maintenance : retour demain."
+  }
+}
