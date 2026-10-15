@@ -1,13 +1,13 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}
-Déverrouiller l'application (F-07, maquette modale-deverrouiller). Contexte : action, motif_max, etat (depuis, par), duree, erreur.
+Déverrouiller l'application (F-07, maquette modale-deverrouiller). Contexte : action, motif_max, etat (depuis, par), duree, erreur (422 : affichée en tête par components/modale_base.html).
 Réponse au POST : 204 + toast « Application déverrouillée » + événement verrouModifie.
 {% endcomment %}
 {% block titre %}{% translate "Déverrouiller l'application" %}{% if duree %}<span class="sous-titre">{% translate "Verrouillée depuis" %} {{ duree }}</span>{% endif %}{% endblock %}
 {% block corps %}
 <p class="u-mb-0">{% translate "Les comptes pourront de nouveau se connecter. L'API, la vérification des cartes et l'espace mobile reprennent aussitôt." %}</p>
 {% if etat.depuis %}<dl class="definitions">
-  <div><dt>{% translate "Verrouillée le" %}</dt><dd class="sans-coupure">{{ etat.depuis|date:"d/m/Y" }} {% translate "à" %} {{ etat.depuis|date:"H" }}&nbsp;h&nbsp;{{ etat.depuis|date:"i" }}</dd></div>
+  <div><dt>{% translate "Verrouillée le" %}</dt><dd class="sans-coupure">{{ etat.depuis|date:"d/m/Y" }} {% translate "à" %} {{ etat.depuis|heure_fr }}</dd></div>
   <div><dt>{% translate "Par" %}</dt><dd>{{ etat.par.get_full_name|default:etat.par.get_username|default:"—" }}</dd></div>
 </dl>{% endif %}
 <div class="champ">

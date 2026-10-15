@@ -1,6 +1,6 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}
-Verrouiller l'application (F-07, maquette modale-verrouiller). Contexte : action, message_max, motif_max, sessions_hors_su, valeur_message, valeur_motif, erreur.
+Verrouiller l'application (F-07, maquette modale-verrouiller). Contexte : action, message_max, motif_max, sessions_hors_su, valeur_message, valeur_motif, erreur_message, erreur_motif (texte réel du service, à côté du champ).
 Le message est obligatoire (erreur à côté du champ, statut 422) ; compteur commun data-compte-caracteres.
 Réponse au POST : 204 + toast « Application verrouillée » + événement verrouModifie (la zone d'état et le bandeau du SU se mettent à jour).
 {% endcomment %}
@@ -24,13 +24,14 @@ Réponse au POST : 204 + toast « Application verrouillée » + événement verr
   <p class="champ-aide u-mb-0" id="v-message-aide">{% translate "Il apparaît sur la page « Application suspendue », sur la page de connexion et dans l'espace mobile. Dites pourquoi et quand l'application rouvrira." %}</p>
   <textarea class="champ-saisie" id="v-message" name="message" rows="4" maxlength="{{ message_max }}" required aria-describedby="v-message-aide v-message-compte{% if erreur_message %} v-message-erreur{% endif %}"{% if erreur_message %} aria-invalid="true"{% endif %} data-compte-caracteres="#v-message-compte">{{ valeur_message }}</textarea>
   <p class="champ-aide compte-caracteres u-mb-0" id="v-message-compte"><span data-compte-valeur>0 / {{ message_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
-  {% if erreur_message %}<p class="champ-erreur" id="v-message-erreur" role="alert">{% icone "circle-alert" %}{% translate "Écrivez le message : il dit aux utilisateurs pourquoi l'application est fermée et quand elle rouvrira." %}</p>{% endif %}
+  {% if erreur_message %}<p class="champ-erreur" id="v-message-erreur" role="alert">{% icone "circle-alert" %}{{ erreur_message }}</p>{% endif %}
 </div>
-<div class="champ">
+<div class="champ{% if erreur_motif %} champ--erreur{% endif %}">
   <label class="champ-libelle" for="v-motif">{% translate "Motif interne" %} <span class="facultatif">({% translate "facultatif" %})</span></label>
   <p class="champ-aide u-mb-0" id="v-motif-aide">{% translate "Lu seulement par les super-utilisateurs, ici et dans le journal d'activités." %}</p>
-  <textarea class="champ-saisie" id="v-motif" name="motif" rows="2" maxlength="{{ motif_max }}" aria-describedby="v-motif-aide v-motif-compte" data-compte-caracteres="#v-motif-compte">{{ valeur_motif }}</textarea>
+  <textarea class="champ-saisie" id="v-motif" name="motif" rows="2" maxlength="{{ motif_max }}" aria-describedby="v-motif-aide v-motif-compte{% if erreur_motif %} v-motif-erreur{% endif %}"{% if erreur_motif %} aria-invalid="true"{% endif %} data-compte-caracteres="#v-motif-compte">{{ valeur_motif }}</textarea>
   <p class="champ-aide compte-caracteres u-mb-0" id="v-motif-compte"><span data-compte-valeur>0 / {{ motif_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+  {% if erreur_motif %}<p class="champ-erreur" id="v-motif-erreur" role="alert">{% icone "circle-alert" %}{{ erreur_motif }}</p>{% endif %}
 </div>
 {% endblock %}
 {% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><span>{% translate "Verrouiller l'application" %}</span></button>{% endblock %}

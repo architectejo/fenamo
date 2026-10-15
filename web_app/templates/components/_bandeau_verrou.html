@@ -5,11 +5,11 @@ Collant sous la barre haute ; non refermable : il disparaît au déverrouillage.
 Paramètres :
   depuis      datetime du verrouillage : « depuis 07 h 40 » le jour même, « depuis le 14/10 » sinon
   url         adresse de l'écran « Verrouillage de l'application »
-  courant     True sur l'écran du verrouillage lui-même (aria-current="page" sur le lien)
+L'écran du verrouillage lui-même (url_name « verrou-application ») est reconnu par le composant : aria-current="page" sur le lien.
 Le texte « seuls les super-utilisateurs y ont accès » est masqué sous 576 px pour garder le bandeau sur deux lignes au plus.
-Usage : {% include "components/_bandeau_verrou.html" with depuis=fn_verrou.depuis url=url_verrou %}
+Usage : {% include "components/_bandeau_verrou.html" with depuis=verrou_application.depuis url=url_verrou %}
 {% endcomment %}{% load i18n design %}<div class="bandeau-verrou" role="status">
   {% icone "lock" %}
-  <p class="bandeau-verrou-texte u-mb-0"><strong>{% translate "Application verrouillée" %}</strong> {% now "Ymd" as aujourdhui %}{% if depuis|date:"Ymd" == aujourdhui %}{% translate "depuis" %} {{ depuis|date:"H" }}&nbsp;h&nbsp;{{ depuis|date:"i" }}{% else %}{% translate "depuis le" %} {{ depuis|date:"d/m" }}{% endif %}<span class="masque-mobile"> · {% translate "seuls les super-utilisateurs y ont accès" %}</span></p>
-  <a href="{{ url }}"{% if courant %} aria-current="page"{% endif %}>{% translate "Gérer" %}<span class="lecteur"> {% translate "le verrouillage" %}</span>{% icone "chevron-right" "ic--petite" %}</a>
+  <p class="bandeau-verrou-texte u-mb-0"><strong>{% translate "Application verrouillée" %}</strong> {% now "Ymd" as aujourdhui %}{% if depuis|date:"Ymd" == aujourdhui %}{% translate "depuis" %} {{ depuis|heure_fr }}{% else %}{% translate "depuis le" %} {{ depuis|date:"d/m" }}{% endif %}<span class="masque-mobile"> · {% translate "seuls les super-utilisateurs y ont accès" %}</span></p>
+  <a href="{{ url }}"{% if request.resolver_match.url_name == 'verrou-application' %} aria-current="page"{% endif %}>{% translate "Gérer" %}<span class="lecteur"> {% translate "le verrouillage" %}</span>{% icone "chevron-right" "ic--petite" %}</a>
 </div>

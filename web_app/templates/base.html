@@ -29,7 +29,7 @@
     <div class="corps">
       {% include "partials/_haut.html" %}
       {% if verrou_application %}{% url 'verrou-application' as url_verrou %}{# F-07 : bandeau du super-utilisateur tant que l'application est verrouillée #}
-      {% if request.resolver_match.url_name == 'verrou-application' %}{% include "components/_bandeau_verrou.html" with depuis=verrou_application.depuis url=url_verrou courant=True %}{% else %}{% include "components/_bandeau_verrou.html" with depuis=verrou_application.depuis url=url_verrou %}{% endif %}{% endif %}
+      {% include "components/_bandeau_verrou.html" with depuis=verrou_application.depuis url=url_verrou %}{% endif %}
       <main class="contenu" id="contenu" tabindex="-1">
         <div data-page>
           {% block contenu %}{% endblock %}

@@ -16,9 +16,9 @@
 </head>
 <body>
 {% comment %}
-Réponse 503 du verrouillage (F-07), servie par le middleware à toute page de l'application sauf la connexion. Page AUTONOME : ni base.html, ni coque,
+Réponse 503 du verrouillage (F-07), servie par le middleware à toute requête non exemptée (hors fichiers statiques, connexion et déconnexion), y compris l'administration technique pour un non-SU. Page AUTONOME : ni base.html, ni coque,
 ni script applicatif, ni processeur de contexte qui interroge la base (seul le message du super-utilisateur est fourni). Le message est échappé :
-jamais |safe, retours à la ligne conservés par la classe .texte-saisi. Contexte : message, publie_le (facultatif).
+jamais |safe, retours à la ligne conservés par la classe .texte-saisi. Contexte : message (la date de verrouillage n'est jamais exposée aux utilisateurs bloqués).
 {% endcomment %}
 <main class="porte porte--suspendue" id="contenu">
   <section class="porte-visuel" aria-hidden="true">
@@ -40,7 +40,7 @@ jamais |safe, retours à la ligne conservés par la classe .texte-saisi. Context
     <h1 class="page-titre">{% translate "Application suspendue" %}</h1>
     <p class="u-mt-3">{% translate "La FENAMO-RDC a fermé l'application pour un temps. Rien n'est perdu : membres, engins et dossiers restent tels quels." %}</p>
 
-    {% if message %}<div class="u-mt-5">{% include "components/_message_su.html" with message=message publie_le=publie_le %}</div>{% endif %}
+    {% if message %}<div class="u-mt-5">{% include "components/_message_su.html" with message=message %}</div>{% endif %}
 
     <p class="u-mt-5">{% translate "Les sessions ouvertes ont été fermées. Revenez plus tard : vous vous reconnecterez avec votre identifiant habituel." %}</p>
 

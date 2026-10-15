@@ -1,7 +1,7 @@
 {% load i18n design %}{% comment %}
 Zone d'état du verrouillage (F-07, maquette verrou-application.html) : panneau d'état + changements récents. Rafraîchie par HTMX après chaque changement
 (événement verrouModifie) : la vue répond alors avec change=True (animation « tampon » du sceau et du mot d'état).
-Contexte : etat (verrouillee, message, motif, depuis, par), historique, derniere_periode, sessions_total, sessions_hors_su, duree, change.
+Contexte : etat (verrouillee, message, motif, depuis, par), historique, derniere_periode, sessions_su, sessions_hors_su, sessions_total, duree, change.
 Le message du super-utilisateur passe par components/_message_su.html : échappé, jamais |safe.
 {% endcomment %}
 <div class="grille grille--principale" id="verrou-contenu">
@@ -13,7 +13,7 @@ Le message du super-utilisateur passe par components/_message_su.html : échapp�
           <span class="verrou-sceau{% if change %} change{% endif %}" aria-hidden="true">{% icone "lock" %}</span>
           <div>
             <h2 id="etat-titre-ferme"><span class="lecteur">{% translate "État de l'application :" %} </span><span class="verrou-etat{% if change %} change{% endif %}">{% translate "Verrouillée" %}</span></h2>
-            <p class="verrou-depuis">{% translate "Depuis le" %} {{ etat.depuis|date:"d/m/Y" }} {% translate "à" %} {{ etat.depuis|date:"H" }}&nbsp;h&nbsp;{{ etat.depuis|date:"i" }}{% if duree %} ({{ duree }}){% endif %}{% if etat.par %}, {% translate "par" %} <strong class="texte-plein">{{ etat.par.get_full_name|default:etat.par.get_username }}</strong>{% endif %}</p>
+            <p class="verrou-depuis">{% translate "Depuis le" %} {{ etat.depuis|date:"d/m/Y" }} {% translate "à" %} {{ etat.depuis|heure_fr }}{% if duree %} ({{ duree }}){% endif %}{% if etat.par %}, {% translate "par" %} <strong class="texte-plein">{{ etat.par.get_full_name|default:etat.par.get_username }}</strong>{% endif %}</p>
           </div>
         </div>
         <div class="u-mt-6">
@@ -26,7 +26,7 @@ Le message du super-utilisateur passe par components/_message_su.html : échapp�
         </div>
         <ul class="verrou-effets u-mt-6" aria-label="{% translate 'Accès en ce moment' %}">
           <li>{% icone "log-in" %}<div><strong>{% translate "Connexion à l'application" %}</strong><span class="meta">{% translate "Super-utilisateurs seulement" %}</span></div><span class="etat etat--a_renouveler">{% icone "lock" %}{% translate "Fermée" %}</span></li>
-          <li>{% icone "users" %}<div><strong>{% translate "Sessions ouvertes" %}</strong><span class="meta">{% blocktranslate count n=sessions_total %}<span class="chiffres">{{ n }}</span> super-utilisateur connecté{% plural %}<span class="chiffres">{{ n }}</span> super-utilisateurs connectés{% endblocktranslate %}</span></div><span class="etat etat--a_renouveler">{% icone "log-out" %}{% translate "Fermées" %}</span></li>
+          <li>{% icone "users" %}<div><strong>{% translate "Sessions ouvertes" %}</strong><span class="meta">{% blocktranslate count n=sessions_su %}<span class="chiffres">{{ n }}</span> super-utilisateur connecté{% plural %}<span class="chiffres">{{ n }}</span> super-utilisateurs connectés{% endblocktranslate %}{% if sessions_hors_su %} · {% blocktranslate count n=sessions_hors_su %}<span class="chiffres">{{ n }}</span> autre compte : session fermée à sa prochaine requête{% plural %}<span class="chiffres">{{ n }}</span> autres comptes : sessions fermées à leur prochaine requête{% endblocktranslate %}{% endif %}</span></div><span class="etat etat--a_renouveler">{% icone "log-out" %}{% translate "Fermées" %}</span></li>
           <li>{% icone "globe" %}<div><strong>{% translate "API et site public" %}</strong><span class="meta">{% translate "Répond « service suspendu » : la vérification des cartes est indisponible" %}</span></div><span class="etat etat--a_renouveler">{% icone "unplug" %}{% translate "Suspendue" %}</span></li>
           <li>{% icone "smartphone" %}<div><strong>{% translate "Espace mobile des membres" %}</strong><span class="meta">{% translate "Affiche « Espace membre suspendu »" %}</span></div><span class="etat etat--a_renouveler">{% icone "unplug" %}{% translate "Suspendu" %}</span></li>
         </ul>
@@ -52,7 +52,7 @@ Le message du super-utilisateur passe par components/_message_su.html : échapp�
           <li>{% icone "globe" %}<div><strong>{% translate "API et site public" %}</strong><span class="meta"><span class="ident">/api/v1/</span> · {% translate "vérification des cartes sur le site public" %}</span></div><span class="etat etat--actif">{% icone "circle-check" %}{% translate "En service" %}</span></li>
           <li>{% icone "smartphone" %}<div><strong>{% translate "Espace mobile des membres" %}</strong><span class="meta"><span class="ident">/mob/</span></span></div><span class="etat etat--actif">{% icone "circle-check" %}{% translate "En service" %}</span></li>
         </ul>
-        {% if derniere_periode %}<p class="meta u-mt-4 u-mb-0">{% translate "Dernier verrouillage terminé le" %} {{ derniere_periode.date|date:"d/m/Y" }} {% translate "à" %} {{ derniere_periode.date|date:"H" }}&nbsp;h&nbsp;{{ derniere_periode.date|date:"i" }} ({{ derniere_periode.duree }}){% if derniere_periode.auteur %}, {% translate "par" %} {{ derniere_periode.auteur }}{% endif %}.</p>{% endif %}
+        {% if derniere_periode %}<p class="meta u-mt-4 u-mb-0">{% translate "Dernier verrouillage terminé le" %} {{ derniere_periode.date|date:"d/m/Y" }} {% translate "à" %} {{ derniere_periode.date|heure_fr }} ({{ derniere_periode.duree }}){% if derniere_periode.auteur %}, {% translate "par" %} {{ derniere_periode.auteur }}{% endif %}.</p>{% endif %}
       </div>
       <div class="panneau-pied">
         <button type="button" class="bouton bouton--danger bouton--bloc-mobile" hx-get="{% url 'verrou-verrouiller' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "lock" %}<span>{% translate "Verrouiller l'application" %}</span></button>
@@ -69,7 +69,7 @@ Le message du super-utilisateur passe par components/_message_su.html : échapp�
         {% for e in historique %}
         <li><span class="point{% if not e.verrouillage %} point--vert{% endif %}">{% if e.verrouillage %}{% icone "lock" %}{% else %}{% icone "lock-open" %}{% endif %}</span><div>
           <p><strong>{% if e.verrouillage %}{% translate "Verrouillée" %}{% else %}{% translate "Déverrouillée" %}{% endif %}</strong>{% if e.auteur %} {% translate "par" %} {{ e.auteur }}{% endif %}</p>
-          <p class="meta">{{ e.date|date:"d/m/Y" }} · {{ e.date|date:"H" }}&nbsp;h&nbsp;{{ e.date|date:"i" }}{% if e.duree %} · {% translate "après" %} {{ e.duree }}{% endif %}</p>
+          <p class="meta">{{ e.date|date:"d/m/Y" }} · {{ e.date|heure_fr }}{% if e.duree %} · {% translate "après" %} {{ e.duree }}{% endif %}</p>
           <p class="petit doux texte-saisi">{% if e.motif %}{% translate "Motif :" %} {{ e.motif }}{% else %}{% translate "Sans motif" %}{% endif %}</p>
         </div></li>
         {% endfor %}
@@ -79,6 +79,6 @@ Le message du super-utilisateur passe par components/_message_su.html : échapp�
       {% include "components/_etat_vide.html" with icone="lock-open" titre=t_vide texte=t_msg %}
     {% endif %}
     </div>
-    <div class="panneau-pied"><a href="{% url 'journal' %}?action=verrouillage_application">{% translate "Voir le journal d'activités" %}</a></div>
+    <div class="panneau-pied"><a href="{% url 'journal' %}?action=verrouillage_application,deverrouillage_application">{% translate "Voir le journal d'activités" %}</a></div>
   </aside>
 </div>
