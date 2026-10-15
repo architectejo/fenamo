@@ -1,0 +1,12 @@
+{
+  "description": "POST /api/v1/site/contact/ : 3 messages par heure et par e-mail ou téléphone, 429 avec Retry-After (secondes)",
+  "status": 429,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache",
+    "Retry-After": "1800"
+  },
+  "body": {
+    "detail": "Trop de messages envoyés : réessayez plus tard."
+  }
+}

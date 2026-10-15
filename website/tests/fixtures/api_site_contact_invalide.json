@@ -1,0 +1,19 @@
+{
+  "description": "POST /api/v1/site/contact/ : validation, 400 {\"champ\": [\"message\"]} ; non_field_errors hors champ ; ouvert_le si horodatage absent ou expiré",
+  "status": 400,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "nom": [
+      "Indiquez votre nom."
+    ],
+    "message": [
+      "Le message est trop court (10 caractères au moins)."
+    ],
+    "non_field_errors": [
+      "Indiquez un numéro de téléphone ou une adresse e-mail pour que nous puissions vous répondre."
+    ]
+  }
+}

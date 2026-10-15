@@ -1,0 +1,12 @@
+{
+  "description": "POST /api/v1/site/contact/ : message enregistré, 201 (accusé à afficher ; aucun identifiant)",
+  "status": 201,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "statut": "recu",
+    "detail": "Votre message a bien été reçu. La FENAMO-RDC vous répondra dès que possible."
+  }
+}

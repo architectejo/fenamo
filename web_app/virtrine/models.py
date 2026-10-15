@@ -250,3 +250,7 @@ class Contact(models.Model):
     description = models.TextField(blank=True, null=True)
     traiter = models.BooleanField(default=False, null=True, blank=True)
     mise_a_jour = models.DateTimeField(auto_now=True, null=True, blank=True)
+    # F-62 (ajouts additifs) : horodatage de réception, auteur et date du marquage « traité ». Texte brut seulement (aucun HTML).
+    cree_le = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    traite_par = models.ForeignKey('compte.Compte', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    traite_le = models.DateTimeField(null=True, blank=True)

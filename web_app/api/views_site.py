@@ -1,15 +1,20 @@
 """Points d'accès en lecture de `/api/v1/site/` (cahier des charges § 2.4, lot 2a). Vues minces : lecture, sérialiseur à liste blanche."""
+import json
+import logging
 import math
 
+from django.core.exceptions import RequestDataTooBig
 from django.db.models import Max, Prefetch, Q
 from django.utils import timezone
 
 from api import reponses, serialiseurs
+from virtrine.services import contact as service_contact
 from api.decorateurs import cle_site_requise
 from coptapp.models import Antenne, Province
 from coptapp.services.statistiques_publiques import statistiques_publiques
 from virtrine.models import Article, ArticleTraduction, Config, DocumentPublic, Galery, MembreComite, Partenaire, TelephoneSite
 
+logger = logging.getLogger('api.contact')
 TAILLE_DEFAUT = 12
 TAILLE_MAX = 50
 Q_MIN = 2
@@ -156,6 +161,54 @@ def coordinations(request):
 @cle_site_requise()
 def statistiques(request):
     return reponses.json_ok(serialiseurs.statistiques(statistiques_publiques(), timezone.now()))
+
+
+CORPS_MAX = 20_000  # octets : un message de contact ne dépasse jamais cela
+
+
+class CorpsInvalide(Exception):
+    pass
+
+
+def _corps_depot(request):
+    """Champs d'un dépôt : JSON (objet) ou formulaire encodé. Lève CorpsInvalide (illisible) ; RequestDataTooBig si trop gros."""
+    if int(request.META.get('CONTENT_LENGTH') or 0) > CORPS_MAX:
+        raise RequestDataTooBig('corps trop gros')
+    if request.content_type == 'application/json':
+        brut = request.body
+        if len(brut) > CORPS_MAX:
+            raise RequestDataTooBig('corps trop gros')
+        try:
+            donnees = json.loads(brut.decode('utf-8'))
+        except (UnicodeDecodeError, ValueError) as erreur:
+            raise CorpsInvalide from erreur
+        if not isinstance(donnees, dict):
+            raise CorpsInvalide
+        return donnees
+    return request.POST.dict()
+
+
+@cle_site_requise(methodes=('POST',))
+def contact(request):
+    """S-07 : message de contact. 201 ``{"statut": "recu", "detail": accusé}`` ; 400 ``{"champ": ["message"]}`` ; 413 ; 429. Refusé en 403
+    ``inactif`` en mode exemple (le jeu d'exemple ne doit jamais alimenter la boîte réelle des éditeurs). Champ piège rempli : faux succès."""
+    try:
+        donnees = _corps_depot(request)
+    except RequestDataTooBig:
+        return reponses.erreur(413, 'Requête trop volumineuse.')
+    except CorpsInvalide:
+        return reponses.champs_invalides({'non_field_errors': 'Corps de requête illisible : JSON objet ou formulaire attendu.'})
+    propres, erreurs, piege = service_contact.valider(donnees)
+    if piege:
+        logger.info("Message de contact écarté : champ piège rempli.")
+        return reponses.json_ok({'statut': 'recu', 'detail': service_contact.ACCUSE}, 201)
+    if erreurs:
+        return reponses.champs_invalides(erreurs)
+    attente = service_contact.limite_atteinte(propres)
+    if attente is not None:
+        return reponses.erreur(429, 'Trop de messages envoyés : réessayez plus tard.', Retry_After=attente)
+    service_contact.enregistrer(propres)
+    return reponses.json_ok({'statut': 'recu', 'detail': service_contact.ACCUSE}, 201)
 
 
 @cle_site_requise(methodes=None, donnees_reelles=False)

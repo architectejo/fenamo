@@ -15,5 +15,6 @@ urlpatterns = [
     path('site/comite/', views_site.comite, name='site-comite'),
     path('site/coordinations/', views_site.coordinations, name='site-coordinations'),
     path('site/statistiques/', views_site.statistiques, name='site-statistiques'),
+    path('site/contact/', views_site.contact, name='site-contact'),
     re_path(r'^site/(?P<reste>.*)$', views_site.inconnu, name='site-inconnu'),  # 404 JSON, après la clé
 ]

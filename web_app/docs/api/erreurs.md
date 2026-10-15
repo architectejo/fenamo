@@ -2,7 +2,7 @@
 
 Référence : cahier des charges application web § 2.4 et F-07 ; cahier des charges du site S-12 et § 6.2.
 Toutes les erreurs sont du JSON (`Content-Type: application/json`). Aucune réponse de l'API ne pose de cookie ni de session.
-Statut : le 503 « suspendu » et la santé sont **implémentés et testés** (`tests/test_F07_api_suspendue.py`) ; les points d'accès en lecture de `/api/v1/site/` (401, 404, 405, 429, 400 de paramètres) sont **implémentés et testés** (`tests/test_api_site_lot2a.py`, détail dans `site.md`) ; les dépôts (400 de validation, 403) restent le contrat cible.
+Statut : le 503 « suspendu » et la santé sont **implémentés et testés** (`tests/test_F07_api_suspendue.py`) ; les points d'accès en lecture de `/api/v1/site/` (401, 404, 405, 429, 400 de paramètres) sont **implémentés et testés** (`tests/test_api_site_lot2a.py`, détail dans `site.md`) ; le dépôt de contact (400, 413, 429, 403 `inactif`) est **implémenté et testé** (`tests/test_S07_contact_api.py`, détail dans `site.md`) ; les autres dépôts (adhésion, paiement) restent le contrat cible. 413 : corps de dépôt trop volumineux, `{"detail": "Requête trop volumineuse."}`.
 
 ## Tableau
 

@@ -52,7 +52,7 @@ TROUS_CONNUS = {
     'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
     # API du site public : sans connexion (@login_not_required) mais PROTÉGÉE PAR LA CLÉ DU SITE, pas par une session ; matrice dédiée
     # (clé absente, fausse, bonne, méthodes) dans test_api_site_lot2a.py
-    'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-inconnu',
+    'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-contact', 'site-inconnu',
 }
 
 
@@ -66,7 +66,7 @@ def test_F21_trous_de_matrice_listes_et_couverts():
 ROUTES_PUBLIQUES_ATTENDUES = {
     'application', 'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str', 'attribut-ville', 'photo-mob', 'deconnexion-mob',
     # API du site public : pas de session, clé du site obligatoire (contrôlée par test_api_site_lot2a.py) ; décision validée
-    'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-inconnu',
+    'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-contact', 'site-inconnu',
 }
 
 
@@ -212,7 +212,7 @@ def test_F21_complement_couvre_chaque_trou_de_l_application_web():
     couverts = {r[0] for r in COMPLEMENT}
     a_couvrir = TROUS_CONNUS - {'sante', 'racine', 'home-mob', 'session', 'register', 'data', 'attribut-str',
                                 'attribut-ville', 'photo-mob', 'deconnexion-mob',
-                                'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-inconnu'}  # API : clé du site, test dédié
+                                'site-config', 'site-articles', 'site-article', 'site-galerie', 'site-comite', 'site-coordinations', 'site-statistiques', 'site-contact', 'site-inconnu'}  # API : clé du site, test dédié
     assert a_couvrir <= couverts, sorted(a_couvrir - couverts)
 
 

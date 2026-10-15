@@ -2,7 +2,7 @@
 
 Référence : cahier des charges application web § 2.4 et F-60 à F-64 ; cahier des charges du site § 6. Erreurs communes : `erreurs.md`.
 Exemples de réponses (conformes, utilisés par les tests du site) : `website/tests/fixtures/api_site_*.json`.
-Les dépôts (contact, adhésion, paiement) et la vérification publique viennent aux lots suivants ; les routes inconnues sous `/api/v1/site/` répondent 404 JSON.
+Le dépôt de contact est livré (section « Dépôt » plus bas) ; les dépôts d'adhésion et de paiement et la vérification publique viennent aux lots suivants ; les routes inconnues sous `/api/v1/site/` répondent 404 JSON.
 
 ## Règles communes
 
@@ -61,6 +61,41 @@ Toujours disponible, avec `donnees_reelles` (booléen). **Faux** : réponse mini
 ### `statistiques/`
 
 `{date_calcul, membres_actifs, engins_actifs, engins_par_type, associations_membres, coordinations, par_coordination[{code, nom, membres_actifs, associations_membres, antennes, engins_actifs}]}`. `engins_actifs` et `engins_par_type` valent `null` tant que les états des engins ne sont pas faits (F-30, F-32) : le site ne doit afficher aucun chiffre d'engins.
+
+## Dépôt : `POST /api/v1/site/contact/` (S-07, F-62)
+
+Même clé `X-Site-Key`, mêmes contrôles que ci-dessus avec `POST` pour seule méthode permise (405 `Allow: POST` sinon). Ordre : verrou F-07 (503) puis clé (401) puis limite de débit par clé (429, seau `POST`) puis méthode (405) puis **données réelles (403 `inactif`)** puis corps (413, 400) puis limite par expéditeur (429). **Mode exemple : refusé en 403 `inactif`**, le cahier ne disant rien ; sinon le jeu d'exemple alimenterait la boîte réelle des éditeurs. Le site doit alors afficher « formulaire indisponible » sans appeler l'API (il le sait par `config/`).
+
+Corps : JSON (`Content-Type: application/json`, objet) ou formulaire encodé ; au plus 20 000 octets (413 sinon). Champs ignorés s'ils sont inconnus (jamais écrits en base).
+
+| Champ | Règle |
+| --- | --- |
+| `nom` | obligatoire, 2 à 100 caractères |
+| `mail` | e-mail valide, 254 caractères au plus, **ou** `telephone` (au moins l'un des deux) |
+| `telephone` | chiffres, espaces, `+ . - ( )`, 8 à 15 chiffres, 20 caractères au plus |
+| `objet` | obligatoire, 100 caractères au plus |
+| `message` | obligatoire, 10 à 3 000 caractères, deux liens (`http://`, `https://`, `www.`) au plus ; les retours à la ligne sont gardés |
+| `ouvert_le` | **obligatoire** : horodatage Unix (secondes) de l'affichage du formulaire, posé par le site côté serveur (dans un champ signé ou la session, pas modifiable par le navigateur) ; envoi moins de 3 s après : 400 `non_field_errors` ; plus de 24 h ou dans le futur : 400 `ouvert_le` |
+| `site_web` | **champ piège** : invisible, doit rester vide. Rempli : réponse 201 identique à un succès, rien n'est enregistré (le robot ne sait pas qu'il est détecté) |
+
+Texte brut seulement : toute balise HTML est retirée (contenu de `script` et `style` effacé), les entités sont décodées puis `<` et `>` supprimés, les caractères de contrôle retirés, les espaces normalisés. `nom`, `objet` tiennent sur une ligne. Un champ qui n'est pas un texte (liste, objet) est refusé. Le site échappe quand même à l'affichage.
+
+Réponses :
+
+- **201** `{"statut": "recu", "detail": "<accusé à afficher>"}` : aucun identifiant ni écho des données. Fixture : `api_site_contact_recu.json`.
+- **400** `{"champ": ["message"]}` (champs `nom`, `mail`, `telephone`, `objet`, `message`, `ouvert_le`, `non_field_errors`) ; plusieurs champs à la fois. Corps illisible : `non_field_errors`. Fixture : `api_site_contact_invalide.json`.
+- **413** `{"detail": "Requête trop volumineuse."}` (`api_site_contact_trop_gros.json`).
+- **429** `{"detail": "Trop de requêtes."}` (limite de la clé, `SITE_API_LIMITE_POST`) ou `{"detail": "Trop de messages envoyés : réessayez plus tard."}` (3 messages par heure pour un même e-mail ou téléphone, compteur du cache `limites`, empreinte seulement) ; `Retry-After` en secondes (`api_site_contact_limite.json`).
+- 401, 403 `inactif`, 405, 503 : voir `erreurs.md`.
+
+La limite **par adresse IP** (cahier du site § 8) reste au site : l'API ne voit que l'adresse du serveur du site.
+
+Côté application web : le message est stocké (`virtrine.Contact`, colonnes additives `cree_le`, `traite_par`, `traite_le`, migration 0023 réversible), une ligne F-70 `creation` est écrite **sans donnée personnelle** (origine, présence d'un e-mail ou téléphone, taille du message ; auteur vide) et une notification (`Notification`, sans destinataire nominatif, texte sans donnée) est créée : SU et président la voient (matrice § 4.3). Les éditeurs (ED), qui n'ont pas de panneau de notifications selon la matrice, voient le compteur « à traiter » de l'écran des messages.
+
+Consultation (F-62, SU et ED seulement ; 403 pour les autres, redirection vers la connexion pour un anonyme ; les messages sont nationaux, sans périmètre) :
+
+- `contact` : `GET /contenu-site/messages/`. Contexte : `contacts` (= `page_obj`, 20 par page, `?page=`, plus récent d'abord), `page_obj`, `nb_a_traiter`. Éléments : `nom`, `mail`, `phone`, `raison` (objet), `description` (message), `traiter`, `cree_le`, `traite_par`, `traite_le`.
+- `contact-view` : `GET /contenu-site/messages/<id>/` (lecture, ne modifie rien) ; `POST` (CSRF) marque « traité » : idempotent, journal F-70 `modification` (`avant` `{traiter: false}`, `après` `{traiter: true}`), auteur et date conservés. Contexte : `contact`.
 
 ## Clés du site
 

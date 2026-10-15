@@ -14,6 +14,7 @@ from django.views.decorators.http import require_GET, require_POST
 from coptapp.models import *
 from django.contrib.auth import authenticate, get_user_model, logout
 from virtrine.models import Article, Contact, Galery
+from virtrine.services import contact as contact_service
 from coptapp.forms import *
 from coptapp.views.modales import rendre_formulaire
 from coptapp.validators import erreur_image
@@ -659,7 +660,9 @@ def contact(request):
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
     
-    contacts = Contact.objects.order_by('-id')
+    # F-62 : liste paginée (20 par page, `?page=`), du plus récent au plus ancien. Contexte : contacts (= page_obj), page_obj, nb_a_traiter.
+    page_obj = contact_service.lister(request.GET.get('page'))
+    contacts, nb_a_traiter = page_obj, contact_service.messages_a_traiter()
     return render(request, 'app/contact.html', locals())
 
 @editeur_requis
@@ -673,9 +676,9 @@ def contactView(request, id):
     provinces = provinceSelector()
     
     contact = get_object_or_404(Contact, id=id)
-    if request.method == 'POST':
-        contact.traiter = True
-        contact.save()
+    if request.method == 'POST':  # POST + CSRF seulement ; idempotent, journalisé (F-70) par le service
+        contact_service.marquer_traite(request.user, contact)
+        contact.refresh_from_db()
     return render(request, 'app/contact-view.html', locals())
 
 @require_POST

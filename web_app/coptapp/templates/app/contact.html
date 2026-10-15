@@ -13,7 +13,7 @@
   <tr>
     <td data-role="titre"><a class="lien-ligne" href="{% url 'contact-view' contact.id %}">{{ contact.nom }}</a></td>
     <td data-libelle="{% translate 'Raison' %}">{{ contact.raison|default:"—" }}</td>
-    <td data-libelle="{% translate 'Reçu le' %}" class="chiffres">{{ contact.mise_a_jour|date:"d/m/Y" }}</td>
+    <td data-libelle="{% translate 'Reçu le' %}" class="chiffres">{{ contact.cree_le|default:contact.mise_a_jour|date:"d/m/Y" }}</td>
     <td data-libelle="{% translate 'État' %}">{% if contact.traiter %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Traité" %}</span>{% else %}<span class="etat etat--a_renouveler">{% icone "clock" %}{% translate "À traiter" %}</span>{% endif %}</td>
   </tr>
   {% endfor %}

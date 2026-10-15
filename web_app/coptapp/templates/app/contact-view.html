@@ -11,7 +11,7 @@
   <dl class="definitions">
     <div><dt>{% translate "Téléphone" %}</dt><dd>{{ contact.phone|default:"—" }}</dd></div>
     <div><dt>{% translate "E-mail" %}</dt><dd>{{ contact.mail|default:"—" }}</dd></div>
-    <div><dt>{% translate "Reçu le" %}</dt><dd>{{ contact.mise_a_jour|date:"d/m/Y" }}</dd></div>
+    <div><dt>{% translate "Reçu le" %}</dt><dd>{{ contact.cree_le|default:contact.mise_a_jour|date:"d/m/Y" }}</dd></div>
   </dl>
 </div></section>
 {% endblock %}
