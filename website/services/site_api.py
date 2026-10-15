@@ -146,7 +146,7 @@ def _basculer_statique() -> None:
     api_client.purger_cache()
     api_client.retenir_mode("statique")
     api_client.forcer_statique()
-    api_client._noter(statique=True)
+    api_client.noter(statique=True)
 
 
 # ---------- Configuration (en-tête, pied de page, documents, application) ----------
@@ -206,13 +206,11 @@ def config() -> dict:
 
 def _config_statique(brut: dict | None) -> dict:
     """Configuration d'exemple ; seuls le nom, la devise et les langues viennent de l'API (config minimale)."""
-    from contenu_statique import exemple
-
-    donnees = dict(exemple.CONFIG)
+    donnees = donnees_statiques.repondre("config/")
     for cle in ("nom", "devise", "langues_actives"):
         if brut and brut.get(cle):
             donnees[cle] = brut[cle]
-    api_client._noter(statique=True)
+    api_client.noter(statique=True)
     return {**_normaliser_config(donnees), "statique": True}
 
 

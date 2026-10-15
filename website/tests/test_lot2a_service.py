@@ -34,11 +34,11 @@ def test_S12_la_copie_servie_n_est_pas_renouvelee(api):
 
     api_client.demarrer_suivi()
     site_api.config()
-    avant = cache.get(api_client._STALE + api_client._cle("config/", None, None))
+    avant = cache.get(api_client.cle_secours(api_client._cle("config/", None, None)))
     api.coupee()
     vider_copies_fraiches()
     site_api.config()
-    apres = cache.get(api_client._STALE + api_client._cle("config/", None, None))
+    apres = cache.get(api_client.cle_secours(api_client._cle("config/", None, None)))
     assert apres["t"] == avant["t"]
     assert api_client.suivi()["degrade"] is True
 
@@ -92,7 +92,7 @@ def test_F07_le_503_n_est_jamais_mis_en_cache_comme_contenu(client, api):
     api.verrouillee()
     html = client.get("/").content.decode()
     assert "Maintenance" not in html  # le message n'est affiché que sur les pages de fonctions suspendues
-    assert cache.get(api_client._STALE + api_client._cle("config/", None, None)) is None
+    assert cache.get(api_client.cle_secours(api_client._cle("config/", None, None))) is None
 
 
 def test_F07_verifier_affiche_le_message_echappe(client, api):
@@ -176,7 +176,7 @@ def test_purge_signature_acceptee_vide_les_copies_fraiches_garde_les_copies_de_s
     assert appeler(client).status_code == 204
     client.get("/actualites/")
     assert len(api.appels) > nb  # copies fraîches vidées
-    assert cache.get(api_client._STALE + api_client._cle("config/", None, None)) is not None
+    assert cache.get(api_client.cle_secours(api_client._cle("config/", None, None))) is not None
 
 
 def test_purge_en_tete_horodatage_de_web_app(client, secret):

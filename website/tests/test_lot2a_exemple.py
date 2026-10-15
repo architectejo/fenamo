@@ -145,3 +145,39 @@ def test_exemple_le_jeu_ne_contient_aucune_donnee_reelle():
         assert ".invalid" in url, url
     assert all("(exemple)" in m["nom"] for m in donnees_statiques.repondre("comite/", {})["membres"])
     assert len(donnees_statiques.repondre("coordinations/", {})) == 27
+
+
+def test_exemple_copies_de_secours_videes_des_que_le_mode_exemple_est_connu(client, api):
+    client.get("/actualites/")
+    brute = api_client._cle("articles/", {"page": 1, "taille": 12}, "fr")
+    assert cache.get(api_client.cle_secours(brute)) is not None
+    api.inactive()
+    api_client.purger_cache()
+    client.get("/")  # config : donnees_reelles=false
+    assert cache.get(api_client.cle_secours(brute)) is None
+    api.coupee()
+    api_client.purger_cache()
+    cache.delete("api:panne")
+    assert "Assemblée générale annuelle" not in lire(client, "/actualites/")
+
+
+def test_exemple_403_inactif_vide_les_copies_de_secours(client, api):
+    client.get("/actualites/")
+    brute = api_client._cle("articles/", {"page": 1, "taille": 12}, "fr")
+    api.repondre("articles/", 403, {"statut": "inactif", "detail": "Données réelles désactivées."})
+    client.get("/actualites/")
+    assert cache.get(api_client.cle_secours(brute)) is None
+
+
+def test_exemple_purge_en_mode_exemple_vide_aussi_les_copies_de_secours(client, api):
+    client.get("/actualites/")
+    api_client.retenir_mode("statique")
+    api_client.purger_cache()
+    cle = api_client.cle_secours(api_client._cle("config/", None, None))
+    assert cache.get(cle) is None
+
+
+def test_exemple_parametres_de_pagination_invalides_ne_plantent_pas():
+    from services import donnees_statiques
+
+    assert donnees_statiques.repondre("articles/", {"page": "abc", "taille": "x"})["page"] == 1

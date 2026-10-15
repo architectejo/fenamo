@@ -14,9 +14,16 @@ from contenu_statique import exemple
 from .api_client import ApiErreur
 
 
+def _entier(valeur, defaut: int) -> int:
+    try:
+        return int(valeur)
+    except (TypeError, ValueError):
+        return defaut
+
+
 def _page(elements: list, params: dict) -> dict:
-    taille = max(1, min(50, int(params.get("taille", 12))))
-    page = max(1, int(params.get("page", 1)))
+    taille = max(1, min(50, _entier(params.get("taille"), 12)))
+    page = max(1, _entier(params.get("page"), 1))
     pages = -(-len(elements) // taille)
     if page > max(pages, 1):
         raise ApiErreur(404)

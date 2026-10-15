@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 _FRESH = "api:fresh:"
 _STALE = "api:stale:"
 _VERSION = "api:version"
+_VERSION_SECOURS = "api:version_secours"  # change quand on vide les copies de secours
 _ETAT = "api:etat"  # verrou F-07 connu : {"message", "sonde"}
 _DUREE_ETAT = 10 * 60  # le message du super-utilisateur est ré-appris au plus tard après ce délai
 _PANNE = "api:panne"  # panne constatée : les lectures suivantes n'attendent pas 5 s de plus chacune
@@ -51,7 +52,8 @@ def suivi() -> dict:
     return _suivi.get() or {"degrade": False, "copie_le": None, "suspendu": False, "panne": False, "statique": False}
 
 
-def _noter(**infos) -> None:
+def noter(**infos) -> None:
+    """Signale à la page en cours (copie servie, verrou, panne, mode exemple)."""
     etat = _suivi.get()
     if etat is None:
         return
@@ -159,6 +161,8 @@ _DERNIER_MODE = "api:dernier_mode"  # dernier état connu : "reel" ou "statique"
 
 
 def retenir_mode(mode: str) -> None:
+    if mode == "statique":
+        vider_copies_de_secours()  # le site apprend que l'API est en mode exemple : aucune copie réelle ne doit survivre
     cache.set(_DERNIER_MODE, mode, settings.CACHE_STALE_TTL)
 
 
@@ -193,6 +197,15 @@ def _cle(chemin: str, params: dict | None, langue: str | None) -> str:
     return hashlib.sha1(f"{chemin}|{items}|{langue or ''}".encode("utf-8")).hexdigest()
 
 
+def cle_secours(cle: str) -> str:
+    return f"{_STALE}v{cache.get(_VERSION_SECOURS, 0)}:{cle}"
+
+
+def vider_copies_de_secours() -> None:
+    """Rend illisibles toutes les copies de secours (version de clé changée) : plus aucune donnée réelle ne peut être resservie."""
+    cache.set(_VERSION_SECOURS, time.time_ns(), None)
+
+
 def _cle_fraiche(cle: str, version: int) -> str:
     return f"{_FRESH}v{version}:{cle}"
 
@@ -201,7 +214,7 @@ def _requete(methode: str, chemin: str, lecture: bool = False, **kw) -> requests
     etat = verrou_connu()
     if etat:
         # Verrou connu : aucun appel de données, seulement la sonde de santé à intervalle limité.
-        _noter(suspendu=True)
+        noter(suspendu=True)
         raise ApiSuspendu(etat["message"])
     if lecture and cache.get(_PANNE):
         raise ApiIndisponible("Panne constatée il y a moins de quelques secondes")
@@ -232,7 +245,7 @@ def _requete(methode: str, chemin: str, lecture: bool = False, **kw) -> requests
             message = message if isinstance(message, str) else ""
             logger.info("API verrouillée (F-07) : %s %s", methode, chemin)  # un verrou n'est pas une erreur
             _marquer_suspendu(message)
-            _noter(suspendu=True)
+            noter(suspendu=True)
             raise ApiSuspendu(message)
     if rep.status_code >= 500:
         logger.warning("API en erreur %s (%s %s)", rep.status_code, methode, chemin)
@@ -284,20 +297,20 @@ def get(
         donnees = _requete("GET", chemin, lecture=True, params=params_url).json()
     except (ApiIndisponible, ApiSuspendu, ValueError) as exc:
         if duree:
-            ancien = cache.get(_STALE + cle)
+            ancien = cache.get(cle_secours(cle))
             if ancien is not None:
                 suspendu = isinstance(exc, ApiSuspendu)
-                _noter(degrade=True, copie_le=ancien["t"], suspendu=suspendu)
+                noter(degrade=True, copie_le=ancien["t"], suspendu=suspendu)
                 return Reponse(ancien["d"], degrade=True, copie_le=ancien["t"], suspendu=suspendu)
         if isinstance(exc, ApiSuspendu):
             raise
-        _noter(panne=True)
+        noter(panne=True)
         if isinstance(exc, ApiIndisponible):
             raise
         raise ApiIndisponible("Réponse illisible") from exc
     if duree:
         cache.set(_cle_fraiche(cle, version), donnees, duree)
-        cache.set(_STALE + cle, {"d": donnees, "t": time.time()}, settings.CACHE_STALE_TTL)
+        cache.set(cle_secours(cle), {"d": donnees, "t": time.time()}, settings.CACHE_STALE_TTL)
     return Reponse(donnees)
 
 
@@ -313,10 +326,12 @@ def post(chemin: str, donnees: dict | None = None, fichiers: dict | None = None)
 def purger_cache() -> None:
     """Invalide les copies fraîches (adresse de purge sécurisée : `pages.views.purge`).
 
-    Les copies de secours (_STALE) et les compteurs ne sont pas touchés : le
+    Les copies de secours et les compteurs ne sont pas touchés (sauf en mode exemple : elles sont alors vidées) : le
     mode dégradé (S-12) reste disponible si l'API tombe juste après la purge.
     """
     # Horodatage (jamais d'expiration) : cache.incr() réappliquerait un délai par défaut.
     cache.set(_VERSION, max(time.time_ns(), _version() + 1), None)
     cache.delete(_PANNE)
+    if dernier_mode() == "statique":
+        vider_copies_de_secours()  # mode exemple : rien de réel ne reste en secours (hors mode exemple, S-12 garde ses copies)
     cache.delete(_FORCE_STATIQUE)  # la purge vide aussi l'état du mode : la config est relue
