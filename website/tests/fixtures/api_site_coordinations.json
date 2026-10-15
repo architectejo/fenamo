@@ -1,0 +1,34 @@
+{
+  "description": "GET /api/v1/site/coordinations/ : coordinations et leurs antennes (liste non paginée)",
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": [
+    {
+      "code": "KIN",
+      "nom": "Kinshasa",
+      "ordre": 1,
+      "antennes": [
+        {
+          "code": "KIN-GOM",
+          "nom": "Gombe",
+          "type": "commune"
+        }
+      ]
+    },
+    {
+      "code": "KC",
+      "nom": "Kongo Central",
+      "ordre": 2,
+      "antennes": [
+        {
+          "code": "KC-KAS",
+          "nom": "Kasangulu",
+          "type": "territoire"
+        }
+      ]
+    }
+  ]
+}

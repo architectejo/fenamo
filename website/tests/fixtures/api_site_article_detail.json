@@ -1,0 +1,59 @@
+{
+  "description": "GET /api/v1/site/articles/<slug>/ : détail (texte HTML nettoyé, vidéo, galerie, langues disponibles)",
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "slug": "assemblee-generale-annuelle",
+    "type": "communique",
+    "titre": "Assemblée générale annuelle",
+    "resume": "Convocation à l'assemblée générale.",
+    "image": {
+      "url": "https://app.fenamordc.cd/media/article/exemple-1.webp",
+      "vignette": "https://app.fenamordc.cd/media/article/exemple-1.webp",
+      "largeur": 40,
+      "hauteur": 30
+    },
+    "date_publication": "2026-10-01T09:30:00+01:00",
+    "langue": "fr",
+    "traduit": true,
+    "texte": "<p>La FENAMO-RDC convoque ses membres.</p><ul><li>Point 1</li></ul>",
+    "video": {
+      "fournisseur": "youtube",
+      "identifiant": "dQw4w9WgXcQ"
+    },
+    "galerie": [
+      {
+        "type": "photo",
+        "image": {
+          "url": "https://app.fenamordc.cd/media/article/exemple-2.webp",
+          "vignette": "https://app.fenamordc.cd/media/article/exemple-2_vignette.webp",
+          "largeur": 40,
+          "hauteur": 30
+        },
+        "video": null,
+        "legende": "Remise des cartes",
+        "date": "2026-09-20",
+        "article": null
+      },
+      {
+        "type": "video",
+        "image": null,
+        "video": {
+          "fournisseur": "youtube",
+          "identifiant": "dQw4w9WgXcQ"
+        },
+        "legende": "Défilé",
+        "date": "2026-09-21",
+        "article": null
+      }
+    ],
+    "langues_disponibles": [
+      "fr",
+      "ln"
+    ],
+    "mise_a_jour": "2026-10-01T09:30:00+01:00"
+  }
+}

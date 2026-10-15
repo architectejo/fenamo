@@ -1,0 +1,39 @@
+{
+  "description": "GET /api/v1/site/galerie/ : photos et vidéos publiées, paginé",
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "total": 2,
+    "page": 1,
+    "pages": 1,
+    "resultats": [
+      {
+        "type": "photo",
+        "image": {
+          "url": "https://app.fenamordc.cd/media/article/exemple-1.webp",
+          "vignette": "https://app.fenamordc.cd/media/article/exemple-1_vignette.webp",
+          "largeur": 40,
+          "hauteur": 30
+        },
+        "video": null,
+        "legende": "Remise des cartes",
+        "date": "2026-09-20",
+        "article": "assemblee-generale-annuelle"
+      },
+      {
+        "type": "video",
+        "image": null,
+        "video": {
+          "fournisseur": "youtube",
+          "identifiant": "dQw4w9WgXcQ"
+        },
+        "legende": "Défilé",
+        "date": "2026-09-21",
+        "article": "assemblee-generale-annuelle"
+      }
+    ]
+  }
+}

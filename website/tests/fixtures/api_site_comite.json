@@ -1,0 +1,35 @@
+{
+  "description": "GET /api/v1/site/comite/ : comité exécutif national publié",
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "mandat": {
+      "debut": null,
+      "fin": null
+    },
+    "membres": [
+      {
+        "nom": "Nom Exemple",
+        "fonction": "Président national",
+        "fonction_code": "PRESIDENT",
+        "photo": {
+          "url": "https://app.fenamordc.cd/media/comite/exemple-1.webp",
+          "vignette": "https://app.fenamordc.cd/media/comite/exemple-1.webp",
+          "largeur": 40,
+          "hauteur": 30
+        },
+        "ordre": 1
+      },
+      {
+        "nom": "Autre Exemple",
+        "fonction": "Secrétaire général",
+        "fonction_code": "SG",
+        "photo": null,
+        "ordre": 2
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Article inconnu, non publié ou page hors limite : 404 (même réponse)",
+  "status": 404,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "detail": "Introuvable."
+  }
+}

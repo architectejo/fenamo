@@ -1,0 +1,71 @@
+{
+  "description": "GET /api/v1/site/config/ : configuration publique du site (clé du site obligatoire). Voir web_app/docs/api/site.md",
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "nom": "FENAMO-RDC",
+    "nom_complet": "Fédération Nationale des Associations des Motocyclistes Taximen de la RDC",
+    "devise": "Unité, Discipline et Progrès",
+    "message_accueil": "Bienvenue à la FENAMO-RDC",
+    "logo": {
+      "url": "https://app.fenamordc.cd/media/exemple-1.png",
+      "vignette": "https://app.fenamordc.cd/media/exemple-1_vignette.png",
+      "largeur": 40,
+      "hauteur": 30
+    },
+    "image_fond": null,
+    "siege": "Avenue de la Libération, Kinshasa",
+    "email": "contact@fenamordc.cd",
+    "telephones": [
+      {
+        "libelle": "Secrétariat",
+        "numero": "+243 800 000 001"
+      }
+    ],
+    "reseaux": {
+      "facebook": "https://facebook.com/fenamordc",
+      "x": "https://x.com/fenamordc",
+      "youtube": "https://youtube.com/@fenamordc",
+      "instagram": null,
+      "linkedin": null
+    },
+    "partenaires": [
+      {
+        "nom": "Partenaire exemple",
+        "lien": "https://partenaire.example",
+        "logo": {
+          "url": "https://app.fenamordc.cd/media/partenaires/exemple-2.png",
+          "vignette": "https://app.fenamordc.cd/media/partenaires/exemple-2_vignette.png",
+          "largeur": 40,
+          "hauteur": 30
+        }
+      }
+    ],
+    "langues_actives": [
+      "fr",
+      "ln",
+      "sw"
+    ],
+    "paiement_en_ligne": false,
+    "documents": [
+      {
+        "titre": "Charte de la FENAMO-RDC",
+        "type": "charte",
+        "url": "https://app.fenamordc.cd/media/documents/exemple-3.pdf",
+        "taille": 14,
+        "date": "2026-09-01"
+      }
+    ],
+    "application": {
+      "version": "1.0.0",
+      "url": "https://app.fenamordc.cd/media/application/exemple-4.apk",
+      "taille": 11,
+      "date": "2026-10-01",
+      "notice": "Première version."
+    },
+    "mise_a_jour": "2026-10-01T09:30:00+01:00"
+  }
+}

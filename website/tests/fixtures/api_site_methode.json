@@ -1,0 +1,12 @@
+{
+  "description": "Méthode autre que GET sur un point de lecture : 405 (en-tête Allow: GET)",
+  "status": 405,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache",
+    "Allow": "GET"
+  },
+  "body": {
+    "detail": "Méthode non permise."
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "description": "GET /api/v1/site/statistiques/ : effectifs agrégés (engins masqués : null)",
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "date_calcul": "2026-10-15T10:00:00+02:00",
+    "membres_actifs": 0,
+    "engins_actifs": null,
+    "engins_par_type": null,
+    "associations_membres": 0,
+    "coordinations": 2,
+    "par_coordination": [
+      {
+        "code": "KIN",
+        "nom": "Kinshasa",
+        "membres_actifs": 0,
+        "associations_membres": 0,
+        "antennes": 1,
+        "engins_actifs": null
+      },
+      {
+        "code": "KC",
+        "nom": "Kongo Central",
+        "membres_actifs": 0,
+        "associations_membres": 0,
+        "antennes": 1,
+        "engins_actifs": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Clé du site absente, invalide ou révoquée : 401",
+  "status": 401,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "detail": "Clé du site absente ou invalide."
+  }
+}

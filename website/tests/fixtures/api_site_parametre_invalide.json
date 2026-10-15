@@ -1,0 +1,13 @@
+{
+  "description": "GET /api/v1/site/articles/?q=a : paramètre invalide, 400 {\"champ\": [\"message\"]}",
+  "status": 400,
+  "headers": {
+    "Content-Type": "application/json",
+    "Cache-Control": "no-cache"
+  },
+  "body": {
+    "q": [
+      "La recherche doit contenir de 2 à 100 caractères."
+    ]
+  }
+}
