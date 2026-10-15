@@ -17,14 +17,28 @@
 <body>
 <main class="porte">
   <section class="porte-visuel" aria-hidden="true">
-    <img class="porte-logo" src="../../../static/img/logo-160.webp" width="96" height="96" alt="">
-    <p class="devise"><span>Unité,</span><span>Discipline</span><span>et Progrès</span></p>
-    <p class="meta" style="color:inherit;opacity:.75">Fédération nationale des associations des motocyclistes taximen de la RDC</p>
+    <div class="porte-marque">
+      <img class="porte-logo" src="../../../static/img/logo-160.webp" width="96" height="96" alt="">
+      <div><div class="porte-nom">FENAMO-RDC</div><div class="meta meta--visuel">Espace de gestion</div></div>
+    </div>
+    <p class="devise"><span>Unité,</span> <span>Discipline</span> <span>et Progrès</span></p>
+    <span class="porte-gilet"></span>
+    <p class="meta meta--visuel">Fédération nationale des associations des motocyclistes taximen de la RDC</p>
   </section>
   <div class="porte-cadre">
     <div class="porte-entete porte-entete--mobile">
       <img src="../../../static/img/logo-160.webp" width="56" height="56" alt="Logo de la FENAMO-RDC">
       <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+    </div>
+    <!-- Application verrouillée (F-07) : avant le titre, pour être lu en premier ; le message du super-utilisateur tel qu'il l'a saisi -->
+    <div class="alerte alerte--alerte u-mb-6" role="status" data-demo-verrou-connexion hidden>
+      <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock-keyhole"></use></svg>
+      <div>
+        <strong class="alerte-titre">Application suspendue</strong>
+        <p class="texte-saisi u-mt-2 u-mb-0">Migration des données vers le nouveau serveur.
+L'application rouvre aujourd'hui à 12&nbsp;h. Vos dossiers sont conservés : reprenez vos saisies à la réouverture.</p>
+        <p class="petit u-mt-2 u-mb-0">Pendant la suspension, seuls les super-utilisateurs peuvent se connecter.</p>
+      </div>
     </div>
     <h1 style="font-size:var(--t-5)">Connexion à l'espace de gestion</h1>
     <p class="doux" style="margin-top:var(--e-2)">Utilisez l'identifiant reçu lors de votre nomination.</p>

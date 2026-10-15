@@ -357,7 +357,7 @@
     fv.addEventListener('submit', function (e) {
       e.preventDefault();
       var champ = fv.querySelector('[data-demo-champ-message]'), t = champ.querySelector('textarea'), err = champ.querySelector('.champ-erreur');
-      if (!t.value.trim()) { champ.classList.add('champ--erreur'); t.setAttribute('aria-invalid', 'true'); err.hidden = false; err.style.animation = 'none'; void err.offsetWidth; err.style.animation = ''; t.focus(); return; }
+      if (!t.value.trim()) { champ.classList.add('champ--erreur'); t.setAttribute('aria-invalid', 'true'); err.hidden = false; err.style.animation = 'none'; void err.offsetWidth; err.style.animation = ''; t.focus(); champ.scrollIntoView({ block: 'center' }); return; }
       champ.classList.remove('champ--erreur'); t.removeAttribute('aria-invalid'); err.hidden = true;
       var b = fv.querySelector('[type=submit]');
       occuper(b, 800).then(function () {
@@ -385,8 +385,8 @@
     /* Captures : ?modale=modale-verrouiller&remplir=1 (message saisi), &erreur=1 (message manquant) */
     if (params.get('remplir')) {
       var tm = document.getElementById('v-message');
-      tm.value = "Migration des données vers le nouveau serveur.\nL'application rouvre aujourd'hui à 12 h. Vos dossiers sont conservés : reprenez vos saisies à la réouverture.";
-      document.getElementById('v-motif').value = 'Bascule SQLite vers MySQL (lot 9). Sauvegarde faite à 07 h 30.';
+      tm.value = "Migration des données vers le nouveau serveur.\nL'application rouvre aujourd'hui à 12 h. Vos dossiers sont conservés : reprenez vos saisies à la réouverture.";
+      document.getElementById('v-motif').value = 'Bascule SQLite vers MySQL (lot 9). Sauvegarde faite à 07 h 30.';
       [tm, document.getElementById('v-motif')].forEach(D.compterCaracteres);
     }
     if (params.get('erreur')) { setTimeout(function () { fv.requestSubmit(); }, 400); }

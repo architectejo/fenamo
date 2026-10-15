@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<meta name="robots" content="noindex">
+<title>Application suspendue · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+</head>
+<body>
+<!-- Réponse 503 (Retry-After) servie par le middleware de verrouillage à toute page de l'application, sauf la connexion.
+     Page autonome : aucune coque, aucun script, aucune requête vers la base en dehors du message. -->
+<main class="porte porte--suspendue" id="contenu">
+  <section class="porte-visuel" aria-hidden="true">
+    <div class="porte-marque">
+      <img class="porte-logo" src="../../../static/img/logo-160.webp" width="96" height="96" alt="">
+      <div><div class="porte-nom">FENAMO-RDC</div><div class="meta meta--visuel">Espace de gestion</div></div>
+    </div>
+    <p class="devise"><span>Unité,</span> <span>Discipline</span> <span>et Progrès</span></p>
+    <span class="porte-gilet"></span>
+    <p class="meta meta--visuel">Fédération nationale des associations des motocyclistes taximen de la RDC</p>
+  </section>
+  <div class="porte-cadre">
+    <div class="porte-entete porte-entete--mobile u-mb-0">
+      <img src="../../../static/img/logo-160.webp" width="56" height="56" alt="Logo de la FENAMO-RDC">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+    </div>
+    <span class="bande-gilet" aria-hidden="true"></span>
+
+    <h1 class="page-titre">Application suspendue</h1>
+    <p class="u-mt-3">La FENAMO-RDC a fermé l'application pour un temps. Rien n'est perdu : membres, engins et dossiers restent tels quels.</p>
+
+    <blockquote class="message-su u-mt-5">
+      <p class="texte-saisi">Migration des données vers le nouveau serveur.
+L'application rouvre aujourd'hui à 12&nbsp;h. Vos dossiers sont conservés : reprenez vos saisies à la réouverture.</p>
+      <span class="message-su-auteur">Message de la FENAMO-RDC · 15/10/2026 à 07&nbsp;h&nbsp;40</span>
+    </blockquote>
+
+    <p class="u-mt-5">Les sessions ouvertes ont été fermées. Revenez plus tard : vous vous reconnecterez avec votre identifiant habituel.</p>
+
+    <div class="u-mt-6">
+      <a class="bouton bouton--principal bouton--bloc" href="application-suspendue.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-refresh-cw"></use></svg>Réessayer</a>
+    </div>
+
+    <p class="suspendu-pied">Vous êtes super-utilisateur ? <a href="connexion.html?verrou=1">Aller à la connexion</a></p>
+    <p class="meta u-mt-6 u-mb-0">FENAMO-RDC asbl · app.fenamordc.cd · code 503</p>
+  </div>
+</main>
+</body>
+</html>
