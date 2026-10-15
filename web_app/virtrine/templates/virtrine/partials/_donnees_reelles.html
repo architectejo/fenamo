@@ -1,27 +1,55 @@
 {% load i18n design %}{% comment %}
-Interrupteur « Données réelles du site » (F-60), super-utilisateur seul : carte d'état de l'écran Contenu du site, au style de l'écran de verrouillage.
+Interrupteur « Données du site public » (F-67, DR-01), super-utilisateur seul : carte d'état à gauche, changements récents à droite (maquette donnees-reelles.html).
 Rafraîchie sans rechargement par l'événement donneesReellesModifiees (vue donnees-reelles-etat, change=True : animation du tampon).
-Contexte : donnees_reelles (actif, depuis, par, motif : depuis / par viennent du journal F-70, vides si le site n'a jamais été basculé), change.
-Le motif saisi par le super-utilisateur est affiché échappé (aucun filtre de confiance).
+Contexte : donnees_reelles (actif, depuis, par, motif ; facultatif : historique = liste de {actif, par, date, motif}, les plus récentes d'abord), change.
+Sans « historique », la dernière bascule (depuis, par, motif) tient lieu d'unique entrée. Le motif saisi est affiché échappé (aucun filtre de confiance).
 {% endcomment %}
-<section class="panneau{% if donnees_reelles.actif %} verrou--ferme{% endif %}" aria-labelledby="dr-titre">
-  <div class="panneau-corps">
-    <div class="verrou-tete">
-      <span class="verrou-sceau{% if change %} change{% endif %}" aria-hidden="true">{% if donnees_reelles.actif %}{% icone "globe" %}{% else %}{% icone "file-text" %}{% endif %}</span>
-      <div>
-        <h2 id="dr-titre" class="verrou-intertitre u-mb-1">{% translate "Données réelles du site" %}</h2>
-        <p class="verrou-etat u-mb-1{% if change %} change{% endif %}">{% if donnees_reelles.actif %}{% translate "Activées" %}{% else %}{% translate "Désactivées" %}{% endif %}</p>
-        <p class="verrou-depuis meta u-mb-0">{% if donnees_reelles.depuis %}{% translate "Modifié le" %} {{ donnees_reelles.depuis|date:"d/m/Y" }} {% translate "à" %} {{ donnees_reelles.depuis|date:"H" }}&nbsp;h&nbsp;{{ donnees_reelles.depuis|date:"i" }}{% if donnees_reelles.par %}, {% translate "par" %} <strong class="texte-plein">{{ donnees_reelles.par }}</strong>{% endif %}{% else %}{% translate "Réglage d'origine, jamais modifié." %}{% endif %}</p>
+<div class="grille grille--principale">
+  <section class="panneau{% if donnees_reelles.actif %} verrou--ferme{% endif %}" aria-labelledby="dr-titre">
+    <div class="panneau-corps">
+      <div class="verrou-tete">
+        <span class="verrou-sceau{% if change %} change{% endif %}" aria-hidden="true">{% if donnees_reelles.actif %}{% icone "globe" %}{% else %}{% icone "circle-dashed" %}{% endif %}</span>
+        <div>
+          <h2 id="dr-titre" class="verrou-intertitre u-mb-1">{% translate "Données du site public" %}</h2>
+          <p class="verrou-etat u-mb-0{% if change %} change{% endif %}">{% if donnees_reelles.actif %}{% translate "Données réelles" %}{% else %}{% translate "Données d'exemple" %}{% endif %}</p>
+          <p class="verrou-depuis">{% if donnees_reelles.depuis %}{% translate "Depuis le" %} {{ donnees_reelles.depuis|date_heure_fr }}{% if donnees_reelles.par %}, {% translate "par" %} <strong class="texte-plein">{{ donnees_reelles.par }}</strong>{% endif %}{% else %}{% translate "Réglage d'origine, jamais modifié." %}{% endif %}</p>
+        </div>
       </div>
+      <p class="u-mt-5 u-mb-0">{% if donnees_reelles.actif %}<strong>{% translate "Visibles par tout le monde" %}</strong> {% translate "sur fenamordc.cd." %}{% else %}{% translate "Le site public montre un jeu fixe, sans aucune donnée réelle, sous le bandeau « Données d'exemple »." %}{% endif %}</p>
+      <ul class="verrou-effets u-mt-4" aria-label="{% translate 'Ce que le public voit en ce moment' %}">
+        <li>{% icone "file-text" %}<div><strong>{% translate "Articles et galerie" %}</strong><span class="meta">{% if donnees_reelles.actif %}{% translate "Ceux publiés depuis l'application" %}{% else %}{% translate "Jeu d'exemple fixe" %}{% endif %}</span></div>{% if donnees_reelles.actif %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Réels" %}</span>{% else %}<span class="etat etat--saisi">{% icone "circle-dashed" %}{% translate "Exemple" %}</span>{% endif %}</li>
+        <li>{% icone "users" %}<div><strong>{% translate "Comité exécutif" %}</strong><span class="meta">{% if donnees_reelles.actif %}{% translate "Membres publiés depuis l'application" %}{% else %}{% translate "Noms et photos d'exemple" %}{% endif %}</span></div>{% if donnees_reelles.actif %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Réel" %}</span>{% else %}<span class="etat etat--saisi">{% icone "circle-dashed" %}{% translate "Exemple" %}</span>{% endif %}</li>
+        <li>{% icone "chart-column" %}<div><strong>{% translate "Chiffres de l'accueil" %}</strong><span class="meta">{% if donnees_reelles.actif %}{% translate "Membres actifs et engins de l'application" %}{% else %}{% translate "Chiffres fictifs" %}{% endif %}</span></div>{% if donnees_reelles.actif %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Réels" %}</span>{% else %}<span class="etat etat--saisi">{% icone "circle-dashed" %}{% translate "Exemple" %}</span>{% endif %}</li>
+        <li>{% icone "scan-qr-code" %}<div><strong>{% translate "Vérification des cartes" %}</strong><span class="meta">{% if donnees_reelles.actif %}{% translate "Ouverte au public et à la police" %}{% else %}{% translate "Répond « service indisponible »" %}{% endif %}</span></div>{% if donnees_reelles.actif %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "En service" %}</span>{% else %}<span class="etat etat--a_renouveler">{% icone "unplug" %}{% translate "Suspendue" %}</span>{% endif %}</li>
+      </ul>
+      {% if donnees_reelles.motif %}<p class="meta u-mt-4 u-mb-0">{% translate "Motif" %}&nbsp;: <span class="texte-saisi">{{ donnees_reelles.motif }}</span></p>{% endif %}
     </div>
-    <p class="u-mt-5 u-mb-0">{% if donnees_reelles.actif %}<strong>{% translate "Le site public affiche les données réelles" %}</strong> : {% translate "articles, galerie, comité et chiffres de l'application web." %}{% else %}<strong>{% translate "Le site public affiche des données d'exemple" %}</strong> : {% translate "un jeu fixe, sans aucune donnée réelle. La vérification des cartes est suspendue." %}{% endif %}</p>
-    {% if donnees_reelles.motif %}<p class="meta u-mt-3 u-mb-0">{% translate "Motif :" %} <span class="texte-saisi">{{ donnees_reelles.motif }}</span></p>{% endif %}
-  </div>
-  <div class="panneau-pied">
-    {% if donnees_reelles.actif %}
-    <button type="button" class="bouton bouton--bloc-mobile" hx-get="{% url 'donnees-reelles' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "file-text" %}<span>{% translate "Revenir aux données d'exemple" %}</span></button>
-    {% else %}
-    <button type="button" class="bouton bouton--danger bouton--bloc-mobile" hx-get="{% url 'donnees-reelles' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "globe" %}<span>{% translate "Activer les données réelles" %}</span></button>
-    {% endif %}
-  </div>
-</section>
+    <div class="panneau-pied">
+      {% if donnees_reelles.actif %}
+      <button type="button" class="bouton bouton--bloc-mobile" hx-get="{% url 'donnees-reelles' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "circle-dashed" %}<span>{% translate "Revenir aux données d'exemple" %}</span></button>
+      {% else %}
+      <button type="button" class="bouton bouton--danger bouton--bloc-mobile" hx-get="{% url 'donnees-reelles' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "globe" %}<span>{% translate "Activer les données réelles" %}</span></button>
+      {% endif %}
+    </div>
+  </section>
+
+  <aside class="panneau" aria-labelledby="dr-historique-titre">
+    <div class="panneau-tete"><h2 id="dr-historique-titre">{% translate "Changements récents" %}</h2></div>
+    <div class="panneau-corps">
+      {% if donnees_reelles.historique %}
+      <ol class="historique">
+        {% for e in donnees_reelles.historique %}
+        <li><span class="point{% if e.actif %} point--vert{% endif %}">{% if e.actif %}{% icone "globe" %}{% else %}{% icone "circle-dashed" %}{% endif %}</span><div><p><strong>{% if e.actif %}{% translate "Données réelles" %}{% else %}{% translate "Données d'exemple" %}{% endif %}</strong>{% if e.par %} {% translate "par" %} {{ e.par }}{% endif %}</p><p class="meta">{{ e.date|date_heure_fr }}</p><p class="petit doux{% if e.motif %} texte-saisi{% endif %}">{% if e.motif %}{% translate "Motif" %}&nbsp;: {{ e.motif }}{% else %}{% translate "Sans motif" %}{% endif %}</p></div></li>
+        {% endfor %}
+      </ol>
+      {% elif donnees_reelles.depuis %}
+      <ol class="historique">
+        <li><span class="point{% if donnees_reelles.actif %} point--vert{% endif %}">{% if donnees_reelles.actif %}{% icone "globe" %}{% else %}{% icone "circle-dashed" %}{% endif %}</span><div><p><strong>{% if donnees_reelles.actif %}{% translate "Données réelles" %}{% else %}{% translate "Données d'exemple" %}{% endif %}</strong>{% if donnees_reelles.par %} {% translate "par" %} {{ donnees_reelles.par }}{% endif %}</p><p class="meta">{{ donnees_reelles.depuis|date_heure_fr }}</p><p class="petit doux{% if donnees_reelles.motif %} texte-saisi{% endif %}">{% if donnees_reelles.motif %}{% translate "Motif" %}&nbsp;: {{ donnees_reelles.motif }}{% else %}{% translate "Sans motif" %}{% endif %}</p></div></li>
+      </ol>
+      {% else %}
+      <p class="doux u-mb-0">{% translate "Aucun changement enregistré : le site est resté sur le réglage d'origine." %}</p>
+      {% endif %}
+    </div>
+    <div class="panneau-pied"><a href="{% url 'journal' %}">{% translate "Voir le journal d'activités" %}</a></div>
+  </aside>
+</div>

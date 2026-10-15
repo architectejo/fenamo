@@ -1,10 +1,10 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}
-Interrupteur « données réelles » du site public (F-60). Contexte : action, actif (état actuel), cible (état demandé), motif_max, erreur.
+Interrupteur « données réelles » du site public (F-67, DR-01). Contexte : action, actif (état actuel), cible (état demandé), motif_max, erreur.
 Le formulaire envoie actif=1 (données réelles) ou actif=0 (jeu d'exemple) et un motif facultatif (compteur commun data-compte-caracteres).
 Réponse au POST : 204 + toast + événement donneesReellesModifiees (la carte d'état se rafraîchit). Activer = avertissement fort.
 {% endcomment %}
-{% block titre %}{% if cible %}{% translate "Activer les données réelles" %}{% else %}{% translate "Revenir aux données d'exemple" %}{% endif %}<span class="sous-titre">{% translate "Site public" %}</span>{% endblock %}
+{% block titre %}{% if cible %}{% translate "Activer les données réelles" %}{% else %}{% translate "Revenir aux données d'exemple" %}{% endif %}<span class="sous-titre">{% translate "Site public" %} fenamordc.cd</span>{% endblock %}
 {% block corps %}
 <input type="hidden" name="actif" value="{% if cible %}1{% else %}0{% endif %}">
 {% if cible %}
@@ -13,15 +13,22 @@ Réponse au POST : 204 + toast + événement donneesReellesModifiees (la carte d
   <div>
     <strong class="alerte-titre">{% translate "Les données réelles seront visibles par tout le monde." %}</strong>
     <ul class="consequences">
-      <li>{% translate "les articles, la galerie, le comité et les chiffres de l'application web s'affichent sur le site public ;" %}</li>
-      <li>{% translate "la vérification des cartes de membre fonctionne pour le public ;" %}</li>
-      <li>{% translate "le changement est inscrit au journal d'activités." %}</li>
+      <li>{% translate "les articles, la galerie, le comité exécutif et les chiffres de l'application s'affichent sur le site ;" %}</li>
+      <li>{% translate "la vérification des cartes de membre s'ouvre au public et à la police ;" %}</li>
+      <li>{% translate "le bandeau « Données d'exemple » disparaît ;" %}</li>
+      <li>{% translate "le changement est visible tout de suite et inscrit au journal d'activités." %}</li>
     </ul>
-    <p class="u-mt-2 u-mb-0">{% translate "Activez seulement quand le contenu est prêt à être publié." %}</p>
+    <p class="u-mt-2 u-mb-0">{% translate "Activez seulement quand le contenu publié a été relu." %}</p>
   </div>
 </div>
 {% else %}
-<p class="u-mb-0">{% translate "Le site public affichera de nouveau un jeu d'exemple fixe, sans aucune donnée réelle. La vérification des cartes sera suspendue. Aucune donnée de l'application n'est modifiée." %}</p>
+<div class="alerte alerte--alerte">
+  {% icone "triangle-alert" %}
+  <div>
+    <strong class="alerte-titre">{% translate "La vérification des cartes sera suspendue." %}</strong>
+    {% translate "Le site affichera de nouveau le jeu d'exemple fixe, sous le bandeau « Données d'exemple ». Aucune donnée de l'application n'est modifiée." %}
+  </div>
+</div>
 {% endif %}
 <div class="champ">
   <label class="champ-libelle" for="dr-motif">{% translate "Motif" %} <span class="facultatif">({% translate "facultatif" %})</span></label>

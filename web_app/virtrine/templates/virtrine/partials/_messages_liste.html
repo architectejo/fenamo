@@ -1,0 +1,43 @@
+{% load i18n design %}{% comment %}
+Zone des résultats des messages reçus du site (F-62). Servie seule pour une requête HTMX, incluse par app/contact.html : une seule source de HTML.
+Contexte : page_obj (chaque message porte recu_le), filtres (q, etat), nombres. Tout le texte vient de l'extérieur : échappé par Django, sans aucun filtre de confiance.
+{% endcomment %}
+{% if page_obj.paginator.count %}
+<p class="resume-liste"><span>{% translate "Les plus récents en haut" %}</span><span>{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}</span></p>
+<div class="liste-enveloppe">
+  <table class="liste">
+    <caption class="lecteur">{% translate "Messages reçus par le site public" %}</caption>
+    <thead><tr><th scope="col">{% translate "Objet" %}</th><th scope="col">{% translate "Expéditeur" %}</th><th scope="col">{% translate "Reçu le" %}</th><th scope="col">{% translate "État" %}</th></tr></thead>
+    <tbody>
+    {% for m in page_obj %}
+    <tr class="{% if m.traiter %}ligne--traitee{% else %}ligne--a-traiter{% endif %}">
+      <td data-role="titre"><a class="lien-ligne" href="{% url 'contact-view' m.id %}">{{ m.raison|default:_("(sans objet)") }}</a>{% if m.description %}<span class="apercu-ligne">{{ m.description|truncatechars:140 }}</span>{% endif %}</td>
+      <td data-libelle="{% translate 'Expéditeur' %}"><span class="valeur">{{ m.nom|default:"—" }}{% if m.phone or m.mail %}<span class="meta bloc">{% if m.phone %}{{ m.phone }}{% endif %}{% if m.phone and m.mail %} · {% endif %}{% if m.mail %}{{ m.mail }}{% endif %}</span>{% endif %}</span></td>
+      <td data-libelle="{% translate 'Reçu le' %}" class="chiffres"><time datetime="{{ m.recu_le|date:'c' }}">{{ m.recu_le|quand }}</time></td>
+      <td data-libelle="{% translate 'État' %}" data-role="etat">{% if m.traiter %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Traité" %}</span>{% else %}<span class="etat etat--a_renouveler">{% icone "clock" %}{% translate "À traiter" %}</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/_pagination.html" with page_obj=page_obj cible="#liste-zone" precedent=_("Plus récents") suivant=_("Plus anciens") %}
+{% elif filtres.q %}
+<div class="vide">
+  <div class="vide-icone">{% icone "search" %}</div>
+  <h2>{% translate "Aucun message ne correspond" %}</h2>
+  <p>{% blocktranslate with q=filtres.q %}Rien pour « {{ q }} ». Essayez un autre mot ou un autre état.{% endblocktranslate %}</p>
+  <a class="bouton" href="{% url 'contact' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{% icone "x" %}{% translate "Effacer la recherche" %}</a>
+</div>
+{% elif filtres.etat == "a_traiter" %}
+<div class="vide">
+  <div class="vide-icone">{% icone "check-check" %}</div>
+  <h2>{% translate "Aucun message à traiter" %}</h2>
+  <p>{% translate "Les messages envoyés depuis la page Contact du site arrivent ici." %}</p>
+</div>
+{% else %}
+<div class="vide">
+  <div class="vide-icone">{% icone "mail" %}</div>
+  <h2>{% translate "Aucun message" %}</h2>
+  <p>{% translate "Les messages envoyés depuis la page Contact du site arrivent ici." %}</p>
+</div>
+{% endif %}

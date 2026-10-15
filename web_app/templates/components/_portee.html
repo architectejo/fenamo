@@ -1,0 +1,5 @@
+{% load i18n %}{% comment %}
+Étiquette de portée d'un communiqué : à qui il s'adresse. Paramètres : coordination (Province ou vide), antenne (Antenne ou vide).
+Antenne : « Antenne de Lemba » ; coordination : « Coordination Kinshasa-Est » + code ; sinon « National » (bande du drapeau).
+Texte venu de la base : échappé par Django.
+{% endcomment %}{% if antenne %}<span class="portee"><span class="portee-texte">{% blocktranslate with nom=antenne.nom %}Antenne de {{ nom }}{% endblocktranslate %}</span></span>{% elif coordination %}<span class="portee"><span class="portee-texte">{% blocktranslate with nom=coordination.nom %}Coordination {{ nom }}{% endblocktranslate %}</span>{% if coordination.code %}<span class="portee-code" aria-hidden="true">{{ coordination.code }}</span>{% endif %}</span>{% else %}<span class="portee portee--national"><span class="portee-texte">{% translate "National" %}</span></span>{% endif %}

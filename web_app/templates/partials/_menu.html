@@ -23,9 +23,12 @@
     {% if fn_droits.voit_journal %}<a class="menu-lien" href="{% url 'journal' %}" data-prefixe="/journal/"{% if nom == 'journal' %} aria-current="page"{% endif %}>{% icone "history" %}<span>{% translate "Journal d'activités" %}</span></a>{% endif %}
 
     <p class="menu-groupe">{% translate "Communication" %}</p>
-    <a class="menu-lien"  href="{% url 'list-message' %}" data-prefixe="/communiques/">{% icone "megaphone" %}<span>{% translate "Communiqués" %}</span></a>
-    <a class="menu-lien"  href="{% url 'notifys' %}">{% icone "bell" %}<span>{% translate "Notifications" %}</span>{% if fn_notifs_total %}<span class="nombre">{{ fn_notifs_total }}</span>{% endif %}</a>
-    <a class="menu-lien"  href="{% url 'site' %}" data-prefixe="/contenu-site/">{% icone "globe" %}<span>{% translate "Contenu du site" %}</span></a>
+    <a class="menu-lien" href="{% url 'list-message' %}" data-prefixe="/communiques/"{% if nom == 'list-message' or nom == 'communique' %} aria-current="page"{% endif %}>{% icone "megaphone" %}<span>{% translate "Communiqués" %}</span></a>
+    <a class="menu-lien" href="{% url 'notifys' %}">{% icone "bell" %}<span>{% translate "Notifications" %}</span>{% if fn_notifs_total %}<span class="nombre">{{ fn_notifs_total }}</span>{% endif %}</a>
+
+    <p class="menu-groupe">{% translate "Site public" %}</p>
+    <a class="menu-lien" href="{% url 'site' %}" data-prefixe="/contenu-site/"{% if nom == 'site' %} aria-current="page"{% endif %}>{% icone "globe" %}<span>{% translate "Contenu du site" %}</span></a>
+    {% if fn_droits.est_editeur %}<a class="menu-lien" href="{% url 'contact' %}" data-prefixe="/contenu-site/messages/"{% if nom == 'contact' or nom == 'contact-view' %} aria-current="page"{% endif %}>{% icone "mail" %}<span>{% translate "Messages reçus" %}</span>{% if nb_a_traiter_menu %}<span class="nombre">{{ nb_a_traiter_menu }}</span>{% endif %}</a>{% endif %}
 
     {% if fn_droits.est_su %}
     <p class="menu-groupe">{% translate "Administration" %}</p>

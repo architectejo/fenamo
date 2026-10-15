@@ -1,26 +1,31 @@
 {% extends "base.html" %}
-{% load i18n design %}{% comment %}Messages reçus par le site public (écran migré). La vue fournit `contacts`.{% endcomment %}
-{% block titre %}{% translate "Messages du site" %} - FENAMO-RDC{% endblock %}
+{% load i18n design %}{% comment %}
+Messages reçus par le site public (F-62), SU et ED seulement. Contexte : page_obj (= contacts), filtres (q, etat : a_traiter, traites, tous), nombres (a_traiter, traites, tous), nb_a_traiter.
+Le formulaire #filtres-liste est hors de la zone remplacée (le focus reste sur le champ) ; la zone est le fragment virtrine/partials/_messages_liste.html.
+{% endcomment %}
+{% block titre %}{% translate "Messages reçus" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'site' %}">{% translate "Contenu du site" %}</a><span aria-hidden="true">/</span><span>{% translate "Messages" %}</span></nav>
-<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Messages du site" %}</h1><p class="page-contexte">{% icone "mail" %}{% translate "Contacts reçus par le formulaire du site public" %}</p></div></div>
-{% if contacts %}
-<div class="liste-enveloppe"><table class="liste">
-  <caption class="lecteur">{% translate "Messages reçus" %}</caption>
-  <thead><tr><th scope="col">{% translate "Nom" %}</th><th scope="col">{% translate "Raison" %}</th><th scope="col">{% translate "Reçu le" %}</th><th scope="col">{% translate "État" %}</th></tr></thead>
-  <tbody>
-  {% for contact in contacts %}
-  <tr>
-    <td data-role="titre"><a class="lien-ligne" href="{% url 'contact-view' contact.id %}">{{ contact.nom }}</a></td>
-    <td data-libelle="{% translate 'Raison' %}">{{ contact.raison|default:"—" }}</td>
-    <td data-libelle="{% translate 'Reçu le' %}" class="chiffres">{{ contact.cree_le|default:contact.mise_a_jour|date:"d/m/Y" }}</td>
-    <td data-libelle="{% translate 'État' %}">{% if contact.traiter %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Traité" %}</span>{% else %}<span class="etat etat--a_renouveler">{% icone "clock" %}{% translate "À traiter" %}</span>{% endif %}</td>
-  </tr>
-  {% endfor %}
-  </tbody>
-</table></div>
-{% else %}
-{% translate "Aucun message" as t_vide %}{% translate "Les messages envoyés depuis le site public apparaîtront ici." as t_msg %}
-{% include "components/_etat_vide.html" with icone="mail" titre=t_vide texte=t_msg %}
-{% endif %}
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'site' %}">{% translate "Contenu du site" %}</a><span aria-hidden="true">/</span><span>{% translate "Messages reçus" %}</span></nav>
+<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Messages reçus" %}</h1><p class="page-contexte">{% icone "mail" %}<span>{% translate "Formulaire de contact de fenamordc.cd" %} · <strong>{{ nb_a_traiter }}</strong>&nbsp;{% translate "à traiter" %}</span></p></div></div>
+
+<form id="filtres-liste" method="get" action="{% url 'contact' %}" role="search"
+      hx-get="{% url 'contact' %}" hx-trigger="input changed delay:300ms from:#mq, change from:.puce, submit"
+      hx-target="#liste-zone" hx-push-url="true" hx-indicator="#liste-zone" hx-sync="this:replace" hx-boost="false">
+  <div class="filtres">
+    <div class="recherche">
+      {% icone "search" %}
+      <label class="lecteur" for="mq">{% translate "Rechercher un message" %}</label>
+      <input id="mq" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Nom, téléphone, e-mail ou objet' %}" autocomplete="off">
+    </div>
+  </div>
+  <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
+    <label class="puce"><input type="radio" name="etat" value="a_traiter"{% if filtres.etat == 'a_traiter' %} checked{% endif %}><span>{% translate "À traiter" %} <span class="nombre">{{ nombres.a_traiter }}</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value="traites"{% if filtres.etat == 'traites' %} checked{% endif %}><span>{% translate "Traités" %} <span class="nombre">{{ nombres.traites }}</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value="tous"{% if filtres.etat == 'tous' %} checked{% endif %}><span>{% translate "Tous" %} <span class="nombre">{{ nombres.tous }}</span></span></label>
+  </div>
+</form>
+
+<div id="liste-zone" class="zone-rafraichie" tabindex="-1" hx-get="{% url 'contact' %}" hx-include="#filtres-liste" hx-trigger="contactsMaj from:body" hx-indicator="#liste-zone">
+  {% include "virtrine/partials/_messages_liste.html" %}
+</div>
 {% endblock %}

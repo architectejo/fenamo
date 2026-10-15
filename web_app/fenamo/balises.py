@@ -212,3 +212,35 @@ def heure_fr(valeur):
     if timezone.is_aware(valeur):
         valeur = timezone.localtime(valeur)
     return format_html('{}&nbsp;h&nbsp;{}', valeur.strftime('%H'), valeur.strftime('%M'))
+
+
+@register.filter
+def quand(valeur):
+    """Date lisible d'une liste : « Aujourd'hui, 09:30 », « Hier, 16:40 », sinon « 12/10/2026 » (heure locale). Vide si la valeur est vide."""
+    if not valeur:
+        return ''
+    from django.utils import timezone
+    if hasattr(valeur, 'hour') and timezone.is_aware(valeur):
+        valeur = timezone.localtime(valeur)
+    jour = valeur.date() if hasattr(valeur, 'hour') else valeur  # une date sans heure (anciens messages) : jamais d'heure inventée
+    ecart = (timezone.localdate() - jour).days
+    if not hasattr(valeur, 'hour'):
+        return valeur.strftime('%d/%m/%Y')
+    if ecart == 0:
+        return _("Aujourd'hui, %(h)s") % {'h': valeur.strftime('%H:%M')}
+    if ecart == 1:
+        return _("Hier, %(h)s") % {'h': valeur.strftime('%H:%M')}
+    return valeur.strftime('%d/%m/%Y')
+
+
+@register.filter
+def date_heure_fr(valeur):
+    """« 15/10/2026 à 09 h 12 » (espaces insécables), heure locale. Vide si la valeur est vide."""
+    if not valeur:
+        return ''
+    from django.utils import timezone
+    if not hasattr(valeur, 'hour'):
+        return valeur.strftime('%d/%m/%Y')
+    if timezone.is_aware(valeur):
+        valeur = timezone.localtime(valeur)
+    return format_html('{} {} {}&nbsp;h&nbsp;{}', valeur.strftime('%d/%m/%Y'), _('à'), valeur.strftime('%H'), valeur.strftime('%M'))

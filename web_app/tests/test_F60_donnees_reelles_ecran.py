@@ -20,7 +20,7 @@ def _editeur(jeu):
 def test_F60_carte_visible_au_su_seulement(client, jeu):
     client.force_login(jeu['compte'])
     html = client.get(reverse('site')).content.decode()
-    assert 'donnees-reelles-zone' in html and 'Désactivées' in html and 'données d&#x27;exemple' in html or "données d'exemple" in html
+    assert 'donnees-reelles-zone' in html and 'Données du site public' in html and ('Données d&#x27;exemple' in html or "Données d'exemple" in html)
     assert 'Réglage d' in html and reverse('donnees-reelles') in html
     client.force_login(_editeur(jeu))
     r = client.get(reverse('site'))
@@ -42,7 +42,7 @@ def test_F60_post_nominal_evenement_journal_et_carte_mise_a_jour(client, jeu):
     assert r.status_code == 204 and 'donneesReellesModifiees' in r['HX-Trigger']
     assert Config.instance().donnees_reelles_actif is True
     carte = client.get(reverse('donnees-reelles-etat'), **HX).content.decode()
-    assert 'Activées' in carte and ' change"' in carte and 'Modifié le' in carte and 'admin-test' in carte
+    assert 'Données réelles' in carte and ' change"' in carte and 'Depuis le' in carte and 'admin-test' in carte and 'verrou--ferme' in carte
     assert SCRIPT not in carte and '&lt;script&gt;' in carte  # motif échappé, jamais |safe
     assert JournalAction.objects.filter(action='modification', objet_libelle__isnull=False).exists()
     assert 'Revenir aux données d' in carte

@@ -1,17 +1,32 @@
 {% extends "base.html" %}
-{% load i18n design %}{% comment %}Un message du site public (écran migré). La vue fournit `contact`. « Marquer comme traité » : POST + CSRF.{% endcomment %}
-{% block titre %}{% translate "Message du site" %} - FENAMO-RDC{% endblock %}
+{% load i18n design %}{% comment %}
+Un message du site public (F-62), SU et ED seulement. Contexte : contact, recu_le, traite_par, traite_le, nb_a_traiter, suivant (message suivant à traiter ou None).
+« Marquer comme traité » : POST + CSRF, dans le panneau « Expéditeur » (virtrine/partials/_message_expediteur.html). Le message est du texte venu de l'extérieur :
+échappé par Django, retours à la ligne par le CSS (.texte-saisi), sans aucun filtre de confiance.
+{% endcomment %}
+{% block titre %}{{ contact.raison|default:_("Message du site") }} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'site' %}">{% translate "Contenu du site" %}</a><span aria-hidden="true">/</span><a href="{% url 'contact' %}">{% translate "Messages" %}</a></nav>
-<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{{ contact.nom }}</h1><p class="page-contexte">{% icone "mail" %}{{ contact.raison|default:"" }}</p></div>
-  <div class="page-actions">{% if contact.traiter %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Traité" %}</span>{% else %}{% url 'contact-view' contact.id as url_traiter %}{% translate "Marquer comme traité" as t_libelle %}{% include "partials/_bouton_post.html" with url=url_traiter libelle=t_libelle classe="bouton bouton--valider" %}{% endif %}</div>
+<nav class="fil" aria-label="{% translate 'Fil d’Ariane' %}"><a href="{% url 'site' %}">{% translate "Contenu du site" %}</a><span aria-hidden="true">/</span><a href="{% url 'contact' %}">{% translate "Messages reçus" %}</a></nav>
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">{{ contact.raison|default:_("(sans objet)") }}</h1>
+    <p class="page-contexte">{% icone "mail" %}<span>{% translate "Reçu le" %} <time datetime="{{ recu_le|date:'c' }}">{{ recu_le|date_heure_fr }}</time></span></p>
+  </div>
+  <div class="page-actions" id="contact-etat">{% if contact.traiter %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Traité" %}</span>{% else %}<span class="etat etat--a_renouveler">{% icone "clock" %}{% translate "À traiter" %}</span>{% endif %}</div>
 </div>
-<section class="panneau panneau--etroit"><div class="panneau-corps pile">
-  <p class="u-mb-0">{{ contact.description|linebreaksbr }}</p>
-  <dl class="definitions">
-    <div><dt>{% translate "Téléphone" %}</dt><dd>{{ contact.phone|default:"—" }}</dd></div>
-    <div><dt>{% translate "E-mail" %}</dt><dd>{{ contact.mail|default:"—" }}</dd></div>
-    <div><dt>{% translate "Reçu le" %}</dt><dd>{{ contact.cree_le|default:contact.mise_a_jour|date:"d/m/Y" }}</dd></div>
-  </dl>
-</div></section>
+
+<div class="grille grille--principale">
+  <section class="panneau" aria-labelledby="msg-titre">
+    <h2 class="lecteur" id="msg-titre">{% translate "Message" %}</h2>
+    <div class="panneau-corps pile">
+      <blockquote class="message-su"><p class="texte-saisi">{{ contact.description|default:"" }}</p></blockquote>
+      <p class="meta u-mb-0">{% translate "Envoyé depuis la page Contact de fenamordc.cd. Répondez par téléphone ou par e-mail : l'application n'envoie pas de réponse." %}</p>
+    </div>
+  </section>
+  {% include "virtrine/partials/_message_expediteur.html" %}
+</div>
+<div class="lecture-pied">
+  <a class="bouton bouton--bloc-mobile" href="{% url 'contact' %}">{% icone "arrow-left" %}{% translate "Messages reçus" %}</a>
+  {% if suivant %}<a class="bouton bouton--bloc-mobile" href="{% url 'contact-view' suivant.id %}">{% translate "Message suivant à traiter" %}</a>{% endif %}
+</div>
 {% endblock %}

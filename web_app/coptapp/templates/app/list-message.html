@@ -1,32 +1,47 @@
 {% extends "base.html" %}
 {% load i18n design %}{% comment %}
-Communiqués reçus dans l'application (F-40). Contexte : page_obj, filtres, filtres_actifs, nb_non_lus, peut_publier.
-Le formulaire #filtres-liste est hors de la zone remplacée (le focus reste sur le champ) ; les filtres coordination et antenne de l'adresse sont conservés en champs cachés.
+Communiqués reçus dans l'application (F-40). Contexte : page_obj, filtres, filtres_actifs, nb_non_lus, nombres (tous, non_lus), peut_publier, choix (coordinations, antennes).
+Le formulaire #filtres-liste est hors de la zone remplacée (le focus reste sur le champ). Les listes « Coordination » et « Antenne » ne sont montrées
+qu'à ceux qui voient plusieurs coordinations (SU, PR, VN, ED) ; sinon les filtres de l'adresse sont conservés en champs cachés.
 {% endcomment %}
 {% block titre %}{% translate "Communiqués" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div class="page-tete">
-  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Communiqués" %}</h1><p class="page-contexte">{% icone "megaphone" %}{% blocktranslate count n=nb_non_lus %}{{ n }} communiqué non lu{% plural %}{{ n }} communiqués non lus{% endblocktranslate %}</p></div>
-  {% if peut_publier %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Publier un communiqué" %}</span></a></div>{% endif %}
+  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Communiqués" %}</h1><p class="page-contexte">{% icone "megaphone" %}<span>{% if nb_non_lus %}<strong>{{ nb_non_lus }}</strong> {% blocktranslate count n=nb_non_lus %}non lu{% plural %}non lus{% endblocktranslate %}{% if fn_perimetre %} · {% translate "Périmètre" %} : {{ fn_perimetre }}{% endif %}{% else %}{% translate "Tout est lu" %}{% endif %}</span></p></div>
+  {% if peut_publier %}<div class="page-actions"><a class="bouton bouton--principal bouton--bloc-mobile" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Publier un communiqué" %}</span></a></div>{% endif %}
 </div>
 
-<form id="filtres-liste" method="get" action="{% url 'list-message' %}" role="search"
-      hx-get="{% url 'list-message' %}" hx-trigger="input changed delay:300ms from:#q, change from:.puce, submit"
+{% with plusieurs=choix.coordinations|length %}
+<form id="filtres-liste" class="filtres-communiques" method="get" action="{% url 'list-message' %}" role="search"
+      hx-get="{% url 'list-message' %}" hx-trigger="input changed delay:300ms from:#q, change from:.puce, change from:.filtres-plus select, submit"
       hx-target="#liste-zone" hx-push-url="true" hx-indicator="#liste-zone" hx-sync="this:replace" hx-boost="false">
-  <input type="hidden" name="coordination" value="{{ filtres.coordination }}">
-  <input type="hidden" name="antenne" value="{{ filtres.antenne }}">
   <div class="filtres">
     <div class="recherche">
       {% icone "search" %}
       <label class="lecteur" for="q">{% translate "Rechercher un communiqué" %}</label>
       <input id="q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Titre ou texte' %}" autocomplete="off">
     </div>
+    {% if plusieurs > 1 and fn_droits.est_editeur or fn_droits.role == "PR" or fn_droits.role == "VN" %}
+    <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus">{% icone "sliders-horizontal" %}{% translate "Filtres" %}{% if filtres.coordination and filtres.antenne %}<span class="nombre">2</span>{% elif filtres.coordination or filtres.antenne %}<span class="nombre">1</span>{% endif %}</button>
+    {% endif %}
   </div>
+  {% if plusieurs > 1 and fn_droits.est_editeur or fn_droits.role == "PR" or fn_droits.role == "VN" %}
+  <div class="filtres-plus" id="filtres-plus">
+    <div class="champ"><label class="champ-libelle" for="f-coordination">{% translate "Coordination" %}</label>
+      <select class="champ-saisie" id="f-coordination" name="coordination"><option value="">{% translate "Toutes les coordinations" %}</option>{% for c in choix.coordinations %}<option value="{{ c.id }}"{% if filtres.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select></div>
+    <div class="champ"><label class="champ-libelle" for="f-antenne">{% translate "Antenne" %}</label>
+      <select class="champ-saisie" id="f-antenne" name="antenne"><option value="">{% translate "Toutes les antennes" %}</option>{% for c in choix.coordinations %}<optgroup label="{{ c.nom }}">{% for a in choix.antennes %}{% if a.coordination == c.id %}<option value="{{ a.id }}"{% if filtres.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}</option>{% endif %}{% endfor %}</optgroup>{% endfor %}</select></div>
+  </div>
+  {% else %}
+  <input type="hidden" name="coordination" value="{{ filtres.coordination }}">
+  <input type="hidden" name="antenne" value="{{ filtres.antenne }}">
+  {% endif %}
   <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
-    <label class="puce"><input type="radio" name="etat" value=""{% if filtres.etat != 'non_lus' %} checked{% endif %}><span>{% translate "Tous" %}</span></label>
-    <label class="puce"><input type="radio" name="etat" value="non_lus"{% if filtres.etat == 'non_lus' %} checked{% endif %}><span>{% translate "Non lus" %}</span></label>
+    <label class="puce"><input type="radio" name="etat" value=""{% if filtres.etat != 'non_lus' %} checked{% endif %}><span>{% translate "Tous" %}{% if nombres %} <span class="nombre">{{ nombres.tous }}</span>{% endif %}</span></label>
+    <label class="puce"><input type="radio" name="etat" value="non_lus"{% if filtres.etat == 'non_lus' %} checked{% endif %}><span>{% translate "Non lus" %} <span class="nombre">{% if nombres %}{{ nombres.non_lus }}{% else %}{{ nb_non_lus }}{% endif %}</span></span></label>
   </div>
 </form>
+{% endwith %}
 
 <div id="liste-zone" class="zone-rafraichie" tabindex="-1" hx-get="{% url 'list-message' %}" hx-include="#filtres-liste" hx-trigger="communiquesMaj from:body" hx-indicator="#liste-zone">
   {% include "coptapp/communiques/partials/_liste.html" %}

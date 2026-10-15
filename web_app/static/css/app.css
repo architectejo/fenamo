@@ -702,16 +702,6 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
   .dossier-actions .bouton--discret { grid-column: auto; }
 }
 /* File compacte (dans un panneau, ex. tableau de bord) : lignes séparées par un filet, pas de carte dans la carte */
-/* Communiqués (F-40) : non lus mis en évidence, lecture, choix du ciblage */
-.dossier.communique.non-lu { background: var(--surface); border-color: var(--trait-fort); box-shadow: inset 4px 0 0 var(--jaune); }
-.communique-icone { align-self: start; }
-.communique-nouveau { font-size: var(--t-1); font-weight: var(--graisse-forte); padding: 0 var(--e-2); border-radius: var(--r-rond); background: var(--encre); color: var(--sur-encre); }
-:root[data-theme="sombre"] .communique-nouveau { background: var(--jaune); color: var(--encre); }
-.communique-apercu { margin: var(--e-1) 0 0; color: var(--texte-doux); font-size: var(--t-3); overflow-wrap: anywhere; }
-.communique-texte { font-size: var(--t-4); line-height: var(--interligne); overflow-wrap: anywhere; }
-.communique-cibles { display: flex; flex-wrap: wrap; gap: var(--e-2); }
-.file--communiques .dossier { animation: page-entree var(--d-moyen) var(--courbe-sortie) backwards; }
-.file--communiques .dossier:nth-child(2) { animation-delay: 40ms; } .file--communiques .dossier:nth-child(3) { animation-delay: 80ms; } .file--communiques .dossier:nth-child(n+4) { animation-delay: 120ms; }
 .file--compacte { gap: 0; }
 .file--compacte .dossier { grid-template-columns: auto minmax(0, 1fr); align-items: start; padding: var(--e-3) 0; border: 0; border-bottom: 1px solid var(--trait); border-radius: 0; background: none; }
 .file--compacte .dossier:last-child { border-bottom: 0; padding-bottom: 0; }
@@ -734,6 +724,90 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .onglet[aria-selected="true"]::after { content: ""; position: absolute; left: var(--e-2); right: var(--e-2); bottom: -1px; height: 3px; border-radius: var(--r-plaque) var(--r-plaque) 0 0; background: var(--encre); animation: souligne var(--d-moyen) var(--courbe-sortie); }
 :root[data-theme="sombre"] .onglet[aria-selected="true"]::after { background: var(--jaune); }
 .onglet .nombre { font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); padding: 0 6px; border-radius: var(--r-plaque); background: var(--surface-creuse); color: var(--texte); }
+
+/* =========================================================
+   13 bis. Communication et site public : communiqués (F-40), données réelles (F-67, DR-01), messages de contact (F-62)
+   Reporté de docs/design/maquettes/communication.css. Uniquement des jetons de tokens.css.
+   ========================================================= */
+/* ---------- Portée d'un communiqué : à qui il s'adresse ----------
+   Étiquette au trait, comme la plaque d'engin. Le national porte la bande du drapeau (ciel, jaune, rouge) ;
+   coordination et antenne une bande neutre. Le texte passe à la ligne si besoin : jamais coupé. */
+.portee {
+  display: inline-flex; align-items: stretch; max-width: 100%; overflow: hidden;
+  border: 1.5px solid var(--texte); border-radius: var(--r-plaque); background: var(--surface);
+  color: var(--texte); font-size: var(--t-1); font-weight: var(--graisse-forte); line-height: var(--interligne-serre);
+}
+.portee::before { content: ""; width: 5px; flex: none; background: var(--trait-fort); }
+.portee--national::before { background: linear-gradient(var(--drapeau-ciel) 0 34%, var(--drapeau-jaune) 34% 66%, var(--drapeau-rouge) 66%); }
+.portee-texte { padding: 3px var(--e-2) 3px var(--e-2); overflow-wrap: anywhere; }
+.portee-code { padding: 3px var(--e-2); background: var(--texte); color: var(--surface); font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); letter-spacing: .04em; white-space: nowrap; }
+
+/* ---------- Liste des communiqués ----------
+   Lu : carte à plat sur le papier, titre en graisse normale. Non lu : surface blanche, bande jaune (le gilet), titre gras.
+   Toute la carte est cliquable (lien étiré) : cible tactile pleine largeur. Aucune animation d'apparition. */
+.communiques { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.communique-ligne {
+  position: relative; display: grid; gap: var(--e-2); padding: var(--e-4);
+  border: 1px solid var(--trait); border-radius: var(--r-panneau); background: transparent;
+  transition: border-color var(--d-court), background var(--d-moyen);
+}
+.communique-ligne:hover { border-color: var(--trait-fort); }
+.communique-ligne.non-lu { background: var(--surface); border-color: var(--trait-fort); box-shadow: inset 4px 0 0 var(--jaune); }
+.communique-ligne:has(.communique-lien:focus-visible) { box-shadow: 0 0 0 3px var(--focus-halo); border-color: var(--focus-anneau); }
+.communique-ligne.non-lu:has(.communique-lien:focus-visible) { box-shadow: inset 4px 0 0 var(--jaune), 0 0 0 3px var(--focus-halo); }
+.communique-tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-1) var(--e-3); }
+.communique-quand { font-size: var(--t-2); color: var(--texte-doux); font-variant-numeric: tabular-nums; }
+.communique-titre { margin: 0; font-size: var(--t-4); line-height: 1.3; font-weight: var(--graisse-normale); hyphens: manual; }
+.non-lu .communique-titre { font-weight: var(--graisse-forte); }
+.communique-lien { color: var(--texte); text-decoration: none; }
+.communique-lien:focus-visible { outline: none; }
+.communique-lien::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.communique-lien:hover { text-decoration: underline; }
+.communique-ligne .communique-apercu {
+  margin: 0; color: var(--texte-doux); font-size: var(--t-3);
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.communique-nouveau { display: inline-block; vertical-align: .15em; margin-left: var(--e-1); font-size: var(--t-1); font-weight: var(--graisse-forte); padding: 0 var(--e-2); border-radius: var(--r-rond); background: var(--encre); color: var(--sur-encre); }
+:root[data-theme="sombre"] .communique-nouveau { background: var(--jaune); color: var(--encre); }
+
+/* ---------- Lecture d'un communiqué ---------- */
+.lecture { max-width: calc(var(--mesure) + 2 * var(--e-7)); }
+.lecture-corps { display: grid; gap: var(--e-5); padding: var(--e-5) var(--e-4); }
+@media (min-width: 768px) { .lecture-corps { padding: var(--e-7); } }
+.lecture-tete { display: grid; gap: var(--e-3); justify-items: start; }
+.lecture-tete .page-titre { margin: 0; overflow-wrap: break-word; hyphens: manual; }
+.lecture-texte { max-width: var(--mesure); margin: 0; font-size: var(--t-3); line-height: var(--interligne-lecture); white-space: pre-line; overflow-wrap: anywhere; }
+@media (min-width: 768px) { .lecture-texte { font-size: var(--t-4); } }
+.lecture-signature { display: flex; align-items: center; gap: var(--e-3); padding-top: var(--e-4); border-top: 1px solid var(--trait); }
+.lecture-signature p { margin: 0; }
+.lecture-pied { display: flex; flex-wrap: wrap; gap: var(--e-2); justify-content: space-between; margin-top: var(--e-4); }
+
+/* ---------- Modale de publication : résumé des destinataires, qui suit le choix ---------- */
+.destinataires { display: flex; gap: var(--e-3); align-items: flex-start; padding: var(--e-3) var(--e-4); border-radius: var(--r-champ); background: var(--surface-2); border: 1px solid var(--trait); }
+.destinataires > .ic { flex: none; margin-top: .2em; color: var(--texte-doux); }
+.destinataires p { margin: 0; }
+.destinataires .portee { margin-bottom: var(--e-2); }
+.choix--cibles { grid-template-columns: minmax(0, 1fr); } /* une colonne partout : « Une coordination » ne se coupe jamais */
+
+/* ---------- Messages de contact (F-62) ---------- */
+.liste .ligne--a-traiter .lien-ligne { font-weight: var(--graisse-forte); }
+.liste .ligne--traitee .lien-ligne { font-weight: var(--graisse-normale); }
+.liste td time { white-space: nowrap; }
+.liste td > .valeur { min-width: 0; overflow-wrap: anywhere; }
+.apercu-ligne { display: block; max-width: 44ch; color: var(--texte-doux); font-size: var(--t-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 575.98px) { .apercu-ligne { max-width: none; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; } }
+.coordonnees { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.coordonnees a.bouton { justify-content: flex-start; width: 100%; min-height: var(--cible); font-weight: var(--graisse-normale); overflow-wrap: anywhere; text-align: left; }
+.coordonnees .meta { display: block; }
+.traite-par { display: flex; gap: var(--e-2); align-items: flex-start; margin: 0; font-size: var(--t-2); color: var(--texte-doux); }
+.traite-par .ic { flex: none; margin-top: .15em; color: var(--etat-actif-fg); }
+
+/* ---------- Barre du haut à 360 px : le badge des communiqués ajoute une icône ----------
+   Sans ce resserrement, « Rechercher » est coupé dans le champ (constaté aussi dans l'application intégrée). */
+@media (max-width: 399.98px) {
+  .haut .rangee--serree { gap: 0; }
+  .haut .recherche input { padding-right: var(--e-2); }
+}
 
 /* =========================================================
    14. Historique (fiche) et journal d'activités

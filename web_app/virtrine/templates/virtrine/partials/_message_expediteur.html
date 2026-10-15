@@ -1,0 +1,33 @@
+{% load i18n design %}{% comment %}
+Panneau « Expéditeur » d'un message reçu (F-62) : coordonnées, boutons tel: et mailto:, et « Marquer comme traité » (POST + CSRF, HTMX : ce panneau est remplacé).
+Contexte : contact, traite_par, traite_le. Servi seul au POST HTMX (avec l'état de l'en-tête en échange hors bande), inclus par app/contact-view.html sinon.
+Les coordonnées viennent de l'extérieur : échappées par Django, sans aucun filtre de confiance ; les adresses tel: et mailto: sont encodées.
+{% endcomment %}
+<aside class="panneau" id="expediteur" aria-labelledby="exp-titre">
+  <div class="panneau-tete"><h2 id="exp-titre">{% translate "Expéditeur" %}</h2></div>
+  <div class="panneau-corps pile">
+    <p class="u-mb-0"><strong>{{ contact.nom|default:"—" }}</strong></p>
+    {% if contact.phone or contact.mail %}
+    <ul class="coordonnees">
+      {% if contact.phone %}<li><a class="bouton" href="tel:{{ contact.phone|cut:' '|urlencode:'+' }}">{% icone "phone" %}<span>{% translate "Appeler" %}<span class="meta">{{ contact.phone }}</span></span></a></li>{% endif %}
+      {% if contact.mail %}<li><a class="bouton" href="mailto:{{ contact.mail|urlencode:'@+' }}">{% icone "mail" %}<span>{% translate "Écrire un e-mail" %}<span class="meta">{{ contact.mail }}</span></span></a></li>{% endif %}
+    </ul>
+    {% endif %}
+    {% if not contact.mail %}<p class="meta u-mb-0">{% translate "Pas d'adresse e-mail donnée." %}</p>{% endif %}
+    {% if not contact.phone %}<p class="meta u-mb-0">{% translate "Pas de numéro de téléphone donné." %}</p>{% endif %}
+    {% if contact.traiter and traite_le %}
+    <p class="traite-par">{% icone "circle-check" %}<span>{% translate "Traité le" %} {{ traite_le|date_heure_fr }}{% if traite_par %} {% translate "par" %} {{ traite_par.get_full_name|default:traite_par|identifiant_affiche }}{% endif %}</span></p>
+    {% endif %}
+  </div>
+  {% if not contact.traiter %}
+  <div class="panneau-pied">
+    <form method="post" action="{% url 'contact-view' contact.id %}" hx-post="{% url 'contact-view' contact.id %}" hx-target="#expediteur" hx-swap="outerHTML" hx-disabled-elt="find button" hx-boost="false">
+      {% csrf_token %}
+      <button type="submit" class="bouton bouton--valider bouton--bloc-mobile"><span class="roue" aria-hidden="true"></span>{% icone "check" %}<span>{% translate "Marquer comme traité" %}</span></button>
+    </form>
+  </div>
+  {% endif %}
+</aside>
+{% if request.htmx %}
+<div class="page-actions" id="contact-etat" hx-swap-oob="true">{% if contact.traiter %}<span class="etat etat--actif">{% icone "circle-check" %}{% translate "Traité" %}</span>{% else %}<span class="etat etat--a_renouveler">{% icone "clock" %}{% translate "À traiter" %}</span>{% endif %}</div>
+{% endif %}

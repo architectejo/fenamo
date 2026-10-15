@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load i18n design %}{% comment %}
 Contenu du site public (écran migré) : liste des articles ; le formulaire d'article s'ouvre dans la modale commune (app/modales/_article.html).
-La suppression d'un article passe par la modale commune de confirmation (définitive : « irréversible » est exact). Contexte : intit, article, articles, message/classe.
+La suppression d'un article passe par la modale commune de confirmation (définitive : « irréversible » est exact). Contexte : intit, article, articles, message/classe, donnees_reelles (SU), nb_a_traiter (facultatif : nombre sur le bouton « Messages reçus »).
 {% endcomment %}
 {% block titre %}{% translate "Contenu du site" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div class="page-tete">
-  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Contenu du site" %}</h1><p class="page-contexte">{% icone "globe" %}{% translate "Articles du site public" %}</p></div>
-  <div class="page-actions"><a class="bouton" href="{% url 'contact' %}">{% icone "mail" %}<span>{% translate "Messages reçus" %}</span></a><a class="bouton bouton--principal" href="{% url 'site' %}" hx-get="{% url 'site' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Nouvel article" %}</span></a></div>
+  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Contenu du site" %}</h1><p class="page-contexte">{% icone "globe" %}fenamordc.cd</p></div>
+  <div class="page-actions"><a class="bouton" href="{% url 'contact' %}">{% icone "mail" %}<span>{% translate "Messages reçus" %}</span>{% if nb_a_traiter %}<span class="nombre">{{ nb_a_traiter }}</span>{% endif %}</a><a class="bouton bouton--principal" href="{% url 'site' %}" hx-get="{% url 'site' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Nouvel article" %}</span></a></div>
 </div>
 {% include "components/_message_vue.html" with message=message classe=classe %}
-{% if fn_droits.est_su and donnees_reelles %}<div id="donnees-reelles-zone" class="u-mb-5" hx-get="{% url 'donnees-reelles-etat' %}" hx-trigger="donneesReellesModifiees from:body" hx-swap="innerHTML">{% include "virtrine/partials/_donnees_reelles.html" %}</div>{% endif %}
-<div>
+<div class="pile">
+{% if fn_droits.est_su and donnees_reelles %}<div id="donnees-reelles-zone" hx-get="{% url 'donnees-reelles-etat' %}" hx-trigger="donneesReellesModifiees from:body" hx-swap="innerHTML">{% include "virtrine/partials/_donnees_reelles.html" %}</div>{% endif %}
   <section class="panneau" aria-labelledby="titre-liste-articles">
     <div class="panneau-tete"><h2 id="titre-liste-articles">{% translate "Articles" %}</h2></div>
     <div class="panneau-corps">

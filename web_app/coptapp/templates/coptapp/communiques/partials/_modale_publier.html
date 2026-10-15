@@ -1,41 +1,65 @@
 {% extends "components/modale_base.html" %}
 {% load i18n design %}{% comment %}
-Publier un communiqué (F-40), dans la modale commune. Contexte : action, coordinations, antennes (liste de dictionnaires id, nom, coordination ; passée à Alpine par json_script), titre_max, message_max, valeurs, erreur.
-Ciblage : national par défaut ; « coordination » ou « antenne » révèle la liste correspondante (Alpine). Le champ masqué est désactivé : il n'est pas envoyé.
+Publier un communiqué (F-40), dans la modale commune. Contexte : action, coordinations, antennes (liste de dictionnaires id, nom, coordination),
+titre_max, message_max, valeurs (titre, message, coordination, antenne ; facultatif : cible), erreur (alerte en tête), erreurs (facultatif : dictionnaire
+champ -> texte, pour les champs titre, message, coordination, antenne ; affiché sous le champ avec aria-invalid).
+Ordre d'une enveloppe : destinataires, liste de coordination ou d'antenne, résumé de qui reçoit, titre, message.
+Le champ masqué est désactivé : il n'est pas envoyé. Une seule liste d'antennes, rangées par coordination (<optgroup>).
 {% endcomment %}
 {% block titre %}{% translate "Publier un communiqué" %}{% endblock %}
+{% block sous_titre %}{% translate "Il arrive dans les notifications des destinataires" %}{% endblock %}
 {% block corps %}
-<div class="champ">
-  <label class="champ-libelle" for="c-titre">{% translate "Titre" %}</label>
-  <input id="c-titre" name="titre" maxlength="{{ titre_max }}" required value="{{ valeurs.titre }}" autocomplete="off">
+{% translate "Antenne de" as t_antenne %}{% translate "Coordination" as t_coordination %}{% translate "Choisir une coordination" as t_choisir_c %}{% translate "Choisir une antenne" as t_choisir_a %}
+<div class="formulaire" x-data="{ cible: '{% if valeurs.cible == 'antenne' or not valeurs.cible and valeurs.antenne %}antenne{% elif valeurs.cible == 'coordination' or not valeurs.cible and valeurs.coordination %}coordination{% else %}national{% endif %}', coordNom: '', anteNom: '',
+  maj() { const c = this.$refs.coord, a = this.$refs.ante; this.coordNom = c && c.value ? c.selectedOptions[0].text : ''; this.anteNom = a && a.value ? a.selectedOptions[0].text : ''; } }" x-init="maj()">
+  <fieldset>
+    <legend class="champ-libelle">{% translate "Destinataires" %}</legend>
+    <div class="choix choix--cibles">
+      <label><input type="radio" name="cible" value="national" x-model="cible"><span>{% translate "National" %}<span class="choix-sous">{% translate "Toute la fédération" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="cible" value="coordination" x-model="cible"><span>{% translate "Une coordination" %}<span class="choix-sous">{% translate "Ses antennes comprises" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="cible" value="antenne" x-model="cible"><span>{% translate "Une antenne" %}<span class="choix-sous">{% translate "Son équipe seulement" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+    </div>
+  </fieldset>
+
+  <div class="champ" x-show="cible === 'coordination'" x-cloak>
+    <label class="champ-libelle" for="c-coordination">{% translate "Coordination provinciale" %}</label>
+    <select class="champ-saisie" id="c-coordination" name="coordination" x-ref="coord" @change="maj()" :disabled="cible !== 'coordination'"{% if erreurs.coordination %} aria-invalid="true" aria-describedby="c-coordination-erreur"{% endif %}><option value="">{{ t_choisir_c }}</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if valeurs.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select>
+    {% if erreurs.coordination %}<p class="champ-erreur" id="c-coordination-erreur" role="alert">{% icone "circle-alert" %}{{ erreurs.coordination }}</p>{% endif %}
+  </div>
+  <div class="champ" x-show="cible === 'antenne'" x-cloak>
+    <label class="champ-libelle" for="c-antenne">{% translate "Antenne" %}</label>
+    <select class="champ-saisie" id="c-antenne" name="antenne" x-ref="ante" @change="maj()" :disabled="cible !== 'antenne'" aria-describedby="c-antenne-aide{% if erreurs.antenne %} c-antenne-erreur{% endif %}"{% if erreurs.antenne %} aria-invalid="true"{% endif %}><option value="">{{ t_choisir_a }}</option>{% for c in coordinations %}<optgroup label="{{ c.nom }}">{% for a in antennes %}{% if a.coordination == c.id %}<option value="{{ a.id }}"{% if valeurs.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}</option>{% endif %}{% endfor %}</optgroup>{% endfor %}</select>
+    <p class="champ-aide u-mb-0" id="c-antenne-aide">{% translate "Antennes rangées par coordination." %}</p>
+    {% if erreurs.antenne %}<p class="champ-erreur" id="c-antenne-erreur" role="alert">{% icone "circle-alert" %}{{ erreurs.antenne }}</p>{% endif %}
+  </div>
+
+  <div class="destinataires" aria-live="polite">
+    {% icone "users" %}
+    <div>
+      <div>
+        <span class="portee portee--national" x-show="cible === 'national'"><span class="portee-texte">{% translate "National" %}</span></span>
+        <span class="portee" x-show="cible === 'coordination'" x-cloak><span class="portee-texte" x-text="coordNom ? '{{ t_coordination|escapejs }} ' + coordNom : '{{ t_choisir_c|escapejs }}'"></span></span>
+        <span class="portee" x-show="cible === 'antenne'" x-cloak><span class="portee-texte" x-text="anteNom ? '{{ t_antenne|escapejs }} ' + anteNom : '{{ t_choisir_a|escapejs }}'"></span></span>
+      </div>
+      <p x-show="cible === 'national'">{% translate "Reçu par tous les comptes actifs : président, validateurs, agents de terrain de toutes les coordinations et super-utilisateurs." %}</p>
+      <p x-show="cible === 'coordination'" x-cloak>{% translate "Reçu par le validateur provincial, les validateurs et agents de toutes ses antennes, le président, les validateurs nationaux et les super-utilisateurs." %}</p>
+      <p x-show="cible === 'antenne'" x-cloak>{% translate "Reçu par le validateur et les agents de cette antenne, le validateur de sa coordination, le président, les validateurs nationaux et les super-utilisateurs." %}</p>
+    </div>
+  </div>
+
+  <div class="champ">
+    <label class="champ-libelle" for="c-titre">{% translate "Titre" %}</label>
+    <input class="champ-saisie" id="c-titre" name="titre" maxlength="{{ titre_max }}" required value="{{ valeurs.titre }}" autocomplete="off" data-compte-caracteres="#c-titre-compte" aria-describedby="c-titre-compte{% if erreurs.titre %} c-titre-erreur{% endif %}"{% if erreurs.titre %} aria-invalid="true"{% endif %}>
+    <p class="champ-aide compte-caracteres u-mb-0" id="c-titre-compte"><span data-compte-valeur>0 / {{ titre_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+    {% if erreurs.titre %}<p class="champ-erreur" id="c-titre-erreur" role="alert">{% icone "circle-alert" %}{{ erreurs.titre }}</p>{% endif %}
+  </div>
+  <div class="champ">
+    <label class="champ-libelle" for="c-message">{% translate "Message" %}</label>
+    <textarea class="champ-saisie" id="c-message" name="message" rows="7" maxlength="{{ message_max }}" required data-compte-caracteres="#c-message-compte" aria-describedby="c-message-aide c-message-compte{% if erreurs.message %} c-message-erreur{% endif %}"{% if erreurs.message %} aria-invalid="true"{% endif %}>{{ valeurs.message }}</textarea>
+    <p class="champ-aide compte-caracteres u-mb-0" id="c-message-compte"><span data-compte-valeur>0 / {{ message_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+    <p class="champ-aide u-mb-0" id="c-message-aide">{% translate "Dites quoi, où, quand, et ce que chacun doit faire. Les retours à la ligne sont conservés." %}</p>
+    {% if erreurs.message %}<p class="champ-erreur" id="c-message-erreur" role="alert">{% icone "circle-alert" %}{{ erreurs.message }}</p>{% endif %}
+  </div>
 </div>
-<div class="champ">
-  <label class="champ-libelle" for="c-message">{% translate "Message" %}</label>
-  <textarea id="c-message" name="message" rows="6" maxlength="{{ message_max }}" required data-compte-caracteres="#c-message-compte" aria-describedby="c-message-compte">{{ valeurs.message }}</textarea>
-  <p class="champ-aide compte-caracteres u-mb-0" id="c-message-compte"><span data-compte-valeur>0 / {{ message_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
-</div>
-{{ antennes|json_script:"c-antennes-donnees" }}
-<fieldset class="champ" x-data="{ cible: '{% if valeurs.antenne %}antenne{% elif valeurs.coordination %}coordination{% else %}national{% endif %}', filtre: '{{ valeurs.coordination|default:'' }}', antenne: '{{ valeurs.antenne|default:'' }}',
-  antennes: JSON.parse(document.getElementById('c-antennes-donnees').textContent),
-  get visibles() { return this.filtre ? this.antennes.filter(a => String(a.coordination) === this.filtre) : this.antennes },
-  filtrer() { if (!this.visibles.some(a => String(a.id) === this.antenne)) this.antenne = '' } }">
-  <legend class="champ-libelle">{% translate "Destinataires" %}</legend>
-  <div class="communique-cibles" role="radiogroup">
-    <label class="puce"><input type="radio" name="cible" value="national" x-model="cible"><span>{% translate "National" %}</span></label>
-    <label class="puce"><input type="radio" name="cible" value="coordination" x-model="cible"><span>{% translate "Une coordination" %}</span></label>
-    <label class="puce"><input type="radio" name="cible" value="antenne" x-model="cible"><span>{% translate "Une antenne" %}</span></label>
-  </div>
-  <div class="champ u-mt-3" x-show="cible === 'coordination'" x-cloak>
-    <label class="champ-libelle" for="c-coordination">{% translate "Coordination" %}</label>
-    <select id="c-coordination" name="coordination" :disabled="cible !== 'coordination'"><option value="">{% translate "Choisir une coordination" %}</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if valeurs.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select>
-  </div>
-  <div class="champ u-mt-3" x-show="cible === 'antenne'" x-cloak>
-    <label class="champ-libelle" for="c-antenne-filtre">{% translate "Coordination de l'antenne" %}</label>
-    <select id="c-antenne-filtre" x-model="filtre" @change="filtrer()"><option value="">{% translate "Toutes les coordinations" %}</option>{% for c in coordinations %}<option value="{{ c.id }}">{{ c.nom }}</option>{% endfor %}</select>
-    <label class="champ-libelle u-mt-3" for="c-antenne">{% translate "Antenne" %}</label>
-    <select id="c-antenne" name="antenne" x-model="antenne" :disabled="cible !== 'antenne'"><option value="">{% translate "Choisir une antenne" %}</option><template x-for="a in visibles" :key="a.id"><option :value="a.id" x-text="a.nom"></option></template></select>
-  </div>
-  <p class="champ-aide">{% translate "Sans choix, le communiqué est reçu par tous les comptes concernés au niveau national." %}</p>
-</fieldset>
 {% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal">{% icone "send" %}<span>{% translate "Publier" %}</span></button>{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Publier" %}</span></button>{% endblock %}

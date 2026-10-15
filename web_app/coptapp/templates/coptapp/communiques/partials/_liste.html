@@ -1,31 +1,39 @@
 {% load i18n design %}{% comment %}
 Zone des résultats de la liste des communiqués (F-40). Servie seule pour une requête HTMX, incluse par app/list-message.html : une seule source de HTML.
-Contexte : page_obj (chaque communiqué porte lu, titre, publie_le, user, province, antenne), filtres, filtres_actifs, nb_non_lus, peut_publier.
-Le contenu saisi est échappé par Django (jamais |safe) ; l'aperçu est tronqué.
+Contexte : page_obj (chaque communiqué porte lu, titre_affiche, titre, message, publie_le, province, antenne), filtres, filtres_actifs, choix, nb_non_lus, peut_publier.
+Le contenu saisi est échappé par Django (sans aucun filtre de confiance) ; l'aperçu est tronqué. Aucune animation d'apparition : la zone est rafraîchie toutes les 2 minutes.
 {% endcomment %}
 {% if page_obj.paginator.count %}
-<ul class="file file--communiques">
+<p class="resume-liste"><span>{% if filtres.coordination or filtres.antenne %}{% if filtres.coordination %}{% translate "Coordination" %} : {% for c in choix.coordinations %}{% if filtres.coordination == c.id|stringformat:"s" %}{{ c.nom }}{% endif %}{% endfor %}{% endif %}{% if filtres.coordination and filtres.antenne %} · {% endif %}{% if filtres.antenne %}{% translate "Antenne" %} : {% for a in choix.antennes %}{% if filtres.antenne == a.id|stringformat:"s" %}{{ a.nom }}{% endif %}{% endfor %}{% endif %}{% else %}{% translate "Les plus récents en haut" %}{% endif %}</span><span>{% blocktranslate with debut=page_obj.start_index fin=page_obj.end_index total=page_obj.paginator.count %}{{ debut }} à {{ fin }} sur {{ total }}{% endblocktranslate %}</span></p>
+<ul class="communiques">
   {% for c in page_obj %}
-  <li class="dossier communique{% if not c.lu %} non-lu{% endif %}">
-    <span class="avatar avatar--petit communique-icone">{% icone "megaphone" "ic--petite" %}</span>
-    <div>
-      <div class="dossier-titre">
-        <a href="{% url 'communique' c.id %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{{ c.titre|default:c.message|truncatechars:90 }}</a>
-        {% if not c.lu %}<span class="communique-nouveau">{% translate "Non lu" %}</span>{% endif %}
-      </div>
-      {% if c.titre and c.message %}<p class="communique-apercu">{{ c.message|truncatechars:140 }}</p>{% endif %}
-      <div class="dossier-lieu">
-        <span>{% icone "calendar" %}{{ c.publie_le|date:"d/m/Y · H:i" }}</span>
-        <span>{% icone "map-pin" %}{% if c.antenne %}{% blocktranslate with nom=c.antenne.nom %}Antenne {{ nom }}{% endblocktranslate %}{% elif c.province %}{% blocktranslate with nom=c.province.nom %}Coordination {{ nom }}{% endblocktranslate %}{% else %}{% translate "National" %}{% endif %}</span>
-        <span>{% icone "user" %}{{ c.user.get_full_name|default:c.user|identifiant_affiche|default:"—" }}</span>
-      </div>
-    </div>
+  <li class="communique-ligne{% if not c.lu %} non-lu{% endif %}">
+    <div class="communique-tete">{% include "components/_portee.html" with coordination=c.province antenne=c.antenne %}<time class="communique-quand" datetime="{{ c.publie_le|date:'c' }}">{{ c.publie_le|quand }}</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="{% url 'communique' c.id %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{{ c.titre_affiche }}</a>{% if not c.lu %}<span class="communique-nouveau">{% translate "Non lu" %}</span>{% endif %}</h2>
+    {% if c.titre and c.message %}<p class="communique-apercu">{{ c.message|truncatechars:220 }}</p>{% endif %}
   </li>
   {% endfor %}
 </ul>
-{% include "components/_pagination.html" with page_obj=page_obj cible="#liste-zone" %}
+{% include "components/_pagination.html" with page_obj=page_obj cible="#liste-zone" precedent=_("Plus récents") suivant=_("Plus anciens") %}
+{% elif filtres.etat == "non_lus" and not filtres.q and not filtres.coordination and not filtres.antenne %}
+<div class="vide">
+  <div class="vide-icone">{% icone "check-check" %}</div>
+  <h2>{% translate "Tout est lu" %}</h2>
+  <p>{% translate "Vous avez lu tous les communiqués reçus." %}</p>
+  <a class="bouton" href="{% url 'list-message' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{% translate "Voir tous les communiqués" %}</a>
+</div>
+{% elif filtres_actifs %}
+<div class="vide">
+  <div class="vide-icone">{% icone "search" %}</div>
+  <h2>{% translate "Aucun communiqué ne correspond" %}</h2>
+  <p>{% if filtres.q %}{% blocktranslate with q=filtres.q %}Rien pour « {{ q }} ». {% endblocktranslate %}{% endif %}{% translate "Essayez un autre mot ou retirez des filtres." %}</p>
+  <a class="bouton" href="{% url 'list-message' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{% icone "x" %}{% translate "Effacer les filtres" %}</a>
+</div>
 {% else %}
-{% if filtres_actifs %}{% translate "Aucun résultat" as t_vide %}{% translate "Aucun communiqué ne correspond à votre recherche." as t_msg %}
-{% else %}{% translate "Aucun communiqué" as t_vide %}{% translate "Les communiqués publiés apparaîtront ici." as t_msg %}{% endif %}
-{% include "components/_etat_vide.html" with icone="megaphone" titre=t_vide texte=t_msg %}
+<div class="vide">
+  <div class="vide-icone">{% icone "megaphone" %}</div>
+  <h2>{% translate "Aucun communiqué pour l'instant" %}</h2>
+  <p>{% translate "Les communiqués de la fédération, de votre coordination et de votre antenne arriveront ici." %}</p>
+  {% if peut_publier %}<a class="bouton" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}{% translate "Publier un communiqué" %}</a>{% endif %}
+</div>
 {% endif %}
