@@ -2,7 +2,7 @@
 Interrupteur « Données réelles du site » (F-60), super-utilisateur seul : carte d'état de l'écran Contenu du site, au style de l'écran de verrouillage.
 Rafraîchie sans rechargement par l'événement donneesReellesModifiees (vue donnees-reelles-etat, change=True : animation du tampon).
 Contexte : donnees_reelles (actif, depuis, par, motif : depuis / par viennent du journal F-70, vides si le site n'a jamais été basculé), change.
-Le motif saisi par le super-utilisateur est affiché échappé, jamais |safe.
+Le motif saisi par le super-utilisateur est affiché échappé (aucun filtre de confiance).
 {% endcomment %}
 <section class="panneau{% if donnees_reelles.actif %} verrou--ferme{% endif %}" aria-labelledby="dr-titre">
   <div class="panneau-corps">

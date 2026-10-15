@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% load i18n %}{% comment %}Repli sans JavaScript du formulaire de publication (la modale reste la voie normale). Même fragment que la modale.{% endcomment %}
+{% block titre %}{% translate "Publier un communiqué" %} - FENAMO-RDC{% endblock %}
+{% block contenu %}{% include "coptapp/communiques/partials/_modale_publier.html" %}{% endblock %}

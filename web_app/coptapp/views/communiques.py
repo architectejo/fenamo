@@ -23,6 +23,11 @@ def _entier(valeur):
     return nombre if 0 < nombre <= 2**31 - 1 else None
 
 
+def _modele(request):
+    """La modale pour HTMX, la page de repli (même fragment dans la coque) sinon."""
+    return 'coptapp/communiques/partials/_modale_publier.html' if veut_fragment(request) else 'coptapp/communiques/publier.html'
+
+
 @require_GET
 def listMessage(request):
     """Liste des communiqués visibles. GET : ``q``, ``etat`` (non_lus), ``coordination``, ``antenne``, ``page``. Contexte : page_obj,
@@ -75,7 +80,7 @@ def addCommunique(request):
                 'antennes': Antenne.objects.exclude(nom=None).select_related('coordination').order_by('nom'),
                 'titre_max': service.TITRE_MAX, 'message_max': service.MESSAGE_MAX}
     if request.method == 'GET':
-        return render(request, 'coptapp/communiques/partials/_modale_publier.html', contexte)
+        return render(request, _modele(request), contexte)
     donnees = {cle: request.POST.get(cle, '') for cle in ('titre', 'message', 'coordination', 'antenne')}
     coordination = Province.objects.filter(pk=_entier(donnees['coordination'])).first() if donnees['coordination'] else None
     antenne = Antenne.objects.filter(pk=_entier(donnees['antenne'])).first() if donnees['antenne'] else None
@@ -84,8 +89,7 @@ def addCommunique(request):
             raise service.ErreurCommunique(_("Ciblage inconnu."))
         service.publier(request.user, donnees['titre'], donnees['message'], coordination, antenne)
     except service.ErreurCommunique as erreur:
-        return render(request, 'coptapp/communiques/partials/_modale_publier.html', {**contexte, 'erreur': str(erreur), 'valeurs': donnees},
-                      status=422)
+        return render(request, _modele(request), {**contexte, 'erreur': str(erreur), 'valeurs': donnees}, status=422)
     texte = _("Communiqué publié.")
     if request.htmx:
         return reponse_succes(texte, evenements=[EVENEMENT])
