@@ -73,9 +73,9 @@ def test_F07_verrouillage_et_deverrouillage_journalises(monde):
 
 
 def test_F07_chemins_exemptes():
-    for chemin in ('/static/css/app.css', '/connexion/', '/deconnexion/', '/gestion-technique/', '/gestion-technique/compte/compte/'):
+    for chemin in ('/static/css/app.css', '/connexion/', '/deconnexion/'):
         assert V.chemin_exempte(chemin), chemin
-    for chemin in ('/membres/', '/api/v1/sante/', '/mob/', '/media/x.png', '/application/verrou/'):
+    for chemin in ('/membres/', '/api/v1/sante/', '/mob/', '/media/x.png', '/application/verrou/', '/gestion-technique/', '/gestion-technique/login/'):
         assert not V.chemin_exempte(chemin), chemin
 
 
@@ -144,12 +144,12 @@ def test_F07_mob_503_et_session_mobile_videe(client, monde):
     assert 'mob_membre_id' not in client.session and 'mob_empreinte' not in client.session
 
 
-def test_F07_statiques_connexion_et_admin_restent_accessibles(client, monde, acteurs_roles):
+def test_F07_statiques_et_connexion_restent_accessibles(client, monde, acteurs_roles):
     _verrouiller(monde)
     assert client.get(reverse('application')).status_code == 200  # bandeau d'information
     assert MESSAGE in client.get(reverse('application')).content.decode()
     assert client.get('/static/css/app.css').status_code != 503
-    assert client.get('/gestion-technique/login/').status_code != 503
+    assert client.get('/gestion-technique/login/').status_code == 503  # V2 : l'administration n'est pas exemptée
     client.force_login(acteurs_roles['PR'])
     assert client.post(reverse('deconnexion')).status_code == 302  # la déconnexion passe
 
