@@ -32,7 +32,7 @@ CHAMPS_MODIFIABLES = {
 }
 # Valeurs courtes sans donnée sensible : conservées avant / après au journal ; pour les autres champs seul le NOM est gardé.
 VALEURS_JOURNALISEES = frozenset({'type', 'statut', 'ordre', 'publie', 'langue', 'fonction_code', 'apk_version', 'apk_date', 'date',
-                                  'langues_actives', 'paiement_en_ligne_actif', 'titre', 'nom', 'fonction'})
+                                  'langues_actives', 'paiement_en_ligne_actif', 'donnees_reelles_actif', 'titre', 'nom', 'fonction'})
 
 
 def _exiger_editeur(auteur):
@@ -154,6 +154,26 @@ def definir_langues_actives(auteur, langues):
         config.langues_actives = nouvelle
         config.save(update_fields=['langues_actives'])
         _journaliser(auteur, config, avant, {'langues_actives': nouvelle}, ['langues_actives'], False)
+        demander_purge()
+    return config
+
+
+@transaction.atomic
+def definir_donnees_reelles(auteur, actif, motif=''):
+    """Interrupteur « données réelles » du site : faux (défaut), le site affiche son jeu d'exemple et l'API refuse (403) tout point d'accès de
+    données ; vrai, il affiche les données réelles. SUPER-UTILISATEUR seul (PermissionDenied) ; idempotent ; motif facultatif (500 caractères
+    au plus) ; changement journalisé (F-70, avant / après / motif) puis purge du cache du site après le commit."""
+    _exiger_super_utilisateur(auteur)
+    motif = (motif or '').strip()
+    if len(motif) > 500:
+        raise ValidationError(_("Le motif est limité à 500 caractères."))
+    config = Config.instance()
+    actif = bool(actif)
+    if config.donnees_reelles_actif != actif:
+        avant = {'donnees_reelles_actif': config.donnees_reelles_actif}
+        config.donnees_reelles_actif = actif
+        config.save(update_fields=['donnees_reelles_actif'])
+        _journaliser(auteur, config, avant, {'donnees_reelles_actif': actif}, ['donnees_reelles_actif'], False, motif=motif)
         demander_purge()
     return config
 

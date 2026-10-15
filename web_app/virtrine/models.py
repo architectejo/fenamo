@@ -150,6 +150,8 @@ class Config(models.Model):
     link7 = models.CharField(max_length=255, null=True, blank=True)
     # Les anciennes colonnes phone1..7, partenaire1..7 et link1..7 sont gardées (migration additive) : TelephoneSite et Partenaire les remplacent.
     langues_actives = models.CharField(max_length=40, default='fr', help_text=_("codes séparés par des virgules ; le français est toujours actif (F-64)"))
+    # Le site affiche soit un jeu d'EXEMPLE fixe (faux, par défaut), soit les données réelles de l'application web (vrai). SU seul.
+    donnees_reelles_actif = models.BooleanField(default=False)
     paiement_en_ligne_actif = models.BooleanField(default=False)  # F-65 : désactivé par défaut, changement journalisé, SU seul
     apk = marquer_propre(models.FileField(upload_to='application/', null=True, blank=True, validators=[valider_apk]))
     apk_version = models.CharField(max_length=30, blank=True, default='')

@@ -1,0 +1,13 @@
+{% extends "components/modale_base.html" %}
+{% load i18n %}{% comment %}
+Interrupteur « données réelles » du site public (gabarit minimal, le design viendra). Contexte : action, actif (état actuel), cible (état demandé),
+motif_max, erreur. Le formulaire envoie actif=1 (données réelles) ou actif=0 (jeu d'exemple).
+{% endcomment %}
+{% block titre %}{% if cible %}{% translate "Afficher les données réelles sur le site" %}{% else %}{% translate "Revenir au jeu d'exemple" %}{% endif %}{% endblock %}
+{% block corps %}
+<input type="hidden" name="actif" value="{% if cible %}1{% else %}0{% endif %}">
+<p>{% if cible %}{% translate "Le site public affichera les articles, la galerie, le comité et les chiffres réels de l'application web." %}{% else %}{% translate "Le site public affichera un jeu d'exemple fixe, sans aucune donnée réelle." %}{% endif %}</p>
+<div class="champ"><label class="champ-libelle" for="dr-motif">{% translate "Motif (journal)" %}</label>
+<textarea id="dr-motif" name="motif" rows="2" maxlength="{{ motif_max }}"></textarea></div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span>{% translate "Confirmer" %}</span></button>{% endblock %}

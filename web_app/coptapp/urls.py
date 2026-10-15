@@ -12,6 +12,7 @@ from coptapp.views import *
 from coptapp.views.mobile import definir_mot_de_passe_mobile
 from coptapp.views.fichiers import fichier_par_nom, fichier_prive
 from coptapp.views.tableau_bord import tableau_bord
+from virtrine.views_donnees_reelles import donnees_reelles
 
 urlpatterns = [
     # Tableau de bord
@@ -82,6 +83,7 @@ urlpatterns = [
 
     # Contenu du site public
     path('contenu-site/', site, name="site"),
+    path('contenu-site/donnees-reelles/', donnees_reelles, name="donnees-reelles"),  # super-utilisateur seul, POST + CSRF
     path('contenu-site/articles/<int:id>/modifier/', article, name="article"),
     path('contenu-site/articles/<int:id>/supprimer/', deleteArticle, name="delete-article"),
     path('contenu-site/messages/', contact, name='contact'),
