@@ -34,7 +34,6 @@
 
     <p class="menu-groupe">{% translate "Mon compte" %}</p>
     <a class="menu-lien" href="{% url 'securite' %}"{% if nom == 'securite' %} aria-current="page"{% endif %}>{% icone "shield-check" %}<span>{% translate "Sécurité du compte" %}</span></a>
-    {% if user.is_superuser %}<a class="menu-lien"  href="{% url 'add-user' %}" hx-get="{% url 'add-user' %}" hx-target="#modale-contenu" hx-swap="innerHTML">{% icone "user-plus" %}<span>{% translate "Créer un compte" %}</span></a>{% endif %}
   </div>
   <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer>{% icone "moon" %}<span>{% translate "Changer de thème" %}</span></button>
   {% if fn_role %}<div class="menu-perimetre"><span class="meta">{{ fn_role }}</span><strong>{{ fn_perimetre|default:"—" }}</strong></div>{% endif %}
