@@ -10,6 +10,8 @@ def textes_interface(request):
             'erreurServeur': _('Erreur du serveur, réessayez'),
             'refuse': _('Accès refusé'),
             'introuvable': _('Page ou élément introuvable'),
+            'limiteAtteinte': _('Limite de caractères atteinte'),
+            'caracteresRestants': _('caractères restants'),
         },
     }
 

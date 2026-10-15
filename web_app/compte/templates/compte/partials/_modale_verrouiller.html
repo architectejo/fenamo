@@ -1,11 +1,36 @@
 {% extends "components/modale_base.html" %}
-{% load i18n %}{% comment %}Verrouiller l'application (F-07). Contexte : action, message_max, motif_max, valeur_message, valeur_motif, erreur.{% endcomment %}
-{% block titre %}{% translate "Verrouiller l'application" %}{% endblock %}
+{% load i18n design %}{% comment %}
+Verrouiller l'application (F-07, maquette modale-verrouiller). Contexte : action, message_max, motif_max, sessions_hors_su, valeur_message, valeur_motif, erreur.
+Le message est obligatoire (erreur à côté du champ, statut 422) ; compteur commun data-compte-caracteres.
+Réponse au POST : 204 + toast « Application verrouillée » + événement verrouModifie (la zone d'état et le bandeau du SU se mettent à jour).
+{% endcomment %}
+{% block titre %}{% translate "Verrouiller l'application" %}<span class="sous-titre">{% translate "Application web, API et espace mobile" %}</span>{% endblock %}
 {% block corps %}
-<p>{% translate "Les utilisateurs non super-utilisateurs seront déconnectés et ne pourront plus se connecter. Les données restent intactes." %}</p>
-<div class="champ"><label class="champ-libelle" for="v-message">{% translate "Message affiché aux utilisateurs (obligatoire)" %}</label>
-<textarea id="v-message" name="message" rows="3" maxlength="{{ message_max }}" required>{{ valeur_message }}</textarea></div>
-<div class="champ"><label class="champ-libelle" for="v-motif">{% translate "Motif interne (journal, jamais affiché)" %}</label>
-<textarea id="v-motif" name="motif" rows="2" maxlength="{{ motif_max }}">{{ valeur_motif }}</textarea></div>
+<div class="alerte alerte--danger">
+  {% icone "triangle-alert" %}
+  <div>
+    <strong class="alerte-titre">{% translate "Dès que vous confirmez :" %}</strong>
+    <ul class="consequences">
+      <li>{% blocktranslate count n=sessions_hors_su %}le <strong class="chiffres">{{ n }}</strong> compte connecté est déconnecté, sauf les super-utilisateurs ;{% plural %}les <strong class="chiffres">{{ n }}</strong> comptes connectés sont déconnectés, sauf les super-utilisateurs ;{% endblocktranslate %}</li>
+      <li>{% translate "seuls les super-utilisateurs peuvent se connecter ;" %}</li>
+      <li>{% translate "l'API répond « service suspendu » : le site public ne vérifie plus les cartes ;" %}</li>
+      <li>{% translate "l'espace mobile des membres est suspendu." %}</li>
+    </ul>
+    <p class="u-mt-2 u-mb-0">{% translate "Aucune donnée n'est modifiée. Un formulaire non envoyé est perdu." %}</p>
+  </div>
+</div>
+<div class="champ{% if erreur_message %} champ--erreur{% endif %}">
+  <label class="champ-libelle" for="v-message">{% translate "Message affiché aux utilisateurs" %}</label>
+  <p class="champ-aide u-mb-0" id="v-message-aide">{% translate "Il apparaît sur la page « Application suspendue », sur la page de connexion et dans l'espace mobile. Dites pourquoi et quand l'application rouvrira." %}</p>
+  <textarea class="champ-saisie" id="v-message" name="message" rows="4" maxlength="{{ message_max }}" required aria-describedby="v-message-aide v-message-compte{% if erreur_message %} v-message-erreur{% endif %}"{% if erreur_message %} aria-invalid="true"{% endif %} data-compte-caracteres="#v-message-compte">{{ valeur_message }}</textarea>
+  <p class="champ-aide compte-caracteres u-mb-0" id="v-message-compte"><span data-compte-valeur>0 / {{ message_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+  {% if erreur_message %}<p class="champ-erreur" id="v-message-erreur" role="alert">{% icone "circle-alert" %}{% translate "Écrivez le message : il dit aux utilisateurs pourquoi l'application est fermée et quand elle rouvrira." %}</p>{% endif %}
+</div>
+<div class="champ">
+  <label class="champ-libelle" for="v-motif">{% translate "Motif interne" %} <span class="facultatif">({% translate "facultatif" %})</span></label>
+  <p class="champ-aide u-mb-0" id="v-motif-aide">{% translate "Lu seulement par les super-utilisateurs, ici et dans le journal d'activités." %}</p>
+  <textarea class="champ-saisie" id="v-motif" name="motif" rows="2" maxlength="{{ motif_max }}" aria-describedby="v-motif-aide v-motif-compte" data-compte-caracteres="#v-motif-compte">{{ valeur_motif }}</textarea>
+  <p class="champ-aide compte-caracteres u-mb-0" id="v-motif-compte"><span data-compte-valeur>0 / {{ motif_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+</div>
 {% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--danger-plein"><span>{% translate "Verrouiller" %}</span></button>{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><span>{% translate "Verrouiller l'application" %}</span></button>{% endblock %}

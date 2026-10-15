@@ -1,8 +1,20 @@
 {% extends "components/modale_base.html" %}
-{% load i18n %}{% comment %}Déverrouiller l'application (F-07). Contexte : action, motif_max, erreur.{% endcomment %}
-{% block titre %}{% translate "Déverrouiller l'application" %}{% endblock %}
+{% load i18n design %}{% comment %}
+Déverrouiller l'application (F-07, maquette modale-deverrouiller). Contexte : action, motif_max, etat (depuis, par), duree, erreur.
+Réponse au POST : 204 + toast « Application déverrouillée » + événement verrouModifie.
+{% endcomment %}
+{% block titre %}{% translate "Déverrouiller l'application" %}{% if duree %}<span class="sous-titre">{% translate "Verrouillée depuis" %} {{ duree }}</span>{% endif %}{% endblock %}
 {% block corps %}
-<div class="champ"><label class="champ-libelle" for="d-motif">{% translate "Motif (journal)" %}</label>
-<textarea id="d-motif" name="motif" rows="2" maxlength="{{ motif_max }}"></textarea></div>
+<p class="u-mb-0">{% translate "Les comptes pourront de nouveau se connecter. L'API, la vérification des cartes et l'espace mobile reprennent aussitôt." %}</p>
+{% if etat.depuis %}<dl class="definitions">
+  <div><dt>{% translate "Verrouillée le" %}</dt><dd class="sans-coupure">{{ etat.depuis|date:"d/m/Y" }} {% translate "à" %} {{ etat.depuis|date:"H" }}&nbsp;h&nbsp;{{ etat.depuis|date:"i" }}</dd></div>
+  <div><dt>{% translate "Par" %}</dt><dd>{{ etat.par.get_full_name|default:etat.par.get_username|default:"—" }}</dd></div>
+</dl>{% endif %}
+<div class="champ">
+  <label class="champ-libelle" for="d-motif">{% translate "Motif" %} <span class="facultatif">({% translate "facultatif" %})</span></label>
+  <p class="champ-aide u-mb-0" id="d-motif-aide">{% translate "Inscrit au journal d'activités." %}</p>
+  <textarea class="champ-saisie" id="d-motif" name="motif" rows="2" maxlength="{{ motif_max }}" aria-describedby="d-motif-aide d-motif-compte" data-compte-caracteres="#d-motif-compte"></textarea>
+  <p class="champ-aide compte-caracteres u-mb-0" id="d-motif-compte"><span data-compte-valeur>0 / {{ motif_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+</div>
 {% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span>{% translate "Déverrouiller" %}</span></button>{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Déverrouiller l'application" %}</span></button>{% endblock %}

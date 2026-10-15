@@ -1,17 +1,14 @@
 {% extends "base.html" %}
-{% load i18n %}{% comment %}Verrouillage de l'application (F-07), super-utilisateur seul. Gabarit minimal (le design viendra après). Contexte : etat.{% endcomment %}
+{% load i18n design %}{% comment %}
+Verrouillage de l'application (F-07, maquette verrou-application.html), super-utilisateur seul. Contexte : voir compte/views_verrou.py.
+La zone #verrou-zone se rafraîchit seule après chaque changement (événement verrouModifie, réponse fragment avec change=True).
+{% endcomment %}
 {% block titre %}{% translate "Verrouillage de l'application" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
-<div class="page-tete"><div class="page-tete-texte"><h1 class="page-titre">{% translate "Verrouillage de l'application" %}</h1></div></div>
-<section id="verrou-zone" hx-get="{% url 'verrou-application' %}" hx-trigger="verrouModifie from:body" hx-select="#verrou-zone" hx-swap="outerHTML">
-  {% if etat.verrouillee %}
-    <p><strong>{% translate "L'application est VERROUILLÉE." %}</strong></p>
-    <p>{% translate "Message affiché :" %} {{ etat.message }}</p>
-    <p>{% translate "Depuis :" %} {{ etat.depuis|date:"d/m/Y H:i" }} · {{ etat.par.username|default:"—" }}</p>
-    <button type="button" class="bouton" hx-get="{% url 'verrou-deverrouiller' %}" hx-target="#modale-contenu" hx-swap="innerHTML">{% translate "Déverrouiller" %}</button>
-  {% else %}
-    <p>{% translate "L'application est déverrouillée." %}</p>
-    <button type="button" class="bouton bouton--danger-plein" hx-get="{% url 'verrou-verrouiller' %}" hx-target="#modale-contenu" hx-swap="innerHTML">{% translate "Verrouiller l'application" %}</button>
-  {% endif %}
-</section>
+<div hidden hx-history="false"></div>
+<div class="page-tete"><div class="page-tete-texte">
+  <h1 class="page-titre">{% translate "Verrouillage de l'application" %}</h1>
+  <p class="page-contexte">{% icone "shield-check" %}{% translate "Application web, API et espace mobile · réservé aux super-utilisateurs" %}</p>
+</div></div>
+<div id="verrou-zone" hx-get="{% url 'verrou-application' %}" hx-trigger="verrouModifie from:body" hx-swap="innerHTML">{% include "compte/partials/_verrou_zone.html" %}</div>
 {% endblock %}

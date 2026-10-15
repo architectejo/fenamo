@@ -199,6 +199,28 @@
     b.setAttribute('aria-expanded', String(ouvert));
   });
 
+  /* ------------------------------------------------------------------ Compteur de caractères commun : textarea[data-compte-caracteres="#cible"] */
+  // La cible contient [data-compte-valeur] (« 12 / 500 ») et [data-compte-annonce] (annonce vocale aux seuils : 90 % puis la limite).
+  function majCompteCaracteres(champ) {
+    var cible = document.querySelector(champ.getAttribute('data-compte-caracteres'));
+    if (!cible) { return; }
+    var max = champ.maxLength > 0 ? champ.maxLength : 500, n = champ.value.length;
+    var valeur = cible.querySelector('[data-compte-valeur]'), annonce = cible.querySelector('[data-compte-annonce]');
+    if (valeur) { valeur.textContent = n + ' / ' + max; }
+    if (annonce) {
+      var palier = n >= max ? 2 : (n >= Math.floor(max * 0.9) ? 1 : 0);
+      if (String(palier) !== annonce.getAttribute('data-palier')) {
+        annonce.setAttribute('data-palier', String(palier));
+        annonce.textContent = palier === 2 ? (T().limiteAtteinte || 'Limite atteinte') : (palier === 1 ? (max - n) + ' ' + (T().caracteresRestants || 'caractères restants') : '');
+      }
+    }
+  }
+  document.addEventListener('input', function (e) { if (e.target.matches && e.target.matches('[data-compte-caracteres]')) { majCompteCaracteres(e.target); } });
+  document.addEventListener('htmx:afterSwap', function (e) {
+    if (e.detail.target) { e.detail.target.querySelectorAll('[data-compte-caracteres]').forEach(majCompteCaracteres); }
+  });
+  document.addEventListener('modaleLocale', function () { document.querySelectorAll('#modale-contenu [data-compte-caracteres]').forEach(majCompteCaracteres); });
+
   /* ------------------------------------------------------------------ Suppression d'un membre : modale de confirmation avec action et motif */
   // Compteur du motif (500 caractères au plus)
   document.addEventListener('input', function (e) {
