@@ -96,7 +96,14 @@
     requestAnimationFrame(function () { requestAnimationFrame(function () { m.classList.add('est-ouverte'); }); });
     var corps = m.querySelector('.feuille-corps');
     var premier = m.querySelector('[autofocus]') || (corps && corps.querySelector(FOCUSABLES)) || m.querySelector(FOCUSABLES);
-    if (premier) { setTimeout(function () { premier.focus({ preventScroll: true }); }, reduit ? 0 : 60); }
+    setTimeout(function () { /* dans un groupe radio, le focus va à l'option cochée (jamais à la première tuile par défaut) */
+      var cible = premier;
+      if (cible && cible.type === 'radio' && cible.name && !cible.checked) {
+        var cochee = [].find.call(m.querySelectorAll('input[type=radio]'), function (r) { return r.name === cible.name && r.checked && !r.disabled; });
+        if (cochee) { cible = cochee; }
+      }
+      if (cible) { cible.focus({ preventScroll: true }); }
+    }, reduit ? 0 : 60);
   }
   function fermerModale(m) {
     m = typeof m === 'string' ? document.querySelector(m) : (m || document.querySelector('.modale.est-ouverte'));

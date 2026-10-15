@@ -37,8 +37,8 @@ qu'à ceux qui voient plusieurs coordinations (SU, PR, VN, ED) ; sinon les filtr
   <input type="hidden" name="antenne" value="{{ filtres.antenne }}">
   {% endif %}
   <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
-    <label class="puce"><input type="radio" name="etat" value=""{% if filtres.etat != 'non_lus' %} checked{% endif %}><span>{% translate "Tous" %}{% if nombres %} <span class="nombre">{{ nombres.tous }}</span>{% endif %}</span></label>
-    <label class="puce"><input type="radio" name="etat" value="non_lus"{% if filtres.etat == 'non_lus' %} checked{% endif %}><span>{% translate "Non lus" %} <span class="nombre">{% if nombres %}{{ nombres.non_lus }}{% else %}{{ nb_non_lus }}{% endif %}</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value=""{% if filtres.etat != 'non_lus' %} checked{% endif %}><span>{% translate "Tous" %}{% if nombres %} <span class="nombre" id="nombre-tous">{{ nombres.tous }}</span>{% endif %}</span></label>
+    <label class="puce"><input type="radio" name="etat" value="non_lus"{% if filtres.etat == 'non_lus' %} checked{% endif %}><span>{% translate "Non lus" %} <span class="nombre" id="nombre-non-lus">{% if nombres %}{{ nombres.non_lus }}{% else %}{{ nb_non_lus }}{% endif %}</span></span></label>
   </div>
 </form>
 {% endwith %}

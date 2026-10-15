@@ -15,9 +15,9 @@ Le champ masqué est désactivé : il n'est pas envoyé. Une seule liste d'anten
   <fieldset>
     <legend class="champ-libelle">{% translate "Destinataires" %}</legend>
     <div class="choix choix--cibles">
-      <label><input type="radio" name="cible" value="national" x-model="cible"><span>{% translate "National" %}<span class="choix-sous">{% translate "Toute la fédération" %}</span></span><span class="coche">{% icone "check" %}</span></label>
-      <label><input type="radio" name="cible" value="coordination" x-model="cible"><span>{% translate "Une coordination" %}<span class="choix-sous">{% translate "Ses antennes comprises" %}</span></span><span class="coche">{% icone "check" %}</span></label>
-      <label><input type="radio" name="cible" value="antenne" x-model="cible"><span>{% translate "Une antenne" %}<span class="choix-sous">{% translate "Son équipe seulement" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="cible" value="national" x-model="cible"{% if not valeurs.cible and not valeurs.antenne and not valeurs.coordination or valeurs.cible == 'national' %} checked{% endif %}><span>{% translate "National" %}<span class="choix-sous">{% translate "Toute la fédération" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="cible" value="coordination" x-model="cible"{% if valeurs.cible == 'coordination' or not valeurs.cible and valeurs.coordination %} checked{% endif %}><span>{% translate "Une coordination" %}<span class="choix-sous">{% translate "Ses antennes comprises" %}</span></span><span class="coche">{% icone "check" %}</span></label>
+      <label><input type="radio" name="cible" value="antenne" x-model="cible"{% if valeurs.cible == 'antenne' or not valeurs.cible and valeurs.antenne %} checked{% endif %}><span>{% translate "Une antenne" %}<span class="choix-sous">{% translate "Son équipe seulement" %}</span></span><span class="coche">{% icone "check" %}</span></label>
     </div>
   </fieldset>
 
@@ -33,7 +33,7 @@ Le champ masqué est désactivé : il n'est pas envoyé. Une seule liste d'anten
     {% if erreurs.antenne %}<p class="champ-erreur" id="c-antenne-erreur" role="alert">{% icone "circle-alert" %}{{ erreurs.antenne }}</p>{% endif %}
   </div>
 
-  <div class="destinataires" aria-live="polite">
+  <div class="destinataires" aria-live="polite" hx-get="{{ action }}" hx-trigger="load, change from:[name=cible], change from:#c-coordination, change from:#c-antenne" hx-include="[name=cible], [name=coordination], [name=antenne]" hx-target="#apercu-nb" hx-select="#apercu-nb" hx-swap="outerHTML" hx-push-url="false" hx-disabled-elt="this">
     {% icone "users" %}
     <div>
       <div>
@@ -44,6 +44,7 @@ Le champ masqué est désactivé : il n'est pas envoyé. Une seule liste d'anten
       <p x-show="cible === 'national'">{% translate "Reçu par tous les comptes actifs : président, validateurs, agents de terrain de toutes les coordinations et super-utilisateurs." %}</p>
       <p x-show="cible === 'coordination'" x-cloak>{% translate "Reçu par le validateur provincial, les validateurs et agents de toutes ses antennes, le président, les validateurs nationaux et les super-utilisateurs." %}</p>
       <p x-show="cible === 'antenne'" x-cloak>{% translate "Reçu par le validateur et les agents de cette antenne, le validateur de sa coordination, le président, les validateurs nationaux et les super-utilisateurs." %}</p>
+      <p id="apercu-nb" class="petit doux u-mt-2">{% if apercu_erreur %}{{ apercu_erreur }}{% elif nb_destinataires is not None %}{% if nb_destinataires %}<strong>{% blocktranslate count n=nb_destinataires %}{{ n }} compte actif recevra ce communiqué.{% plural %}{{ n }} comptes actifs recevront ce communiqué.{% endblocktranslate %}</strong>{% else %}{% translate "Aucun compte actif ne recevra ce communiqué." %}{% endif %}{% endif %}</p>
     </div>
   </div>
 

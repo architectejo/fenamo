@@ -41,3 +41,6 @@ Contexte : page_obj (chaque message porte recu_le), filtres (q, etat), nombres. 
   <p>{% translate "Les messages envoyés depuis la page Contact du site arrivent ici." %}</p>
 </div>
 {% endif %}
+{% if request.htmx.target == "liste-zone" and nombres %}{# les puces sont hors de la zone : leurs nombres suivent la recherche #}
+<span class="nombre" id="nombre-a-traiter" hx-swap-oob="true">{{ nombres.a_traiter }}</span><span class="nombre" id="nombre-traites" hx-swap-oob="true">{{ nombres.traites }}</span><span class="nombre" id="nombre-tous" hx-swap-oob="true">{{ nombres.tous }}</span>
+{% endif %}

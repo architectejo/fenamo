@@ -19,9 +19,9 @@ Le formulaire #filtres-liste est hors de la zone remplacée (le focus reste sur 
     </div>
   </div>
   <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
-    <label class="puce"><input type="radio" name="etat" value="a_traiter"{% if filtres.etat == 'a_traiter' %} checked{% endif %}><span>{% translate "À traiter" %} <span class="nombre">{{ nombres.a_traiter }}</span></span></label>
-    <label class="puce"><input type="radio" name="etat" value="traites"{% if filtres.etat == 'traites' %} checked{% endif %}><span>{% translate "Traités" %} <span class="nombre">{{ nombres.traites }}</span></span></label>
-    <label class="puce"><input type="radio" name="etat" value="tous"{% if filtres.etat == 'tous' %} checked{% endif %}><span>{% translate "Tous" %} <span class="nombre">{{ nombres.tous }}</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value="a_traiter"{% if filtres.etat == 'a_traiter' %} checked{% endif %}><span>{% translate "À traiter" %} <span class="nombre" id="nombre-a-traiter">{{ nombres.a_traiter }}</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value="traites"{% if filtres.etat == 'traites' %} checked{% endif %}><span>{% translate "Traités" %} <span class="nombre" id="nombre-traites">{{ nombres.traites }}</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value="tous"{% if filtres.etat == 'tous' %} checked{% endif %}><span>{% translate "Tous" %} <span class="nombre" id="nombre-tous">{{ nombres.tous }}</span></span></label>
   </div>
 </form>
 

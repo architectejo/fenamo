@@ -37,3 +37,6 @@ Le contenu saisi est échappé par Django (sans aucun filtre de confiance) ; l'a
   {% if peut_publier %}<a class="bouton" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}{% translate "Publier un communiqué" %}</a>{% endif %}
 </div>
 {% endif %}
+{% if request.htmx.target == "liste-zone" and nombres %}{# les puces sont hors de la zone : leurs nombres suivent la recherche (échange hors zone, sans toucher au focus) #}
+<span class="nombre" id="nombre-tous" hx-swap-oob="true">{{ nombres.tous }}</span><span class="nombre" id="nombre-non-lus" hx-swap-oob="true">{{ nombres.non_lus }}</span>
+{% endif %}
