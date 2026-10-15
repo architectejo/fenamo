@@ -539,6 +539,8 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .feuille-tete .sous-titre { display: block; margin-top: var(--e-1); font-size: var(--t-2); font-weight: var(--graisse-normale); color: var(--texte-doux); }
 .feuille-pied .bouton--principal, .feuille-pied .bouton--valider, .feuille-pied .bouton--danger-plein, .feuille-pied [type="submit"] { flex: 1; }
 .feuille-tete:has(+ .etapes) { border-bottom: 0; }
+/* Téléphone : un libellé long (« Déverrouiller l'application ») passe à la ligne plutôt que de sortir de l'écran */
+@media (max-width: 575.98px) { .feuille-pied .bouton { min-width: 0; white-space: normal; text-align: center; } }
 .feuille-corps { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: var(--e-5) var(--e-4); overscroll-behavior: contain; }
 .feuille-pied { display: flex; gap: var(--e-2); padding: var(--e-3) var(--e-4) calc(var(--e-3) + env(safe-area-inset-bottom)); border-top: 1px solid var(--trait); background: var(--surface); }
 @media (min-width: 576px) {
@@ -849,7 +851,7 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .u-t-5 { font-size: var(--t-5); }
 .u-mt-2 { margin-top: var(--e-2); } .u-mt-3 { margin-top: var(--e-3); } .u-mt-4 { margin-top: var(--e-4); }
 .u-mt-5 { margin-top: var(--e-5); } .u-mt-6 { margin-top: var(--e-6); } .u-mt-7 { margin-top: var(--e-7); } .u-mt-8 { margin-top: var(--e-8); }
-.u-mb-0 { margin-bottom: 0; } .u-mb-2 { margin-bottom: var(--e-2); } .u-mb-4 { margin-bottom: var(--e-4); }
+.u-mb-0 { margin-bottom: 0; } .u-mb-2 { margin-bottom: var(--e-2); } .u-mb-4 { margin-bottom: var(--e-4); } .u-mb-6 { margin-bottom: var(--e-6); }
 .menu-bouton { border: 0; background: none; width: calc(100% - var(--e-6)); margin: 0 var(--e-3) var(--e-2); cursor: pointer; }
 .meta--visuel { color: inherit; opacity: .75; }
 .porte--seule { grid-template-columns: minmax(0, 1fr); place-items: center; }

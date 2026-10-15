@@ -1,0 +1,15 @@
+{% comment %}
+Bandeau du super-utilisateur tant que l'application est verrouillée (F-07). Placé par base.html juste après la barre haute
+(<header class="haut">), dans .corps, sur toutes les pages, uniquement si l'utilisateur est super-utilisateur et que le verrou est actif.
+Collant sous la barre haute ; non refermable : il disparaît au déverrouillage.
+Paramètres :
+  depuis      datetime du verrouillage : « depuis 07 h 40 » le jour même, « depuis le 14/10 » sinon
+  url         adresse de l'écran « Verrouillage de l'application »
+  courant     True sur l'écran du verrouillage lui-même (aria-current="page" sur le lien)
+Le texte « seuls les super-utilisateurs y ont accès » est masqué sous 576 px pour garder le bandeau sur deux lignes au plus.
+Usage : {% include "components/_bandeau_verrou.html" with depuis=fn_verrou.depuis url=url_verrou %}
+{% endcomment %}{% load i18n design %}<div class="bandeau-verrou" role="status">
+  {% icone "lock" %}
+  <p class="bandeau-verrou-texte u-mb-0"><strong>{% translate "Application verrouillée" %}</strong> {% now "Ymd" as aujourdhui %}{% if depuis|date:"Ymd" == aujourdhui %}{% translate "depuis" %} {{ depuis|date:"H" }}&nbsp;h&nbsp;{{ depuis|date:"i" }}{% else %}{% translate "depuis le" %} {{ depuis|date:"d/m" }}{% endif %}<span class="masque-mobile"> · {% translate "seuls les super-utilisateurs y ont accès" %}</span></p>
+  <a href="{{ url }}"{% if courant %} aria-current="page"{% endif %}>{% translate "Gérer" %}<span class="lecteur"> {% translate "le verrouillage" %}</span>{% icone "chevron-right" "ic--petite" %}</a>
+</div>

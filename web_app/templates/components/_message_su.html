@@ -1,0 +1,13 @@
+{% comment %}
+Message du super-utilisateur pendant le verrouillage de l'application (F-07), tel que les utilisateurs le lisent.
+Utilisé par : la page « Application suspendue » (503), l'espace mobile suspendu (mob/suspendu.html) et l'écran « Verrouillage de l'application ».
+Paramètres :
+  message     texte saisi par le super-utilisateur (500 caractères au plus). Échappé par Django ; les retours à la ligne
+              sont conservés par la classe .texte-saisi (white-space: pre-line) : ni |linebreaks ni |safe.
+  publie_le   datetime du verrouillage (facultatif) : « Message de la FENAMO-RDC · 15/10/2026 à 07 h 40 »
+  sans_auteur True pour omettre la ligne d'auteur (écran du super-utilisateur, où la date figure déjà au-dessus)
+Usage : {% include "components/_message_su.html" with message=verrou.message publie_le=verrou.depuis %}
+{% endcomment %}{% load i18n %}<blockquote class="message-su">
+  <p class="texte-saisi">{{ message }}</p>
+  {% if not sans_auteur %}<span class="message-su-auteur">{% translate "Message de la FENAMO-RDC" %}{% if publie_le %} · {{ publie_le|date:"d/m/Y" }} {% translate "à" %} {{ publie_le|date:"H" }}&nbsp;h&nbsp;{{ publie_le|date:"i" }}{% endif %}</span>{% endif %}
+</blockquote>
