@@ -102,7 +102,7 @@ ROUTES = [
     ('ville-view', 'get', lambda a: {'id': a['ville'].id}, None, S(200, nu=404, p4=404, ed=404)),
     # communiqués : publication par SU et éditeur, lecture pour tous
     ('message', 'get', {}, None, S(403, su=200, ed=200)),
-    ('message', 'post', {}, {'message': 'Annonce'}, S(403, su=200, ed=200)),
+    ('message', 'post', {}, {'titre': 'Annonce', 'message': 'Annonce'}, S(403, su=302, ed=302)),  # F-40 : publication ED et SU (redirection vers la liste)
     ('list-message', 'get', {}, None, S(200)),
     ('communique', 'get', lambda a: {'id': a['communique'].id}, None, S(200)),
     # contenu du site : SU et éditeur
@@ -174,7 +174,7 @@ def test_F21_privilege4_cumule_est_en_lecture_seule_sur_toutes_les_ecritures(cli
         ('post', reverse('add-structure'), {}),
         ('post', reverse('add-province'), {'nom': 'X', 'sigle': 'X'}),
         ('post', reverse('add-antenne', kwargs={'id': a}), {'nom': 'X'}),
-        ('post', reverse('message'), {'message': 'x'}),
+        ('post', reverse('message'), {'titre': 'x', 'message': 'x'}),
         ('post', reverse('delete-article', kwargs={'id': acteurs['article'].id}), {}),
         ('post', reverse('article', kwargs={'id': acteurs['article'].id}), {'titre': 'x'}),
     ]
