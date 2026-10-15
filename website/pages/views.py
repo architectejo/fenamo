@@ -23,6 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from services import api_client, site_api
+from services import contact as contact_service
 from services.api_client import ApiErreur
 from services.langues import langues_actives
 
@@ -354,18 +355,35 @@ def galerie(request):
 
 # ---------- Contact, adhésion, vérification (pages d'information du lot 2a) ----------
 
+@require_http_methods(["GET", "HEAD", "POST"])
 def contact(request):
+    """Contact (S-07) : coordonnées et formulaire. HTMX renvoie seulement le fragment du formulaire."""
     config = site_api.config()
-    carte_url = ""
-    if settings.GOOGLE_MAPS_KEY and config["siege"]:
-        carte_url = "https://www.google.com/maps/embed/v1/place?key=" + quote(settings.GOOGLE_MAPS_KEY) + "&q=" + quote(config["siege"] + ", Kinshasa")
-    return _page(
-        request,
-        "pages/contact.html",
-        {"carte_url": carte_url},
-        _("Contact"),
-        _("Coordonnées du siège national de la FENAMO-RDC à Kinshasa : adresse, téléphones, e-mail et réseaux sociaux."),
-    )
+    if request.method == "POST":
+        etat = contact_service.traiter(request.POST, request.META.get("REMOTE_ADDR", ""))
+    else:
+        etat = contact_service.afficher()
+    htmx = request.headers.get("HX-Request") and not request.headers.get("HX-History-Restore-Request")
+    if htmx:
+        # htmx n'échange pas le contenu d'une réponse 4xx/5xx : le fragment est toujours servi en 200
+        reponse = render(request, "partials/_contact_formulaire.html", {"etat": etat})
+    else:
+        carte_url = ""
+        if settings.GOOGLE_MAPS_KEY and config["siege"]:
+            carte_url = "https://www.google.com/maps/embed/v1/place?key=" + quote(settings.GOOGLE_MAPS_KEY) + "&q=" + quote(config["siege"] + ", Kinshasa")
+        reponse = _page(
+            request,
+            "pages/contact.html",
+            {"carte_url": carte_url, "etat": etat},
+            _("Contact"),
+            _("Coordonnées du siège national de la FENAMO-RDC à Kinshasa : adresse, téléphones, e-mail et réseaux sociaux."),
+        )
+        reponse.status_code = etat.status
+    if etat.attente:
+        reponse["Retry-After"] = str(etat.attente)
+    reponse["Cache-Control"] = "no-store"  # le formulaire porte un jeton d'ouverture et le jeton CSRF
+    patch_vary_headers(reponse, ["HX-Request"])
+    return reponse
 
 
 def adhesion(request):

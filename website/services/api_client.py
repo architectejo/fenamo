@@ -89,10 +89,11 @@ class ApiInactif(Exception):
 class ApiErreur(Exception):
     """L'API a répondu par une erreur applicative (4xx) ; `champs` porte les erreurs de validation."""
 
-    def __init__(self, status: int, champs: dict | None = None, detail: str = ""):
+    def __init__(self, status: int, champs: dict | None = None, detail: str = "", retry_after: int | None = None):
         super().__init__(detail or f"Erreur API {status}")
         self.status = status
         self.champs = champs or {}
+        self.retry_after = retry_after  # secondes (en-tête Retry-After d'un 429), sinon None
 
 
 class Reponse:
@@ -268,7 +269,12 @@ def _requete(methode: str, chemin: str, lecture: bool = False, **kw) -> requests
             corps = rep.json()
         except ValueError:
             corps = {}
-        raise ApiErreur(rep.status_code, corps if isinstance(corps, dict) else {})
+        attente = str(rep.headers.get("Retry-After", "")).strip() if getattr(rep, "headers", None) else ""
+        raise ApiErreur(
+            rep.status_code,
+            corps if isinstance(corps, dict) else {},
+            retry_after=int(attente) if attente.isdigit() else None,
+        )
     return rep
 
 

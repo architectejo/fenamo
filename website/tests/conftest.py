@@ -71,7 +71,8 @@ class ApiSimulee:
         self.mode = "ok"  # ok | coupee | verrou | lente
         self.message = "Maintenance : retour demain."
         self.sante_ok = True  # la santé répond « ok » quand le mode n'est pas « verrou »
-        self.surcharges = {}  # chemin -> (status, corps)
+        self.surcharges = {}  # chemin -> (status, corps[, en-têtes])
+        self.envois = []  # corps (data) et en-têtes des POST reçus : [{"data": {...}, "headers": {...}}]
         self.config_corps = charger("api_site_config.json")["body"]
         self._articles = charger("api_site_articles.json")["body"]
         self._articles_ln = charger("api_site_articles_ln.json")["body"]
@@ -102,8 +103,13 @@ class ApiSimulee:
     def deverrouillee(self):
         self.mode = "ok"
 
-    def repondre(self, chemin, status, corps):
-        self.surcharges[chemin] = (status, corps)
+    def repondre(self, chemin, status, corps, entetes=None):
+        self.surcharges[chemin] = (status, corps, entetes or {})
+
+    def repondre_fixture(self, chemin, nom):
+        """Sert une fixture {status, headers, body} pour ce chemin."""
+        f = charger(nom)
+        self.repondre(chemin, f["status"], f["body"], f.get("headers"))
 
     def config(self, **champs):
         self.config_corps.update(champs)
@@ -124,6 +130,8 @@ class ApiSimulee:
         base = "/api/v1/site/"
         relatif = chemin.split(base, 1)[1] if base in chemin else chemin
         self.appels.append((methode, relatif, params))
+        if methode == "POST":
+            self.envois.append({"data": dict(kw.get("data") or {}), "headers": dict(kw.get("headers") or {})})
         if self.mode == "coupee":
             raise requests.ConnectionError("API coupée")
         if self.mode == "lente":
@@ -139,6 +147,9 @@ class ApiSimulee:
         return self._route(relatif, params)
 
     def _route(self, relatif, params):
+        if relatif == "contact/":
+            f = charger("api_site_contact_recu.json")
+            return _Reponse(f["status"], f["body"], f["headers"])
         introuvable = _Reponse(404, {"detail": "Introuvable."})
         if relatif == "config/":
             return _Reponse(200, self.config_corps)

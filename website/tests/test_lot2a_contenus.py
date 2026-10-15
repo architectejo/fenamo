@@ -68,11 +68,11 @@ def test_S01_pas_de_montant_invente_pour_l_adhesion(client):
 
 def test_S01_contact_n_affiche_que_ce_que_donne_la_config(client, api):
     html = client.get("/contact/").content.decode()
-    assert "contact@fenamordc.cd" in html and "+243 800 000 001" in html and "<form" not in html
+    assert "contact@fenamordc.cd" in html and "+243 800 000 001" in html
     api.config(telephones=[], email="")
     cache.clear()
     html = client.get("/contact/").content.decode()
-    assert "Téléphone" not in html and "mailto:" not in html
+    assert 'href="tel:' not in html and "mailto:" not in html  # le formulaire (S-07) reste, les coordonnées absentes disparaissent
 
 
 def test_S01_carte_google_seulement_avec_une_cle(client, settings):

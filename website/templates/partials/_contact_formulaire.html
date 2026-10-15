@@ -1,0 +1,63 @@
+{% load i18n site_tags %}
+{% if etat.cas == "envoye" %}
+<div class="formulaire accuse">
+  <div class="alerte alerte--succes" tabindex="-1" data-focus-apres>{% icone "circle-check" %}<div><span class="alerte-titre">{% translate "Message envoyé" %}</span><p>{% translate "Votre message a bien été reçu. La FENAMO-RDC vous répondra dès que possible." %}</p></div></div>
+  <p class="espace-haut-5"><a class="bouton" href="{% url 'pages:contact' %}">{% translate "Écrire un autre message" %}</a></p>
+</div>
+{% elif etat.cas == "exemple" or etat.cas == "suspendu" %}
+<div class="alerte alerte--info" tabindex="-1" data-focus-apres>{% icone "info" %}<div><span class="alerte-titre">{{ etat.alerte }}</span><p>{{ etat.detail }}</p>{% if etat.message_verrou %}<p>{{ etat.message_verrou }}</p>{% endif %}</div></div>
+{% if config.email %}<p class="espace-haut-5"><a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="mailto:{{ config.email }}">{% icone "mail" %}<span>{% translate "Écrire par e-mail" %}</span></a></p>{% endif %}
+{% if config.telephones %}<p class="espace-haut-5">{% for t in config.telephones %}<a class="bouton bouton--bloc-mobile" href="tel:{{ t.numero|tel }}">{% icone "phone" %}<span>{{ t.numero }}</span></a> {% endfor %}</p>{% endif %}
+{% else %}
+<form class="formulaire" id="contact-formulaire" action="{% url 'pages:contact' %}#contact-formulaire" method="post" novalidate
+      hx-post="{% url 'pages:contact' %}" hx-target="#contact-zone" hx-swap="innerHTML" hx-disabled-elt="find button[type=submit]" hx-push-url="false"
+      data-texte-reseau="{% translate 'Connexion impossible. Vérifiez votre réseau : votre saisie est conservée, vous pouvez renvoyer.' %}">
+  {% csrf_token %}
+  <input type="hidden" name="ouverture" value="{{ etat.jeton }}">
+  <h2>{% translate "Écrire à la FENAMO-RDC" %}</h2>
+  <p class="doux">{% translate "Indiquez un téléphone ou une adresse e-mail pour que nous puissions vous répondre." %}</p>
+  {% if etat.alerte or etat.erreurs or etat.globales %}
+  <div class="alerte alerte--danger espace-haut-4" tabindex="-1" data-focus-apres>{% icone "triangle-alert" %}<div>
+    <span class="alerte-titre">{% if etat.alerte %}{{ etat.alerte }}{% else %}{% translate "Le message n'est pas encore envoyé" %}{% endif %}</span>
+    {% if etat.detail %}<p>{{ etat.detail }}</p>{% elif etat.erreurs %}<p>{% translate "Corrigez les champs signalés ci-dessous." %}</p>{% endif %}
+    {% if etat.globales %}<ul>{% for m in etat.globales %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+  </div></div>
+  {% endif %}
+  <div class="espace-haut-5">
+    <div class="champ{% if etat.erreurs.nom %} champ--erreur{% endif %}">
+      <label class="champ-libelle" for="c-nom">{% translate "Nom et prénom" %}</label>
+      <input class="champ-saisie" id="c-nom" name="nom" value="{{ etat.valeurs.nom }}" maxlength="100" autocomplete="name" required{% if etat.erreurs.nom %} aria-invalid="true" aria-describedby="c-nom-err"{% endif %}>
+      {% if etat.erreurs.nom %}<span class="champ-erreur" id="c-nom-err">{% icone "triangle-alert" "petite" %}<span>{{ etat.erreurs.nom|join:" " }}</span></span>{% endif %}
+    </div>
+    <div class="champ{% if etat.erreurs.telephone %} champ--erreur{% endif %}">
+      <label class="champ-libelle" for="c-tel">{% translate "Téléphone" %} <span class="facultatif">{% translate "(ou e-mail)" %}</span></label>
+      <span class="champ-aide" id="c-tel-aide">{% translate "Par exemple +243 812 345 678." %}</span>
+      <input class="champ-saisie" id="c-tel" name="telephone" type="tel" inputmode="tel" value="{{ etat.valeurs.telephone }}" maxlength="20" autocomplete="tel" aria-describedby="c-tel-aide{% if etat.erreurs.telephone %} c-tel-err{% endif %}"{% if etat.erreurs.telephone %} aria-invalid="true"{% endif %}>
+      {% if etat.erreurs.telephone %}<span class="champ-erreur" id="c-tel-err">{% icone "triangle-alert" "petite" %}<span>{{ etat.erreurs.telephone|join:" " }}</span></span>{% endif %}
+    </div>
+    <div class="champ{% if etat.erreurs.mail %} champ--erreur{% endif %}">
+      <label class="champ-libelle" for="c-mail">{% translate "Adresse e-mail" %} <span class="facultatif">{% translate "(ou téléphone)" %}</span></label>
+      <input class="champ-saisie" id="c-mail" name="mail" type="email" inputmode="email" value="{{ etat.valeurs.mail }}" maxlength="254" autocomplete="email"{% if etat.erreurs.mail %} aria-invalid="true" aria-describedby="c-mail-err"{% endif %}>
+      {% if etat.erreurs.mail %}<span class="champ-erreur" id="c-mail-err">{% icone "triangle-alert" "petite" %}<span>{{ etat.erreurs.mail|join:" " }}</span></span>{% endif %}
+    </div>
+    <div class="champ{% if etat.erreurs.objet %} champ--erreur{% endif %}">
+      <label class="champ-libelle" for="c-objet">{% translate "Objet" %}</label>
+      <select id="c-objet" name="objet" required{% if etat.erreurs.objet %} aria-invalid="true" aria-describedby="c-objet-err"{% endif %}>
+        {% for valeur, libelle in etat.sujets %}<option value="{{ valeur }}"{% if etat.valeurs.objet == valeur %} selected{% endif %}>{{ libelle }}</option>{% endfor %}
+      </select>
+      {% if etat.erreurs.objet %}<span class="champ-erreur" id="c-objet-err">{% icone "triangle-alert" "petite" %}<span>{{ etat.erreurs.objet|join:" " }}</span></span>{% endif %}
+    </div>
+    <div class="champ{% if etat.erreurs.message %} champ--erreur{% endif %}">
+      <label class="champ-libelle" for="c-msg">{% translate "Message" %}</label>
+      <textarea id="c-msg" name="message" maxlength="3000" rows="6" required data-compte-caracteres="#c-msg-compte" aria-describedby="c-msg-compte{% if etat.erreurs.message %} c-msg-err{% endif %}"{% if etat.erreurs.message %} aria-invalid="true"{% endif %}>{{ etat.valeurs.message }}</textarea>
+      <span class="champ-aide compte-caracteres" id="c-msg-compte"><span data-compte-valeur>0</span> / 3 000</span>
+      {% if etat.erreurs.message %}<span class="champ-erreur" id="c-msg-err">{% icone "triangle-alert" "petite" %}<span>{{ etat.erreurs.message|join:" " }}</span></span>{% endif %}
+    </div>
+    <div class="champ-piege" aria-hidden="true"><label for="c-site">{% translate "Ne pas remplir" %}</label><input id="c-site" name="site_web" type="text" tabindex="-1" autocomplete="off" value=""></div>
+  </div>
+  <div class="formulaire-pied">
+    <button class="bouton bouton--principal bouton--grand bouton--bloc" type="submit">{% icone "send" %}<span>{% translate "Envoyer le message" %}</span></button>
+    <p class="meta">{% translate "Vos coordonnées servent seulement à vous répondre." %} <a href="{% url 'pages:confidentialite' %}">{% translate "Confidentialité" %}</a></p>
+  </div>
+</form>
+{% endif %}

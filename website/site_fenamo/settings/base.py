@@ -138,3 +138,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+
+# --- Formulaire de contact (S-07) : limite par adresse IP, à la charge du site (l'API ne voit que le serveur du site) ---
+CONTACT_LIMITE_IP = env.int("CONTACT_LIMITE_IP", default=5)  # envois par fenêtre et par adresse IP
+CONTACT_LIMITE_FENETRE = env.int("CONTACT_LIMITE_FENETRE", default=3600)  # secondes

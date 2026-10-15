@@ -3,6 +3,7 @@
 {% block fil_courant %}{% translate "Contact" %}{% endblock %}
 {% block h1 %}{% translate "Contact" %}{% endblock %}
 {% block chapo %}<p class="chapo">{% translate "Une question sur l'adhésion, l'identification ou un engin ? Retrouvez ici les coordonnées du siège national." %}</p>{% endblock %}
+{% block scripts %}<script src="{% static 'vendor/htmx.min.js' %}" defer></script><script src="{% static 'js/contact.js' %}" defer></script>{% endblock %}
 {% block corps %}
 <div class="section">
   <div class="enveloppe grille-2">
@@ -22,8 +23,7 @@
       </div>{% endif %}
     </div>
     <div>
-      <div class="alerte alerte--info">{% icone "info" %}<div><span class="alerte-titre">{% translate "Formulaire de contact" %}</span><p>{% translate "Le formulaire de contact en ligne n'est pas encore ouvert. En attendant, joignez la FENAMO-RDC par téléphone ou par e-mail, ou rendez-vous au siège national." %}</p></div></div>
-      {% if config.email %}<p class="espace-haut-5"><a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="mailto:{{ config.email }}">{% icone "mail" %}<span>{% translate "Écrire par e-mail" %}</span></a></p>{% endif %}
+      <div id="contact-zone" aria-live="polite">{% include "partials/_contact_formulaire.html" %}</div>
       <p class="meta espace-haut-5">{% translate "Le site n'enregistre aucune information sur vous quand vous le consultez." %} <a href="{% url 'pages:confidentialite' %}">{% translate "Confidentialité" %}</a></p>
     </div>
   </div>

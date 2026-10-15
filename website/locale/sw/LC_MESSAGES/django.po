@@ -18,7 +18,7 @@ msgstr ""
 msgid "Erreur 404"
 msgstr ""
 
-#: templates/pages/404.html pages/views.py:434
+#: templates/pages/404.html pages/views.py:452
 msgid "Cette page n'existe pas ou a changé d'adresse."
 msgstr ""
 
@@ -70,11 +70,11 @@ msgstr ""
 msgid "Fil d'Ariane"
 msgstr ""
 
-#: templates/pages/_interieure.html templates/pages/article.html pages/views.py:90
+#: templates/pages/_interieure.html templates/pages/article.html pages/views.py:91
 msgid "Accueil"
 msgstr ""
 
-#: templates/pages/a_propos.html templates/pages/adhesion.html templates/pages/comite.html templates/pages/coordinations.html templates/pages/documents.html templates/partials/_menu.html templates/partials/_sousnav_fenamo.html templates/partials/_tete.html pages/views.py:105
+#: templates/pages/a_propos.html templates/pages/adhesion.html templates/pages/comite.html templates/pages/coordinations.html templates/pages/documents.html templates/partials/_menu.html templates/partials/_sousnav_fenamo.html templates/partials/_tete.html pages/views.py:106
 msgid "La FENAMO-RDC"
 msgstr ""
 
@@ -316,7 +316,7 @@ msgstr ""
 msgid "Chaque motard identifié, chaque engin numéroté."
 msgstr ""
 
-#: templates/pages/accueil.html pages/views.py:390
+#: templates/pages/accueil.html pages/views.py:408
 msgid "Vérifier une carte ou un engin"
 msgstr ""
 
@@ -364,7 +364,7 @@ msgstr ""
 msgid "La fédération réunit les associations légales de motocyclistes taximen et de propriétaires de motos-taxis. Découvrez les conditions d'adhésion et les pièces à préparer."
 msgstr ""
 
-#: templates/pages/accueil.html templates/pages/adhesion.html templates/pages/coordinations.html templates/partials/_menu.html templates/partials/_pied.html pages/views.py:377
+#: templates/pages/accueil.html templates/pages/adhesion.html templates/pages/coordinations.html templates/partials/_menu.html templates/partials/_pied.html pages/views.py:395
 msgid "Adhérer à la fédération"
 msgstr ""
 
@@ -428,7 +428,7 @@ msgstr ""
 msgid "En savoir plus"
 msgstr ""
 
-#: templates/pages/actualites.html templates/partials/_menu.html templates/partials/_sousnav_actualites.html pages/views.py:287
+#: templates/pages/actualites.html templates/partials/_menu.html templates/partials/_sousnav_actualites.html pages/views.py:288
 msgid "Actualités et communiqués"
 msgstr ""
 
@@ -523,7 +523,7 @@ msgid_plural "%(n)s téléchargements. "
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/pages/application.html templates/partials/_menu.html templates/partials/_pied.html templates/partials/_tete.html pages/views.py:220
+#: templates/pages/application.html templates/partials/_menu.html templates/partials/_pied.html templates/partials/_tete.html pages/views.py:221
 msgid "Application mobile"
 msgstr ""
 
@@ -627,7 +627,7 @@ msgstr ""
 msgid "Mandat du %(debut)s au %(fin)s"
 msgstr ""
 
-#: templates/pages/comite.html pages/views.py:135
+#: templates/pages/comite.html pages/views.py:136
 msgid "Comité exécutif national"
 msgstr ""
 
@@ -643,7 +643,7 @@ msgstr ""
 msgid "Dirige la fédération depuis le siège de Kinshasa."
 msgstr ""
 
-#: templates/pages/comite.html templates/pages/coordinations.html pages/views.py:166
+#: templates/pages/comite.html templates/pages/coordinations.html pages/views.py:167
 msgid "Coordinations provinciales"
 msgstr ""
 
@@ -875,7 +875,7 @@ msgstr ""
 msgid "Le président national est le représentant légal de la fédération (article 23). Les membres du comité sont élus par l'assemblée générale pour un mandat de cinq ans renouvelable (article 20)."
 msgstr ""
 
-#: templates/pages/confidentialite.html templates/pages/contact.html templates/partials/_pied.html pages/views.py:424
+#: templates/pages/confidentialite.html templates/pages/contact.html templates/partials/_contact_formulaire.html templates/partials/_pied.html pages/views.py:442
 msgid "Confidentialité"
 msgstr ""
 
@@ -907,7 +907,7 @@ msgstr ""
 msgid "Lorsqu'ils sont ouverts, les formulaires du site collectent seulement ce qui est nécessaire à leur objet :"
 msgstr ""
 
-#: templates/pages/confidentialite.html templates/pages/contact.html templates/partials/_menu.html templates/partials/_tete.html pages/views.py:366
+#: templates/pages/confidentialite.html templates/pages/contact.html templates/partials/_menu.html templates/partials/_tete.html pages/views.py:378
 msgid "Contact"
 msgstr ""
 
@@ -995,7 +995,7 @@ msgstr ""
 msgid "Siège national"
 msgstr ""
 
-#: templates/pages/contact.html
+#: templates/pages/contact.html templates/partials/_contact_formulaire.html
 msgid "Téléphone"
 msgstr ""
 
@@ -1017,18 +1017,6 @@ msgstr ""
 
 #: templates/pages/contact.html
 msgid "Afficher la carte"
-msgstr ""
-
-#: templates/pages/contact.html
-msgid "Formulaire de contact"
-msgstr ""
-
-#: templates/pages/contact.html
-msgid "Le formulaire de contact en ligne n'est pas encore ouvert. En attendant, joignez la FENAMO-RDC par téléphone ou par e-mail, ou rendez-vous au siège national."
-msgstr ""
-
-#: templates/pages/contact.html
-msgid "Écrire par e-mail"
 msgstr ""
 
 #: templates/pages/contact.html
@@ -1101,7 +1089,7 @@ msgstr ""
 msgid "pas encore d'antenne"
 msgstr ""
 
-#: templates/pages/coordinations.html pages/views.py:61
+#: templates/pages/coordinations.html pages/views.py:62
 msgid "membres actifs"
 msgstr ""
 
@@ -1138,7 +1126,7 @@ msgstr ""
 msgid "Les communiqués officiels sont publiés dans les <a href=\"%(url)s\">actualités</a>."
 msgstr ""
 
-#: templates/pages/documents.html templates/partials/_menu.html templates/partials/_pied.html templates/partials/_sousnav_fenamo.html pages/views.py:187
+#: templates/pages/documents.html templates/partials/_menu.html templates/partials/_pied.html templates/partials/_sousnav_fenamo.html pages/views.py:188
 msgid "Documents"
 msgstr ""
 
@@ -1158,7 +1146,7 @@ msgstr ""
 msgid "Formulaires et autres documents"
 msgstr ""
 
-#: templates/pages/galerie.html templates/partials/_menu.html templates/partials/_sousnav_actualites.html pages/views.py:350
+#: templates/pages/galerie.html templates/partials/_menu.html templates/partials/_sousnav_actualites.html pages/views.py:351
 msgid "Galerie"
 msgstr ""
 
@@ -1194,7 +1182,7 @@ msgstr ""
 msgid "Page indisponible"
 msgstr ""
 
-#: templates/pages/indisponible.html pages/views.py:311
+#: templates/pages/indisponible.html pages/views.py:312
 msgid "Page momentanément indisponible"
 msgstr ""
 
@@ -1202,7 +1190,7 @@ msgstr ""
 msgid "Cette page ne peut pas être affichée pour le moment. Réessayez dans quelques minutes."
 msgstr ""
 
-#: templates/pages/mentions_legales.html templates/partials/_pied.html pages/views.py:416
+#: templates/pages/mentions_legales.html templates/partials/_pied.html pages/views.py:434
 msgid "Mentions légales"
 msgstr ""
 
@@ -1266,7 +1254,7 @@ msgstr ""
 msgid "Message de la FENAMO-RDC"
 msgstr ""
 
-#: templates/pages/service_suspendu.html pages/views.py:405
+#: templates/pages/service_suspendu.html pages/views.py:423 services/contact.py:128 services/contact.py:206
 msgid "Service momentanément indisponible"
 msgstr ""
 
@@ -1325,6 +1313,82 @@ msgstr ""
 
 #: templates/partials/_bandeau.html
 msgid "Les pages affichent les dernières informations connues."
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Message envoyé"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Votre message a bien été reçu. La FENAMO-RDC vous répondra dès que possible."
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Écrire un autre message"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Écrire par e-mail"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Connexion impossible. Vérifiez votre réseau : votre saisie est conservée, vous pouvez renvoyer."
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Écrire à la FENAMO-RDC"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Indiquez un téléphone ou une adresse e-mail pour que nous puissions vous répondre."
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Le message n'est pas encore envoyé"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Corrigez les champs signalés ci-dessous."
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Nom et prénom"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "(ou e-mail)"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Par exemple +243 812 345 678."
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Adresse e-mail"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "(ou téléphone)"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Objet"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Message"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Ne pas remplir"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Envoyer le message"
+msgstr ""
+
+#: templates/partials/_contact_formulaire.html
+msgid "Vos coordonnées servent seulement à vous répondre."
 msgstr ""
 
 #: templates/partials/_document.html
@@ -1532,84 +1596,167 @@ msgstr ""
 msgid "Élément suivant"
 msgstr ""
 
-#: pages/views.py:91
+#: pages/views.py:92
 msgid "Fédération Nationale des Associations des Motocyclistes Taximen de la RDC : vérifier une carte de membre, adhérer, actualités."
 msgstr ""
 
-#: pages/views.py:106
+#: pages/views.py:107
 msgid "But, objectifs et catégories de membres de la Fédération Nationale des Associations des Motocyclistes Taximen de la RDC, d'après sa charte."
 msgstr ""
 
-#: pages/views.py:136
+#: pages/views.py:137
 msgid "Les dirigeants du comité exécutif national de la FENAMO-RDC et l'organisation de la fédération, du siège national jusqu'au parking."
 msgstr ""
 
-#: pages/views.py:167
+#: pages/views.py:168
 msgid "Les coordinations provinciales de la FENAMO-RDC, leurs codes, leurs antennes et leurs effectifs actifs."
 msgstr ""
 
-#: pages/views.py:188
+#: pages/views.py:189
 msgid "La charte, le règlement d'ordre intérieur et les formulaires de la FENAMO-RDC, à télécharger au format PDF."
 msgstr ""
 
-#: pages/views.py:221
+#: pages/views.py:222
 msgid "L'application mobile de la FENAMO-RDC pour les téléphones Android : version, taille, téléchargement et installation."
 msgstr ""
 
-#: pages/views.py:351
+#: pages/views.py:352
 msgid "Les photos et vidéos des activités de la FENAMO-RDC, dans les coordinations et les antennes."
 msgstr ""
 
-#: pages/views.py:367
-msgid "Coordonnées du siège national de la FENAMO-RDC à Kinshasa : adresse, téléphones, e-mail et réseaux sociaux."
-msgstr ""
-
-#: pages/views.py:378
+#: pages/views.py:396
 msgid "Conditions d'adhésion d'une association à la FENAMO-RDC (article 9 de la charte) et pièces à préparer."
 msgstr ""
 
-#: pages/views.py:391
+#: pages/views.py:409
 msgid "Vérification d'une carte de membre ou d'un engin de la FENAMO-RDC."
 msgstr ""
 
-#: pages/views.py:406
+#: pages/views.py:424
 msgid "Le service demandé est momentanément indisponible."
 msgstr ""
 
-#: pages/views.py:417
+#: pages/views.py:435
 msgid "Éditeur, hébergement et propriété des contenus du site de la FENAMO-RDC."
 msgstr ""
 
-#: pages/views.py:425
+#: pages/views.py:443
 msgid "Ce que le site de la FENAMO-RDC collecte, à quoi cela sert, et ce que montre la vérification publique."
 msgstr ""
 
-#: pages/views.py:288
+#: pages/views.py:289
 msgid "Les nouvelles et les communiqués officiels de la FENAMO-RDC et de ses coordinations."
 msgstr ""
 
-#: pages/views.py:312
+#: pages/views.py:313
 msgid "Cet article ne peut pas être affiché pour le moment."
 msgstr ""
 
-#: pages/views.py:434
+#: pages/views.py:379
+msgid "Coordonnées du siège national de la FENAMO-RDC à Kinshasa : adresse, téléphones, e-mail et réseaux sociaux."
+msgstr ""
+
+#: pages/views.py:452
 msgid "Page introuvable"
 msgstr ""
 
-#: pages/views.py:443
+#: pages/views.py:461
 msgid "Erreur du site"
 msgstr ""
 
-#: pages/views.py:63
+#: pages/views.py:64
 msgid "engins identifiés, motos et tricycles"
 msgstr ""
 
-#: pages/views.py:65
+#: pages/views.py:66
 msgid "associations membres"
 msgstr ""
 
-#: pages/views.py:69
+#: pages/views.py:70
 msgid "coordinations provinciales"
+msgstr ""
+
+#: services/contact.py:129
+msgid "Le service est suspendu pour le moment. Votre message n'a pas été envoyé."
+msgstr ""
+
+#: services/contact.py:207
+msgid "Votre message n'a pas été envoyé. Vos saisies sont conservées : réessayez dans quelques minutes, ou écrivez-nous par e-mail."
+msgstr ""
+
+#: services/contact.py:40
+msgid "Question générale"
+msgstr ""
+
+#: services/contact.py:41
+msgid "Adhésion d'une association"
+msgstr ""
+
+#: services/contact.py:42
+msgid "Identification d'un membre ou d'un engin"
+msgstr ""
+
+#: services/contact.py:43
+msgid "Presse et partenariats"
+msgstr ""
+
+#: services/contact.py:44
+msgid "Autre"
+msgstr ""
+
+#: services/contact.py:164
+msgid "Trop d'envois depuis votre connexion"
+msgstr ""
+
+#: services/contact.py:176
+msgid "Le formulaire est resté ouvert trop longtemps"
+msgstr ""
+
+#: services/contact.py:177
+msgid "Vos saisies sont conservées. Patientez un instant puis envoyez de nouveau le message."
+msgstr ""
+
+#: services/contact.py:232
+msgid "Message trop volumineux"
+msgstr ""
+
+#: services/contact.py:233
+msgid "Raccourcissez votre message puis envoyez-le de nouveau."
+msgstr ""
+
+#: services/contact.py:238
+msgid "Trop de messages envoyés"
+msgstr ""
+
+#: services/contact.py:121
+msgid "Formulaire indisponible pour le moment"
+msgstr ""
+
+#: services/contact.py:122
+msgid "Le formulaire n'est pas encore ouvert. Joignez la FENAMO-RDC par téléphone ou par e-mail, ou rendez-vous au siège national."
+msgstr ""
+
+#: services/contact.py:165
+#, python-format
+msgid "Vous avez envoyé plusieurs messages en peu de temps. Vos saisies sont conservées : réessayez dans %(minutes)s minutes."
+msgstr ""
+
+#: services/contact.py:242
+msgid "Réessayez un peu plus tard. Vos saisies sont conservées."
+msgstr ""
+
+#: services/contact.py:228
+msgid "Le message n'a pas pu être validé. Vérifiez les champs et réessayez."
+msgstr ""
+
+#: services/contact.py:240
+#, python-format
+msgid "Réessayez dans %(minutes)s minutes. Vos saisies sont conservées."
+msgstr ""
+
+#: services/contact.py:147
+#, python-format
+msgid "Ce champ est trop long (%(maxi)s caractères au plus)."
 msgstr ""
 
 #: site_fenamo/settings/base.py:107

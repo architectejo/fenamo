@@ -149,6 +149,11 @@ def _basculer_statique() -> None:
     api_client.noter(statique=True)
 
 
+def signaler_inactif() -> None:
+    """Pour les dépôts (S-07…) : un 403 « inactif » reçu fait basculer le site en mode exemple."""
+    _basculer_statique()
+
+
 # ---------- Configuration (en-tête, pied de page, documents, application) ----------
 
 def _document(d) -> dict | None:
