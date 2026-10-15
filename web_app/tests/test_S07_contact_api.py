@@ -292,10 +292,46 @@ def test_F62_marquer_traite_editeur_ok_et_message_inconnu_404(client, acteurs_ro
 
 
 def test_F62_liste_paginee_contexte(client, monde):
-    for i in range(25):
+    for i in range(30):
         Contact.objects.create(nom=f'V{i}', description='x' * 12)
     client.force_login(monde['compte'])
     r = client.get(reverse('contact'))
-    assert len(r.context['contacts']) == 20 and r.context['page_obj'].paginator.num_pages == 2 and r.context['nb_a_traiter'] == Contact.objects.count()
-    assert len(client.get(reverse('contact') + '?page=2').context['contacts']) == Contact.objects.count() - 20
+    assert len(r.context['contacts']) == 25 and r.context['page_obj'].paginator.num_pages == 2 and r.context['nb_a_traiter'] == Contact.objects.count()
+    assert len(client.get(reverse('contact') + '?page=2').context['contacts']) == Contact.objects.count() - 25
     assert client.get(reverse('contact') + '?page=abc').status_code == 200
+
+
+def test_F62_filtres_recherche_et_nombres(client, monde):
+    Contact.objects.all().delete()  # le jeu d'essai en contient déjà
+    a = Contact.objects.create(nom='Aimé Kasa', mail='a@x.org', phone='0810000001', raison='Adhésion', description='x' * 12)
+    b = Contact.objects.create(nom='Bob', mail='b@x.org', phone='0820000002', raison='Presse', description='x' * 12, traiter=True)
+    client.force_login(monde['compte'])
+    r = client.get(reverse('contact'))
+    assert [c.pk for c in r.context['contacts']] == [a.pk] and r.context['filtres']['etat'] == 'a_traiter'  # défaut : à traiter
+    assert r.context['nombres'] == {'a_traiter': 1, 'traites': 1, 'tous': 2}
+    assert [c.pk for c in client.get(reverse('contact'), {'etat': 'traites'}).context['contacts']] == [b.pk]
+    assert {c.pk for c in client.get(reverse('contact'), {'etat': 'tous'}).context['contacts']} == {a.pk, b.pk}
+    assert client.get(reverse('contact'), {'etat': 'n_importe_quoi'}).context['filtres']['etat'] == 'a_traiter'
+    for q, attendu in (('aimé', a.pk), ('0820', b.pk), ('b@x', b.pk), ('presse', b.pk)):
+        trouves = client.get(reverse('contact'), {'q': q, 'etat': 'tous'}).context['contacts']
+        assert [c.pk for c in trouves] == [attendu], q
+    assert client.get(reverse('contact'), {'q': 'bob'}).context['nombres'] == {'a_traiter': 0, 'traites': 1, 'tous': 1}
+    assert client.get(reverse('contact'), HTTP_HX_REQUEST='true').status_code == 200  # fragment (ou page tant que le gabarit manque)
+
+
+def test_F62_recu_le_ne_bouge_pas_et_traitement_trace(client, acteurs_roles):
+    from datetime import timedelta
+    from django.utils import timezone
+    Contact.objects.all().delete()  # le jeu d'essai en contient déjà
+    reception = timezone.now() - timedelta(days=3)
+    c = _message(cree_le=reception)
+    autre = _message()
+    client.force_login(acteurs_roles['ED'])
+    url = reverse('contact-view', kwargs={'id': c.pk})
+    avant = client.get(url)
+    assert avant.context['recu_le'] == reception and avant.context['suivant'].pk == autre.pk and avant.context['nb_a_traiter'] == 2
+    r = client.post(url, HTTP_HX_REQUEST='true')
+    assert r.status_code == 200 and 'toast' in r['HX-Trigger'] and r.context['vient_de_traiter'] is True
+    assert r.context['recu_le'] == reception and r.context['traite_par'] == acteurs_roles['ED'] and r.context['traite_le'] is not None
+    assert r.context['nb_a_traiter'] == 1
+    assert 'toast' not in client.post(url, HTTP_HX_REQUEST='true').headers.get('HX-Trigger', '')  # idempotent : pas de second toast

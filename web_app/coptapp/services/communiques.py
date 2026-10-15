@@ -28,8 +28,16 @@ MESSAGE_MAX = 5000
 PAR_PAGE = 20
 
 
+CIBLES = ('national', 'coordination', 'antenne')
+
+
 class ErreurCommunique(ValueError):
-    """Donnée invalide (titre, message, ciblage) : la vue répond 422 avec ce texte."""
+    """Donnée invalide (titre, message, ciblage) : la vue répond 422 avec ce texte. ``champ`` désigne le champ fautif
+    (``titre``, ``message``, ``coordination``, ``antenne``, ``cible``) pour l'afficher sous lui ; ``None`` = erreur générale."""
+
+    def __init__(self, message, champ=None):
+        super().__init__(message)
+        self.champ = champ
 
 
 def peut_publier(user):
@@ -51,8 +59,23 @@ def choix_ciblage():
 
 # ---------------------------------------------------------------- publication
 
-def _cible(coordination, antenne):
-    """(coordination, antenne) cohérents : l'antenne impose sa coordination ; ErreurCommunique si elles se contredisent."""
+def _cible(coordination, antenne, cible=None):
+    """(coordination, antenne) cohérents : l'antenne impose sa coordination ; ErreurCommunique si elles se contredisent.
+
+    ``cible`` (``national``, ``coordination``, ``antenne``) est le choix de l'auteur dans la modale. Il fait foi : ``coordination`` sans
+    coordination ou ``antenne`` sans antenne est refusé (jamais élargi en silence au niveau national) ; ``national`` ignore les listes.
+    ``None`` (appel sans choix explicite) : le ciblage se déduit de ce qui est fourni, comme avant."""
+    if cible is not None:
+        if cible not in CIBLES:
+            raise ErreurCommunique(_("Choisissez qui reçoit le communiqué."), 'cible')
+        if cible == 'national':
+            return None, None
+        if cible == 'coordination':
+            if coordination is None:
+                raise ErreurCommunique(_("Choisissez la coordination qui reçoit le communiqué."), 'coordination')
+            antenne = None
+        elif antenne is None:
+            raise ErreurCommunique(_("Choisissez l'antenne qui reçoit le communiqué."), 'antenne')
     if antenne is not None:
         if coordination is not None and antenne.coordination_id != coordination.pk:
             raise ErreurCommunique(_("Cette antenne n'appartient pas à la coordination choisie."))
@@ -63,19 +86,19 @@ def _cible(coordination, antenne):
 
 
 @transaction.atomic
-def publier(auteur, titre, message, coordination=None, antenne=None):
+def publier(auteur, titre, message, coordination=None, antenne=None, cible=None):
     """Publie un communiqué et notifie ses destinataires ; retourne le Communique.
 
     PermissionDenied si `auteur` ne peut pas publier ; ErreurCommunique si le titre (120 au plus), le message (5000 au plus) ou le ciblage
-    est invalide (rien n'est écrit). Journalisé (F-70) avec le nombre de destinataires."""
+    est invalide (rien n'est écrit ; voir ``_cible`` pour ``cible``). Journalisé (F-70) avec le nombre de destinataires."""
     if not peut_publier(auteur):
         raise PermissionDenied
     titre, message = (titre or '').strip(), (message or '').strip()
     if not titre or len(titre) > TITRE_MAX:
-        raise ErreurCommunique(_("Le titre est obligatoire (120 caractères au plus)."))
+        raise ErreurCommunique(_("Le titre est obligatoire (120 caractères au plus)."), 'titre')
     if not message or len(message) > MESSAGE_MAX:
-        raise ErreurCommunique(_("Le message est obligatoire (5000 caractères au plus)."))
-    coordination, antenne = _cible(coordination, antenne)
+        raise ErreurCommunique(_("Le message est obligatoire (5000 caractères au plus)."), 'message')
+    coordination, antenne = _cible(coordination, antenne, cible)
     communique = Communique.objects.create(user=auteur, titre=titre, message=message, publie_le=timezone.now(),
                                            province=coordination, antenne=antenne)
     destinataires = list(destinataires_ids(communique))
@@ -158,11 +181,46 @@ def _non_lu(user):
     return ~Exists(LectureCommunique.objects.filter(compte=user, communique=OuterRef('pk')))
 
 
+def _non_lus(jeu, user):
+    """SEULE règle du « non lu » (liste, filtre, compteur, suivant) : ni écrit par `user`, ni publié avant la création de son compte
+    (``date_joined`` : l'historique d'avant son arrivée est considéré lu), ni déjà lu PAR lui."""
+    return jeu.exclude(user=user).filter(publie_le__gte=user.date_joined).filter(_non_lu(user))
+
+
 def nombre_non_lus(user):
-    """Communiqués visibles, publiés depuis la création du compte, non écrits par `user` et pas encore lus PAR lui (compteur du badge)."""
+    """Communiqués visibles non lus par `user` (compteur du badge) : même règle que la liste, voir ``_non_lus``."""
     if user is None or not user.is_authenticated:
         return 0
-    return (communiques_visibles(user).exclude(user=user).filter(publie_le__gte=user.date_joined).filter(_non_lu(user)).count())
+    return _non_lus(communiques_visibles(user), user).count()
+
+
+def suivant_non_lu(user, apres=None):
+    """Le communiqué non lu le plus récent visible par `user`, hors `apres` (celui qu'on vient de lire) ; ``None`` s'il n'en reste pas."""
+    if user is None or not user.is_authenticated:
+        return None
+    jeu = _non_lus(communiques_visibles(user), user).select_related('user', 'province', 'antenne')
+    if apres is not None:
+        jeu = jeu.exclude(pk=apres.pk)
+    return jeu.order_by('-publie_le', '-pk').first()
+
+
+def est_lu(user, communique):
+    """Vrai si `communique` est lu pour `user` selon la règle unique (auteur, antérieur au compte, ou lecture enregistrée)."""
+    return (communique.user_id == user.pk or (communique.publie_le is not None and communique.publie_le < user.date_joined)
+            or LectureCommunique.objects.filter(compte=user, communique=communique).exists())
+
+
+def titre_affiche(communique):
+    """Titre à montrer : le titre, ou les 80 premiers caractères du message pour un ancien communiqué sans titre."""
+    titre = (communique.titre or '').strip()
+    return titre or (communique.message or '').strip()[:80] or _("Communiqué")
+
+
+def nombres_liste(user, filtres=None):
+    """Nombres des puces « Tous » (``tous``) et « Non lus » (``non_lus``), selon les filtres ``q``, ``coordination``, ``antenne`` (sans ``etat``)."""
+    filtres = {cle: valeur for cle, valeur in (filtres or {}).items() if cle != 'etat'}
+    jeu = _filtrer(communiques_visibles(user), filtres)
+    return {'tous': jeu.count(), 'non_lus': _non_lus(jeu, user).count()}
 
 
 def marquer_lu(user, communique):
@@ -173,16 +231,10 @@ def marquer_lu(user, communique):
     return cree
 
 
-def lister_communiques(user, filtres=None, numero_page=None, par_page=PAR_PAGE):
-    """Page de communiqués visibles (récents d'abord), chacun portant ``lu`` (pour `user`). Filtres : ``q`` (titre, message), ``etat``
-    (« non_lus »), ``coordination`` et ``antenne`` (identifiants). Page illisible ou hors bornes : première ou dernière page."""
-    filtres = filtres or {}
-    jeu = communiques_visibles(user).select_related('user', 'province', 'antenne')
+def _filtrer(jeu, filtres):
     q = (filtres.get('q') or '').strip()[:100]
     if q:
         jeu = jeu.filter(Q(titre__icontains=q) | Q(message__icontains=q))
-    if filtres.get('etat') == 'non_lus':
-        jeu = jeu.filter(_non_lu(user))
     for cle, champ in (('coordination', 'province_id'), ('antenne', 'antenne_id')):
         try:
             valeur = int(filtres.get(cle) or 0)
@@ -190,9 +242,22 @@ def lister_communiques(user, filtres=None, numero_page=None, par_page=PAR_PAGE):
             valeur = 0
         if 0 < valeur <= 2**31 - 1:
             jeu = jeu.filter(**{champ: valeur})
+    return jeu
+
+
+def lister_communiques(user, filtres=None, numero_page=None, par_page=PAR_PAGE):
+    """Page de communiqués visibles (récents d'abord), chacun portant ``lu`` (règle unique, voir ``_non_lus``) et ``titre_affiche``. Filtres :
+    ``q`` (titre, message), ``etat`` (« non_lus »), ``coordination`` et ``antenne`` (identifiants). Page illisible ou hors bornes :
+    première ou dernière page."""
+    filtres = filtres or {}
+    jeu = _filtrer(communiques_visibles(user).select_related('user', 'province', 'antenne'), filtres)
+    if filtres.get('etat') == 'non_lus':
+        jeu = _non_lus(jeu, user)
     jeu = jeu.annotate(lu_par_moi=Exists(LectureCommunique.objects.filter(compte=user, communique=OuterRef('pk')))).order_by('-publie_le', '-pk')
     page = Paginator(jeu, par_page).get_page(numero_page)
     page.object_list = list(page.object_list)
     for communique in page.object_list:
-        communique.lu = communique.lu_par_moi or communique.user_id == user.pk
+        communique.lu = bool(communique.lu_par_moi or communique.user_id == user.pk
+                             or (communique.publie_le is not None and communique.publie_le < user.date_joined))
+        communique.titre_affiche = titre_affiche(communique)
     return page

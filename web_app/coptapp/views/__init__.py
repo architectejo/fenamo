@@ -35,7 +35,9 @@ from coptapp.services.membres import (
 )
 
 RESULTATS_MAX = 50
-from fenamo.htmx import reponse_succes, veut_fragment
+from fenamo.htmx import ajouter_declencheurs, reponse_succes, veut_fragment
+from django.template import TemplateDoesNotExist
+from django.template.loader import select_template
 from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime
 from calendar import monthrange
@@ -650,8 +652,21 @@ def attributMoto(request, id):
     return redirect("membre-view", id=id)
 
 
+def _gabarit_contact(request, fragment, complet):
+    """Le fragment HTMX s'il existe (frontend), sinon la page complète ; la page complète pour une navigation boostée."""
+    if veut_fragment(request):
+        try:
+            return select_template([fragment]).template.name
+        except TemplateDoesNotExist:
+            return complet
+    return complet
+
+
 @editeur_requis
 def contact(request):
+    """F-62 : messages reçus du site, ``?q=`` (nom, téléphone, e-mail, objet), ``?etat=`` (a_traiter par défaut, traites, tous), ``?page=``
+    (25 par page). Contexte : contacts (= page_obj), page_obj, filtres (q, etat résolu), nombres (a_traiter, traites, tous selon q),
+    nb_a_traiter (total, pour le menu). Fragment HTMX : ``virtrine/partials/_messages_liste.html`` s'il existe."""
     #Configuration
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
@@ -659,14 +674,19 @@ def contact(request):
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
-    
-    # F-62 : liste paginée (20 par page, `?page=`), du plus récent au plus ancien. Contexte : contacts (= page_obj), page_obj, nb_a_traiter.
-    page_obj = contact_service.lister(request.GET.get('page'))
+
+    etat = request.GET.get('etat')
+    filtres = {'q': (request.GET.get('q') or '').strip()[:100], 'etat': etat if etat in contact_service.ETATS else 'a_traiter'}
+    page_obj = contact_service.lister(request.GET.get('page'), filtres)
     contacts, nb_a_traiter = page_obj, contact_service.messages_a_traiter()
-    return render(request, 'app/contact.html', locals())
+    nombres = contact_service.nombres_messages(filtres)
+    return render(request, _gabarit_contact(request, 'virtrine/partials/_messages_liste.html', 'app/contact.html'), locals())
 
 @editeur_requis
 def contactView(request, id):
+    """F-62 : lecture d'un message ; POST (CSRF) = marquer « traité » (idempotent, journalisé, auteur et date enregistrés). Contexte : contact,
+    recu_le, traite_par, traite_le, nb_a_traiter, suivant (message suivant à traiter ou None), vient_de_traiter (POST qui a changé l'état).
+    HTMX en POST : ``virtrine/partials/_message_expediteur.html`` s'il existe + toast « Message marqué comme traité »."""
     #Configuration
     user = request.user
     userMembre = Membre.objects.filter(id=user.membreId).first() if user.membreId else None
@@ -674,12 +694,19 @@ def contactView(request, id):
     notifications = myNotify(request)[0:3]
     antennes = Antenne.objects.order_by('nom')
     provinces = provinceSelector()
-    
+
     contact = get_object_or_404(Contact, id=id)
+    vient_de_traiter = False
     if request.method == 'POST':  # POST + CSRF seulement ; idempotent, journalisé (F-70) par le service
-        contact_service.marquer_traite(request.user, contact)
+        vient_de_traiter = contact_service.marquer_traite(request.user, contact)
         contact.refresh_from_db()
-    return render(request, 'app/contact-view.html', locals())
+    recu_le, traite_par, traite_le = contact.cree_le or contact.date, contact.traite_par, contact.traite_le
+    nb_a_traiter, suivant = contact_service.messages_a_traiter(), contact_service.suivant_a_traiter(contact)
+    modele = _gabarit_contact(request, 'virtrine/partials/_message_expediteur.html', 'app/contact-view.html') if request.method == 'POST' else 'app/contact-view.html'
+    reponse = render(request, modele, locals())
+    if vient_de_traiter and veut_fragment(request):
+        ajouter_declencheurs(reponse, {'toast': {'message': str(_("Message marqué comme traité.")), 'niveau': 'success'}, 'contactsMaj': True})
+    return reponse
 
 @require_POST
 def deleteMoto(request,id):

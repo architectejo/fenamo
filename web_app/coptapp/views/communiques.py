@@ -32,23 +32,25 @@ def _modele(request):
 def listMessage(request):
     """Liste des communiqués visibles. GET : ``q``, ``etat`` (non_lus), ``coordination``, ``antenne``, ``page``. Contexte : page_obj,
     communiques (= page_obj, compatibilité), filtres, filtres_actifs, nb_non_lus, peut_publier, choix (``coordinations`` et ``antennes``
-    de ``service.choix_ciblage``, pour les listes de filtre). Fragment HTMX : la zone seule."""
+    de ``service.choix_ciblage``, pour les listes de filtre), nombres (``tous`` et ``non_lus`` des puces, selon q, coordination, antenne ;
+    ``nb_non_lus`` = tout le périmètre). Chaque communiqué de la page porte ``lu`` et ``titre_affiche``. Fragment HTMX : la zone seule."""
     filtres = {cle: (request.GET.get(cle) or '').strip() for cle in ('q', 'etat', 'coordination', 'antenne')}
     page = service.lister_communiques(request.user, filtres, request.GET.get('page'))
     contexte = {'page_obj': page, 'communiques': page, 'filtres': filtres, 'filtres_actifs': any(filtres.values()),
                 'nb_non_lus': service.nombre_non_lus(request.user), 'peut_publier': service.peut_publier(request.user),
-                'choix': service.choix_ciblage()}
+                'choix': service.choix_ciblage(), 'nombres': service.nombres_liste(request.user, filtres)}
     modele = 'coptapp/communiques/partials/_liste.html' if veut_fragment(request) else 'app/list-message.html'
     return render(request, modele, contexte)
 
 
 @require_GET
 def messageView(request, id):
-    """Lecture d'un communiqué visible (404 sinon). N'écrit rien. Contexte : message (= communique), lu, peut_publier."""
+    """Lecture d'un communiqué visible (404 sinon). N'écrit rien. Contexte : message (= communique), lu, peut_publier, titre_affiche, suivant (prochain non lu ou None)."""
     communique = get_object_or_404(service.communiques_visibles(request.user).select_related('user', 'province', 'antenne'), id=id)
-    lu = communique.user_id == request.user.pk or communique.lectures.filter(compte=request.user).exists()
+    lu = service.est_lu(request.user, communique)
     return render(request, 'app/message-view.html', {
         'message': communique, 'communique': communique, 'lu': lu,
+        'titre_affiche': service.titre_affiche(communique), 'suivant': service.suivant_non_lu(request.user, apres=communique),
         'peut_publier': service.peut_publier(request.user)})
 
 
@@ -74,23 +76,26 @@ def compteur(request):
 
 @require_http_methods(['GET', 'POST'])
 def addCommunique(request):
-    """Publication (ED, SU) dans la modale commune. 403 sans droit. POST : ``titre``, ``message``, ``coordination`` et ``antenne`` (facultatifs,
-    identifiants ; le contexte porte ``coordinations`` et ``antennes``, voir ``service.choix_ciblage``). Erreur : 422 (modale conservée) ; succès : HTMX 204 + toast + ``communiquesMaj``, sinon message et retour à la liste."""
+    """Publication (ED, SU) dans la modale commune. 403 sans droit. POST : ``titre``, ``message``, ``cible`` (national, coordination, antenne ;
+    absent = déduit des listes), ``coordination`` et ``antenne`` (identifiants ; le contexte porte ``coordinations`` et ``antennes``, voir ``service.choix_ciblage``). Erreur : 422 (modale conservée ; contexte ``erreur`` générale,
+    ``erreurs`` = {champ: texte} pour les messages sous les champs, ``valeurs``) ; succès : HTMX 204 + toast + ``communiquesMaj``, sinon message et retour à la liste."""
     if not service.peut_publier(request.user):
         raise PermissionDenied
     contexte = {'action': request.path, **service.choix_ciblage(),
                 'titre_max': service.TITRE_MAX, 'message_max': service.MESSAGE_MAX}
     if request.method == 'GET':
         return render(request, _modele(request), contexte)
-    donnees = {cle: request.POST.get(cle, '') for cle in ('titre', 'message', 'coordination', 'antenne')}
+    donnees = {cle: request.POST.get(cle, '') for cle in ('titre', 'message', 'cible', 'coordination', 'antenne')}
     coordination = Province.objects.filter(pk=_entier(donnees['coordination'])).first() if donnees['coordination'] else None
     antenne = Antenne.objects.filter(pk=_entier(donnees['antenne'])).first() if donnees['antenne'] else None
     try:
         if (donnees['coordination'] and coordination is None) or (donnees['antenne'] and antenne is None):
-            raise service.ErreurCommunique(_("Ciblage inconnu."))
-        service.publier(request.user, donnees['titre'], donnees['message'], coordination, antenne)
+            raise service.ErreurCommunique(_("Ciblage inconnu."), 'antenne' if donnees['antenne'] else 'coordination')
+        service.publier(request.user, donnees['titre'], donnees['message'], coordination, antenne,
+                        cible=donnees['cible'].strip() or None)
     except service.ErreurCommunique as erreur:
-        return render(request, _modele(request), {**contexte, 'erreur': str(erreur), 'valeurs': donnees}, status=422)
+        erreurs = {erreur.champ: str(erreur)} if erreur.champ else {}
+        return render(request, _modele(request), {**contexte, 'erreur': str(erreur), 'erreurs': erreurs, 'valeurs': donnees}, status=422)
     texte = _("Communiqué publié.")
     if request.htmx:
         return reponse_succes(texte, evenements=[EVENEMENT])

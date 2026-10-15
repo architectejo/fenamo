@@ -252,3 +252,62 @@ def test_F40_compteur_fragment_no_store(client, monde, equipe):
     reponse = client.get(url, HTTP_HX_REQUEST='true')
     assert reponse.status_code == 200 and reponse.context['nb_non_lus'] == 1 and 'no-store' in reponse['Cache-Control']
     assert client.post(url).status_code == 405
+
+
+# ---------------------------------------------------------------- écarts : ciblage explicite, règle unique du « non lu »
+
+def test_F40_cible_sans_choix_refusee_jamais_nationale(monde, equipe):
+    ed, avant = equipe['ED'], Communique.objects.count()
+    for cible, champ in (('antenne', 'antenne'), ('coordination', 'coordination')):
+        with pytest.raises(S.ErreurCommunique) as e:
+            S.publier(ed, 'T', 'M', cible=cible)
+        assert e.value.champ == champ
+    with pytest.raises(S.ErreurCommunique):
+        S.publier(ed, 'T', 'M', cible='planete')
+    with pytest.raises(S.ErreurCommunique):
+        S.publier(ed, 'T', 'M', coordination=monde['P'], cible='antenne')  # une coordination ne remplace pas l'antenne
+    assert Communique.objects.count() == avant
+    national = S.publier(ed, 'T', 'M', coordination=monde['P'], antenne=monde['antenne_p'], cible='national')
+    assert national.province_id is None and national.antenne_id is None
+    coord = S.publier(ed, 'T', 'M', coordination=monde['P'], antenne=monde['antenne_p'], cible='coordination')
+    assert coord.province_id == monde['P'].pk and coord.antenne_id is None
+
+
+def test_F40_vue_cible_sans_choix_422_message_sous_le_champ(client, monde, equipe):
+    client.force_login(equipe['ED'])
+    avant = Communique.objects.count()
+    for cible, champ, texte in (('antenne', 'antenne', "Choisissez l'antenne qui reçoit le communiqué."),
+                                ('coordination', 'coordination', 'Choisissez la coordination qui reçoit le communiqué.')):
+        r = client.post(reverse('message'), {'titre': 'T', 'message': 'M', 'cible': cible}, HTTP_HX_REQUEST='true')
+        assert r.status_code == 422 and r.context['erreurs'] == {champ: texte} and r.context['valeurs']['cible'] == cible
+    r = client.post(reverse('message'), {'titre': '', 'message': 'M', 'cible': 'national'}, HTTP_HX_REQUEST='true')
+    assert r.status_code == 422 and list(r.context['erreurs']) == ['titre']
+    assert Communique.objects.count() == avant
+    ok = client.post(reverse('message'), {'titre': 'T', 'message': 'M', 'cible': 'antenne', 'antenne': monde['antenne_p'].pk}, HTTP_HX_REQUEST='true')
+    assert ok.status_code == 204 and Communique.objects.get(titre='T').antenne_id == monde['antenne_p'].pk
+
+
+def test_F40_non_lu_meme_regle_liste_filtre_et_compteur(client, monde, equipe):
+    va = equipe['VA_P']
+    ancien = S.publier(equipe['ED'], 'Avant le compte', 'm')
+    recent = S.publier(equipe['ED'], 'Après le compte', 'm')
+    Communique.objects.filter(pk=ancien.pk).update(publie_le=va.date_joined - timedelta(days=1))
+    va = Compte.objects.get(pk=va.pk)
+    page = S.lister_communiques(va, {}, 1)
+    lus = {c.pk: c.lu for c in page}
+    assert lus[ancien.pk] is True and lus[recent.pk] is False
+    non_lus = S.lister_communiques(va, {'etat': 'non_lus'}, 1)
+    assert [c.pk for c in non_lus] == [recent.pk] and S.nombre_non_lus(va) == 1  # liste, filtre et compteur d'accord
+    assert S.nombres_liste(va)['non_lus'] == 1 and S.nombres_liste(va, {'q': 'Avant'}) == {'tous': 1, 'non_lus': 0}
+    ancien.refresh_from_db()
+    assert S.est_lu(va, ancien) and not S.est_lu(va, recent)
+    assert S.suivant_non_lu(va).pk == recent.pk and S.suivant_non_lu(va, apres=recent) is None
+    client.force_login(va)
+    assert client.get(reverse('communique', kwargs={'id': ancien.pk})).context['lu'] is True
+    lecture = client.get(reverse('communique', kwargs={'id': recent.pk}))
+    assert lecture.context['lu'] is False and lecture.context['suivant'] is None
+
+
+def test_F40_titre_de_repli_pour_ancien_communique_sans_titre(monde, equipe):
+    assert S.titre_affiche(Communique(titre='', message='x' * 100)) == 'x' * 80
+    assert S.titre_affiche(Communique(titre='Un titre', message='m')) == 'Un titre'

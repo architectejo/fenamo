@@ -204,10 +204,50 @@ def messages_a_traiter():
     return Contact.objects.filter(traiter=False).count()
 
 
-def lister(numero_page, par_page=20):
-    """Page de messages, du plus récent au plus ancien."""
+PAR_PAGE = 25
+ETATS = ('a_traiter', 'traites', 'tous')
+
+
+def _filtrer(filtres):
+    """Messages selon ``q`` (nom, téléphone, e-mail ou objet) et ``etat`` (``a_traiter`` par défaut, ``traites``, ``tous``)."""
+    from django.db.models import Q
+    filtres = filtres or {}
+    jeu = Contact.objects.all()
+    q = (filtres.get('q') or '').strip()[:100]
+    if q:
+        jeu = jeu.filter(Q(nom__icontains=q) | Q(phone__icontains=q) | Q(mail__icontains=q) | Q(raison__icontains=q))
+    return jeu
+
+
+def nombres_messages(filtres=None):
+    """Nombres des puces : ``a_traiter``, ``traites``, ``tous`` (selon la recherche ``q`` seulement, pas selon l'état)."""
+    jeu = _filtrer(filtres)
+    a_traiter = jeu.filter(traiter=False).count()
+    total = jeu.count()
+    return {'a_traiter': a_traiter, 'traites': total - a_traiter, 'tous': total}
+
+
+def lister(numero_page, filtres=None, par_page=PAR_PAGE):
+    """Page de messages (25 par défaut), du plus récent au plus ancien. ``filtres`` : ``q`` et ``etat`` (voir ``ETATS`` ; défaut
+    ``a_traiter`` ; valeur inconnue = défaut). Chaque message porte ``recu_le`` (``cree_le``, à défaut la date de réception d'origine)."""
     from django.core.paginator import Paginator
-    return Paginator(Contact.objects.select_related('traite_par').order_by('-id'), par_page).get_page(numero_page)
+    jeu = _filtrer(filtres)
+    etat = (filtres or {}).get('etat')
+    etat = etat if etat in ETATS else 'a_traiter'
+    if etat == 'a_traiter':
+        jeu = jeu.filter(traiter=False)
+    elif etat == 'traites':
+        jeu = jeu.filter(traiter=True)
+    page = Paginator(jeu.select_related('traite_par').order_by('-id'), par_page).get_page(numero_page)
+    page.object_list = list(page.object_list)
+    for message in page.object_list:
+        message.recu_le = message.cree_le or message.date
+    return page
+
+
+def suivant_a_traiter(contact):
+    """Le message à traiter le plus récent après avoir lu `contact` (hors lui) ; ``None`` s'il n'en reste pas."""
+    return Contact.objects.filter(traiter=False).exclude(pk=contact.pk).order_by('-id').first()
 
 
 @transaction.atomic
