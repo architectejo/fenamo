@@ -294,6 +294,23 @@ def _resultats_membres(auteur, trouves):
     return resultats
 
 
+def annoter_nommage(auteur, membres):
+    """Pour la liste des membres : pose sur chaque membre de `membres` (liste ou page) ``role_nomme`` (code du rôle actif ou ''),
+    ``nommable`` et ``raison_non_nommable`` (texte du survol). Deux requêtes pour toute la page. Sans droit de nommer : tout reste vide."""
+    membres = list(membres)
+    if not membres:
+        return membres
+    ids = [m.pk for m in membres]
+    par_membre = {n.compte.membreId: n.role for n in Nomination.objects.filter(active=True, compte__membreId__in=ids).select_related('compte')}
+    nommables = set(noms.membres_nommables(auteur).filter(pk__in=ids).values_list('pk', flat=True))
+    for m in membres:
+        m.role_nomme = par_membre.get(m.pk, '')
+        m.role_nomme_libelle = roles.LIBELLES.get(m.role_nomme, '') if m.role_nomme else ''
+        m.nommable = m.pk in nommables
+        m.raison_non_nommable = '' if m.nommable else _raison_non_nommable(m, par_membre)
+    return membres
+
+
 @require_GET
 def membres_nommables(request):
     """Fragment des résultats de recherche (components/_choix_membre.html) : les membres du périmètre qui correspondent, les non
@@ -351,7 +368,8 @@ def _mdp_reponse(request, compte, mot_de_passe, titre, evenements=True, identifi
     add_never_cache_headers(reponse)
     reponse['Cache-Control'] = 'no-store, private'
     if evenements:
-        reponse['HX-Trigger'] = '{"%s": true}' % EVENEMENT
+        # événements sans donnée sensible ; membresMaj rafraîchit la liste des membres (la ligne passe à « utilisateur »)
+        reponse['HX-Trigger'] = '{"%s": true, "membresMaj": true}' % EVENEMENT
     return reponse
 
 
@@ -374,6 +392,12 @@ def _sous_titre_role(code):
 
 # ---------------------------------------------------------------- nommer un membre (F-02)
 
+def _raison_membre_choisi(auteur, membre):
+    """Texte à afficher dans la modale quand le membre préchoisi ne peut pas être nommé ('' s'il le peut ou si aucun membre)."""
+    if membre is None:
+        return ''
+    return annoter_nommage(auteur, [membre])[0].raison_non_nommable
+
 @require_http_methods(['GET', 'POST'])
 def nommer(request):
     auteur = _auteur_autorise(request)
@@ -389,6 +413,8 @@ def nommer(request):
             if membre is None:
                 raise Http404
         contexte['membre_retenu'] = membre
+        contexte['membre_fixe'] = membre is not None and request.GET.get('fixe') == '1'  # parti d'une ligne : pas de recherche à l'étape 1
+        contexte['raison_non_nommable'] = _raison_membre_choisi(auteur, membre)
         contexte['debut_texte'] = timezone.localdate().strftime('%d/%m/%Y')
         if membre is None:  # accueil : quelques membres actifs prêts à être nommés, avant toute saisie
             contexte['suggestions'] = _resultats_membres(auteur, noms.membres_nommables(auteur).select_related('antenne').order_by('-updated', '-id')[:6])
@@ -397,6 +423,7 @@ def nommer(request):
     role = request.POST.get('role', '')
     membre = membres_du_perimetre(auteur).filter(pk=identifiant).first() if identifiant else None
     contexte['membre_retenu'] = membre
+    contexte['membre_fixe'] = request.POST.get('fixe') == '1'
     contexte['saisie'] = request.POST
     contexte['debut_texte'] = request.POST.get('debut') or timezone.localdate().strftime('%d/%m/%Y')
     if membre is None:

@@ -19,6 +19,7 @@ from coptapp.views.modales import rendre_formulaire
 from coptapp.validators import erreur_image
 from compte.permissions import editeur_requis, referentiel_ecriture_requis
 from compte.services.droits import (
+    droits_menu,
     antennes_du_perimetre, associations_du_compte, cible_rattachable, droits_membre, engin_pour, engins_visibles,
     membre_et_droits, membre_pour, membres_du_perimetre, provinces_du_perimetre, villes_du_perimetre, voit_tout,
 )
@@ -931,6 +932,10 @@ def membreListe(request):
         'droits': droits,
         **droits,
     }
+    if droits_menu(user).get('peut_nommer'):  # bouton « Nommer » par ligne : nommable ou raison, rôle déjà porté
+        from compte.views_utilisateurs import annoter_nommage
+        annoter_nommage(user, resultat.page_obj.object_list)
+        contexte['avec_nommage'] = True
     modele = 'coptapp/membres/partials/_liste.html' if veut_fragment(request) else 'app/membre-list.html'
     return render(request, modele, contexte)
 

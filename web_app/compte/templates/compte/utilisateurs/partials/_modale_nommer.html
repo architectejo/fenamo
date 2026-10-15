@@ -2,11 +2,12 @@
 Modale « Nommer un membre » (maquette modale-nommer, F-02) : 2 étapes dans une seule feuille (Alpine), POST vers utilisateurs-nommer.
 Étape 1 : recherche d'un membre (fragment components/_choix_membre.html, HTMX). Étape 2 : rôle (tuiles), périmètre selon le rôle, mandat.
 Ouverte sur l'étape 2 quand membre_retenu est fourni (bouton « Nommer » de la fiche). Erreur de règle : statut 422, saisie conservée.
-Contexte : action, roles_choix, coordinations, antennes, associations, durees, membre_retenu, saisie, erreur.
+Contexte : action, roles_choix, coordinations, antennes, associations, durees, membre_retenu, membre_fixe (parti d'une ligne de la liste : pas de retour à la recherche), raison_non_nommable (membre préchoisi refusé : alerte, envoi bloqué), saisie, erreur.
 {% endcomment %}
 <form class="feuille feuille--large" method="post" action="{{ action }}" hx-post="{{ action }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find [type=submit]" hx-disinherit="hx-target hx-swap hx-disabled-elt" novalidate
       x-data="nommer($el.dataset)" data-etape="{% if membre_retenu %}2{% else %}1{% endif %}" data-role="{{ saisie.role|default:roles_choix.0.0 }}" data-durees="{{ durees_json }}" data-debut="{{ debut_texte }}" data-fin="{{ saisie.fin }}" data-nom="{{ membre_retenu.nom }}">
   {% csrf_token %}
+  {% if membre_fixe %}<input type="hidden" name="fixe" value="1">{% endif %}
   <div class="feuille-tete">
     <h2 id="modale-titre">{% translate "Nommer un membre" %}<span class="sous-titre" x-text="etape === 1 ? '{% translate "Étape 1 sur 2 · Membre" %}' : '{% translate "Étape 2 sur 2 · Rôle et mandat" %}'">{% translate "Étape 1 sur 2 · Membre" %}</span></h2>
     <button type="button" class="bouton-icone" data-ferme-modale aria-label="{% translate 'Fermer' %}">{% icone "x" %}</button>
@@ -14,6 +15,7 @@ Contexte : action, roles_choix, coordinations, antennes, associations, durees, m
   <div class="etapes" aria-hidden="true"><span class="fait"></span><span :class="{ fait: etape === 2 }"></span></div>
   <div class="feuille-corps">
     <div class="formulaire">
+      {% if raison_non_nommable %}{% include "components/_erreur.html" with niveau="alerte" titre=raison_non_nommable %}{% endif %}
       {% if erreur %}{% include "components/_erreur.html" with niveau="danger" titre=erreur %}{% endif %}
 
       <div class="formulaire etape-panneau" x-show="etape === 1" {% if membre_retenu %}x-cloak{% endif %}>
@@ -38,7 +40,7 @@ Contexte : action, roles_choix, coordinations, antennes, associations, durees, m
         <div class="membre-retenu">
           <span class="avatar" aria-hidden="true" x-text="(nom || '?').charAt(0).toUpperCase()"></span>
           <div><strong class="bloc" x-text="nom"></strong></div>
-          <button type="button" class="bouton bouton--discret" @click="etape = 1">{% translate "Changer" %}</button>
+          {% if not membre_fixe %}<button type="button" class="bouton bouton--discret" @click="etape = 1">{% translate "Changer" %}</button>{% endif %}
         </div>
         <fieldset>
           <legend class="champ-libelle">{% translate "Rôle" %}</legend>
@@ -63,14 +65,14 @@ Contexte : action, roles_choix, coordinations, antennes, associations, durees, m
           <div class="champ"><label class="champ-libelle" for="n-fin">{% translate "Fin du mandat" %}</label><input id="n-fin" name="fin" inputmode="numeric" placeholder="JJ/MM/AAAA" x-model="fin" aria-describedby="n-fin-aide">
             <p class="champ-aide" id="n-fin-aide">{% translate "Durée de la charte (art. 72 à 75) : 3 ans pour une antenne, 4 ans pour une coordination, 5 ans pour le comité national." %}</p></div>
         </div>
-        {% include "components/_erreur.html" with niveau="info" icone="key-round" titre=_("Un mot de passe temporaire est créé avec le compte.") texte=_("Il s'affiche une seule fois, juste après.") %}
+        {% include "components/_erreur.html" with niveau="info" icone="key-round" titre=_("L'identifiant et le mot de passe initial sont créés avec le compte.") texte=_("Ils s'affichent une seule fois, juste après ; le changement du mot de passe sera exigé à la première connexion.") %}
       </div>
     </div>
   </div>
   <div class="feuille-pied">
     <button type="button" class="bouton" x-show="etape === 1" data-ferme-modale>{% translate "Annuler" %}</button>
-    <button type="button" class="bouton" x-show="etape === 2" x-cloak @click="etape = 1">{% translate "Précédent" %}</button>
+    {% if not membre_fixe %}<button type="button" class="bouton" x-show="etape === 2" x-cloak @click="etape = 1">{% translate "Précédent" %}</button>{% else %}<button type="button" class="bouton" x-show="etape === 2" x-cloak data-ferme-modale>{% translate "Annuler" %}</button>{% endif %}
     <button type="button" class="bouton bouton--principal" x-show="etape === 1" @click="suivant()"><span>{% translate "Continuer" %}</span></button>
-    <button type="submit" class="bouton bouton--principal" x-show="etape === 2" x-cloak><span class="roue" aria-hidden="true"></span><span>{% translate "Nommer le membre" %}</span></button>
+    <button type="submit" class="bouton bouton--principal" x-show="etape === 2" x-cloak{% if raison_non_nommable %} disabled{% endif %}><span class="roue" aria-hidden="true"></span><span>{% translate "Nommer le membre" %}</span></button>
   </div>
 </form>

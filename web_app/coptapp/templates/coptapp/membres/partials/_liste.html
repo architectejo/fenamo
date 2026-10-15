@@ -1,7 +1,7 @@
 {% load i18n design %}{% comment %}
 Zone des résultats de la liste des membres (maquette liste-membres.html) : tableau devenu cartes sous 576 px, pagination de 25 lignes.
 Servie seule par la vue (membreListe) pour une requête HTMX, et incluse dans la page complète : une seule source de HTML.
-Contexte : page_obj, filtres (q, etat, qualite, antenne, association), filtres_actifs, choix, peut_valider.
+Contexte : page_obj, filtres (q, etat, qualite, antenne, association), filtres_actifs, choix, peut_valider, avec_nommage (sur chaque membre : role_nomme, nommable, raison_non_nommable ; bouton « Nommer » de la ligne, F-02).
 Les puces, la recherche et les filtres sont dans le formulaire #filtres-liste (page membre-list.html), hors de cette zone ; la pagination garde les filtres ({% querystring %}).
 Cette zone n'est pas une région vivante : le résumé annoncé est #liste-resume (copie hors bande dans la réponse).
 {% endcomment %}
@@ -24,23 +24,28 @@ Cette zone n'est pas une région vivante : le résumé annoncé est #liste-resum
         <th scope="col">{% translate "Association membre" %}</th>
         <th scope="col">{% translate "Qualité" %}</th>
         <th scope="col">{% translate "État" %}</th>
-        {% if peut_valider %}<th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th>{% endif %}
+        {% if peut_valider or avec_nommage %}<th scope="col"><span class="lecteur">{% translate "Actions" %}</span></th>{% endif %}
       </tr>
     </thead>
     <tbody id="resultats-lignes">
       {% for membre in page_obj %}
       {% with code=membre|etat_membre %}
       <tr>
-        <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a>{% if membre.numero_carte_de_membre %}<span class="meta ident">{{ membre.numero_carte_de_membre }}</span>{% endif %}{% if code == "renvoye" and membre.motif_renvoi %}<span class="meta">{% icone "undo-2" "ic--petite" %}{{ membre.motif_renvoi|truncatechars:60 }}</span>{% endif %}</div></div></td>
+        <td data-role="titre"><div class="cellule-personne">{% avatar membre.nom membre.photo 40 %}<div><a class="lien-ligne" href="{% url 'membre-view' membre.id %}">{{ membre.nom }}</a>{% if membre.numero_carte_de_membre %}<span class="meta ident">{{ membre.numero_carte_de_membre }}</span>{% endif %}{% if avec_nommage and membre.role_nomme %}<span class="meta">{% include "components/_badge_role.html" with code=membre.role_nomme libelle=membre.role_nomme_libelle %}</span>{% endif %}{% if code == "renvoye" and membre.motif_renvoi %}<span class="meta">{% icone "undo-2" "ic--petite" %}{{ membre.motif_renvoi|truncatechars:60 }}</span>{% endif %}</div></div></td>
         <td data-libelle="{% translate 'Antenne' %}" class="sans-coupure-large">{{ membre.antenne.nom|default:"—" }}</td>
         <td data-libelle="{% translate 'Association membre' %}">{% if membre.structure %}{{ membre.structure.sigle|default:membre.structure.nom }}{% else %}—{% endif %}</td>
         <td data-libelle="{% translate 'Qualité' %}">{{ membre.qualite|default:"—" }}</td>
         <td data-libelle="{% translate 'État' %}" data-role="etat">{% badge_etat code %}</td>
-        {% if peut_valider %}
+        {% if peut_valider or avec_nommage %}
         <td data-role="actions">
           {% if membre.peut_valider and code != "actif" %}
           {% url 'validate' membre.id as url_valider %}{% translate "Valider le membre" as t_valider %}
           {% include "partials/_bouton_post.html" with url=url_valider libelle=t_valider classe="bouton bouton--petit bouton--valider" %}
+          {% endif %}
+          {% if avec_nommage and membre.nommable %}
+          <button type="button" class="bouton bouton--petit" hx-get="{% url 'utilisateurs-nommer' %}?membre={{ membre.id }}&amp;fixe=1" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "user-cog" %}<span>{% translate "Nommer" %}</span><span class="lecteur"> {{ membre.nom }}</span></button>
+          {% elif avec_nommage and membre.etat == "actif" and not membre.role_nomme %}
+          <button type="button" class="bouton bouton--petit" aria-disabled="true" title="{{ membre.raison_non_nommable }}" disabled>{% icone "user-cog" %}<span>{% translate "Nommer" %}</span><span class="lecteur"> {{ membre.nom }} : {{ membre.raison_non_nommable }}</span></button>
           {% endif %}
         </td>
         {% endif %}
