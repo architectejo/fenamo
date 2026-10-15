@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from compte.models import Compte
 from coptapp.validators import valider_image, valider_piece
@@ -354,13 +355,36 @@ class Moto(models.Model):
 
 
 class Communique(models.Model):
+    """Communiqué (F-40) : message aux utilisateurs, reçu comme notification DANS l'application. ``user`` est l'auteur.
+
+    Ciblage : ni ``province`` ni ``antenne`` = national ; ``province`` = une coordination ; ``antenne`` (avec sa coordination) = une antenne."""
     user = models.ForeignKey(Compte, on_delete=models.RESTRICT, null=True, blank=True)
     membre = models.ForeignKey(Membre, on_delete=models.RESTRICT, null=True, blank=True)
     message = models.TextField(null=True, blank=True)
     mise_a_jour = models.DateTimeField(auto_now=True, null=True, blank=True)
-    
+    titre = models.CharField(max_length=120, blank=True, default='')
+    publie_le = models.DateTimeField(null=True, blank=True, db_index=True, default=timezone.now)
+    province = models.ForeignKey(Province, on_delete=models.RESTRICT, null=True, blank=True, related_name='communiques',
+                                 verbose_name=_('coordination ciblée'))
+    antenne = models.ForeignKey('Antenne', on_delete=models.RESTRICT, null=True, blank=True, related_name='communiques',
+                                verbose_name=_('antenne ciblée'))
+
+    @property
+    def auteur(self):
+        return self.user
+
     def __str__(self):
-        return f"{self.user.username}: {self.message}"
+        return f"{self.titre or (self.message or '')[:60]}"
+
+
+class LectureCommunique(models.Model):
+    """« Lu » PAR compte : un communiqué lu par l'un ne l'est pas pour les autres."""
+    compte = models.ForeignKey(Compte, on_delete=models.CASCADE, related_name='lectures_communiques')
+    communique = models.ForeignKey(Communique, on_delete=models.CASCADE, related_name='lectures')
+    lu_le = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['compte', 'communique'], name='lecture_unique_par_compte')]
 
 
 class Reaction(models.Model):
