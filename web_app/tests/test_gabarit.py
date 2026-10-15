@@ -23,6 +23,7 @@ def utilisateur(db):
     return Compte.objects.create_user(username='essai', password='mdp-essai-fictif')
 
 
+@pytest.mark.django_db  # le verrouillage (F-07) est lu en base à chaque requête
 def test_page_connexion_sans_ressource_externe(client):
     reponse = client.get(reverse('application'))
     assert reponse.status_code == 200
@@ -33,6 +34,7 @@ def test_page_connexion_sans_ressource_externe(client):
     assert externes == []
 
 
+@pytest.mark.django_db  # le verrouillage (F-07) est lu en base à chaque requête
 def test_page_connexion_legere(client):
     """Poids de la page de connexion (HTML + ressources locales) < 500 Ko."""
     html = client.get(reverse('application')).content.decode()
@@ -45,6 +47,7 @@ def test_page_connexion_legere(client):
     assert total < 500 * 1024
 
 
+@pytest.mark.django_db  # le verrouillage (F-07) est lu en base à chaque requête
 def test_tableau_de_bord_exige_connexion(client):
     reponse = client.get(reverse('tableau-bord'))
     assert reponse.status_code == 302
@@ -60,6 +63,7 @@ def test_tableau_de_bord_connecte(client, utilisateur):
     assert 'class="bulles"' in html
 
 
+@pytest.mark.django_db  # le verrouillage (F-07) est lu en base à chaque requête
 def test_session_expiree_redirige_en_htmx(client):
     reponse = client.get(reverse('tableau-bord'), HTTP_HX_REQUEST='true')
     assert reponse.status_code == 200
