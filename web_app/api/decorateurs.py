@@ -13,11 +13,18 @@ from api import reponses
 from api.services import cles, limites
 
 logger = logging.getLogger('api.cles')
+
+
+def _donnees_reelles_actives():
+    from virtrine.models import Config
+    return Config.instance().donnees_reelles_actif
 ENTETE_CLE = 'X-Site-Key'
 
 
-def cle_site_requise(methodes=('GET',)):
-    """`methodes=None` : toutes les méthodes sont transmises à la vue (route inconnue)."""
+def cle_site_requise(methodes=('GET',), donnees_reelles=True):
+    """`methodes=None` : toutes les méthodes sont transmises à la vue (route inconnue). `donnees_reelles=True` (défaut) : point d'accès de
+    DONNÉES, refusé en 403 ``{"statut": "inactif"}`` tant que l'interrupteur « données réelles » (Config) est faux (défense en profondeur :
+    une erreur du site ne doit jamais exposer de donnée réelle). `False` : la configuration, toujours disponible."""
     def decorateur(vue):
         @functools.wraps(vue)
         def enveloppe(request, *args, **kwargs):
@@ -35,6 +42,8 @@ def cle_site_requise(methodes=('GET',)):
                     reponse = reponses.erreur(429, 'Trop de requêtes.', Retry_After=attente)
                 elif methodes is not None and request.method not in methodes:
                     reponse = reponses.erreur(405, 'Méthode non permise.', Allow=', '.join(methodes))
+                elif donnees_reelles and not _donnees_reelles_actives():
+                    reponse = reponses.inactif()
                 else:
                     reponse = vue(request, *args, **kwargs)
             reponse.cookies.clear()

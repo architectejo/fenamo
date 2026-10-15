@@ -20,5 +20,10 @@ def champs_invalides(erreurs):
     return json_ok({champ: ([m] if isinstance(m, str) else list(m)) for champ, m in erreurs.items()}, 400)
 
 
+def inactif():
+    """403 : les données réelles sont désactivées (le site sert alors son jeu d'exemple)."""
+    return json_ok({'statut': 'inactif', 'detail': 'Données réelles désactivées.'}, statut=403)
+
+
 def introuvable():
     return erreur(404, 'Introuvable.')

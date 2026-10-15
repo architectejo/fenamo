@@ -11,6 +11,7 @@ Statut : le 503 « suspendu » et la santé sont **implémentés et testés** (`
 | 400 | Validation d'un dépôt (contact, adhésion, paiement) | `{"champ": ["message", …]}` ; erreur non liée à un champ : clé `non_field_errors` |
 | 401 | Clé du site absente ou invalide, ou révoquée | `{"detail": "Clé du site absente ou invalide."}` |
 | 403 | Paiement demandé alors que F-65 est désactivé ; signature de rappel invalide | `{"detail": "…"}` |
+| 403 | **Données réelles désactivées** : tout point d'accès de données de `/api/v1/site/` (sauf `config/`) tant que l'interrupteur du super-utilisateur est faux | `{"statut": "inactif", "detail": "Données réelles désactivées."}` |
 | 404 | Identifiant, numéro ou jeton QR inconnu (même réponse pour « n'existe pas » et « non public ») | `{"detail": "Introuvable."}` |
 | 405 | Méthode non permise | `{"detail": "…"}` |
 | 429 | Limite de débit dépassée | `{"detail": "Trop de requêtes."}` + en-tête `Retry-After` (secondes) |

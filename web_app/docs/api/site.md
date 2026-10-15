@@ -7,7 +7,8 @@ Les dépôts (contact, adhésion, paiement) et la vérification publique viennen
 ## Règles communes
 
 - **GET seulement** : toute autre méthode répond 405 (`Allow: GET`). Pas de HEAD ni d'OPTIONS.
-- **Ordre des contrôles** : verrou F-07 (503, avant tout) puis clé (401) puis limite de débit (429) puis méthode (405) puis paramètres (400) puis introuvable (404).
+- **Ordre des contrôles** : verrou F-07 (503, avant tout) puis clé (401) puis limite de débit (429) puis méthode (405) puis **interrupteur « données réelles » (403 `inactif`)** puis paramètres (400) puis introuvable (404).
+- **Données réelles ou jeu d'exemple** : `Config.donnees_reelles_actif` (faux par défaut ; seul un super-utilisateur le change, écran « Contenu du site », `POST /contenu-site/donnees-reelles/`, journalisé, purge du cache du site). Faux : le site affiche son jeu d'exemple et **tous** les points d'accès de données (`articles/`, `articles/<slug>/`, `galerie/`, `comite/`, `coordinations/`, `statistiques/`) répondent `403 {"statut": "inactif", "detail": "Données réelles désactivées."}` ; `config/` reste disponible mais minimale. Défense en profondeur : une erreur du site ne peut jamais exposer de donnée réelle.
 - **Aucun cookie ni session** ; `Cache-Control: no-cache` sur toutes les réponses (le cache est celui du site, voir S-12).
 - **Clé du site** : en-tête `X-Site-Key: fsk_<prefixe>_<jeton>`.
 - **Langue** : `?lang=fr|ln|sw|lua|kg`. Une valeur inconnue, ou une langue non activée dans la configuration (F-64), donne le français.
@@ -30,6 +31,8 @@ Les dépôts (contact, adhésion, paiement) et la vérification publique viennen
 | `statistiques/` | | Agrégats seulement |
 
 ### `config/`
+
+Toujours disponible, avec `donnees_reelles` (booléen). **Faux** : réponse minimale `{"nom": "FENAMO-RDC", "devise": "Unité, Discipline et Progrès", "langues_actives": ["fr"], "donnees_reelles": false}` (aucune donnée saisie dans l'application web, sauf les langues activées). **Vrai** : réponse complète ci-dessous, plus `"donnees_reelles": true`. Fixture du site : `website/tests/fixtures/api_site_inactif.json`.
 
 `{nom, nom_complet, devise, message_accueil, logo, image_fond, siege, email, telephones[{libelle, numero}], reseaux{facebook, x, youtube, instagram, linkedin}, partenaires[{nom, lien, logo}], langues_actives, paiement_en_ligne, documents[{titre, type, url, taille, date}], application{version, url, taille, date, notice} | null, mise_a_jour}`
 

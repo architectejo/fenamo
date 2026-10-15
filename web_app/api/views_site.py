@@ -62,12 +62,15 @@ def _articles_publies():
 
 # ---------------------------------------------------------------- points d'accès
 
-@cle_site_requise()
+@cle_site_requise(donnees_reelles=False)
 def config(request):
     cfg = Config.instance()
+    if not cfg.donnees_reelles_actif:  # strict nécessaire à l'affichage du jeu d'exemple : aucune donnée saisie dans l'application web
+        return reponses.json_ok({'nom': 'FENAMO-RDC', 'devise': 'Unité, Discipline et Progrès', 'langues_actives': cfg.langues(),
+                                 'donnees_reelles': False})
     derniere = _articles_publies().aggregate(m=Max('mise_a_jour'))['m']
-    return reponses.json_ok(serialiseurs.config(request, cfg, TelephoneSite.objects.all(), Partenaire.objects.all(),
-                                                DocumentPublic.objects.all(), derniere))
+    donnees = serialiseurs.config(request, cfg, TelephoneSite.objects.all(), Partenaire.objects.all(), DocumentPublic.objects.all(), derniere)
+    return reponses.json_ok({**donnees, 'donnees_reelles': True})
 
 
 @cle_site_requise()
@@ -155,7 +158,7 @@ def statistiques(request):
     return reponses.json_ok(serialiseurs.statistiques(statistiques_publiques(), timezone.now()))
 
 
-@cle_site_requise(methodes=None)
+@cle_site_requise(methodes=None, donnees_reelles=False)
 def inconnu(request, reste=''):
     """Route inexistante sous /api/v1/site/ : 404 JSON (après la clé et la limite)."""
     return reponses.introuvable()
