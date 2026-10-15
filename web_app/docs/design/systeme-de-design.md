@@ -126,6 +126,7 @@ Comparaison du premier jet (et du brouillon trouvé dans le dépôt) avec ce qu'
 
 ## 3. Jetons (`static/css/tokens.css`)
 
+- **Fichier partagé avec le site public** : `website/static/css/tokens.css` en est une copie octet pour octet (polices aussi). Modifier ici, puis copier ; `website/tests/test_design_jetons.py` échoue tant que les copies diffèrent. Les jetons propres au site (section « Site public » : `--t-8`, `--mesure`, `--sur-encre-*`, `--bande-gilet`, `--gilet-*`, `--echelle-*`) n'ont pas d'effet sur l'application. Guide du site : `website/docs/design/systeme-de-design.md`.
 - Toute couleur, taille, durée, ombre, rayon ou plan (`z-index`) vient d'une variable. Aucune valeur en dur dans les gabarits ni dans une autre feuille.
 - Thème sombre : attribut `data-theme="sombre"` sur `<html>`, posé par `theme.js` (choix enregistré dans `localStorage` sous la clé `fn-theme`, sinon préférence du système). Bascule : tout élément portant `data-theme-basculer` (géré par `design.js`, qui émet l'événement `themechange` pour Chart.js).
 - `prefers-reduced-motion: reduce` met toutes les durées à 0 (jetons `--d-*`) et `app.css` neutralise les animations restantes.

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Galerie · FENAMO-RDC</title>
+<meta name="description" content="">
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/site.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<header class="site-tete">
+  <div class="enveloppe site-tete-rangee">
+    <a class="site-marque" href="accueil.html">
+      <img src="../../../static/img/logo-160.webp" width="48" height="48" alt="Logo de la FENAMO-RDC">
+      <span class="site-marque-nom">FENAMO-RDC</span>
+    </a>
+    <nav class="site-nav" aria-label="Menu principal"><a href="a-propos.html">La FENAMO-RDC</a><a href="index.html#lot-suivant">Associations membres</a><a href="actualites.html" aria-current="page">Actualités</a><a href="application.html">Application mobile</a><a href="contact.html">Contact</a></nav>
+    <div class="langue masque-etroit">
+      <button type="button" class="langue-bouton" data-langue aria-expanded="false" aria-controls="langues-tete" aria-label="Langue : français. Changer de langue"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg><span class="chiffres">FR</span><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-down"></use></svg></button>
+      <ul class="langue-liste" id="langues-tete" hidden><li><a class="langue-choix" href="#" hreflang="fr" lang="fr" aria-current="true"><span class="langue-code">FR</span><span><span class="langue-nom">Français</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=ln" hreflang="ln" lang="ln"><span class="langue-code">LN</span><span><span class="langue-nom">Lingála</span><span class="langue-fr" lang="fr">lingala</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=sw" hreflang="sw" lang="sw"><span class="langue-code">SW</span><span><span class="langue-nom">Kiswahili</span><span class="langue-fr" lang="fr">kiswahili</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=lua" hreflang="lua" lang="lua"><span class="langue-code">LUA</span><span><span class="langue-nom">Cilubà</span><span class="langue-fr" lang="fr">tshiluba</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=kg" hreflang="kg" lang="kg"><span class="langue-code">KG</span><span><span class="langue-nom">Kikongo</span><span class="langue-fr" lang="fr">kikongo</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li></ul>
+    </div>
+    <a class="bouton bouton--principal bouton--verifier" href="accueil.html#verifier"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-scan-qr-code"></use></svg><span>Vérifier</span></a>
+    <button type="button" class="bouton-icone masque-large" data-menu-site aria-controls="menu-site" aria-expanded="false" aria-label="Ouvrir le menu" data-libelle-ouvrir="Ouvrir le menu" data-libelle-fermer="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg></button>
+  </div>
+</header>
+<div class="menu-site" id="menu-site" hidden>
+  <nav class="enveloppe menu-site-corps" aria-label="Menu principal">
+    <div class="menu-rubrique"><span>La FENAMO-RDC</span><ul><li><a href="a-propos.html">Présentation</a></li><li><a href="comite.html">Comité exécutif</a></li><li><a href="coordinations.html">Coordinations</a></li><li><a href="documents.html">Documents</a></li></ul></div><div class="menu-rubrique"><span>Associations membres</span><ul><li><a href="index.html#lot-suivant">Annuaire</a></li><li><a href="index.html#lot-suivant">Adhérer à la fédération</a></li><li><a href="index.html#lot-suivant">Suivre une demande</a></li></ul></div><div class="menu-rubrique"><span>Actualités</span><ul><li><a href="actualites.html">Actualités et communiqués</a></li><li><a href="galerie.html" aria-current="page">Galerie</a></li></ul></div><div class="menu-rubrique"><a href="application.html">Application mobile</a></div><div class="menu-rubrique"><a href="contact.html">Contact</a></div>
+    <p class="menu-site-titre" id="titre-langues-menu">Langue du site</p>
+    <div class="langue langue--plat" role="group" aria-labelledby="titre-langues-menu"><ul class="langue-liste" id="langues-menu"><li><a class="langue-choix" href="#" hreflang="fr" lang="fr" aria-current="true"><span class="langue-code">FR</span><span><span class="langue-nom">Français</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=ln" hreflang="ln" lang="ln"><span class="langue-code">LN</span><span><span class="langue-nom">Lingála</span><span class="langue-fr" lang="fr">lingala</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=sw" hreflang="sw" lang="sw"><span class="langue-code">SW</span><span><span class="langue-nom">Kiswahili</span><span class="langue-fr" lang="fr">kiswahili</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=lua" hreflang="lua" lang="lua"><span class="langue-code">LUA</span><span><span class="langue-nom">Cilubà</span><span class="langue-fr" lang="fr">tshiluba</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=kg" hreflang="kg" lang="kg"><span class="langue-code">KG</span><span><span class="langue-nom">Kikongo</span><span class="langue-fr" lang="fr">kikongo</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li></ul></div>
+    <div class="menu-site-pied">
+      <a class="bouton bouton--grand bouton--bloc" href="https://app.fenamordc.cd/"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-log-in"></use></svg><span>Espace des utilisateurs</span></a>
+      <button type="button" class="bouton bouton--discret bouton--bloc" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Thème sombre</span></button>
+    </div>
+  </nav>
+</div>
+<main id="contenu" tabindex="-1">
+<header class="page-tete">
+  <div class="enveloppe">
+    <nav aria-label="Fil d'Ariane"><ol class="fil"><li><a href="accueil.html">Accueil</a></li><li><a href="actualites.html">Actualités</a></li><li aria-current="page">Galerie</li></ol></nav>
+    <h1 class="page-titre">Galerie</h1>
+    <p class="chapo">Les photos et vidéos des activités de la fédération, dans les coordinations et les antennes.</p>
+    <nav aria-label="Actualités"><ul class="sous-nav"><li><a href="actualites.html">Actualités et communiqués</a></li><li><a href="galerie.html" aria-current="page">Galerie</a></li></ul></nav>
+  </div>
+</header>
+<div class="section">
+  <div class="enveloppe">
+    <ul class="puces" aria-label="Type de média" style="margin-bottom:var(--e-7)">
+      <li><a class="puce" href="#" aria-current="true">Tout <span class="nombre">186</span></a></li>
+      <li><a class="puce" href="#">Photos <span class="nombre">171</span></a></li>
+      <li><a class="puce" href="#">Vidéos <span class="nombre">15</span></a></li>
+    </ul>
+    <div class="album-tete"><h2>Remise des gilets à Lemba et Matete</h2><span class="meta">09/10/2026 · Kinshasa-Est · 12 photos</span></div>
+    <ul class="galerie"><li><button type="button" class="galerie-element" data-visionneuse data-legende="Remise des gilets au parking de Matete-Marché" aria-label="Agrandir la photo : Remise des gilets au parking de Matete-Marché"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Remise des gilets au parking de Matete-Marché"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Remise des gilets au parking de Matete-Marché</span></div></figure></span><span class="legende">Remise des gilets au parking de Matete-Marché</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Un agent vérifie la carte d'un motard à Lemba" aria-label="Agrandir la photo : Un agent vérifie la carte d'un motard à Lemba"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Un agent vérifie la carte d'un motard à Lemba"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Un agent vérifie la carte d'un motard à Lemba</span></div></figure></span><span class="legende">Un agent vérifie la carte d'un motard à Lemba</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Les gilets 2026 avant la distribution" aria-label="Agrandir la photo : Les gilets 2026 avant la distribution"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Les gilets 2026 avant la distribution"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Les gilets 2026 avant la distribution</span></div></figure></span><span class="legende">Les gilets 2026 avant la distribution</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Photo de groupe du comité d'antenne de Matete" aria-label="Agrandir la photo : Photo de groupe du comité d'antenne de Matete"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Photo de groupe du comité d'antenne de Matete"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Photo de groupe du comité d'antenne de Matete</span></div></figure></span><span class="legende">Photo de groupe du comité d'antenne de Matete</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Motard de Ngaba avec son nouveau gilet" aria-label="Agrandir la photo : Motard de Ngaba avec son nouveau gilet"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Motard de Ngaba avec son nouveau gilet"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Motard de Ngaba avec son nouveau gilet</span></div></figure></span><span class="legende">Motard de Ngaba avec son nouveau gilet</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Pose de l'autocollant vinyle sur un tricycle" aria-label="Agrandir la photo : Pose de l'autocollant vinyle sur un tricycle"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Pose de l'autocollant vinyle sur un tricycle"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Pose de l'autocollant vinyle sur un tricycle</span></div></figure></span><span class="legende">Pose de l'autocollant vinyle sur un tricycle</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Le coordinateur provincial s'adresse aux motards" aria-label="Agrandir la photo : Le coordinateur provincial s'adresse aux motards"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Le coordinateur provincial s'adresse aux motards"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Le coordinateur provincial s'adresse aux motards</span></div></figure></span><span class="legende">Le coordinateur provincial s'adresse aux motards</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="File d'attente à l'antenne de Lemba" aria-label="Agrandir la photo : File d'attente à l'antenne de Lemba"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : File d'attente à l'antenne de Lemba"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : File d'attente à l'antenne de Lemba</span></div></figure></span><span class="legende">File d'attente à l'antenne de Lemba</span></button></li></ul>
+    <div class="album-tete"><h2>Six antennes au Haut-Katanga</h2><span class="meta">02/10/2026 · Haut-Katanga · 9 photos, 1 vidéo</span></div>
+    <ul class="galerie"><li><button type="button" class="galerie-element" data-visionneuse data-legende="Installation du comité d'antenne de Likasi" aria-label="Agrandir la photo : Installation du comité d'antenne de Likasi"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Installation du comité d'antenne de Likasi"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Installation du comité d'antenne de Likasi</span></div></figure></span><span class="legende">Installation du comité d'antenne de Likasi</span></button></li><li><button type="button" class="galerie-element galerie-element--video" data-visionneuse data-legende="Vidéo : discours du coordinateur du Haut-Katanga" aria-label="Lire la vidéo : Vidéo : discours du coordinateur du Haut-Katanga"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Vidéo à fournir : Vidéo : discours du coordinateur du Haut-Katanga"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-play"></use></svg><span>Vidéo à fournir : Vidéo : discours du coordinateur du Haut-Katanga</span></div></figure><span class="duree"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-play"></use></svg>2:41</span></span><span class="legende">Vidéo : discours du coordinateur du Haut-Katanga</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Parking codifié du marché Mzee, Lubumbashi" aria-label="Agrandir la photo : Parking codifié du marché Mzee, Lubumbashi"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Parking codifié du marché Mzee, Lubumbashi"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Parking codifié du marché Mzee, Lubumbashi</span></div></figure></span><span class="legende">Parking codifié du marché Mzee, Lubumbashi</span></button></li><li><button type="button" class="galerie-element" data-visionneuse data-legende="Motards de Kipushi devant l'antenne" aria-label="Agrandir la photo : Motards de Kipushi devant l'antenne"><span style="position:relative;display:block"><figure class="photo photo--1x1" role="img" aria-label="Photo à fournir : Motards de Kipushi devant l'antenne"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-image"></use></svg><span>Photo à fournir : Motards de Kipushi devant l'antenne</span></div></figure></span><span class="legende">Motards de Kipushi devant l'antenne</span></button></li></ul>
+    <nav class="pages" aria-label="Pages de la galerie">
+      <span class="bouton" aria-disabled="true" style="visibility:hidden">Albums plus récents</span>
+      <span class="pages-position">Albums 1 et 2 sur 14</span>
+      <a class="bouton" href="#">Albums plus anciens</a>
+    </nav>
+  </div>
+</div>
+</main>
+<footer class="site-pied">
+  <span class="gilet gilet--pied" aria-hidden="true"></span>
+  <div class="enveloppe">
+    <div class="pied-devise">
+      <p>Unité, Discipline et Progrès<span>Devise de la FENAMO-RDC, article 5 de la charte</span></p>
+    </div>
+    <div class="pied-colonnes">
+      <div>
+        <h2 class="pied-titre">Siège national</h2>
+        <address class="pied-adresse">
+          <p>04, avenue Kasa-Vubu, quartier Mariano<br>Commune de Ngiri-Ngiri, Kinshasa</p>
+          <p><a href="tel:+243812345678">+243 812 345 678</a><br><a href="tel:+243998765432">+243 998 765 432</a><br><a href="mailto:contact@fenamordc.cd">contact@fenamordc.cd</a></p>
+        </address>
+      </div>
+      <div>
+        <h2 class="pied-titre">La fédération</h2>
+        <ul class="pied-liste">
+          <li><a href="a-propos.html">Présentation</a></li>
+          <li><a href="comite.html">Comité exécutif</a></li>
+          <li><a href="coordinations.html">Coordinations</a></li>
+          <li><a href="documents.html">Documents</a></li>
+          <li><a href="index.html#lot-suivant">Adhérer à la fédération</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pied-titre">Nous suivre</h2>
+        <ul class="pied-liste">
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">WhatsApp</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="application.html">Application mobile</a></li>
+          <li><a href="https://app.fenamordc.cd/"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-log-in"></use></svg>Espace des utilisateurs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pied-titre">Partenaires</h2>
+        <ul class="partenaires">
+          <li>Ministère des Transports et Voies de communication</li>
+          <li>Police de circulation routière</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <ul>
+        <li><a href="mentions-legales.html">Mentions légales</a></li>
+        <li><a href="mentions-legales.html#confidentialite">Confidentialité</a></li>
+        <li><span>© 2026 FENAMO-RDC asbl</span></li>
+      </ul>
+      <button type="button" class="pied-theme" data-theme-basculer><svg class="ic i-lune" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><svg class="ic i-soleil" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-sun"></use></svg><span>Changer de thème</span></button>
+    </div>
+  </div>
+</footer>
+<div class="visionneuse" id="visionneuse" role="dialog" aria-modal="true" aria-label="Visionneuse de la galerie" hidden>
+  <div class="visionneuse-haut"><span class="chiffres" data-visionneuse-position>1 / 12</span><button type="button" class="bouton-icone" data-visionneuse-fermer aria-label="Fermer la visionneuse" style="margin-left:auto"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button></div>
+  <div class="visionneuse-image" data-visionneuse-image></div>
+  <div class="visionneuse-bas"><button type="button" class="bouton-icone" data-visionneuse-precedent aria-label="Photo précédente"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-left"></use></svg></button><p data-visionneuse-legende></p><button type="button" class="bouton-icone" data-visionneuse-suivant aria-label="Photo suivante"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-right"></use></svg></button></div>
+</div>
+<script src="../../../static/js/site.js" defer></script>
+<script src="maquettes.js" defer></script>
+</body>
+</html>

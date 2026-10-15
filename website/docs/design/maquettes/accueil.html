@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Accueil · FENAMO-RDC</title>
+<meta name="description" content="Fédération nationale des associations des motocyclistes taximen de la RDC : vérifier une carte de membre, adhérer, actualités.">
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/site.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<header class="site-tete">
+  <div class="enveloppe site-tete-rangee">
+    <a class="site-marque" href="accueil.html">
+      <img src="../../../static/img/logo-160.webp" width="48" height="48" alt="Logo de la FENAMO-RDC">
+      <span class="site-marque-nom">FENAMO-RDC</span>
+    </a>
+    <nav class="site-nav" aria-label="Menu principal"><a href="a-propos.html">La FENAMO-RDC</a><a href="index.html#lot-suivant">Associations membres</a><a href="actualites.html">Actualités</a><a href="application.html">Application mobile</a><a href="contact.html">Contact</a></nav>
+    <div class="langue masque-etroit">
+      <button type="button" class="langue-bouton" data-langue aria-expanded="false" aria-controls="langues-tete" aria-label="Langue : français. Changer de langue"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg><span class="chiffres">FR</span><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-down"></use></svg></button>
+      <ul class="langue-liste" id="langues-tete" hidden><li><a class="langue-choix" href="#" hreflang="fr" lang="fr" aria-current="true"><span class="langue-code">FR</span><span><span class="langue-nom">Français</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=ln" hreflang="ln" lang="ln"><span class="langue-code">LN</span><span><span class="langue-nom">Lingála</span><span class="langue-fr" lang="fr">lingala</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=sw" hreflang="sw" lang="sw"><span class="langue-code">SW</span><span><span class="langue-nom">Kiswahili</span><span class="langue-fr" lang="fr">kiswahili</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=lua" hreflang="lua" lang="lua"><span class="langue-code">LUA</span><span><span class="langue-nom">Cilubà</span><span class="langue-fr" lang="fr">tshiluba</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=kg" hreflang="kg" lang="kg"><span class="langue-code">KG</span><span><span class="langue-nom">Kikongo</span><span class="langue-fr" lang="fr">kikongo</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li></ul>
+    </div>
+    <a class="bouton bouton--principal bouton--verifier" href="accueil.html#verifier"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-scan-qr-code"></use></svg><span>Vérifier</span></a>
+    <button type="button" class="bouton-icone masque-large" data-menu-site aria-controls="menu-site" aria-expanded="false" aria-label="Ouvrir le menu" data-libelle-ouvrir="Ouvrir le menu" data-libelle-fermer="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg></button>
+  </div>
+</header>
+<div class="menu-site" id="menu-site" hidden>
+  <nav class="enveloppe menu-site-corps" aria-label="Menu principal">
+    <div class="menu-rubrique"><span>La FENAMO-RDC</span><ul><li><a href="a-propos.html">Présentation</a></li><li><a href="comite.html">Comité exécutif</a></li><li><a href="coordinations.html">Coordinations</a></li><li><a href="documents.html">Documents</a></li></ul></div><div class="menu-rubrique"><span>Associations membres</span><ul><li><a href="index.html#lot-suivant">Annuaire</a></li><li><a href="index.html#lot-suivant">Adhérer à la fédération</a></li><li><a href="index.html#lot-suivant">Suivre une demande</a></li></ul></div><div class="menu-rubrique"><span>Actualités</span><ul><li><a href="actualites.html">Actualités et communiqués</a></li><li><a href="galerie.html">Galerie</a></li></ul></div><div class="menu-rubrique"><a href="application.html">Application mobile</a></div><div class="menu-rubrique"><a href="contact.html">Contact</a></div>
+    <p class="menu-site-titre" id="titre-langues-menu">Langue du site</p>
+    <div class="langue langue--plat" role="group" aria-labelledby="titre-langues-menu"><ul class="langue-liste" id="langues-menu"><li><a class="langue-choix" href="#" hreflang="fr" lang="fr" aria-current="true"><span class="langue-code">FR</span><span><span class="langue-nom">Français</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=ln" hreflang="ln" lang="ln"><span class="langue-code">LN</span><span><span class="langue-nom">Lingála</span><span class="langue-fr" lang="fr">lingala</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=sw" hreflang="sw" lang="sw"><span class="langue-code">SW</span><span><span class="langue-nom">Kiswahili</span><span class="langue-fr" lang="fr">kiswahili</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=lua" hreflang="lua" lang="lua"><span class="langue-code">LUA</span><span><span class="langue-nom">Cilubà</span><span class="langue-fr" lang="fr">tshiluba</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li><li><a class="langue-choix" href="?langue=kg" hreflang="kg" lang="kg"><span class="langue-code">KG</span><span><span class="langue-nom">Kikongo</span><span class="langue-fr" lang="fr">kikongo</span></span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></a></li></ul></div>
+    <div class="menu-site-pied">
+      <a class="bouton bouton--grand bouton--bloc" href="https://app.fenamordc.cd/"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-log-in"></use></svg><span>Espace des utilisateurs</span></a>
+      <button type="button" class="bouton bouton--discret bouton--bloc" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Thème sombre</span></button>
+    </div>
+  </nav>
+</div>
+<main id="contenu" tabindex="-1">
+<section class="une" aria-labelledby="une-titre">
+  <div class="enveloppe une-grille">
+    <div>
+      <p class="une-sur">Fédération nationale, créée le 30 mars 2024 à Kinshasa</p>
+      <h1 class="une-titre" id="une-titre">Chaque motard identifié, chaque engin numéroté.</h1>
+      <p class="une-chapo">La FENAMO-RDC réunit les associations de motocyclistes taximen et de propriétaires d'engins dans les <strong>27 coordinations provinciales</strong>. Elle les enregistre, les identifie chaque année et les représente auprès de l'État.</p>
+      <form class="verif-rapide" id="verifier" action="#" method="get" role="search">
+        <label for="numero">Vérifier une carte ou un engin</label>
+        <div class="verif-rapide-ligne">
+          <input class="champ-saisie" id="numero" name="numero" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="MBR0004127 ou 00147 KN-E" aria-describedby="numero-aide">
+          <button class="bouton bouton--jaune" type="submit"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-scan-qr-code"></use></svg><span>Vérifier</span></button>
+        </div>
+        <p class="verif-rapide-aide" id="numero-aide"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-qr-code"></use></svg><span>Le numéro est imprimé sous la photo de la carte et sur l'autocollant de l'engin. Vous pouvez aussi scanner le QR code avec l'appareil photo du téléphone.</span></p>
+      </form>
+    </div>
+    <div class="une-photo">
+      <figure class="photo photo--4x5" role="img" aria-label="Photo à fournir : motards en gilet FENAMO-RDC au rond-point Victoire, Kinshasa"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-camera"></use></svg><span>Photo à fournir : motards en gilet FENAMO-RDC au rond-point Victoire, Kinshasa</span></div></figure>
+    </div>
+  </div>
+  <span class="gilet gilet--deroule" aria-hidden="true"></span>
+</section>
+
+<section class="section" aria-labelledby="chiffres-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="chiffres-titre">La fédération en chiffres</h2><a class="section-lien" href="coordinations.html">Voir chaque coordination</a></div>
+    <div class="affichage">
+      <p class="chiffre"><span class="chiffre-valeur" data-compteur="54182">54 182</span><span class="chiffre-libelle">membres actifs, motards et propriétaires</span></p>
+      <p class="chiffre"><span class="chiffre-valeur" data-compteur="39267">39 267</span><span class="chiffre-libelle">engins identifiés, motos et tricycles</span></p>
+      <p class="chiffre"><span class="chiffre-valeur" data-compteur="412">412</span><span class="chiffre-libelle">associations membres</span></p>
+      <p class="chiffre"><span class="chiffre-valeur">27</span><span class="chiffre-libelle">coordinations provinciales, 85 antennes</span></p>
+    </div>
+    <p class="meta affichage-source">Chiffres au 15/10/2026. Seuls les membres et les engins à jour de leur identification 2026 sont comptés.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="actu-titre">
+  <div class="enveloppe">
+    <div class="section-tete"><h2 class="section-titre" id="actu-titre">Actualités</h2><a class="section-lien" href="actualites.html">Toutes les actualités</a></div>
+    <a class="une-article" href="actualite.html">
+  <figure class="photo" role="img" aria-label="Photo : file d'attente devant l'antenne de Lemba"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-camera"></use></svg><span>Photo : file d'attente devant l'antenne de Lemba</span></div></figure>
+  <div>
+    <span class="article-meta"><span class="type type--communique"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg>Communiqué</span><time>13/10/2026</time></span>
+    <h3 class="article-titre" style="margin-top:var(--e-3)">Identification 2026 : les antennes de Kinshasa-Est ouvrent le 3 novembre</h3>
+    <p class="article-resume" style="margin-top:var(--e-3)">Les motards et propriétaires d'engins de Limete, Lemba, Matete et Masina se présentent à leur antenne avec la carte 2025, le jeton de résidence et le permis de conduire.</p>
+  </div>
+</a>
+    <ul class="articles articles--3" style="margin-top:var(--e-7)">
+      <li><a class="article" href="actualite.html">
+  <figure class="photo photo--3x2" role="img" aria-label="Photo : remise des gilets au parking de Matete-Marché"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-camera"></use></svg><span>Photo : remise des gilets au parking de Matete-Marché</span></div></figure>
+  <span class="article-meta"><span class="type">Actualité</span><time>09/10/2026</time></span>
+  <h3 class="article-titre">1 200 gilets numérotés remis aux motards de Lemba et Matete</h3>
+  <p class="article-resume">La coordination de Kinshasa-Est a remis les gilets de l'identification 2026 dans onze parkings, en présence des comités d'antenne.</p>
+</a></li><li><a class="article" href="actualite.html">
+  <figure class="photo photo--3x2" role="img" aria-label="Photo : installation du comité d'antenne de Likasi"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-camera"></use></svg><span>Photo : installation du comité d'antenne de Likasi</span></div></figure>
+  <span class="article-meta"><span class="type">Actualité</span><time>02/10/2026</time></span>
+  <h3 class="article-titre">Haut-Katanga : six antennes installées, de Lubumbashi à Sakania</h3>
+  <p class="article-resume">Le coordinateur provincial a installé les comités d'antenne de Likasi, Kipushi, Kasenga, Kambove et Sakania. Lubumbashi compte désormais 48 parkings codifiés.</p>
+</a></li><li><a class="article" href="actualite.html">
+  <figure class="photo photo--3x2" role="img" aria-label="Photo : motard en gilet FENAMO-RDC au parking"><div class="photo-vide"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-camera"></use></svg><span>Photo : motard en gilet FENAMO-RDC au parking</span></div></figure>
+  <span class="article-meta"><span class="type type--communique"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg>Communiqué</span><time>25/09/2026</time></span>
+  <h3 class="article-titre">Rappel : le gilet numéroté se porte à chaque course</h3>
+  <p class="article-resume">Le gilet et la carte de membre permettent à la police et aux clients de vérifier un motard en quelques secondes. Un gilet perdu se déclare à l'antenne.</p>
+</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section--calme" aria-labelledby="adhesion-titre">
+  <div class="enveloppe">
+    <div class="appel">
+      <div>
+        <h2 id="adhesion-titre">Votre association veut rejoindre la fédération</h2>
+        <p style="margin-top:var(--e-4)">Les associations de motocyclistes taximen et de propriétaires d'engins déposent leur demande en ligne. Elle est examinée par l'antenne, la coordination provinciale puis le niveau national.</p>
+        <div class="boutons" style="margin-top:var(--e-6)">
+          <a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="index.html#lot-suivant">Déposer une demande d'adhésion</a>
+          <a class="bouton bouton--discret bouton--bloc-mobile" href="index.html#lot-suivant">Suivre une demande</a>
+        </div>
+      </div>
+      <div>
+        <h3>À préparer avant de commencer</h3>
+        <ul class="coches" style="margin-top:var(--e-4)">
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg><span>Les statuts de l'association avec le F92 ou l'arrêté ministériel</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg><span>L'agrément du ministère des Transports</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg><span>Le nom, le téléphone et l'e-mail du responsable</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg><span>Les frais d'adhésion de <strong class="insecable">50 000 FC</strong>, payables par mobile money ou à la coordination</span></li>
+        </ul>
+        <p class="meta" style="margin-top:var(--e-4)">Conditions fixées par l'article 9 de la charte.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="appli-titre">
+  <div class="enveloppe appli">
+    <div class="telephone" aria-hidden="true">
+  <div class="telephone-ecran">
+    <div>
+      <div class="telephone-haut"><img src="../../../static/img/logo-48.webp" width="24" height="24" alt=""><strong>FENAMO-RDC</strong></div>
+      <span class="gilet"></span>
+    </div>
+    <div class="telephone-corps">
+      <span class="fort">Ma carte de membre</span>
+      <div class="telephone-carte">
+        <figure class="photo photo--carre" role="img" aria-label="Photo du membre"><span class="photo-initiales" aria-hidden="true">HM</span><span class="lecteur">Photo du membre</span></figure>
+        <div><span class="ident">MBR0004127</span><br><span>Mukendi K. Héritier</span><br><span class="doux">Valide jusqu'au 31/12/2026</span></div>
+      </div>
+      <span class="fort" style="margin-top:var(--e-2)">Communiqués</span>
+      <span class="doux">Identification 2026 : les antennes de Kinshasa-Est ouvrent le 3 novembre</span>
+    </div>
+  </div>
+</div>
+    <div>
+      <h2 class="section-titre" id="appli-titre">L'application FENAMO-RDC</h2>
+      <p class="chapo" style="margin-top:var(--e-3)">Le membre y retrouve sa carte, la validité de son identification et les communiqués de sa coordination.</p>
+      <dl class="fiche-technique">
+  <div><dt>Version</dt><dd>2.4.0</dd></div>
+  <div><dt>Taille</dt><dd>14,2 Mo</dd></div>
+  <div><dt>Mise à jour</dt><dd>02/10/2026</dd></div>
+  <div><dt>Téléphone</dt><dd>Android 8 ou plus</dd></div>
+</dl>
+      <div class="boutons">
+        <a class="bouton bouton--principal bouton--grand bouton--bloc-mobile" href="application.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-download"></use></svg><span>Télécharger l'application</span></a>
+        <a class="bouton bouton--discret bouton--bloc-mobile" href="application.html#installer">Comment l'installer</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-pied">
+  <span class="gilet gilet--pied" aria-hidden="true"></span>
+  <div class="enveloppe">
+    <div class="pied-devise">
+      <p>Unité, Discipline et Progrès<span>Devise de la FENAMO-RDC, article 5 de la charte</span></p>
+    </div>
+    <div class="pied-colonnes">
+      <div>
+        <h2 class="pied-titre">Siège national</h2>
+        <address class="pied-adresse">
+          <p>04, avenue Kasa-Vubu, quartier Mariano<br>Commune de Ngiri-Ngiri, Kinshasa</p>
+          <p><a href="tel:+243812345678">+243 812 345 678</a><br><a href="tel:+243998765432">+243 998 765 432</a><br><a href="mailto:contact@fenamordc.cd">contact@fenamordc.cd</a></p>
+        </address>
+      </div>
+      <div>
+        <h2 class="pied-titre">La fédération</h2>
+        <ul class="pied-liste">
+          <li><a href="a-propos.html">Présentation</a></li>
+          <li><a href="comite.html">Comité exécutif</a></li>
+          <li><a href="coordinations.html">Coordinations</a></li>
+          <li><a href="documents.html">Documents</a></li>
+          <li><a href="index.html#lot-suivant">Adhérer à la fédération</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pied-titre">Nous suivre</h2>
+        <ul class="pied-liste">
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">WhatsApp</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="application.html">Application mobile</a></li>
+          <li><a href="https://app.fenamordc.cd/"><svg class="ic ic--petite" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-log-in"></use></svg>Espace des utilisateurs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pied-titre">Partenaires</h2>
+        <ul class="partenaires">
+          <li>Ministère des Transports et Voies de communication</li>
+          <li>Police de circulation routière</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pied-bas">
+      <ul>
+        <li><a href="mentions-legales.html">Mentions légales</a></li>
+        <li><a href="mentions-legales.html#confidentialite">Confidentialité</a></li>
+        <li><span>© 2026 FENAMO-RDC asbl</span></li>
+      </ul>
+      <button type="button" class="pied-theme" data-theme-basculer><svg class="ic i-lune" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><svg class="ic i-soleil" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-sun"></use></svg><span>Changer de thème</span></button>
+    </div>
+  </div>
+</footer>
+<script src="../../../static/js/site.js" defer></script>
+<script src="maquettes.js" defer></script>
+</body>
+</html>
