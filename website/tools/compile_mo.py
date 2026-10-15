@@ -12,13 +12,15 @@ ROOT = Path(__file__).resolve().parent.parent / "locale"
 
 
 def parse_po(text: str) -> dict:
-    messages, ctx, mid, mstr, cur = {}, None, None, None, None
+    r"""{clé: traduction} ; pluriel : clé « msgid\0msgid_plural », valeur « forme0\0forme1 » (format .mo)."""
+    messages, ctx, mid, plural, strs, cur = {}, None, None, None, [], None
     fuzzy = False
 
     def flush():
-        if mid is not None and mstr and not fuzzy:
-            key = mid if ctx is None else f"{ctx}\x04{mid}"
-            messages[key] = mstr
+        if mid is not None and any(strs) and not fuzzy:
+            cle = mid if plural is None else mid + "\0" + plural
+            cle = cle if ctx is None else f"{ctx}\x04{cle}"
+            messages[cle] = "\0".join(strs)
 
     for line in text.splitlines():
         line = line.strip()
@@ -28,21 +30,30 @@ def parse_po(text: str) -> dict:
         if line.startswith("#") or not line:
             if not line:
                 flush()
-                ctx = mid = mstr = cur = None
+                ctx = mid = plural = cur = None
+                strs = []
                 fuzzy = False
             continue
         if line.startswith("msgctxt"):
             ctx, cur = ast.literal_eval(line[7:].strip()), "ctx"
+        elif line.startswith("msgid_plural"):
+            plural, cur = ast.literal_eval(line[12:].strip()), "plural"
         elif line.startswith("msgid"):
             mid, cur = ast.literal_eval(line[5:].strip()), "id"
+        elif line.startswith("msgstr["):
+            strs.append(ast.literal_eval(line.split("]", 1)[1].strip()))
+            cur = "str"
         elif line.startswith("msgstr"):
-            mstr, cur = ast.literal_eval(line[6:].strip()), "str"
+            strs = [ast.literal_eval(line[6:].strip())]
+            cur = "str"
         elif line.startswith('"'):
             val = ast.literal_eval(line)
             if cur == "id":
                 mid += val
+            elif cur == "plural":
+                plural += val
             elif cur == "str":
-                mstr += val
+                strs[-1] += val
             elif cur == "ctx":
                 ctx += val
     flush()
