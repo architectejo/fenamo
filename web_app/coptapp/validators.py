@@ -165,6 +165,8 @@ def _traiter_fichiers(sender, instance, images):
     champs = list(_champs_fichiers(sender, images=images, pieces=not images))
     anciens = None
     for champ in champs:
+        if getattr(champ, 'traitement_propre', False):
+            continue  # champ traité par son propre récepteur (virtrine.services.medias : WebP, PDF public, APK)
         fichier = getattr(instance, champ.attname)
         nouveau = bool(fichier) and not getattr(fichier, '_committed', True)
         if fichier and not nouveau:

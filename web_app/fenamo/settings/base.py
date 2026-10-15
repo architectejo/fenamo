@@ -173,6 +173,9 @@ UPLOAD_IMAGE_MAX_MO = env.float('UPLOAD_IMAGE_MAX_MO', default=3)
 FENAMO_DROITS_HERITES = env.bool('FENAMO_DROITS_HERITES', default=True)
 # « Valider tout le monde » : nombre maximal de membres validés par appel (le reste est signalé, on relance).
 VALIDER_TOUS_PLAFOND = env.int('VALIDER_TOUS_PLAFOND', default=100)
+# Contenu public du site : taille maximale d'un PDF (documents) et de l'APK de l'application mobile, en Mo.
+UPLOAD_PDF_MAX_MO = env.float('UPLOAD_PDF_MAX_MO', default=10)
+UPLOAD_APK_MAX_MO = env.float('UPLOAD_APK_MAX_MO', default=80)
 # Antirobot de l'inscription mobile (/mob/register/) : inscriptions par heure et par adresse IP.
 MOB_INSCRIPTIONS_PAR_HEURE = env.int('MOB_INSCRIPTIONS_PAR_HEURE', default=5)
 # Taille maximale d'une pièce jointe (PDF, JPEG, PNG), en Mo.
