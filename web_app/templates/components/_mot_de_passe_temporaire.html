@@ -5,18 +5,25 @@ l'action (« Membre nommé », « Compte créé », « Mot de passe réinitialis
 Paramètres :
   identifiant  compte.username
   valeur       le mot de passe entier (data-valeur : c'est lui qui est copié)
+  identifiant_initial  vrai à la nomination d'un membre (F-02, dérogation consignée dans docs/decisions.md) : le mot de passe initial est égal à
+               l'identifiant « prenom[nombre]@fenamordc.hub » ; il s'affiche en une ligne, avec son propre bouton Copier
   groupes      le même mot de passe découpé en groupes de 4 (liste de chaînes préparée par la vue) ; le gabarit met les chiffres en <b>
 Règles :
   - Le mot de passe est généré par le service sans 0 O 1 l I (dictée au téléphone) ; les chiffres sont balisés en <b> (bleu).
   - Il n'est jamais stocké en clair ni renvoyé une deuxième fois : la réponse porte Cache-Control: no-store et hx-history="false".
   - Bouton Copier : data-copier (static/js/design.js) ; libellé « Copié » 2 s, cadre vert. Pas de bulle : le titre suffit.
 {% endcomment %}<div class="mdp-temp" hx-history="false">
-  <div class="mdp-temp-identifiant"><span class="mdp-temp-libelle">{% translate "Identifiant" %}</span><strong class="ident">{{ identifiant }}</strong></div>
   <div>
-    <p class="mdp-temp-libelle u-mb-2" id="mdp-libelle">{% translate "Mot de passe temporaire" %}</p>
-    <p class="mdp-temp-valeur" id="mdp-valeur" aria-labelledby="mdp-libelle" data-valeur="{{ valeur }}">{% for groupe in groupes %}<span>{% for c in groupe %}{% if c.isdigit %}<b>{{ c }}</b>{% else %}{{ c }}{% endif %}{% endfor %}</span>{% endfor %}</p>
+    <p class="mdp-temp-libelle u-mb-2" id="mdp-identifiant-libelle">{% translate "Identifiant" %}</p>
+    <p class="mdp-temp-identifiant u-mb-2"><strong class="ident" id="mdp-identifiant" data-valeur="{{ identifiant }}" aria-labelledby="mdp-identifiant-libelle">{{ identifiant }}</strong></p>
+    <button type="button" class="bouton bouton--bloc" data-copier="#mdp-identifiant">{% icone "copy" %}<span class="copier-texte">{% translate "Copier l'identifiant" %}</span></button>
+  </div>
+  <div>
+    <p class="mdp-temp-libelle u-mb-2" id="mdp-libelle">{% if identifiant_initial %}{% translate "Mot de passe initial" %}{% else %}{% translate "Mot de passe temporaire" %}{% endif %}</p>
+    {% if identifiant_initial %}<p class="mdp-temp-identifiant u-mb-2"><strong class="ident" id="mdp-valeur" aria-labelledby="mdp-libelle" data-valeur="{{ valeur }}">{{ valeur }}</strong></p>
+    {% else %}<p class="mdp-temp-valeur" id="mdp-valeur" aria-labelledby="mdp-libelle" data-valeur="{{ valeur }}">{% for groupe in groupes %}<span>{% for c in groupe %}{% if c.isdigit %}<b>{{ c }}</b>{% else %}{{ c }}{% endif %}{% endfor %}</span>{% endfor %}</p>{% endif %}
   </div>
   <button type="button" class="bouton bouton--bloc" data-copier="#mdp-valeur">{% icone "copy" %}<span class="copier-texte">{% translate "Copier le mot de passe" %}</span></button>
 </div>
-{% translate "Affiché une seule fois." as titre_alerte %}{% translate "Transmettez-le en main propre ou par appel, jamais dans un groupe de discussion. Il devra le changer à sa première connexion." as texte_alerte %}{% include "components/_erreur.html" with niveau="alerte" titre=titre_alerte texte=texte_alerte %}
-<p class="meta">{% translate "Chiffres en bleu. Le mot de passe ne contient ni 0, ni O, ni 1, ni l, ni I, pour être dicté sans erreur." %}</p>
+{% translate "Affiché une seule fois." as titre_alerte %}{% if identifiant_initial %}{% translate "Le mot de passe initial est identique à l'identifiant. Le changement du mot de passe sera exigé à la première connexion : communiquez-le sans délai, en main propre ou par appel, jamais dans un groupe de discussion." as texte_alerte %}{% else %}{% translate "Transmettez-le en main propre ou par appel, jamais dans un groupe de discussion. Il devra le changer à sa première connexion." as texte_alerte %}{% endif %}{% include "components/_erreur.html" with niveau="alerte" titre=titre_alerte texte=texte_alerte %}
+{% if not identifiant_initial %}<p class="meta">{% translate "Chiffres en bleu. Le mot de passe ne contient ni 0, ni O, ni 1, ni l, ni I, pour être dicté sans erreur." %}</p>{% endif %}

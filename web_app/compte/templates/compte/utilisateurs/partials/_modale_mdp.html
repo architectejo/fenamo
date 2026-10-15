@@ -9,7 +9,7 @@ ni dans un en-tête, ni dans le journal. Contexte : titre (« Membre nommé », 
     <button type="button" class="bouton-icone" data-ferme-modale aria-label="{% translate 'Fermer' %}">{% icone "x" %}</button>
   </div>
   <div class="feuille-corps"><div class="formulaire">
-    {% include "components/_mot_de_passe_temporaire.html" with identifiant=compte.username valeur=valeur groupes=groupes %}
+    {% include "components/_mot_de_passe_temporaire.html" with identifiant=compte.username valeur=valeur groupes=groupes identifiant_initial=identifiant_initial %}
   </div></div>
   <div class="feuille-pied"><button type="button" class="bouton bouton--principal" data-ferme-modale><span>{% translate "J'ai transmis le mot de passe" %}</span></button></div>
 </div>
