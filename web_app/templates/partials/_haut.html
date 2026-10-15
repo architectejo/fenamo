@@ -14,6 +14,11 @@
   <div class="rangee pousse rangee--serree">
     <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="{% translate 'Changer de thème' %}">{% icone "moon" %}</button>
 
+    {# F-40 : communiqués non lus (badge rafraîchi toutes les 120 s et à chaque événement communiquesMaj) #}
+    <a class="bouton-icone" href="{% url 'list-message' %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top" aria-label="{% translate 'Communiqués' %}">
+      {% icone "megaphone" %}<span hx-get="{% url 'communique-compteur' %}" hx-trigger="load, every 120s, communiquesMaj from:body" hx-swap="innerHTML" hx-boost="false"></span>
+    </a>
+
     <div class="relatif" x-data="{ ouvert: false }" @keydown.escape="ouvert = false" @click.outside="ouvert = false">
       <button type="button" class="bouton-icone" @click="ouvert = !ouvert" :aria-expanded="ouvert.toString()" aria-haspopup="true"
               aria-label="{% blocktranslate count n=fn_notifs_total|default:0 %}Notifications : {{ n }} non lue{% plural %}Notifications : {{ n }} non lues{% endblocktranslate %}">

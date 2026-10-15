@@ -1,2 +1,2 @@
-{% load i18n %}{% comment %}Badge des communiqués non lus (gabarit minimal, le design viendra). Contexte : nb_non_lus. Rafraîchi par hx-trigger="every 120s".{% endcomment %}
-<span id="communiques-non-lus" class="badge" data-nb="{{ nb_non_lus }}"{% if not nb_non_lus %} hidden{% endif %}>{{ nb_non_lus }}</span>
+{% load i18n %}{% comment %}Badge des communiqués non lus (barre du haut). Contexte : nb_non_lus. Fragment rafraîchi par hx-trigger="every 120s, communiquesMaj from:body" (voir partials/_haut.html).{% endcomment %}
+<span id="communiques-non-lus" class="compteur-pastille" data-nb="{{ nb_non_lus }}"{% if not nb_non_lus %} hidden{% endif %}><span aria-hidden="true">{% if nb_non_lus > 99 %}99+{% else %}{{ nb_non_lus }}{% endif %}</span><span class="lecteur">{% blocktranslate count n=nb_non_lus %}{{ n }} communiqué non lu{% plural %}{{ n }} communiqués non lus{% endblocktranslate %}</span></span>

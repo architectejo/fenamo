@@ -1,25 +1,34 @@
 {% extends "base.html" %}
-{% load i18n design fichiers %}{% comment %}Communiqués (écran migré). La vue fournit `communiques`.{% endcomment %}
+{% load i18n design %}{% comment %}
+Communiqués reçus dans l'application (F-40). Contexte : page_obj, filtres, filtres_actifs, nb_non_lus, peut_publier.
+Le formulaire #filtres-liste est hors de la zone remplacée (le focus reste sur le champ) ; les filtres coordination et antenne de l'adresse sont conservés en champs cachés.
+{% endcomment %}
 {% block titre %}{% translate "Communiqués" %} - FENAMO-RDC{% endblock %}
 {% block contenu %}
 <div class="page-tete">
-  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Communiqués" %}</h1><p class="page-contexte">{% icone "megaphone" %}{% translate "Messages adressés aux membres" %}</p></div>
-  {% if fn_droits.peut_ecrire_referentiel %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML">{% icone "plus" %}<span>{% translate "Nouveau communiqué" %}</span></a></div>{% endif %}
+  <div class="page-tete-texte"><h1 class="page-titre">{% translate "Communiqués" %}</h1><p class="page-contexte">{% icone "megaphone" %}{% blocktranslate count n=nb_non_lus %}{{ n }} communiqué non lu{% plural %}{{ n }} communiqués non lus{% endblocktranslate %}</p></div>
+  {% if peut_publier %}<div class="page-actions"><a class="bouton bouton--principal" href="{% url 'message' %}" hx-get="{% url 'message' %}" hx-target="#modale-contenu" hx-swap="innerHTML" hx-disabled-elt="this">{% icone "plus" %}<span>{% translate "Publier un communiqué" %}</span></a></div>{% endif %}
 </div>
-{% if communiques %}
-<ul class="file">
-  {% for message in communiques %}
-  <li class="dossier">
-    {% avatar message.membre.nom message.membre.photo 40 %}
-    <div>
-      <div class="dossier-titre"><a href="{% url 'communique' message.id %}">{{ message.message|truncatechars:140 }}</a></div>
-      <div class="dossier-lieu"><span>{% icone "user" %}{{ message.membre.nom|default:"—" }}</span><span>{% icone "calendar" %}{{ message.mise_a_jour|date:"d/m/Y" }}</span></div>
+
+<form id="filtres-liste" method="get" action="{% url 'list-message' %}" role="search"
+      hx-get="{% url 'list-message' %}" hx-trigger="input changed delay:300ms from:#q, change from:.puce, submit"
+      hx-target="#liste-zone" hx-push-url="true" hx-indicator="#liste-zone" hx-sync="this:replace" hx-boost="false">
+  <input type="hidden" name="coordination" value="{{ filtres.coordination }}">
+  <input type="hidden" name="antenne" value="{{ filtres.antenne }}">
+  <div class="filtres">
+    <div class="recherche">
+      {% icone "search" %}
+      <label class="lecteur" for="q">{% translate "Rechercher un communiqué" %}</label>
+      <input id="q" type="search" name="q" value="{{ filtres.q }}" placeholder="{% translate 'Titre ou texte' %}" autocomplete="off">
     </div>
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-{% translate "Aucun communiqué" as t_vide %}{% translate "Les communiqués publiés apparaîtront ici." as t_msg %}
-{% include "components/_etat_vide.html" with icone="megaphone" titre=t_vide texte=t_msg %}
-{% endif %}
+  </div>
+  <div class="defile-horizontal u-mb-4" role="group" aria-label="{% translate 'Filtrer par état' %}">
+    <label class="puce"><input type="radio" name="etat" value=""{% if filtres.etat != 'non_lus' %} checked{% endif %}><span>{% translate "Tous" %}</span></label>
+    <label class="puce"><input type="radio" name="etat" value="non_lus"{% if filtres.etat == 'non_lus' %} checked{% endif %}><span>{% translate "Non lus" %}</span></label>
+  </div>
+</form>
+
+<div id="liste-zone" class="zone-rafraichie" tabindex="-1" hx-get="{% url 'list-message' %}" hx-include="#filtres-liste" hx-trigger="communiquesMaj from:body" hx-indicator="#liste-zone">
+  {% include "coptapp/communiques/partials/_liste.html" %}
+</div>
 {% endblock %}

@@ -1,10 +1,35 @@
 {% extends "components/modale_base.html" %}
-{% load i18n %}{% comment %}Publier un communiqué (gabarit minimal). Contexte : action, coordinations, antennes, titre_max, message_max, valeurs, erreur.{% endcomment %}
+{% load i18n design %}{% comment %}
+Publier un communiqué (F-40), dans la modale commune. Contexte : action, coordinations, antennes, titre_max, message_max, valeurs, erreur.
+Ciblage : national par défaut ; « coordination » ou « antenne » révèle la liste correspondante (Alpine). Le champ masqué est désactivé : il n'est pas envoyé.
+{% endcomment %}
 {% block titre %}{% translate "Publier un communiqué" %}{% endblock %}
 {% block corps %}
-<div class="champ"><label class="champ-libelle" for="c-titre">{% translate "Titre" %}</label><input id="c-titre" name="titre" maxlength="{{ titre_max }}" required value="{{ valeurs.titre }}"></div>
-<div class="champ"><label class="champ-libelle" for="c-message">{% translate "Message" %}</label><textarea id="c-message" name="message" rows="5" maxlength="{{ message_max }}" required>{{ valeurs.message }}</textarea></div>
-<div class="champ"><label class="champ-libelle" for="c-coordination">{% translate "Coordination (facultatif)" %}</label><select id="c-coordination" name="coordination"><option value="">{% translate "National" %}</option>{% for c in coordinations %}<option value="{{ c.id }}">{{ c.nom }}</option>{% endfor %}</select></div>
-<div class="champ"><label class="champ-libelle" for="c-antenne">{% translate "Antenne (facultatif)" %}</label><select id="c-antenne" name="antenne"><option value="">—</option>{% for a in antennes %}<option value="{{ a.id }}">{{ a.nom }}</option>{% endfor %}</select></div>
+<div class="champ">
+  <label class="champ-libelle" for="c-titre">{% translate "Titre" %}</label>
+  <input id="c-titre" name="titre" maxlength="{{ titre_max }}" required value="{{ valeurs.titre }}" autocomplete="off">
+</div>
+<div class="champ">
+  <label class="champ-libelle" for="c-message">{% translate "Message" %}</label>
+  <textarea id="c-message" name="message" rows="6" maxlength="{{ message_max }}" required data-compte-caracteres="#c-message-compte" aria-describedby="c-message-compte">{{ valeurs.message }}</textarea>
+  <p class="champ-aide compte-caracteres u-mb-0" id="c-message-compte"><span data-compte-valeur>0 / {{ message_max }}</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+</div>
+<fieldset class="champ" x-data="{ cible: '{% if valeurs.antenne %}antenne{% elif valeurs.coordination %}coordination{% else %}national{% endif %}' }">
+  <legend class="champ-libelle">{% translate "Destinataires" %}</legend>
+  <div class="communique-cibles" role="radiogroup">
+    <label class="puce"><input type="radio" name="cible" value="national" x-model="cible"><span>{% translate "National" %}</span></label>
+    <label class="puce"><input type="radio" name="cible" value="coordination" x-model="cible"><span>{% translate "Une coordination" %}</span></label>
+    <label class="puce"><input type="radio" name="cible" value="antenne" x-model="cible"><span>{% translate "Une antenne" %}</span></label>
+  </div>
+  <div class="champ u-mt-3" x-show="cible === 'coordination'" x-cloak>
+    <label class="champ-libelle" for="c-coordination">{% translate "Coordination" %}</label>
+    <select id="c-coordination" name="coordination" :disabled="cible !== 'coordination'"><option value="">{% translate "Choisir une coordination" %}</option>{% for c in coordinations %}<option value="{{ c.id }}"{% if valeurs.coordination == c.id|stringformat:"s" %} selected{% endif %}>{{ c.nom }}</option>{% endfor %}</select>
+  </div>
+  <div class="champ u-mt-3" x-show="cible === 'antenne'" x-cloak>
+    <label class="champ-libelle" for="c-antenne">{% translate "Antenne" %}</label>
+    <select id="c-antenne" name="antenne" :disabled="cible !== 'antenne'"><option value="">{% translate "Choisir une antenne" %}</option>{% for a in antennes %}<option value="{{ a.id }}"{% if valeurs.antenne == a.id|stringformat:"s" %} selected{% endif %}>{{ a.nom }}{% if a.coordination %} · {{ a.coordination.nom }}{% endif %}</option>{% endfor %}</select>
+  </div>
+  <p class="champ-aide">{% translate "Sans choix, le communiqué est reçu par tous les comptes concernés au niveau national." %}</p>
+</fieldset>
 {% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span>{% translate "Publier" %}</span></button>{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal">{% icone "send" %}<span>{% translate "Publier" %}</span></button>{% endblock %}

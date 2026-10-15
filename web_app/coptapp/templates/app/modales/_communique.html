@@ -1,5 +1,0 @@
-{% extends "components/modale_base.html" %}
-{% load i18n design %}{% comment %}Modale « Nouveau communiqué » (formulaire servi dans la modale commune par coptapp.views.modales.rendre_formulaire).{% endcomment %}
-{% block titre %}{% translate "Nouveau communiqué" %}{% endblock %}
-{% block corps %}{% include "app/formulaires/_communique.html" %}{% endblock %}
-{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>{% translate "Publier le communiqué" %}</span></button>{% endblock %}

@@ -1,2 +1,31 @@
-{% load i18n %}{% comment %}Zone de la liste des communiqués (gabarit minimal). Contexte : page_obj (chaque communiqué porte lu), filtres, nb_non_lus.{% endcomment %}
-<ul class="file">{% for c in page_obj %}<li class="dossier{% if not c.lu %} non-lu{% endif %}"><a href="{% url 'communique' c.id %}">{{ c.titre|default:c.message|truncatechars:120 }}</a> · {{ c.publie_le|date:"d/m/Y" }}</li>{% empty %}<li>{% translate "Aucun communiqué" %}</li>{% endfor %}</ul>
+{% load i18n design %}{% comment %}
+Zone des résultats de la liste des communiqués (F-40). Servie seule pour une requête HTMX, incluse par app/list-message.html : une seule source de HTML.
+Contexte : page_obj (chaque communiqué porte lu, titre, publie_le, user, province, antenne), filtres, filtres_actifs, nb_non_lus, peut_publier.
+Le contenu saisi est échappé par Django (jamais |safe) ; l'aperçu est tronqué.
+{% endcomment %}
+{% if page_obj.paginator.count %}
+<ul class="file file--communiques">
+  {% for c in page_obj %}
+  <li class="dossier communique{% if not c.lu %} non-lu{% endif %}">
+    <span class="avatar avatar--petit communique-icone">{% icone "megaphone" "ic--petite" %}</span>
+    <div>
+      <div class="dossier-titre">
+        <a href="{% url 'communique' c.id %}" hx-boost="true" hx-target="#contenu" hx-select="#contenu" hx-swap="outerHTML show:window:top">{{ c.titre|default:c.message|truncatechars:90 }}</a>
+        {% if not c.lu %}<span class="communique-nouveau">{% translate "Non lu" %}</span>{% endif %}
+      </div>
+      {% if c.titre and c.message %}<p class="communique-apercu">{{ c.message|truncatechars:140 }}</p>{% endif %}
+      <div class="dossier-lieu">
+        <span>{% icone "calendar" %}{{ c.publie_le|date:"d/m/Y · H:i" }}</span>
+        <span>{% icone "map-pin" %}{% if c.antenne %}{% blocktranslate with nom=c.antenne.nom %}Antenne {{ nom }}{% endblocktranslate %}{% elif c.province %}{% blocktranslate with nom=c.province.nom %}Coordination {{ nom }}{% endblocktranslate %}{% else %}{% translate "National" %}{% endif %}</span>
+        <span>{% icone "user" %}{{ c.user.get_full_name|default:c.user.get_username|default:"—" }}</span>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% include "components/_pagination.html" with page_obj=page_obj cible="#liste-zone" %}
+{% else %}
+{% if filtres_actifs %}{% translate "Aucun résultat" as t_vide %}{% translate "Aucun communiqué ne correspond à votre recherche." as t_msg %}
+{% else %}{% translate "Aucun communiqué" as t_vide %}{% translate "Les communiqués publiés apparaîtront ici." as t_msg %}{% endif %}
+{% include "components/_etat_vide.html" with icone="megaphone" titre=t_vide texte=t_msg %}
+{% endif %}
