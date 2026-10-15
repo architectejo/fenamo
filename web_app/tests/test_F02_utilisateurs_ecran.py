@@ -110,7 +110,7 @@ def test_F05_mot_de_passe_reinitialise_lecture_unique_sans_cache(client, jeu):
     assert 'no-store' in r['Cache-Control']
     agent.refresh_from_db()
     assert agent.doit_changer_mot_de_passe
-    valeur = html.split('data-valeur="')[1].split('"')[0]
+    valeur = html.split('data-valeur="')[-1].split('"')[0]  # le dernier : le mot de passe (le premier est l'identifiant)
     assert agent.check_password(valeur) and len(valeur) == 12
     assert valeur not in str(list(client.session.items()))
     assert valeur not in r['HX-Trigger']

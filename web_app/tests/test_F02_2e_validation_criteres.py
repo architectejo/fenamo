@@ -227,7 +227,7 @@ def test_F02_2e_mot_de_passe_temporaire_jamais_dans_journal_session_messages_en_
     assert _fuites(client, r, clair) == []
     assert clair not in caplog.text
     assert 'no-store' in r['Cache-Control'] and 'private' in r['Cache-Control'] and 'hx-history="false"' in r.content.decode()
-    assert json.loads(r['HX-Trigger']) == {'utilisateursModifies': True}
+    assert json.loads(r['HX-Trigger']) == {'utilisateursModifies': True, 'membresMaj': True}  # événements sans donnée sensible
     # lecture unique : ni la liste, ni la page rechargée, ni un second GET ne le montrent ; seul le hachage est enregistré
     for adresse in (reverse('utilisateurs'), reverse('utilisateurs'), reverse('tableau-bord')):
         assert clair not in client.get(adresse).content.decode()
