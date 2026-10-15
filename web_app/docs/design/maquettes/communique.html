@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Contrôle conjoint avec la police de circulation routière · Communiqués · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+<link rel="stylesheet" href="communication.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>File de validation</span><span class="nombre">24</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg><span>Associations membres</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="communiques.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span><span class="nombre">2</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a><p class="menu-groupe">Site public</p><a class="menu-lien" href="donnees-reelles.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg><span>Contenu du site</span></a><a class="menu-lien" href="messages-contact.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-mail"></use></svg><span>Messages reçus</span><span class="nombre">5</span></a><p class="menu-groupe">Administration</p><a class="menu-lien" href="utilisateurs.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span>Utilisateurs</span></a><a class="menu-lien" href="journal.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-history"></use></svg><span>Journal d'activités</span></a><a class="menu-lien" href="verrou-application.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock-open"></use></svg><span>Verrouillage</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Super-utilisateur</span><strong>Toute la fédération</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="tableau-de-bord-president.html"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche">
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg>
+        <label class="lecteur" for="recherche-globale">Rechercher un membre ou un engin</label>
+        <input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off">
+      </div>
+      <div class="rangee pousse rangee--serree">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <a class="bouton-icone" href="communiques.html" aria-current="page" aria-label="Communiqués, 2 non lus" data-demo-lien-communiques><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span class="compteur-pastille" data-demo-badge-communiques><span aria-hidden="true">2</span></span></a>
+        <button type="button" class="bouton-icone" aria-label="Notifications, 7 non lues"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille" aria-hidden="true">7</span></button>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar" aria-hidden="true">AT</span><span class="profil-texte"><strong>Aimé Tshibangu</strong><span class="meta bloc">Super-utilisateur</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<nav class="fil" aria-label="Fil d’Ariane"><a href="communiques.html">Communiqués</a><span aria-hidden="true">/</span><span>Lecture</span></nav>
+<article class="panneau lecture" aria-labelledby="lecture-titre">
+  <div class="lecture-corps">
+    <header class="lecture-tete">
+      <span class="portee"><span class="portee-texte">Coordination Kinshasa-Est</span><span class="portee-code" aria-hidden="true">KN-E</span></span>
+      <h1 class="page-titre" id="lecture-titre">Contrôle conjoint avec la police de circulation routière à Limete</h1>
+      <p class="meta u-mb-0">Publié le <time datetime="2026-10-15T07:15">15/10/2026 à 07&nbsp;h&nbsp;15</time></p>
+    </header>
+    <p class="lecture-texte">Du lundi 19 au samedi 24 octobre, la police de circulation routière et la coordination Kinshasa-Est contrôlent ensemble les engins au rond-point Ngaba et sur le boulevard Lumumba, de 6 h à 18 h.
+
+Chaque motard porte son gilet numéroté et présente sa carte de membre. Le numéro peint sur l’autocollant vinyle de l’engin doit être lisible.
+
+Un motard dont l’identification annuelle a expiré passe à l’antenne avant le 19 octobre : Lemba, Limete, Matete et Ngaba ouvrent aussi le samedi matin.
+
+Les présidents d’associations membres relaient ce message dans chaque parking.</p>
+    <footer class="lecture-signature">
+      <span class="avatar" aria-hidden="true">NM</span>
+      <div><p><strong>Nadine Mavungu</strong></p><p class="meta">Éditrice · secrétariat national</p></div>
+    </footer>
+  </div>
+</article>
+<div class="lecture-pied lecture">
+  <a class="bouton bouton--bloc-mobile" href="communiques.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-arrow-left"></use></svg>Tous les communiqués</a>
+  <a class="bouton bouton--principal bouton--bloc-mobile" href="#">Lire le suivant non lu</a>
+</div>
+
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>À valider</span><span class="compteur-pastille">24</span></a><a href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span><span class="compteur-pastille">7</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+
+<div class="bulles" aria-live="polite"></div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+<script src="maquettes-communication.js"></script>
+</body>
+</html>

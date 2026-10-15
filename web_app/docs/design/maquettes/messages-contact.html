@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Messages reçus · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+<link rel="stylesheet" href="communication.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>File de validation</span><span class="nombre">24</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg><span>Associations membres</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="communiques.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span><span class="nombre">3</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a><p class="menu-groupe">Site public</p><a class="menu-lien" href="donnees-reelles.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg><span>Contenu du site</span></a><a class="menu-lien" href="messages-contact.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-mail"></use></svg><span>Messages reçus</span><span class="nombre">5</span></a><p class="menu-groupe">Administration</p><a class="menu-lien" href="utilisateurs.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span>Utilisateurs</span></a><a class="menu-lien" href="journal.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-history"></use></svg><span>Journal d'activités</span></a><a class="menu-lien" href="verrou-application.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock-open"></use></svg><span>Verrouillage</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Super-utilisateur</span><strong>Toute la fédération</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="tableau-de-bord-president.html"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche">
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg>
+        <label class="lecteur" for="recherche-globale">Rechercher un membre ou un engin</label>
+        <input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off">
+      </div>
+      <div class="rangee pousse rangee--serree">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <a class="bouton-icone" href="communiques.html" aria-label="Communiqués, 3 non lus" data-demo-lien-communiques><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span class="compteur-pastille" data-demo-badge-communiques><span aria-hidden="true">3</span></span></a>
+        <button type="button" class="bouton-icone" aria-label="Notifications, 7 non lues"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille" aria-hidden="true">7</span></button>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar" aria-hidden="true">AT</span><span class="profil-texte"><strong>Aimé Tshibangu</strong><span class="meta bloc">Super-utilisateur</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<nav class="fil" aria-label="Fil d’Ariane"><a href="donnees-reelles.html">Contenu du site</a><span aria-hidden="true">/</span><span>Messages reçus</span></nav>
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">Messages reçus</h1>
+    <p class="page-contexte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-mail"></use></svg>Formulaire de contact de fenamordc.cd · <strong data-demo-nb-a-traiter>5</strong>&nbsp;à traiter</p>
+  </div>
+</div>
+<div class="filtres">
+  <div class="recherche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg><label class="lecteur" for="mq">Rechercher un message</label><input id="mq" type="search" placeholder="Nom, téléphone, e-mail ou objet" autocomplete="off"></div>
+</div>
+<div class="defile-horizontal u-mb-4" role="group" aria-label="Filtrer par état" data-demo-filtre-contact>
+  <label class="puce"><input type="radio" name="etat" value="a_traiter" checked><span>À traiter <span class="nombre">5</span></span></label>
+  <label class="puce"><input type="radio" name="etat" value="traite"><span>Traités <span class="nombre">212</span></span></label>
+  <label class="puce"><input type="radio" name="etat" value=""><span>Tous <span class="nombre">217</span></span></label>
+</div>
+<p class="resume-liste"><span>Les plus récents en haut</span><span data-demo-resume-contact>1 à 5 sur 5</span></p>
+<div class="zone-rafraichie">
+  <div class="liste-enveloppe" data-vue="liste">
+    <table class="liste">
+      <caption class="lecteur">Messages reçus par le site public</caption>
+      <thead><tr><th scope="col">Objet</th><th scope="col">Expéditeur</th><th scope="col">Reçu le</th><th scope="col">État</th></tr></thead>
+      <tbody>
+        <tr class="ligne--a-traiter" data-etat="a_traiter">
+          <td data-role="titre"><a class="lien-ligne" href="message-contact.html">Adhésion de notre association</a><span class="apercu-ligne">Nous sommes 64 motards au parking Kalubwe à Lubumbashi, regroupés dans l’ASMOKA asbl. Comment déposer notre dossier d’adhésion ?</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Jean-Pierre Ilunga Mbuyi<span class="meta bloc">+243 997 214 508</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-15T09:12">Aujourd'hui, 09:12</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg>À traiter</span></td>
+        </tr>
+        <tr class="ligne--a-traiter" data-etat="a_traiter">
+          <td data-role="titre"><a class="lien-ligne" href="#">Carte de membre non reçue</a><span class="apercu-ligne">J’ai payé ma cotisation à l’antenne de Matete le 2 septembre et je n’ai toujours pas reçu ma carte.</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Clarisse Ngalula<span class="meta bloc">c.ngalula@gmail.com</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-15T07:48">Aujourd'hui, 07:48</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg>À traiter</span></td>
+        </tr>
+        <tr class="ligne--a-traiter" data-etat="a_traiter">
+          <td data-role="titre"><a class="lien-ligne" href="#">Demande d’entretien</a><span class="apercu-ligne">Nous préparons un reportage sur la sécurité routière des motos-taxis et souhaitons rencontrer le président national.</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Radio Okapi, rédaction de Kinshasa<span class="meta bloc">+243 815 330 112 · redaction.kin@radiookapi.net</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-14T15:30">Hier, 15:30</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg>À traiter</span></td>
+        </tr>
+        <tr class="ligne--a-traiter" data-etat="a_traiter">
+          <td data-role="titre"><a class="lien-ligne" href="#">Gilet perdu</a><span class="apercu-ligne">Mon gilet numéro 00412 KN-O a été volé au parking de Kintambo magasin. Que dois-je faire ?</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Dieudonné Kabasele<span class="meta bloc">+243 851 004 377</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-14T11:02">Hier, 11:02</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg>À traiter</span></td>
+        </tr>
+        <tr class="ligne--a-traiter" data-etat="a_traiter">
+          <td data-role="titre"><a class="lien-ligne" href="#">Vérification d’une carte</a><span class="apercu-ligne">Le site ne trouve pas la carte de mon frère, MBR0002210. Pouvez-vous vérifier ?</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Espérance Mwamba<span class="meta bloc">esperance.mwamba@yahoo.fr</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-13T19:44">13/10/2026</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-clock"></use></svg>À traiter</span></td>
+        </tr>
+        <tr class="ligne--traitee" data-etat="traite">
+          <td data-role="titre"><a class="lien-ligne" href="#">Horaires de l’antenne de Kampemba</a><span class="apercu-ligne">Bonjour, l’antenne est-elle ouverte le samedi ?</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Patrick Lumbala<span class="meta bloc">+243 899 120 045</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-09T08:05">09/10/2026</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Traité</span></td>
+        </tr>
+        <tr class="ligne--traitee" data-etat="traite">
+          <td data-role="titre"><a class="lien-ligne" href="#">Partenariat assurance</a><span class="apercu-ligne">Notre compagnie propose une assurance accident pour les motards. Nous aimerions présenter l’offre au comité national.</span></td>
+          <td data-libelle="Expéditeur"><span class="valeur">Mireille Kanku<span class="meta bloc">mkanku@outlook.com</span></span></td>
+          <td data-libelle="Reçu le" class="chiffres"><time datetime="2026-10-06T13:20">06/10/2026</time></td>
+          <td data-libelle="État" data-role="etat"><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Traité</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="vide" data-vue="vide" hidden>
+    <div class="vide-icone"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check-check"></use></svg></div>
+    <h2>Aucun message à traiter</h2>
+    <p>Les messages envoyés depuis la page Contact du site arrivent ici.</p>
+  </div>
+</div>
+<nav class="pages" aria-label="Pagination" data-demo-pages-contact hidden>
+  <a class="bouton" href="#" aria-disabled="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-left"></use></svg><span class="pages-libelle">Plus récents</span></a>
+  <span class="pages-position">Page 1 sur 9</span>
+  <ol class="pages-numeros"><li><span aria-current="page">1</span></li><li><a href="#">2</a></li><li><a href="#">3</a></li><li><span>…</span></li><li><a href="#">9</a></li></ol>
+  <a class="bouton" href="#"><span class="pages-libelle">Plus anciens</span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-right"></use></svg></a>
+</nav>
+
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>À valider</span><span class="compteur-pastille">24</span></a><a href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span><span class="compteur-pastille">7</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+
+<div class="bulles" aria-live="polite"></div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+<script src="maquettes-communication.js"></script>
+</body>
+</html>

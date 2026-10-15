@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Contenu du site · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+<link rel="stylesheet" href="communication.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>File de validation</span><span class="nombre">24</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg><span>Associations membres</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="communiques.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span><span class="nombre">3</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a><p class="menu-groupe">Site public</p><a class="menu-lien" href="donnees-reelles.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg><span>Contenu du site</span></a><a class="menu-lien" href="messages-contact.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-mail"></use></svg><span>Messages reçus</span><span class="nombre">5</span></a><p class="menu-groupe">Administration</p><a class="menu-lien" href="utilisateurs.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span>Utilisateurs</span></a><a class="menu-lien" href="journal.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-history"></use></svg><span>Journal d'activités</span></a><a class="menu-lien" href="verrou-application.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock-open"></use></svg><span>Verrouillage</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Super-utilisateur</span><strong>Toute la fédération</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="tableau-de-bord-president.html"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche">
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg>
+        <label class="lecteur" for="recherche-globale">Rechercher un membre ou un engin</label>
+        <input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off">
+      </div>
+      <div class="rangee pousse rangee--serree">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <a class="bouton-icone" href="communiques.html" aria-label="Communiqués, 3 non lus" data-demo-lien-communiques><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span class="compteur-pastille" data-demo-badge-communiques><span aria-hidden="true">3</span></span></a>
+        <button type="button" class="bouton-icone" aria-label="Notifications, 7 non lues"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille" aria-hidden="true">7</span></button>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar" aria-hidden="true">AT</span><span class="profil-texte"><strong>Aimé Tshibangu</strong><span class="meta bloc">Super-utilisateur</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">Contenu du site</h1>
+    <p class="page-contexte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg>fenamordc.cd</p>
+  </div>
+  <div class="page-actions"><a class="bouton" href="messages-contact.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-mail"></use></svg>Messages reçus<span class="nombre">5</span></a><button type="button" class="bouton bouton--principal"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-plus"></use></svg>Nouvel article</button></div>
+</div>
+
+<div class="pile">
+<div class="grille grille--principale">
+  <div class="pile">
+    <!-- État : données d'exemple (réglage d'origine) -->
+    <section class="panneau" aria-labelledby="dr-titre-exemple" data-demo-dr="exemple">
+      <div class="panneau-corps">
+        <div class="verrou-tete">
+          <span class="verrou-sceau" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-dashed"></use></svg></span>
+          <div>
+            <h2 class="verrou-intertitre u-mb-1" id="dr-titre-exemple">Données du site public</h2>
+            <p class="verrou-etat u-mb-0">Données d’exemple</p>
+            <p class="verrou-depuis">Depuis le 02/10/2026 à 18&nbsp;h&nbsp;20, par <strong class="texte-plein">Aimé Tshibangu</strong></p>
+          </div>
+        </div>
+        <p class="u-mt-5 u-mb-0">Le site public montre un jeu fixe, sans aucune donnée réelle, sous le bandeau « Données d’exemple ».</p>
+        <ul class="verrou-effets u-mt-4" aria-label="Ce que le public voit en ce moment">
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-file-text"></use></svg><div><strong>Articles et galerie</strong><span class="meta">Jeu d’exemple fixe</span></div><span class="etat etat--saisi"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-dashed"></use></svg>Exemple</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><div><strong>Comité exécutif</strong><span class="meta">Noms et photos d’exemple</span></div><span class="etat etat--saisi"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-dashed"></use></svg>Exemple</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chart-column"></use></svg><div><strong>Chiffres de l’accueil</strong><span class="meta">Chiffres fictifs</span></div><span class="etat etat--saisi"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-dashed"></use></svg>Exemple</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-scan-qr-code"></use></svg><div><strong>Vérification des cartes</strong><span class="meta">Répond « service indisponible »</span></div><span class="etat etat--a_renouveler"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-unplug"></use></svg>Suspendue</span></li>
+        </ul>
+      </div>
+      <div class="panneau-pied">
+        <button type="button" class="bouton bouton--danger bouton--bloc-mobile" data-ouvre-modale="#modale-activer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg>Activer les données réelles</button>
+      </div>
+    </section>
+
+    <!-- État : données réelles -->
+    <section class="panneau verrou--ferme" aria-labelledby="dr-titre-reel" data-demo-dr="reel" hidden>
+      <div class="panneau-corps">
+        <div class="verrou-tete">
+          <span class="verrou-sceau" aria-hidden="true" data-demo-sceau><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg></span>
+          <div>
+            <h2 class="verrou-intertitre u-mb-1" id="dr-titre-reel">Données du site public</h2>
+            <p class="verrou-etat u-mb-0" data-demo-etat-mot>Données réelles</p>
+            <p class="verrou-depuis">Depuis le 15/10/2026 à 10&nbsp;h&nbsp;05, par <strong class="texte-plein">Aimé Tshibangu</strong></p>
+          </div>
+        </div>
+        <p class="u-mt-5 u-mb-0"><strong>Visibles par tout le monde</strong> sur fenamordc.cd.</p>
+        <ul class="verrou-effets u-mt-4" aria-label="Ce que le public voit en ce moment">
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-file-text"></use></svg><div><strong>Articles et galerie</strong><span class="meta">Ceux publiés depuis l’application</span></div><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Réels</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><div><strong>Comité exécutif</strong><span class="meta">14 membres publiés</span></div><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Réel</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chart-column"></use></svg><div><strong>Chiffres de l’accueil</strong><span class="meta">48 712 membres actifs · 39 305 engins</span></div><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>Réels</span></li>
+          <li><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-scan-qr-code"></use></svg><div><strong>Vérification des cartes</strong><span class="meta">Ouverte au public et à la police</span></div><span class="etat etat--actif"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-check"></use></svg>En service</span></li>
+        </ul>
+        <p class="meta u-mt-4 u-mb-0">Motif : <span class="texte-saisi">Mise en ligne officielle après relecture du comité exécutif.</span></p>
+      </div>
+      <div class="panneau-pied">
+        <button type="button" class="bouton bouton--bloc-mobile" data-ouvre-modale="#modale-exemple"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-dashed"></use></svg>Revenir aux données d’exemple</button>
+      </div>
+    </section>
+  </div>
+
+  <aside class="panneau" aria-labelledby="dr-historique-titre">
+    <div class="panneau-tete"><h2 id="dr-historique-titre">Changements récents</h2></div>
+    <div class="panneau-corps">
+      <ol class="historique" data-demo-historique>
+        <li data-demo-entree-reel hidden><span class="point point--vert"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg></span><div><p><strong>Données réelles</strong> par Aimé Tshibangu</p><p class="meta">15/10/2026 à 10&nbsp;h&nbsp;05</p><p class="petit doux texte-saisi">Motif : mise en ligne officielle après relecture du comité exécutif.</p></div></li>
+        <li><span class="point"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-dashed"></use></svg></span><div><p><strong>Données d’exemple</strong> par Aimé Tshibangu</p><p class="meta">02/10/2026 à 18&nbsp;h&nbsp;20</p><p class="petit doux texte-saisi">Motif : comité exécutif à mettre à jour avant publication.</p></div></li>
+        <li><span class="point point--vert"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg></span><div><p><strong>Données réelles</strong> par Nadine Mavungu</p><p class="meta">28/09/2026 à 09&nbsp;h&nbsp;00</p><p class="petit doux">Sans motif</p></div></li>
+      </ol>
+    </div>
+    <div class="panneau-pied"><a href="journal.html">Voir le journal d’activités</a></div>
+  </aside>
+</div>
+
+<section class="panneau" aria-labelledby="titre-articles">
+  <div class="panneau-tete"><h2 id="titre-articles">Articles</h2></div>
+  <div class="panneau-corps">
+    <table class="liste">
+      <caption class="lecteur">Articles du site public</caption>
+      <thead><tr><th scope="col">Article</th><th scope="col">Mis à jour</th></tr></thead>
+      <tbody>
+        <tr><td data-role="titre"><div class="cellule-personne"><span class="avatar"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-file-text"></use></svg></span><div><a class="lien-ligne" href="#">Remise des gilets numérotés à Lubumbashi</a></div></div></td><td data-libelle="Mis à jour" class="chiffres">14/10/2026</td></tr>
+        <tr><td data-role="titre"><div class="cellule-personne"><span class="avatar"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-file-text"></use></svg></span><div><a class="lien-ligne" href="#">La coordination Kinshasa-Est forme 120 agents de terrain</a></div></div></td><td data-libelle="Mis à jour" class="chiffres">08/10/2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>À valider</span><span class="compteur-pastille">24</span></a><a href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span><span class="compteur-pastille">7</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+
+<!-- Modale : activer les données réelles (avertissement fort) -->
+<div class="modale" id="modale-activer" role="dialog" aria-modal="true" aria-labelledby="modale-activer-titre" hidden>
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate data-demo-dr-form="reel">
+    <div class="feuille-tete">
+      <h2 id="modale-activer-titre">Activer les données réelles<span class="sous-titre">Site public fenamordc.cd</span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <div class="alerte alerte--danger">
+          <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-triangle-alert"></use></svg>
+          <div>
+            <strong class="alerte-titre">Les données réelles seront visibles par tout le monde.</strong>
+            <ul class="consequences">
+              <li>les articles, la galerie, le comité exécutif et les chiffres de l’application s’affichent sur le site ;</li>
+              <li>la vérification des cartes de membre s’ouvre au public et à la police ;</li>
+              <li>le bandeau « Données d’exemple » disparaît ;</li>
+              <li>le changement est visible tout de suite et inscrit au journal d’activités.</li>
+            </ul>
+            <p class="u-mt-2 u-mb-0">Activez seulement quand le contenu publié a été relu.</p>
+          </div>
+        </div>
+        <div class="champ">
+          <label class="champ-libelle" for="dr-motif-a">Motif <span class="facultatif">(facultatif)</span></label>
+          <p class="champ-aide u-mb-0" id="dr-motif-a-aide">Inscrit au journal d’activités.</p>
+          <textarea class="champ-saisie" id="dr-motif-a" name="motif" rows="2" maxlength="500" aria-describedby="dr-motif-a-aide dr-motif-a-compte" data-compte-caracteres="#dr-motif-a-compte"></textarea>
+          <p class="champ-aide compte-caracteres u-mb-0" id="dr-motif-a-compte"><span data-compte-valeur>0 / 500</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+        </div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--danger-plein"><span class="roue" aria-hidden="true"></span><span>Activer les données réelles</span></button>
+    </div>
+  </form>
+</div>
+
+<!-- Modale : revenir aux données d'exemple -->
+<div class="modale" id="modale-exemple" role="dialog" aria-modal="true" aria-labelledby="modale-exemple-titre" hidden>
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate data-demo-dr-form="exemple">
+    <div class="feuille-tete">
+      <h2 id="modale-exemple-titre">Revenir aux données d’exemple<span class="sous-titre">Site public fenamordc.cd</span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <div class="alerte alerte--alerte">
+          <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-triangle-alert"></use></svg>
+          <div>
+            <strong class="alerte-titre">La vérification des cartes sera suspendue.</strong>
+            Le site affichera de nouveau le jeu d’exemple fixe, sous le bandeau « Données d’exemple ». Aucune donnée de l’application n’est modifiée.
+          </div>
+        </div>
+        <div class="champ">
+          <label class="champ-libelle" for="dr-motif-e">Motif <span class="facultatif">(facultatif)</span></label>
+          <p class="champ-aide u-mb-0" id="dr-motif-e-aide">Inscrit au journal d’activités.</p>
+          <textarea class="champ-saisie" id="dr-motif-e" name="motif" rows="2" maxlength="500" aria-describedby="dr-motif-e-aide dr-motif-e-compte" data-compte-caracteres="#dr-motif-e-compte"></textarea>
+          <p class="champ-aide compte-caracteres u-mb-0" id="dr-motif-e-compte"><span data-compte-valeur>0 / 500</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+        </div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Revenir aux données d’exemple</span></button>
+    </div>
+  </form>
+</div>
+
+<div class="bulles" aria-live="polite"></div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+<script src="maquettes-communication.js"></script>
+</body>
+</html>

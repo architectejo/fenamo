@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr" data-sprite="../../../static/img/icons.svg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f4f2ed">
+<title>Communiqués · FENAMO-RDC</title>
+<link rel="icon" href="../../../static/img/favicon.png" type="image/png">
+<script src="../../../static/js/theme.js"></script>
+<script src="maquettes-theme.js"></script>
+<link rel="preload" href="../../../static/fonts/atkinson-hyperlegible-next-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../../static/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../../static/css/tokens.css">
+<link rel="stylesheet" href="../../../static/css/app.css">
+<link rel="stylesheet" href="communication.css">
+</head>
+<body>
+<a class="aller-contenu" href="#contenu">Aller au contenu</a>
+<div class="chargement" aria-hidden="true"></div>
+<div class="coque">
+  <nav class="menu" id="menu" aria-label="Menu principal">
+    <div class="menu-tete">
+      <img src="../../../static/img/logo-160.webp" width="44" height="44" alt="">
+      <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">Unité, Discipline et Progrès</div></div>
+      <button type="button" class="bouton-icone menu-fermer pousse" data-menu-fermer aria-label="Fermer le menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="menu-defile">
+      <a class="menu-lien" href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-layout-dashboard"></use></svg><span>Tableau de bord</span></a><a class="menu-lien" href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>File de validation</span><span class="nombre">24</span></a><p class="menu-groupe">Dossiers</p><a class="menu-lien" href="liste-membres.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg><span>Membres</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-motorbike"></use></svg><span>Engins</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-building-2"></use></svg><span>Associations membres</span></a><p class="menu-groupe">Communication</p><a class="menu-lien" href="communiques.html" aria-current="page"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span>Communiqués</span><span class="nombre">3</span></a><a class="menu-lien" href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span></a><p class="menu-groupe">Site public</p><a class="menu-lien" href="donnees-reelles.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-globe"></use></svg><span>Contenu du site</span></a><a class="menu-lien" href="messages-contact.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-mail"></use></svg><span>Messages reçus</span><span class="nombre">5</span></a><p class="menu-groupe">Administration</p><a class="menu-lien" href="utilisateurs.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-user-check"></use></svg><span>Utilisateurs</span></a><a class="menu-lien" href="journal.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-history"></use></svg><span>Journal d'activités</span></a><a class="menu-lien" href="verrou-application.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-lock-open"></use></svg><span>Verrouillage</span></a>
+    </div>
+    <button type="button" class="menu-lien menu-theme menu-bouton" data-theme-basculer><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg><span>Changer de thème</span></button>
+    <div class="menu-perimetre"><span class="meta">Super-utilisateur</span><strong>Toute la fédération</strong></div>
+  </nav>
+  <div class="voile voile--menu" hidden></div>
+  <div class="corps">
+    <header class="haut">
+      <a class="haut-marque" href="tableau-de-bord-president.html"><img src="../../../static/img/logo-48.webp" width="32" height="32" alt=""><span>FENAMO-RDC</span></a>
+      <div class="recherche">
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg>
+        <label class="lecteur" for="recherche-globale">Rechercher un membre ou un engin</label>
+        <input id="recherche-globale" type="search" placeholder="Rechercher" autocomplete="off">
+      </div>
+      <div class="rangee pousse rangee--serree">
+        <button type="button" class="bouton-icone masque-mobile" data-theme-basculer aria-label="Changer de thème"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-moon"></use></svg></button>
+        <a class="bouton-icone" href="communiques.html" aria-current="page" aria-label="Communiqués, 3 non lus" data-demo-lien-communiques><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span class="compteur-pastille" data-demo-badge-communiques><span aria-hidden="true">3</span></span></a>
+        <button type="button" class="bouton-icone" aria-label="Notifications, 7 non lues"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span class="compteur-pastille" aria-hidden="true">7</span></button>
+        <button type="button" class="profil" aria-label="Mon compte"><span class="avatar" aria-hidden="true">AT</span><span class="profil-texte"><strong>Aimé Tshibangu</strong><span class="meta bloc">Super-utilisateur</span></span></button>
+      </div>
+    </header>
+    <main class="contenu" id="contenu" tabindex="-1">
+      <div data-page>
+
+<div class="page-tete">
+  <div class="page-tete-texte">
+    <h1 class="page-titre">Communiqués</h1>
+    <p class="page-contexte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg><span><strong data-demo-nb-non-lus>3</strong> non lus · vous recevez ceux de toute la fédération</span></p>
+  </div>
+  <div class="page-actions"><button type="button" class="bouton bouton--principal bouton--bloc-mobile" data-ouvre-modale="#modale-publier"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-plus"></use></svg>Publier un communiqué</button></div>
+</div>
+
+<form class="filtres-communiques" role="search" onsubmit="return false">
+  <div class="filtres">
+    <div class="recherche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg><label class="lecteur" for="q">Rechercher un communiqué</label><input id="q" type="search" name="q" placeholder="Titre ou texte" autocomplete="off"></div>
+    <button class="bouton filtres-deplier" type="button" data-deplier="#filtres-plus" aria-expanded="false" aria-controls="filtres-plus"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-sliders-horizontal"></use></svg>Filtres</button>
+  </div>
+  <div class="filtres-plus" id="filtres-plus">
+    <div class="champ"><label class="champ-libelle" for="f-coordination">Coordination</label><select class="champ-saisie" id="f-coordination" name="coordination"><option value="">Toutes les coordinations</option><option value="BU">Bas-Uele</option><option value="EQ">Équateur</option><option value="HK">Haut-Katanga</option><option value="HL">Haut-Lomami</option><option value="HU">Haut-Uele</option><option value="IT">Ituri</option><option value="KA">Kasaï</option><option value="KC">Kasaï Central</option><option value="KO">Kasaï Oriental</option><option value="KN-E">Kinshasa-Est</option><option value="KN-O">Kinshasa-Ouest</option><option value="KOC">Kongo-Central</option><option value="KW">Kwango</option><option value="KL">Kwilu</option><option value="LO">Lomami</option><option value="LW">Lualaba</option><option value="MD">Mai-Ndombe</option><option value="MN">Maniema</option><option value="MO">Mongala</option><option value="NU">Nord-Ubangi</option><option value="NK">Nord-Kivu</option><option value="SA">Sankuru</option><option value="SK">Sud-Kivu</option><option value="SU">Sud-Ubangi</option><option value="TG">Tanganyika</option><option value="TS">Tshopo</option><option value="TP">Tshuapa</option></select></div>
+    <div class="champ"><label class="champ-libelle" for="f-antenne">Antenne</label><select class="champ-saisie" id="f-antenne" name="antenne"><option value="">Toutes les antennes</option><optgroup label="Kinshasa-Est"><option value="Kimbanseke" data-coord="Kinshasa-Est">Kimbanseke</option><option value="Kisenso" data-coord="Kinshasa-Est">Kisenso</option><option value="Lemba" data-coord="Kinshasa-Est">Lemba</option><option value="Limete" data-coord="Kinshasa-Est">Limete</option><option value="Masina" data-coord="Kinshasa-Est">Masina</option><option value="Matete" data-coord="Kinshasa-Est">Matete</option><option value="Ndjili" data-coord="Kinshasa-Est">Ndjili</option><option value="Ngaba" data-coord="Kinshasa-Est">Ngaba</option></optgroup><optgroup label="Kinshasa-Ouest"><option value="Bandalungwa" data-coord="Kinshasa-Ouest">Bandalungwa</option><option value="Gombe" data-coord="Kinshasa-Ouest">Gombe</option><option value="Kintambo" data-coord="Kinshasa-Ouest">Kintambo</option><option value="Ngaliema" data-coord="Kinshasa-Ouest">Ngaliema</option><option value="Selembao" data-coord="Kinshasa-Ouest">Selembao</option></optgroup><optgroup label="Haut-Katanga"><option value="Kampemba" data-coord="Haut-Katanga">Kampemba</option><option value="Kenya" data-coord="Haut-Katanga">Kenya</option><option value="Lubumbashi" data-coord="Haut-Katanga">Lubumbashi</option><option value="Likasi" data-coord="Haut-Katanga">Likasi</option></optgroup><optgroup label="Kongo-Central"><option value="Boma" data-coord="Kongo-Central">Boma</option><option value="Matadi" data-coord="Kongo-Central">Matadi</option><option value="Mbanza-Ngungu" data-coord="Kongo-Central">Mbanza-Ngungu</option></optgroup></select></div>
+  </div>
+  <div class="defile-horizontal u-mb-4" role="group" aria-label="Filtrer par état" data-demo-etat-lecture>
+    <label class="puce"><input type="radio" name="etat" value="" checked><span>Tous <span class="nombre">46</span></span></label>
+    <label class="puce"><input type="radio" name="etat" value="non_lus"><span>Non lus <span class="nombre" data-demo-nb-non-lus>3</span></span></label>
+  </div>
+</form>
+<p class="resume-liste"><span>Coordination : toutes · Antenne : toutes</span><span>1 à 20 sur 46</span></p>
+
+<div class="zone-rafraichie" id="liste-zone">
+<div data-vue="liste">
+<ul class="communiques">
+  <li class="communique-ligne non-lu" data-lu="non">
+    <div class="communique-tete"><span class="portee portee--national"><span class="portee-texte">National</span></span><time class="communique-quand" datetime="2026-10-15T09:30">Aujourd'hui, 09:30</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="#">Identification annuelle 2027 : ouverture le 2 novembre</a><span class="communique-nouveau">Non lu</span></h2>
+    <p class="communique-apercu">Les antennes reçoivent les nouveaux autocollants vinyle à partir du 28 octobre. Chaque engin identifié en 2026 doit être renouvelé avant le 31 janvier 2027 ; passé ce délai, la carte de membre n'est plus délivrée.</p>
+  </li>
+  <li class="communique-ligne non-lu" data-lu="non">
+    <div class="communique-tete"><span class="portee"><span class="portee-texte">Coordination Kinshasa-Est</span><span class="portee-code" aria-hidden="true">KN-E</span></span><time class="communique-quand" datetime="2026-10-15T07:15">Aujourd'hui, 07:15</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="communique.html">Contrôle conjoint avec la police de circulation routière à Limete</a><span class="communique-nouveau">Non lu</span></h2>
+    <p class="communique-apercu">Du lundi 19 au samedi 24 octobre, des contrôles auront lieu au rond-point Ngaba et sur le boulevard Lumumba. Chaque motard porte son gilet numéroté et sa carte de membre.</p>
+  </li>
+  <li class="communique-ligne non-lu" data-lu="non">
+    <div class="communique-tete"><span class="portee"><span class="portee-texte">Antenne de Kampemba</span></span><time class="communique-quand" datetime="2026-10-14T16:40">Hier, 16:40</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="#">Parking Mzee : réunion des présidents d’associations membres</a><span class="communique-nouveau">Non lu</span></h2>
+    <p class="communique-apercu">Samedi 17 octobre à 10 h, au siège de l’antenne. Ordre du jour : partage des places au parking Mzee, cotisations du trimestre, gilets manquants.</p>
+  </li>
+  <li class="communique-ligne" data-lu="oui">
+    <div class="communique-tete"><span class="portee portee--national"><span class="portee-texte">National</span></span><time class="communique-quand" datetime="2026-10-12T11:00">12/10/2026</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="#">Assemblée générale ordinaire du 28 novembre 2026</a></h2>
+    <p class="communique-apercu">L’assemblée générale se tiendra au siège national, 04 avenue Kasa-Vubu, Ngiri-Ngiri. Chaque coordination provinciale désigne ses délégués avant le 10 novembre.</p>
+  </li>
+  <li class="communique-ligne" data-lu="oui">
+    <div class="communique-tete"><span class="portee"><span class="portee-texte">Coordination Haut-Katanga</span><span class="portee-code" aria-hidden="true">HK</span></span><time class="communique-quand" datetime="2026-10-09T08:20">09/10/2026</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="#">Nouveaux horaires de l’antenne de Kampemba</a></h2>
+    <p class="communique-apercu">L’antenne reçoit désormais du lundi au vendredi de 8 h à 15 h, et le samedi de 9 h à 12 h. Les dossiers déposés après 15 h sont saisis le lendemain.</p>
+  </li>
+  <li class="communique-ligne" data-lu="oui">
+    <div class="communique-tete"><span class="portee portee--national"><span class="portee-texte">National</span></span><time class="communique-quand" datetime="2026-10-02T14:05">02/10/2026</time></div>
+    <h2 class="communique-titre"><a class="communique-lien" href="#">Tarif de la carte de membre inchangé pour 2027</a></h2>
+    <p class="communique-apercu">Le comité national maintient le tarif de la carte de membre et de la numérotation. Aucun autre montant ne peut être demandé aux motards.</p>
+  </li>
+</ul>
+<nav class="pages" aria-label="Pagination">
+  <a class="bouton" href="#" aria-disabled="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-left"></use></svg><span class="pages-libelle">Plus récents</span></a>
+  <span class="pages-position">Page 1 sur 3</span>
+  <ol class="pages-numeros"><li><span aria-current="page">1</span></li><li><a href="#">2</a></li><li><a href="#">3</a></li></ol>
+  <a class="bouton" href="#"><span class="pages-libelle">Plus anciens</span><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-chevron-right"></use></svg></a>
+</nav>
+</div>
+
+<div class="vide" data-vue="vide" hidden>
+  <div class="vide-icone"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-megaphone"></use></svg></div>
+  <h2>Aucun communiqué pour l’instant</h2>
+  <p>Les communiqués de la fédération, de votre coordination et de votre antenne arriveront ici.</p>
+  <button type="button" class="bouton" data-ouvre-modale="#modale-publier"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-plus"></use></svg>Publier un communiqué</button>
+</div>
+
+<div class="vide" data-vue="aucun" hidden>
+  <div class="vide-icone"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-search"></use></svg></div>
+  <h2>Aucun communiqué ne correspond</h2>
+  <p>Rien pour « gilets » dans la coordination Kongo-Central. Essayez un autre mot ou toutes les coordinations.</p>
+  <button type="button" class="bouton"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg>Effacer les filtres</button>
+</div>
+
+<div class="vide" data-vue="a-jour" hidden>
+  <div class="vide-icone"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check-check"></use></svg></div>
+  <h2>Tout est lu</h2>
+  <p>Vous avez lu tous les communiqués reçus.</p>
+  <button type="button" class="bouton">Voir tous les communiqués</button>
+</div>
+</div>
+
+      </div>
+    </main>
+    <footer class="pied">FENAMO-RDC asbl · Unité, Discipline et Progrès</footer>
+  </div>
+  <nav class="bas" aria-label="Navigation rapide"><a href="tableau-de-bord-president.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-house"></use></svg><span>Accueil</span></a><a href="file-de-validation.html"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-list-checks"></use></svg><span>À valider</span><span class="compteur-pastille">24</span></a><a href="#"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-bell"></use></svg><span>Notifications</span><span class="compteur-pastille">7</span></a><button type="button" data-menu-ouvrir aria-expanded="false" aria-controls="menu"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-menu"></use></svg><span>Menu</span></button></nav>
+</div>
+
+<!-- Modale : publier un communiqué (F-40) -->
+<div class="modale" id="modale-publier" role="dialog" aria-modal="true" aria-labelledby="modale-publier-titre" hidden>
+  <div class="modale-voile"></div>
+  <form class="feuille" novalidate data-demo-publier>
+    <div class="feuille-tete">
+      <h2 id="modale-publier-titre">Publier un communiqué<span class="sous-titre">Il arrive dans les notifications des destinataires</span></h2>
+      <button type="button" class="bouton-icone" data-ferme-modale aria-label="Fermer"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-x"></use></svg></button>
+    </div>
+    <div class="feuille-corps">
+      <div class="formulaire">
+        <div class="alerte alerte--danger" data-demo-erreur-generale role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg><div><strong class="alerte-titre">Le communiqué n’est pas publié.</strong>Corrigez les 2 champs signalés.</div></div>
+
+        <fieldset>
+          <legend class="champ-libelle">Destinataires</legend>
+          <div class="choix choix--cibles" data-demo-cibles>
+            <label><input type="radio" name="cible" value="national" checked><span>National<span class="choix-sous">Toute la fédération</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="cible" value="coordination"><span>Une coordination<span class="choix-sous">Ses antennes comprises</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+            <label><input type="radio" name="cible" value="antenne"><span>Une antenne<span class="choix-sous">Son équipe seulement</span></span><span class="coche"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-check"></use></svg></span></label>
+          </div>
+        </fieldset>
+
+        <div class="champ" data-cible-champ="coordination" hidden>
+          <label class="champ-libelle" for="c-coordination">Coordination provinciale</label>
+          <select class="champ-saisie" id="c-coordination" name="coordination" disabled aria-describedby="c-coordination-erreur"><option value="">Choisir une coordination</option><option value="BU">Bas-Uele</option><option value="EQ">Équateur</option><option value="HK">Haut-Katanga</option><option value="HL">Haut-Lomami</option><option value="HU">Haut-Uele</option><option value="IT">Ituri</option><option value="KA">Kasaï</option><option value="KC">Kasaï Central</option><option value="KO">Kasaï Oriental</option><option value="KN-E">Kinshasa-Est</option><option value="KN-O">Kinshasa-Ouest</option><option value="KOC">Kongo-Central</option><option value="KW">Kwango</option><option value="KL">Kwilu</option><option value="LO">Lomami</option><option value="LW">Lualaba</option><option value="MD">Mai-Ndombe</option><option value="MN">Maniema</option><option value="MO">Mongala</option><option value="NU">Nord-Ubangi</option><option value="NK">Nord-Kivu</option><option value="SA">Sankuru</option><option value="SK">Sud-Kivu</option><option value="SU">Sud-Ubangi</option><option value="TG">Tanganyika</option><option value="TS">Tshopo</option><option value="TP">Tshuapa</option></select>
+          <p class="champ-erreur" id="c-coordination-erreur" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Choisissez la coordination qui reçoit le communiqué.</p>
+        </div>
+        <div class="champ" data-cible-champ="antenne" hidden>
+          <label class="champ-libelle" for="c-antenne">Antenne</label>
+          <select class="champ-saisie" id="c-antenne" name="antenne" disabled aria-describedby="c-antenne-aide c-antenne-erreur"><option value="">Choisir une antenne</option><optgroup label="Kinshasa-Est"><option value="Kimbanseke" data-coord="Kinshasa-Est">Kimbanseke</option><option value="Kisenso" data-coord="Kinshasa-Est">Kisenso</option><option value="Lemba" data-coord="Kinshasa-Est">Lemba</option><option value="Limete" data-coord="Kinshasa-Est">Limete</option><option value="Masina" data-coord="Kinshasa-Est">Masina</option><option value="Matete" data-coord="Kinshasa-Est">Matete</option><option value="Ndjili" data-coord="Kinshasa-Est">Ndjili</option><option value="Ngaba" data-coord="Kinshasa-Est">Ngaba</option></optgroup><optgroup label="Kinshasa-Ouest"><option value="Bandalungwa" data-coord="Kinshasa-Ouest">Bandalungwa</option><option value="Gombe" data-coord="Kinshasa-Ouest">Gombe</option><option value="Kintambo" data-coord="Kinshasa-Ouest">Kintambo</option><option value="Ngaliema" data-coord="Kinshasa-Ouest">Ngaliema</option><option value="Selembao" data-coord="Kinshasa-Ouest">Selembao</option></optgroup><optgroup label="Haut-Katanga"><option value="Kampemba" data-coord="Haut-Katanga">Kampemba</option><option value="Kenya" data-coord="Haut-Katanga">Kenya</option><option value="Lubumbashi" data-coord="Haut-Katanga">Lubumbashi</option><option value="Likasi" data-coord="Haut-Katanga">Likasi</option></optgroup><optgroup label="Kongo-Central"><option value="Boma" data-coord="Kongo-Central">Boma</option><option value="Matadi" data-coord="Kongo-Central">Matadi</option><option value="Mbanza-Ngungu" data-coord="Kongo-Central">Mbanza-Ngungu</option></optgroup></select>
+          <p class="champ-aide u-mb-0" id="c-antenne-aide">Antennes rangées par coordination.</p>
+          <p class="champ-erreur" id="c-antenne-erreur" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Choisissez l’antenne qui reçoit le communiqué.</p>
+        </div>
+
+        <div class="destinataires" aria-live="polite">
+          <svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-users"></use></svg>
+          <div>
+            <div data-demo-resume-portee><span class="portee portee--national"><span class="portee-texte">National</span></span></div>
+            <p data-demo-resume-texte>Reçu par tous les comptes actifs : président, validateurs, agents de terrain de toutes les coordinations et super-utilisateurs.</p>
+          </div>
+        </div>
+
+        <div class="champ" data-champ="titre">
+          <label class="champ-libelle" for="c-titre">Titre</label>
+          <input class="champ-saisie" id="c-titre" name="titre" maxlength="120" required autocomplete="off" aria-describedby="c-titre-compte c-titre-erreur" data-compte-caracteres="#c-titre-compte">
+          <p class="champ-aide compte-caracteres u-mb-0" id="c-titre-compte"><span data-compte-valeur>0 / 120</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+          <p class="champ-erreur" id="c-titre-erreur" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Écrivez un titre : c’est lui qui s’affiche dans la notification.</p>
+        </div>
+
+        <div class="champ" data-champ="message">
+          <label class="champ-libelle" for="c-message">Message</label>
+          <textarea class="champ-saisie" id="c-message" name="message" rows="7" maxlength="5000" required aria-describedby="c-message-aide c-message-compte c-message-erreur" data-compte-caracteres="#c-message-compte"></textarea>
+          <p class="champ-aide compte-caracteres u-mb-0" id="c-message-compte"><span data-compte-valeur>0 / 5000</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
+          <p class="champ-aide u-mb-0" id="c-message-aide">Dites quoi, où, quand, et ce que chacun doit faire. Les retours à la ligne sont conservés.</p>
+          <p class="champ-erreur" id="c-message-erreur" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Écrivez le message du communiqué.</p>
+        </div>
+      </div>
+    </div>
+    <div class="feuille-pied">
+      <button type="button" class="bouton" data-ferme-modale>Annuler</button>
+      <button type="submit" class="bouton bouton--principal"><span class="roue" aria-hidden="true"></span><span>Publier</span></button>
+    </div>
+  </form>
+</div>
+
+<div class="bulles" aria-live="polite"></div>
+<script src="../../../static/js/design.js"></script>
+<script src="maquettes.js"></script>
+<script src="maquettes-communication.js"></script>
+</body>
+</html>
