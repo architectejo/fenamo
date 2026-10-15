@@ -38,7 +38,7 @@ Les langues proposées se règlent avec `ACTIVE_LANGUAGES` (le français est tou
 
 ## Purge du cache (contrat pour l'application web)
 
-`POST /_purge/` (hors préfixe de langue, sans CSRF). En-têtes : `X-Purge-Timestamp` (secondes Unix) et `X-Purge-Signature` = HMAC-SHA256 hexadécimal de cet horodatage avec `PURGE_SECRET`. Réponses : 204 (copies fraîches vidées, copies de secours conservées), 403 (signature fausse, absente, horodatage à plus de 300 s, signature déjà utilisée), 429 (plus de 10 appels par minute).
+`POST /_purge/` (hors préfixe de langue, sans CSRF). En-têtes : `X-Purge-Horodatage` (secondes Unix ; `X-Purge-Timestamp` reste accepté) et `X-Purge-Signature` = HMAC-SHA256 hexadécimal de cet horodatage avec `PURGE_SECRET` (le même secret que `SITE_PURGE_SECRET` de web_app, dont `SITE_PURGE_URL` vise `https://fenamordc.cd/_purge/`). Réponses : 204 (copies fraîches vidées, copies de secours conservées), 403 (signature fausse, absente, horodatage à plus de 300 s, signature déjà utilisée), 429 (plus de 10 appels par minute).
 
 ## Mode dégradé et verrou F-07
 

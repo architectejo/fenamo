@@ -179,6 +179,12 @@ def test_purge_signature_acceptee_vide_les_copies_fraiches_garde_les_copies_de_s
     assert cache.get(api_client._STALE + api_client._cle("config/", None, None)) is not None
 
 
+def test_purge_en_tete_horodatage_de_web_app(client, secret):
+    horodatage = int(time.time())
+    rep = client.post("/_purge/", HTTP_X_PURGE_HORODATAGE=str(horodatage), HTTP_X_PURGE_SIGNATURE=signer(horodatage))
+    assert rep.status_code == 204
+
+
 def test_purge_signature_refusee(client, secret):
     assert appeler(client, signature="0" * 64).status_code == 403
     assert appeler(client, signature=signer(int(time.time()), secret="autre")).status_code == 403

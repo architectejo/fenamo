@@ -455,7 +455,7 @@ def _signature(horodatage: str) -> str:
 def purge(request):
     """POST /_purge/ : vide les copies fraîches du cache (les copies de secours restent).
 
-    En-têtes : X-Purge-Timestamp (secondes Unix) et X-Purge-Signature (HMAC-SHA256 hexadécimal de cet
+    En-têtes : X-Purge-Horodatage ou X-Purge-Timestamp (secondes Unix) et X-Purge-Signature (HMAC-SHA256 hexadécimal de cet
     horodatage, clé PURGE_SECRET). Réponses : 204 ; 403 signature absente, fausse, trop ancienne ou déjà
     utilisée ; 429 au-delà de 10 appels par minute. Pas de CSRF : l'appelant est un serveur, il s'authentifie
     par signature.
@@ -468,7 +468,8 @@ def purge(request):
         appels = 1
     if appels > settings.PURGE_LIMITE_PAR_MINUTE:
         return HttpResponse(status=429, headers={"Retry-After": "60"})
-    horodatage = request.headers.get("X-Purge-Timestamp", "")
+    # web_app envoie X-Purge-Horodatage ; X-Purge-Timestamp reste accepté (compatibilité)
+    horodatage = request.headers.get("X-Purge-Horodatage") or request.headers.get("X-Purge-Timestamp", "")
     signature = request.headers.get("X-Purge-Signature", "").strip().lower()
     if not settings.PURGE_SECRET or not horodatage.isdigit() or not signature:
         return HttpResponse(status=403)
