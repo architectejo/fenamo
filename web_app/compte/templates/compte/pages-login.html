@@ -20,9 +20,18 @@ Le bouton « Auto-identification » du brouillon n'est pas repris : aucune fonct
       <img src="{% static 'img/logo-160.webp' %}" width="56" height="56" alt="{% translate 'Logo de la FENAMO-RDC' %}">
       <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">{% translate "Unité, Discipline et Progrès" %}</div></div>
     </div>
+    {% if verrou_message %}{# Application verrouillée (F-07) : avant le titre, lu en premier ; le message du super-utilisateur est échappé (jamais |safe) #}
+    <div class="alerte alerte--alerte u-mb-6" role="status">
+      {% icone "lock-keyhole" %}
+      <div>
+        <strong class="alerte-titre">{% translate "Application suspendue" %}</strong>
+        <p class="texte-saisi u-mt-2 u-mb-0">{{ verrou_message }}</p>
+        <p class="petit u-mt-2 u-mb-0">{% translate "Pendant la suspension, seuls les super-utilisateurs peuvent se connecter." %}</p>
+      </div>
+    </div>
+    {% endif %}
     <h1 class="u-t-5">{% translate "Connexion à l'espace de gestion" %}</h1>
     <p class="doux u-mt-2">{% translate "Utilisez l'identifiant reçu lors de votre nomination." %}</p>
-    {% if verrou_message %}<div class="u-mt-5" role="alert">{% include "components/_erreur.html" with niveau="alerte" titre=_("Application suspendue") texte=verrou_message %}</div>{% endif %}
     {% if message %}<div class="u-mt-5">{% include "components/_erreur.html" with niveau="danger" titre=message texte=_("Vérifiez la saisie. Après plusieurs essais, la connexion est bloquée un moment.") %}</div>{% endif %}
     <form class="formulaire u-mt-6" method="post" hx-boost="false" hx-history="false" x-data="{ voir: false }" novalidate>
       {% csrf_token %}

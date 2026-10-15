@@ -1,5 +1,16 @@
-{% load i18n %}<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>{% translate "Service suspendu" %} - FENAMO-RDC</title></head>
-<body><main><h1>{% translate "Service suspendu" %}</h1>
-<p>{% if message %}{{ message }}{% else %}{% translate "L'application est momentanément suspendue. Réessayez plus tard." %}{% endif %}</p></main></body></html>
+{% extends 'mob/base-mob.html' %}
+{% load i18n %}{% comment %}
+Espace membre suspendu (F-07, réponse 503 du middleware de verrouillage). Étend base-mob.html : aucun script, aucune icône. Le message du
+super-utilisateur est échappé (jamais |safe). Contexte : message, publie_le (facultatif).
+{% endcomment %}
+{% block titre %}{% translate "Espace membre suspendu" %}{% endblock %}
+{% block classe_main %} mob--suspendu{% endblock %}
+{% block classe_tete %} u-mb-0{% endblock %}
+{% block corps %}
+<span class="bande-gilet" aria-hidden="true"></span>
+<h1 class="u-t-5">{% translate "Espace membre suspendu" %}</h1>
+<p class="u-mt-3">{% translate "Vous ne pouvez pas consulter votre fiche pour le moment. Vos informations sont conservées." %}</p>
+{% if message %}<div class="u-mt-5">{% include "components/_message_su.html" with message=message publie_le=publie_le %}</div>{% endif %}
+<p class="u-mt-5">{% translate "Revenez plus tard : votre mot de passe ne change pas." %}</p>
+<a class="bouton bouton--principal bouton--bloc u-mt-4" href="{{ request.get_full_path }}"><span>{% translate "Réessayer" %}</span></a>
+{% endblock %}

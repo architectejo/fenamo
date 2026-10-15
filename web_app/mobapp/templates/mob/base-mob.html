@@ -16,8 +16,8 @@
 </head>
 <body>
   <a class="aller-contenu" href="#contenu">{% translate "Aller au contenu" %}</a>
-  <main class="mob" id="contenu">
-    <header class="mob-tete">
+  <main class="mob{% block classe_main %}{% endblock %}" id="contenu">
+    <header class="mob-tete{% block classe_tete %}{% endblock %}">
       <img src="{% static 'img/logo-48.webp' %}" width="40" height="40" alt="">
       <div><div class="menu-nom">FENAMO-RDC</div><div class="menu-devise">{% translate "Unité, Discipline et Progrès" %}</div></div>
     </header>
