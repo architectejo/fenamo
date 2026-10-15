@@ -21,8 +21,8 @@ def test_lot1_accueil_francais_sans_prefixe(client):
 
 
 @pytest.mark.parametrize("code", ["ln", "sw", "lua", "kg"])
-def test_lot1_prefixe_langue_repond_avec_repli_francais(client, code, settings):
-    settings.ACTIVE_LANGUAGES = ["fr", code]
+def test_lot1_prefixe_langue_repond_avec_repli_francais(client, code, api, langues_completes):
+    api.config(langues_actives=["fr", code])
     rep = client.get(f"/{code}/")
     assert rep.status_code == 200
     html = rep.content.decode()
@@ -38,8 +38,8 @@ def test_lot1_francais_n_a_pas_de_prefixe():
         assert reverse("pages:accueil") == "/ln/"
 
 
-def test_lot1_hreflang_et_pas_de_noindex_par_defaut(client, settings):
-    settings.ACTIVE_LANGUAGES = ["fr", "ln", "sw", "lua", "kg"]
+def test_lot1_hreflang_et_pas_de_noindex_par_defaut(client, api, langues_completes):
+    api.config(langues_actives=["fr", "ln", "sw", "lua", "kg"])
     html = client.get("/").content.decode()
     for code in ("fr", "ln", "sw", "lua", "kg", "x-default"):
         assert f'hreflang="{code}"' in html
@@ -51,19 +51,28 @@ def test_lot1_noindex_parametrable(client, settings):
     assert 'content="noindex, nofollow"' in client.get("/").content.decode()
 
 
-def test_lot1_selecteur_visible_seulement_si_plusieurs_langues(client, settings):
-    settings.ACTIVE_LANGUAGES = ["fr"]
-    assert "<nav" not in client.get("/").content.decode()
-    settings.ACTIVE_LANGUAGES = ["fr", "ln"]
+def test_lot1_selecteur_visible_seulement_si_plusieurs_langues(client, api, langues_completes):
+    """Le sélecteur de langue (data-langue) n'apparaît qu'avec au moins deux langues ; le menu principal reste."""
+    api.config(langues_actives=["fr"])
     html = client.get("/").content.decode()
-    assert "<nav" in html and 'href="/ln/"' in html
+    assert "data-langue" not in html and 'class="langue' not in html and '<nav class="site-nav"' in html
+    api.config(langues_actives=["fr", "ln"])
+    from django.core.cache import cache
+
+    cache.clear()
+    html = client.get("/").content.decode()
+    assert "data-langue" in html and 'href="/ln/"' in html
 
 
 def test_lot1_bibliotheques_locales_sans_cdn(client):
+    import re
+
     html = client.get("/").content.decode()
-    assert "vendor/htmx.min.js" in html and "vendor/alpine.min.js" in html
     assert "http://" not in html.replace("http://localhost", "")
-    assert "https://" not in html
+    for src in re.findall(r'<script[^>]+src="([^"]+)"', html):
+        assert src.startswith("/static/"), src
+    assert "googleapis" not in html and "cdn" not in html.lower()
+    assert "vendor/htmx.min.js" in client.get("/actualites/").content.decode()
 
 
 def test_lot1_aucun_appel_reseau_reel(client, aucun_reseau):
@@ -160,8 +169,8 @@ def test_lot1_api_client_refuse_les_redirections(monkeypatch):
     assert vus["allow_redirects"] is False
 
 
-def test_lot1_hreflang_limite_aux_langues_actives(client, settings):
-    settings.ACTIVE_LANGUAGES = ["fr", "ln"]
+def test_lot1_hreflang_limite_aux_langues_actives(client, api, langues_completes):
+    api.config(langues_actives=["fr", "ln"])
     html = client.get("/").content.decode()
     assert 'hreflang="fr"' in html and 'hreflang="ln"' in html and 'hreflang="x-default"' in html
     for code in ("sw", "lua", "kg"):
@@ -169,9 +178,25 @@ def test_lot1_hreflang_limite_aux_langues_actives(client, settings):
 
 
 @pytest.mark.parametrize("code", ["ln", "sw", "lua", "kg"])
-def test_lot1_langue_inactive_redirige_vers_le_francais(client, code, settings):
-    settings.ACTIVE_LANGUAGES = ["fr"]
+def test_lot1_langue_inactive_redirige_vers_le_francais(client, code, api, langues_completes):
+    api.config(langues_actives=["fr"])
     rep = client.get(f"/{code}/")
     assert rep.status_code == 302 and rep["Location"] == "/"
-    settings.ACTIVE_LANGUAGES = ["fr", code]
+    from django.core.cache import cache
+
+    cache.clear()
+    api.config(langues_actives=["fr", code])
     assert client.get(f"/{code}/").status_code == 200
+
+
+def test_S11_langue_non_complete_jamais_active(client, api):
+    """Une langue active dans l'API mais dont le .po n'est pas complet n'est pas proposée (repli sur le français)."""
+    api.config(langues_actives=["fr", "ln"])
+    assert "data-langue" not in client.get("/").content.decode()
+    assert client.get("/ln/").status_code == 302
+
+
+def test_S11_repli_env_quand_l_api_est_absente(client, api, settings):
+    api.coupee()
+    settings.ACTIVE_LANGUAGES = ["fr", "sw"]
+    assert client.get("/sw/").status_code == 200
