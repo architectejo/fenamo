@@ -20,6 +20,7 @@
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a class="aller-contenu" href="#contenu">{% translate "Aller au contenu" %}</a>
   <div class="chargement" id="chargement" aria-hidden="true"></div>
+  {% if verrou_application %}<div class="bandeau-verrou" role="status"><strong>{% translate "Application verrouillée" %}</strong> : {{ verrou_application.message }} <a href="{% url 'verrou-application' %}">{% translate "Gérer" %}</a></div>{% endif %}
 
   {% block coque %}
   {# Coque de l'application (maquettes) : menu, barre du haut, contenu, barre basse sur téléphone #}

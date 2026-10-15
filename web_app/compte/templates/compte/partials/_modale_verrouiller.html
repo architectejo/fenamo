@@ -1,0 +1,11 @@
+{% extends "components/modale_base.html" %}
+{% load i18n %}{% comment %}Verrouiller l'application (F-07). Contexte : action, message_max, motif_max, valeur_message, valeur_motif, erreur.{% endcomment %}
+{% block titre %}{% translate "Verrouiller l'application" %}{% endblock %}
+{% block corps %}
+<p>{% translate "Les utilisateurs non super-utilisateurs seront déconnectés et ne pourront plus se connecter. Les données restent intactes." %}</p>
+<div class="champ"><label class="champ-libelle" for="v-message">{% translate "Message affiché aux utilisateurs (obligatoire)" %}</label>
+<textarea id="v-message" name="message" rows="3" maxlength="{{ message_max }}" required>{{ valeur_message }}</textarea></div>
+<div class="champ"><label class="champ-libelle" for="v-motif">{% translate "Motif interne (journal, jamais affiché)" %}</label>
+<textarea id="v-motif" name="motif" rows="2" maxlength="{{ motif_max }}">{{ valeur_motif }}</textarea></div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--danger-plein"><span>{% translate "Verrouiller" %}</span></button>{% endblock %}

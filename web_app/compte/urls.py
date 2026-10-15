@@ -1,6 +1,6 @@
 from django.urls import path
 
-from compte import views_journal, views_utilisateurs as vu
+from compte import views_journal, views_verrou, views_utilisateurs as vu
 from compte.views import add_user, adminer, connexion, deconnexion, securite
 
 urlpatterns = [
@@ -10,6 +10,10 @@ urlpatterns = [
     path('comptes/ajouter/', add_user, name="add-user"),  # super-utilisateur
     path('mon-compte/securite/', securite, name="securite"),
     path('journal/', views_journal.journal, name="journal"),  # F-71, super-utilisateur, lecture seule
+    # Verrouillage de l'application (F-07), super-utilisateur seul
+    path('application/verrou/', views_verrou.verrou_application, name="verrou-application"),
+    path('application/verrou/verrouiller/', views_verrou.verrouiller, name="verrou-verrouiller"),
+    path('application/verrou/deverrouiller/', views_verrou.deverrouiller, name="verrou-deverrouiller"),
     # Utilisateurs : nominations, comptes externes, mots de passe temporaires, mandats (F-02, F-03, F-05, F-06)
     path('utilisateurs/', vu.utilisateurs, name="utilisateurs"),
     path('utilisateurs/nommer/', vu.nommer, name="utilisateurs-nommer"),

@@ -1,0 +1,6 @@
+{% extends "erreur_base.html" %}
+{% load i18n %}{% comment %}Application verrouillée (F-07) : gabarit minimal, sans requête de base. Contexte : message (le seul texte du super-utilisateur).{% endcomment %}
+{% block titre_erreur %}{% translate "Service suspendu" %}{% endblock %}
+{% block code %}503{% endblock %}
+{% block titre_page %}{% translate "Service suspendu" %}{% endblock %}
+{% block message %}{% if message %}{{ message }}{% else %}{% translate "L'application est momentanément suspendue." %}{% endif %} <a href="{% url 'application' %}">{% translate "Connexion" %}</a>{% endblock %}

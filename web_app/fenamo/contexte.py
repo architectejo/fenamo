@@ -48,3 +48,15 @@ def droits_menu(request):
         return {}
     from compte.services.droits import droits_menu as calcul
     return {'fn_droits': calcul(user)}
+
+
+def verrou_application(request):
+    """Bandeau du super-utilisateur tant que l'application est verrouillée (variable ``verrou_application``). Lu SEULEMENT pour un
+    super-utilisateur connecté : aucune requête de plus pour les autres comptes, les anonymes ni les fragments HTMX."""
+    from fenamo.htmx import veut_fragment
+    user = getattr(request, 'user', None)
+    if user is None or not user.is_authenticated or not user.is_superuser or veut_fragment(request):
+        return {}
+    from compte.services.verrou_application import etat
+    courant = etat()
+    return {'verrou_application': {'message': courant.message, 'depuis': courant.depuis}} if courant.verrouillee else {}

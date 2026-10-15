@@ -10,6 +10,9 @@ from coptapp.models import Membre
 from coptapp.views.modales import rendre_formulaire
 from compte.forms import AddUserForm, ChangementMotDePasseForm
 from compte.permissions import superuser_requis
+from compte.models import JournalAction
+from compte.services import verrou_application
+from compte.services.journal import journaliser
 from compte.services.verrou import ip_bloquee
 from compte.services.comptes import changer_mot_de_passe, creer_compte, creer_compte_pour_membre
 
@@ -38,12 +41,18 @@ def connexion(request):
         if ip_bloquee(request):
             return render(request, 'compte/verrou.html', status=429)
         user = authenticate(request, username=username, password=password)
+        if user is not None and verrou_application.est_verrouillee() and not user.is_superuser:
+            # Application verrouillée (F-07) : seuls les super-utilisateurs se connectent ; les autres voient le message du SU.
+            journaliser(None, JournalAction.Action.ECHEC_CONNEXION, libelle=username[:150], motif=_("application verrouillée"))
+            return render(request, 'compte/pages-login.html', {'verrou_message': verrou_application.message_public()}, status=503)
         if user is not None:
             login(request, user)
             return redirect('tableau-bord')
         elif user is None:
             classMessage = 'alert alert-danger'
             message = _("Pseudo ou mot de passe incorrect !")
+    if verrou_application.est_verrouillee():
+        verrou_message = verrou_application.message_public()  # bandeau : l'application est suspendue
     return render(request, 'compte/pages-login.html', locals())
 
 @require_POST

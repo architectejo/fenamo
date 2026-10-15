@@ -1,0 +1,8 @@
+{% extends "components/modale_base.html" %}
+{% load i18n %}{% comment %}Déverrouiller l'application (F-07). Contexte : action, motif_max, erreur.{% endcomment %}
+{% block titre %}{% translate "Déverrouiller l'application" %}{% endblock %}
+{% block corps %}
+<div class="champ"><label class="champ-libelle" for="d-motif">{% translate "Motif (journal)" %}</label>
+<textarea id="d-motif" name="motif" rows="2" maxlength="{{ motif_max }}"></textarea></div>
+{% endblock %}
+{% block pied %}<button type="button" class="bouton" data-ferme-modale>{% translate "Annuler" %}</button><button type="submit" class="bouton bouton--principal"><span>{% translate "Déverrouiller" %}</span></button>{% endblock %}

@@ -52,6 +52,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'fenamo.htmx.HtmxSessionMessagesMiddleware',
+    # Verrouillage (F-07) : avant LoginRequiredMiddleware, lu en base à chaque requête.
+    'compte.middleware.VerrouApplicationMiddleware',
     # Après HtmxSessionMessagesMiddleware : sa redirection vers /connexion/ devient un HX-Redirect en HTMX.
     # Toute vue exige la connexion, sauf celles marquées @login_not_required (connexion, santé, /mob/, /ancien-site/).
     'django.contrib.auth.middleware.LoginRequiredMiddleware',
@@ -80,6 +82,7 @@ TEMPLATES = [
                 'fenamo.contexte.textes_interface',
                 'fenamo.contexte.coque',
                 'fenamo.contexte.droits_menu',
+                'fenamo.contexte.verrou_application',
             ],
             'libraries': {'design': 'fenamo.balises'},
         },

@@ -51,6 +51,7 @@ class JournalAction(models.Model):
         ALERTE_MANDAT = 'alerte_mandat', _('Alerte de fin de mandat')
         CONSULTATION_PIECE = 'consultation_piece', _("Consultation d'une pièce")
         VERROUILLAGE_APPLICATION = 'verrouillage_application', _("Verrouillage de l'application")
+        DEVERROUILLAGE_APPLICATION = 'deverrouillage_application', _("Déverrouillage de l'application")
         PAIEMENT = 'paiement', _('Paiement')
 
     auteur = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
@@ -136,3 +137,23 @@ class Nomination(models.Model):
         from compte.services.nominations import valider_coherence
         super().clean()
         valider_coherence(self.role, self.coordination_id, self.antenne_id, self.association_id)
+
+
+class EtatApplication(models.Model):
+    """Verrouillage de l'application (F-07) : UNE seule ligne (pk=1). Écrite uniquement par ``compte.services.verrou_application``.
+
+    ``message`` est affiché aux utilisateurs bloqués (500 caractères au plus, obligatoire pour verrouiller) ; ``motif`` reste interne
+    (journal) et n'est jamais exposé ; ``depuis`` et ``par`` ne sont jamais exposés non plus."""
+
+    verrouillee = models.BooleanField(default=False)
+    message = models.CharField(max_length=500, blank=True, default='')
+    motif = models.CharField(max_length=500, blank=True, default='')
+    depuis = models.DateTimeField(null=True, blank=True)
+    par = models.ForeignKey(Compte, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = _("état de l'application")
+        verbose_name_plural = _("état de l'application")
+
+    def __str__(self):
+        return str(_('Verrouillée') if self.verrouillee else _('Déverrouillée'))

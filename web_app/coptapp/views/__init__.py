@@ -141,7 +141,7 @@ def validate(request, id):
 @require_POST
 def validerTous(request):
     """« Valider tout le monde » : valide, à l'étape de l'auteur, tous les membres de son périmètre et des filtres de la liste (POST :
-    q, etat, qualite, antenne, association), 500 au plus par appel. 403 si l'auteur ne valide aucune étape. Requête HTMX : 204 avec
+    q, etat, qualite, antenne, association), au plus VALIDER_TOUS_PLAFOND par appel (100 par défaut). 403 si l'auteur ne valide aucune étape. Requête HTMX : 204 avec
     toast et événement ``membresMaj`` (la liste se rafraîchit) ; sinon message et retour à la page d'origine."""
     user = request.user
     if not droits_membre(user)['peut_valider_tous']:

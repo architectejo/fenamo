@@ -1,0 +1,5 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>{% translate "Service suspendu" %} - FENAMO-RDC</title></head>
+<body><main><h1>{% translate "Service suspendu" %}</h1>
+<p>{% if message %}{{ message }}{% else %}{% translate "L'application est momentanément suspendue. Réessayez plus tard." %}{% endif %}</p></main></body></html>

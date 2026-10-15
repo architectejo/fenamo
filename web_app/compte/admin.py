@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from compte.models import Compte, JournalAction, Nomination
+from compte.models import Compte, EtatApplication, JournalAction, Nomination
 from compte.services.journal import journaliser
 
 
@@ -92,3 +92,25 @@ class NominationAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False  # une nomination terminée se conserve ; elle ne s'efface pas
+
+
+@admin.register(EtatApplication)
+class EtatApplicationAdmin(admin.ModelAdmin):
+    """Lecture seule, super-utilisateur : le verrou se pose et se lève par l'écran dédié ou la commande d'urgence (journalisés), jamais ici."""
+
+    list_display = ('verrouillee', 'depuis', 'par')
+
+    def has_view_permission(self, request, obj=None):
+        return bool(request.user.is_active and request.user.is_superuser)
+
+    def has_module_permission(self, request):
+        return self.has_view_permission(request)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
