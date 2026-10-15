@@ -182,7 +182,7 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2bis', password='x', privilege2=True)
     acteurs['comptes']['p2bis'] = second
-    original = vues.etapes_possibles
+    original = vues.etapes_a_valider
     deja = {'fait': False}
 
     def entrelace(user, membre):
@@ -194,7 +194,7 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
             assert autre.post(reverse('validate', kwargs={'id': m.id})).status_code == 302  # l'autre écrit en premier
         return calcule
 
-    monkeypatch.setattr(vues, 'etapes_possibles', entrelace)
+    monkeypatch.setattr(vues, 'etapes_a_valider', entrelace)
     assert _valider(client, acteurs, 'p2', m).status_code == 302
     assert _drapeaux(m) == (True, True, False)
 
@@ -202,11 +202,11 @@ def test_F23_deux_validateurs_simultanes_drapeaux_coherents(client, acteurs, mon
 def test_F23_deux_validateurs_simultanes_une_seule_ligne_de_journal(acteurs):
     """Deux validateurs dont la lecture du membre est PÉRIMÉE (chacun a chargé l'instance avant l'écriture de l'autre) :
     l'état est relu sous verrou, une seule étape est posée et une seule ligne est journalisée."""
-    from coptapp.services.actions import valider_membre
+    from coptapp.services.transitions import valider as valider_membre
     m = _membre(acteurs)
     second = Compte.objects.create_user('p2ter', password='x', privilege2=True)
     lecture_a, lecture_b = Membre.objects.get(pk=m.pk), Membre.objects.get(pk=m.pk)  # deux lectures avant toute écriture
-    assert valider_membre(acteurs['comptes']['p2'], lecture_a) == ['is_validate2']
+    assert valider_membre(acteurs['comptes']['p2'], lecture_a) == ['valide_antenne']
     assert valider_membre(second, lecture_b) == []  # l'étape est déjà posée : rien à faire
     assert _drapeaux(m) == (True, True, False)
     assert _lignes(m, 'validation').count() == 1
@@ -216,14 +216,14 @@ def test_F23_validation_n_ecrase_pas_une_modification_concurrente(client, acteur
     """La validation n'enregistre que les drapeaux (update_fields) : un changement de nom survenu entre-temps survit."""
     import coptapp.services.transitions as vues
     m = _membre(acteurs)
-    original = vues.etapes_possibles
+    original = vues.etapes_a_valider
 
     def entrelace(user, membre):
         calcule = original(user, membre)
         Membre.objects.filter(pk=membre.pk).update(nom='Nom corrigé ailleurs')
         return calcule
 
-    monkeypatch.setattr(vues, 'etapes_possibles', entrelace)
+    monkeypatch.setattr(vues, 'etapes_a_valider', entrelace)
     _valider(client, acteurs, 'p2', m)
     m.refresh_from_db()
     assert m.nom == 'Nom corrigé ailleurs' and m.is_validate2

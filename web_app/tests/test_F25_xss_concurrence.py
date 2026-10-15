@@ -11,7 +11,8 @@ from django.urls import reverse
 
 from compte.models import JournalAction
 from coptapp.models import Membre
-from coptapp.services.actions import MOTIF_MAX, EtatIncoherent, traiter_suppression_membre
+from coptapp.services.actions import traiter_suppression_membre
+from coptapp.services.transitions import MOTIF_MAX, EtatIncoherent
 from tests.test_F21_matrice_routes import acteurs  # noqa: F401
 from tests.test_plan_url import hachage_rapide, jeu  # noqa: F401
 

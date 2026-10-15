@@ -10,7 +10,7 @@ from compte.models import Compte, JournalAction
 from compte.services import droits as D
 from coptapp.models import Membre, Notification, miroirs_de
 from coptapp.services import transitions as T
-from coptapp.services.actions import traiter_suppression_membre, valider_membre
+from coptapp.services.actions import traiter_suppression_membre
 from coptapp.services.etats import etat_de, filtrer_membres_par_etat
 from coptapp.services.tableau_bord import indicateurs_tableau_bord
 from tests.conftest import forcer_etat
@@ -124,13 +124,6 @@ def test_F23_circuit_complet_par_les_trois_validateurs(monde, acteurs_roles):
     assert JournalAction.objects.filter(action=A.VALIDATION, objet_id=m.pk).count() == 3
 
 
-def test_F23_valider_membre_garde_les_codes_de_retour_herites(monde, acteurs_roles):
-    m = _saisi(monde)
-    assert valider_membre(acteurs_roles['VA'], m) == ['is_validate2']
-    assert valider_membre(acteurs_roles['VP'], m) == ['valide_province']
-    assert valider_membre(acteurs_roles['VN'], m) == ['is_validate3']
-
-
 def test_F23_jamais_sa_propre_fiche_ni_ses_saisies(monde, acteurs_roles):
     va = acteurs_roles['VA']
     propre = Membre.objects.create(nom='Saisie du VA', antenne=monde['antenne_p'], user=va)
@@ -151,7 +144,8 @@ def test_F23_renvoi_recule_d_un_cran_avec_motif(monde, acteurs_roles, role, depa
     assert (m.renvoye is True) == (cible == 'renvoye')  # « renvoye » seulement pour le retour à l'agent
     ligne = JournalAction.objects.get(action=A.RENVOI, objet_id=m.pk)
     assert ligne.avant == {'etat': depart} and ligne.apres == {'etat': cible} and ligne.motif == 'Photo floue'
-    assert Notification.objects.filter(user=monde['agent'], membre=m).exists()
+    destinataire = {'renvoye': monde['agent'], 'saisi': acteurs_roles['VA'], 'valide_antenne': acteurs_roles['VP']}[cible]  # niveau où le dossier retourne
+    assert Notification.objects.filter(user=destinataire, membre=m, description='Photo floue').exists()
 
 
 def test_F23_renvoi_motif_obligatoire_et_droit_de_l_etape(monde, acteurs_roles):
@@ -334,7 +328,9 @@ def test_F23_valider_tous_droits(monde, acteurs_roles):
         assert D.droits_membre(acteurs_roles[role])['peut_valider_tous'], role
     assert D.droits_membre(monde['compte'])['peut_valider_tous']
     assert not D.droits_membre(_compte('sans-privilege-herite', privilege1=True))['peut_valider_tous']
-    assert D.droits_membre(_compte('p2-vt', privilege2=True))['peut_valider_tous']
+    assert not D.droits_membre(_compte('p2-vt', privilege2=True))['peut_valider_tous']  # jamais privilege2 ni privilege3
+    assert not D.droits_membre(_compte('p3-vt', privilege3=True))['peut_valider_tous']
+    assert D.droits_membre(_compte('p5-vt', privilege5=True))['peut_valider_tous']
 
 
 def test_F23_valider_tous_chaque_validateur_a_son_etape(monde, acteurs_roles):

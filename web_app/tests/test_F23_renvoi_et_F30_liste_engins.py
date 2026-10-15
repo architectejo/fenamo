@@ -8,7 +8,7 @@ from compte.models import JournalAction
 from compte.services.droits import droits_membre
 from coptapp.models import Moto, Notification
 from coptapp.models import Membre
-from coptapp.services.actions import renvoyer_membre, valider_membre
+from coptapp.services import transitions
 from coptapp.services.engins import enregistrer_engin, lister_engins
 from coptapp.services.etats import etat_de, filtrer_membres_par_etat
 from coptapp.services.membres import modifier_membre
@@ -29,9 +29,9 @@ def _saisi(monde, equipe, nom='Saisi Test', **etat):
 
 def test_F23_renvoi_motif_obligatoire_et_etat_renvoye(monde, equipe):
     m = _saisi(monde, equipe)
-    assert renvoyer_membre(equipe['VA'], m, '   ') == 'motif_requis' and etat_de(Membre.objects.get(pk=m.pk)) == 'saisi'
-    assert renvoyer_membre(equipe['VA'], m, 'x' * 501) == 'motif_trop_long'
-    assert renvoyer_membre(equipe['VA'], m, 'Photo illisible') == 'renvoye'
+    assert transitions.renvoyer(equipe['VA'], m, '   ') == 'motif_requis' and etat_de(Membre.objects.get(pk=m.pk)) == 'saisi'
+    assert transitions.renvoyer(equipe['VA'], m, 'x' * 501) == 'motif_trop_long'
+    assert transitions.renvoyer(equipe['VA'], m, 'Photo illisible') == 'renvoye'
     m.refresh_from_db()
     assert m.renvoye and m.motif_renvoi == 'Photo illisible' and etat_de(m) == 'renvoye'
     assert filtrer_membres_par_etat(Membre.objects.all(), 'renvoye').filter(pk=m.pk).exists()
@@ -40,7 +40,7 @@ def test_F23_renvoi_motif_obligatoire_et_etat_renvoye(monde, equipe):
 
 def test_F23_renvoi_journal_notification_et_retrait_de_l_etape(monde, equipe):
     m = _saisi(monde, equipe, etat='valide_province')
-    assert renvoyer_membre(equipe['VN'], m, 'Pièce manquante') == 'renvoye'
+    assert transitions.renvoyer(equipe['VN'], m, 'Pièce manquante') == 'renvoye'
     m.refresh_from_db()
     assert m.etat == 'valide_antenne' and not m.renvoye and m.motif_renvoi == 'Pièce manquante'  # recul d'un cran, motif affiché
     ligne = JournalAction.objects.get(action=JournalAction.Action.RENVOI)
@@ -55,22 +55,22 @@ def test_F23_renvoi_droits_et_cles(monde, equipe):
     for role in ('AT', 'VN'):  # l'agent ne valide pas ; le VN n'a rien à faire sur une fiche non validée par l'antenne
         assert not droits_membre(equipe[role], m)['peut_renvoyer']
         with pytest.raises(PermissionDenied):
-            renvoyer_membre(equipe[role], m, 'Motif')
-    renvoyer_membre(equipe['VA'], m, 'Motif')
+            transitions.renvoyer(equipe[role], m, 'Motif')
+    transitions.renvoyer(equipe['VA'], m, 'Motif')
     m.refresh_from_db()
     assert not droits_membre(equipe['VA'], m)['peut_renvoyer'] and not droits_membre(equipe['VA'], m)['peut_valider']
-    assert valider_membre(equipe['VA'], m) == []  # un renvoyé n'est pas validable avant sa reprise
+    assert transitions.valider(equipe['VA'], m) == []  # un renvoyé n'est pas validable avant sa reprise
 
 
 def test_F23_la_modification_par_l_auteur_remet_dans_le_circuit(monde, equipe):
     m = _saisi(monde, equipe)
-    renvoyer_membre(equipe['VA'], m, 'Fonction à corriger')
+    transitions.renvoyer(equipe['VA'], m, 'Fonction à corriger')
     m.refresh_from_db()
     formulaire, modifie = modifier_membre(equipe['AT'], m, {'nom': 'Saisi Corrige', 'date_naissance': '1990-01-01', 'qualite': 'MOTARD', 'fonction': 'Chauffeur'})
     m.refresh_from_db()
     assert modifie, formulaire.errors
     assert not m.renvoye and m.motif_renvoi == '' and etat_de(m) == 'saisi'
-    assert valider_membre(equipe['VA'], m) == ['is_validate2']
+    assert transitions.valider(equipe['VA'], m) == ['valide_antenne']
 
 
 def test_F23_vue_post_csrf_et_refus(client, monde, equipe):
