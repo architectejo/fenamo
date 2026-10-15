@@ -20,7 +20,6 @@
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a class="aller-contenu" href="#contenu">{% translate "Aller au contenu" %}</a>
   <div class="chargement" id="chargement" aria-hidden="true"></div>
-  {% if verrou_application %}<div class="bandeau-verrou" role="status"><strong>{% translate "Application verrouillée" %}</strong> : {{ verrou_application.message }} <a href="{% url 'verrou-application' %}">{% translate "Gérer" %}</a></div>{% endif %}
 
   {% block coque %}
   {# Coque de l'application (maquettes) : menu, barre du haut, contenu, barre basse sur téléphone #}
@@ -29,6 +28,8 @@
     <div class="voile voile--menu" hidden></div>
     <div class="corps">
       {% include "partials/_haut.html" %}
+      {% if verrou_application %}{% url 'verrou-application' as url_verrou %}{# F-07 : bandeau du super-utilisateur tant que l'application est verrouillée #}
+      {% if request.resolver_match.url_name == 'verrou-application' %}{% include "components/_bandeau_verrou.html" with depuis=verrou_application.depuis url=url_verrou courant=True %}{% else %}{% include "components/_bandeau_verrou.html" with depuis=verrou_application.depuis url=url_verrou %}{% endif %}{% endif %}
       <main class="contenu" id="contenu" tabindex="-1">
         <div data-page>
           {% block contenu %}{% endblock %}

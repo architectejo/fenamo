@@ -27,6 +27,11 @@
     <a class="menu-lien"  href="{% url 'notifys' %}">{% icone "bell" %}<span>{% translate "Notifications" %}</span>{% if fn_notifs_total %}<span class="nombre">{{ fn_notifs_total }}</span>{% endif %}</a>
     <a class="menu-lien"  href="{% url 'site' %}" data-prefixe="/contenu-site/">{% icone "globe" %}<span>{% translate "Contenu du site" %}</span></a>
 
+    {% if fn_droits.est_su %}
+    <p class="menu-groupe">{% translate "Administration" %}</p>
+    <a class="menu-lien" href="{% url 'verrou-application' %}" data-prefixe="/application/verrou/"{% if nom == 'verrou-application' %} aria-current="page"{% endif %}>{% if verrou_application %}{% icone "lock" %}{% else %}{% icone "lock-open" %}{% endif %}<span>{% translate "Verrouillage" %}</span></a>
+    {% endif %}
+
     <p class="menu-groupe">{% translate "Mon compte" %}</p>
     <a class="menu-lien" href="{% url 'securite' %}"{% if nom == 'securite' %} aria-current="page"{% endif %}>{% icone "shield-check" %}<span>{% translate "Sécurité du compte" %}</span></a>
     {% if user.is_superuser %}<a class="menu-lien"  href="{% url 'add-user' %}" hx-get="{% url 'add-user' %}" hx-target="#modale-contenu" hx-swap="innerHTML">{% icone "user-plus" %}<span>{% translate "Créer un compte" %}</span></a>{% endif %}
