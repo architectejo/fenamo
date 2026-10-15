@@ -18,7 +18,8 @@ from django.utils.dateparse import parse_date, parse_datetime
 from django.utils.safestring import mark_safe
 
 from . import api_client
-from .api_client import ApiErreur, ApiIndisponible, ApiSuspendu
+from . import donnees_statiques
+from .api_client import ApiErreur, ApiIndisponible, ApiInactif, ApiSuspendu
 from .nettoyage import construire_video, nettoyer_html
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,7 @@ CONFIG_DEFAUT = {
     "application": None,
     "mise_a_jour": None,
     "disponible": False,
+    "statique": False,
 }
 
 
@@ -81,11 +83,13 @@ def _image(valeur) -> dict | None:
     if not isinstance(valeur, dict):
         return None
     url = url_http(valeur.get("url"))
+    if not url and isinstance(valeur.get("url"), str) and valeur["url"].startswith("/static/"):
+        url = valeur["url"]  # placeholder local du jeu d'exemple
     if not url:
         return None
     return {
         "url": url,
-        "vignette": url_http(valeur.get("vignette")) or url,
+        "vignette": url_http(valeur.get("vignette")) or (valeur["vignette"] if str(valeur.get("vignette", "")).startswith("/static/") else url),
         "largeur": _entier(valeur.get("largeur")),
         "hauteur": _entier(valeur.get("hauteur")),
     }
@@ -116,11 +120,18 @@ def _liste(valeur) -> list:
 def _lire(chemin: str, **kw):
     """Lecture tolérante : les données, ou None si l'API est absente ou suspendue et qu'aucune copie n'existe.
 
+    Fournisseur unique : en mode « exemple » (données réelles désactivées dans web_app, ou 403 « inactif »
+    reçu), le jeu statique est servi sans aucun appel aux points d'accès de données.
     Seul un 404 (article inconnu, page hors limite) remonte : la vue en fait une page 404. Toute autre
     erreur applicative est journalisée et traitée comme une absence de données.
     """
+    if config()["statique"]:
+        return donnees_statiques.repondre(chemin, kw.get("params"), kw.get("langue"))
     try:
         return api_client.get(chemin, **kw).donnees
+    except ApiInactif:
+        _basculer_statique()
+        return donnees_statiques.repondre(chemin, kw.get("params"), kw.get("langue"))
     except (ApiSuspendu, ApiIndisponible):
         return None
     except ApiErreur as exc:
@@ -128,6 +139,14 @@ def _lire(chemin: str, **kw):
             raise
         logger.warning("API : erreur %s inattendue sur %s", exc.status, chemin)
         return None
+
+
+def _basculer_statique() -> None:
+    """403 « inactif » sur un point d'accès : l'état change ; la configuration est relue à la prochaine requête."""
+    api_client.purger_cache()
+    api_client.retenir_mode("statique")
+    api_client.forcer_statique()
+    api_client._noter(statique=True)
 
 
 # ---------- Configuration (en-tête, pied de page, documents, application) ----------
@@ -153,10 +172,51 @@ def _application(d) -> dict | None:
 
 
 def config() -> dict:
-    """Configuration publique normalisée ; `disponible` est faux quand on n'a ni réponse ni copie."""
-    brut = _lire("config/", ttl="config")
+    """Configuration publique normalisée ; `disponible` est faux sans réponse ni copie ; `statique` : jeu d'exemple.
+
+    Le mode vient de `donnees_reelles` (toujours exposé par l'API). Copie de secours ou API absente : on suit
+    le dernier état connu, jamais de données réelles servies par erreur quand il était « statique ».
+    """
+    if api_client.statique_force():
+        return _config_statique(None)
+    try:
+        rep = api_client.get("config/", ttl="config")
+    except ApiInactif:
+        api_client.retenir_mode("statique")
+        return _config_statique(None)
+    except (ApiSuspendu, ApiIndisponible):
+        if api_client.dernier_mode() == "statique":
+            return _config_statique(None)
+        return dict(CONFIG_DEFAUT)
+    except ApiErreur as exc:
+        logger.warning("API : erreur %s inattendue sur config/", exc.status)
+        return dict(CONFIG_DEFAUT)
+    brut = rep.donnees
     if not isinstance(brut, dict):
         return dict(CONFIG_DEFAUT)
+    reel = brut.get("donnees_reelles") is not False
+    if rep.degrade:
+        reel = reel and api_client.dernier_mode() != "statique"
+    else:
+        api_client.retenir_mode("reel" if reel else "statique")
+    if not reel:
+        return _config_statique(brut)
+    return _normaliser_config(brut)
+
+
+def _config_statique(brut: dict | None) -> dict:
+    """Configuration d'exemple ; seuls le nom, la devise et les langues viennent de l'API (config minimale)."""
+    from contenu_statique import exemple
+
+    donnees = dict(exemple.CONFIG)
+    for cle in ("nom", "devise", "langues_actives"):
+        if brut and brut.get(cle):
+            donnees[cle] = brut[cle]
+    api_client._noter(statique=True)
+    return {**_normaliser_config(donnees), "statique": True}
+
+
+def _normaliser_config(brut: dict) -> dict:
     siege = _texte(brut.get("siege"), 300)
     reseaux = {}
     for nom, adresse in (brut.get("reseaux") or {}).items() if isinstance(brut.get("reseaux"), dict) else []:
@@ -192,6 +252,7 @@ def config() -> dict:
         "application": _application(brut.get("application")),
         "mise_a_jour": _instant(brut.get("mise_a_jour")),
         "disponible": True,
+        "statique": False,
     }
 
 

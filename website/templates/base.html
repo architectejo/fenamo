@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f4f2ed">
   <title>{{ page_title }} · FENAMO-RDC</title>
   <meta name="description" content="{{ page_description }}">
-  {% if noindex or site_noindex %}<meta name="robots" content="noindex, nofollow">{% endif %}
+  {% if noindex or site_noindex or statique %}<meta name="robots" content="noindex, nofollow">{% endif %}
   <link rel="canonical" href="{{ canonical_url }}">
   {% for code, url in hreflang_alternates %}<link rel="alternate" hreflang="{{ code }}" href="{{ url }}">
   {% endfor %}{% if hreflang_alternates %}<link rel="alternate" hreflang="x-default" href="{{ hreflang_default }}">{% endif %}

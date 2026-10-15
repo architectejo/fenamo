@@ -43,12 +43,12 @@ _suivi: contextvars.ContextVar = contextvars.ContextVar("api_suivi", default=Non
 
 def demarrer_suivi() -> None:
     """Appelé au début de chaque requête HTTP : réinitialise ce que la page doit signaler."""
-    _suivi.set({"degrade": False, "copie_le": None, "suspendu": False, "panne": False})
+    _suivi.set({"degrade": False, "copie_le": None, "suspendu": False, "panne": False, "statique": False})
 
 
 def suivi() -> dict:
     """État de la requête : contenu venant d'une copie (degrade, copie_le), verrou (suspendu), panne sans copie."""
-    return _suivi.get() or {"degrade": False, "copie_le": None, "suspendu": False, "panne": False}
+    return _suivi.get() or {"degrade": False, "copie_le": None, "suspendu": False, "panne": False, "statique": False}
 
 
 def _noter(**infos) -> None:
@@ -58,7 +58,7 @@ def _noter(**infos) -> None:
     if infos.get("copie_le"):
         ancienne = etat["copie_le"]
         etat["copie_le"] = infos["copie_le"] if ancienne is None else min(ancienne, infos["copie_le"])
-    for cle in ("degrade", "suspendu", "panne"):
+    for cle in ("degrade", "suspendu", "panne", "statique"):
         if infos.get(cle):
             etat[cle] = True
 
@@ -78,6 +78,10 @@ class ApiSuspendu(Exception):
     def __init__(self, message: str = ""):
         super().__init__("Application suspendue (F-07)")
         self.message = message
+
+
+class ApiInactif(Exception):
+    """Les données réelles sont désactivées dans web_app : 403 {"statut": "inactif"} (le site sert alors le jeu d'exemple)."""
 
 
 class ApiErreur(Exception):
@@ -151,6 +155,28 @@ def verrou_connu() -> dict | None:
     return etat
 
 
+_DERNIER_MODE = "api:dernier_mode"  # dernier état connu : "reel" ou "statique" (jamais purgé : garde-fou)
+
+
+def retenir_mode(mode: str) -> None:
+    cache.set(_DERNIER_MODE, mode, settings.CACHE_STALE_TTL)
+
+
+_FORCE_STATIQUE = "api:force_statique"  # 403 « inactif » reçu : état retenu 60 s, vidé par la purge
+
+
+def forcer_statique() -> None:
+    cache.set(_FORCE_STATIQUE, 1, 60)
+
+
+def statique_force() -> bool:
+    return bool(cache.get(_FORCE_STATIQUE))
+
+
+def dernier_mode() -> str | None:
+    return cache.get(_DERNIER_MODE)
+
+
 def etat_service() -> str:
     """'suspendu' si le verrou F-07 est connu, sinon 'ok' (une panne ne se retient pas : chaque appel retente)."""
     return "suspendu" if verrou_connu() else "ok"
@@ -212,6 +238,14 @@ def _requete(methode: str, chemin: str, lecture: bool = False, **kw) -> requests
         logger.warning("API en erreur %s (%s %s)", rep.status_code, methode, chemin)
         cache.set(_PANNE, 1, _DUREE_PANNE)
         raise ApiIndisponible(f"HTTP {rep.status_code}")
+    if rep.status_code == 403:
+        try:
+            corps403 = rep.json()
+        except ValueError:
+            corps403 = None
+        if isinstance(corps403, dict) and corps403.get("statut") == "inactif":
+            logger.info("API : données réelles désactivées (%s %s)", methode, chemin)
+            raise ApiInactif()
     if lecture and rep.status_code in (401, 403, 429):
         # Clé refusée ou limite de débit : pour une lecture, c'est une indisponibilité (copie de secours, pas de page cassée).
         logger.warning("API : lecture refusée %s (%s %s)", rep.status_code, methode, chemin)
@@ -285,3 +319,4 @@ def purger_cache() -> None:
     # Horodatage (jamais d'expiration) : cache.incr() réappliquerait un délai par défaut.
     cache.set(_VERSION, max(time.time_ns(), _version() + 1), None)
     cache.delete(_PANNE)
+    cache.delete(_FORCE_STATIQUE)  # la purge vide aussi l'état du mode : la config est relue

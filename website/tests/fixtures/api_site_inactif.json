@@ -1,0 +1,12 @@
+{
+  "description": "Données réelles désactivées dans web_app : config minimale (donnees_reelles=false) ; tous les autres points d'accès répondent 403 statut inactif. Le site sert alors son jeu d'exemple.",
+  "config": {
+    "status": 200,
+    "body": {"nom": "FENAMO-RDC", "devise": "Unité, Discipline et Progrès", "langues_actives": ["fr"], "donnees_reelles": false}
+  },
+  "autres": {
+    "status": 403,
+    "headers": {"Content-Type": "application/json", "Cache-Control": "no-cache"},
+    "body": {"statut": "inactif", "detail": "Données réelles désactivées."}
+  }
+}

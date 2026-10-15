@@ -95,6 +95,10 @@ class ApiSimulee:
         if message is not None:
             self.message = message
 
+    def inactive(self):
+        """Données réelles désactivées dans web_app (fixture api_site_inactif.json)."""
+        self.mode = "inactif"
+
     def deverrouillee(self):
         self.mode = "ok"
 
@@ -126,6 +130,10 @@ class ApiSimulee:
             raise requests.Timeout("délai dépassé")
         if self.mode == "verrou":
             return _Reponse(503, {"statut": "suspendu", "detail": "Service suspendu.", "message": self.message})
+        if self.mode == "inactif":
+            inactif = charger("api_site_inactif.json")
+            sortie = inactif["config"] if relatif == "config/" else inactif["autres"]
+            return _Reponse(sortie["status"], sortie["body"])
         if relatif in self.surcharges:
             return _Reponse(*self.surcharges[relatif])
         return self._route(relatif, params)

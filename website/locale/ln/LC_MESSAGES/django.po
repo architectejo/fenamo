@@ -1308,6 +1308,14 @@ msgid "Les pages affichent les informations du %(jour)s à %(heure)s."
 msgstr ""
 
 #: templates/partials/_bandeau.html
+msgid "Données d'exemple."
+msgstr ""
+
+#: templates/partials/_bandeau.html
+msgid "Les contenus, noms et chiffres affichés sont fictifs : ils servent à montrer le site."
+msgstr ""
+
+#: templates/partials/_bandeau.html
 msgid "Plateforme momentanément fermée."
 msgstr ""
 

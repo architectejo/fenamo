@@ -541,7 +541,7 @@ def sitemap(request):
 
 @require_GET
 def robots(request):
-    if settings.SITE_NOINDEX:
+    if settings.SITE_NOINDEX or site_api.config()["statique"]:
         corps = "User-agent: *\nDisallow: /\n"
     else:
         corps = (
