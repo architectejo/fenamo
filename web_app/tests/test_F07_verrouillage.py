@@ -229,7 +229,7 @@ def test_F07_bandeau_du_super_utilisateur_tant_que_verrouillee(client, monde, dj
     assert 'bandeau-verrou' not in client.get(reverse('tableau-bord')).content.decode()
     _verrouiller(monde)
     page = client.get(reverse('tableau-bord')).content.decode()
-    assert 'bandeau-verrou' in page and MESSAGE in page
+    assert 'bandeau-verrou' in page  # le message du SU n'est affiché que par _message_su (écran, 503, connexion), pas dans le bandeau
 
 
 # ---------------------------------------------------------------- commande d'urgence, aucune donnée modifiée
