@@ -184,6 +184,27 @@
     if (ouvert) { var f = bloc.querySelector(FOCUSABLES); if (f) { f.focus({ preventScroll: true }); } }
   }
 
+  /* ---------- Compteur de caractères : <textarea maxlength="500" data-compte-caracteres="#cible"> ----------
+     La cible affiche « n / max » ; classe .est-proche à 90 % de la limite, .est-plein à la limite.
+     Le lecteur d'écran n'est pas dérangé à chaque frappe : la cible est reliée au champ par aria-describedby,
+     et seule l'arrivée à la limite est annoncée (texte .lecteur dans une zone aria-live polie). */
+  function compterCaracteres(champ) {
+    var cible = document.querySelector(champ.getAttribute('data-compte-caracteres'));
+    if (!cible) { return; }
+    var max = parseInt(champ.getAttribute('maxlength'), 10) || 0, n = champ.value.length;
+    var texte = cible.querySelector('[data-compte-valeur]') || cible;
+    texte.textContent = max ? n + ' / ' + max : String(n);
+    var plein = max && n >= max, avant = cible.classList.contains('est-plein');
+    cible.classList.toggle('est-proche', !!max && n >= max * .9 && !plein);
+    cible.classList.toggle('est-plein', !!plein);
+    var annonce = cible.querySelector('[data-compte-annonce]');
+    if (annonce && plein !== avant) { annonce.textContent = plein ? 'Limite de ' + max + ' caractères atteinte.' : ''; }
+  }
+  function initCompteurs(racine) {
+    (racine || document).querySelectorAll('[data-compte-caracteres]').forEach(compterCaracteres);
+  }
+  document.addEventListener('input', function (e) { if (e.target.matches && e.target.matches('[data-compte-caracteres]')) { compterCaracteres(e.target); } });
+
   /* ---------- Délégation des clics ---------- */
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-ouvre-modale], [data-ferme-modale], [data-menu-ouvrir], [data-menu-fermer], [data-theme-basculer], [data-copier], [data-deplier], .modale-voile, .voile--menu');
@@ -211,8 +232,8 @@
   }
 
   /* Contenu inséré par HTMX : compteurs à animer, valeurs vides à marquer */
-  document.addEventListener('htmx:afterSettle', function (e) { compter(e.target); marquerVides(e.target); });
-  document.addEventListener('DOMContentLoaded', function () { compter(document); marquerVides(document); });
+  document.addEventListener('htmx:afterSettle', function (e) { compter(e.target); marquerVides(e.target); initCompteurs(e.target); });
+  document.addEventListener('DOMContentLoaded', function () { compter(document); marquerVides(document); initCompteurs(document); });
 
-  window.FenamoDesign = { bulle: bulle, ouvrirModale: ouvrirModale, fermerModale: fermerModale, menu: menu, retirerDossier: retirerDossier, compter: compter, marquerVides: marquerVides, majCompteur: majCompteur, icone: icone, copier: copier, deplier: deplier };
+  window.FenamoDesign = { bulle: bulle, ouvrirModale: ouvrirModale, fermerModale: fermerModale, menu: menu, retirerDossier: retirerDossier, compter: compter, marquerVides: marquerVides, majCompteur: majCompteur, icone: icone, copier: copier, deplier: deplier, compterCaracteres: compterCaracteres };
 })();

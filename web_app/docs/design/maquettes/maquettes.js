@@ -337,10 +337,63 @@
     var t = p.closest('.champ').querySelector('textarea');
     t.value = (t.value ? t.value + ' ' : '') + p.textContent + '.'; t.dispatchEvent(new Event('input', { bubbles: true })); t.focus();
   });
-  document.addEventListener('input', function (e) {
-    if (!e.target.matches('[data-demo-champ-motif] textarea')) { return; }
-    e.target.closest('.champ').querySelector('[id$="-compte"]').textContent = e.target.value.length + ' / 500';
-  });
+  /* (Le compteur de caractères est fourni par design.js : [data-compte-caracteres].) */
+
+  /* ---------- Verrouillage de l'application (F-07) ---------- */
+  var ouvert = document.querySelector('[data-demo-verrou="ouvert"]'), ferme = document.querySelector('[data-demo-verrou="ferme"]');
+  function etatVerrou(estFerme, anime) {
+    ouvert.hidden = estFerme; ferme.hidden = !estFerme;
+    document.querySelector('[data-demo-bandeau]').hidden = !estFerme;
+    document.querySelectorAll('[data-demo-entree-verrou]').forEach(function (li) { li.hidden = !estFerme; if (anime && estFerme) { li.classList.add('apparait'); } });
+    var mi = document.querySelector('[data-demo-menu-icone] use'); if (mi) { mi.setAttribute('href', sprite + (estFerme ? '#i-lock' : '#i-lock-open')); }
+    if (anime) {
+      var panneau = estFerme ? ferme : ouvert;
+      panneau.querySelectorAll('.verrou-sceau, .verrou-etat').forEach(function (el) { el.classList.remove('change'); void el.offsetWidth; el.classList.add('change'); });
+    }
+  }
+  if (ouvert && ferme) {
+    if (params.get('etat') === 'verrouillee') { etatVerrou(true, false); }
+    var fv = document.querySelector('[data-demo-verrouiller]'), fd = document.querySelector('[data-demo-deverrouiller]');
+    fv.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var champ = fv.querySelector('[data-demo-champ-message]'), t = champ.querySelector('textarea'), err = champ.querySelector('.champ-erreur');
+      if (!t.value.trim()) { champ.classList.add('champ--erreur'); t.setAttribute('aria-invalid', 'true'); err.hidden = false; err.style.animation = 'none'; void err.offsetWidth; err.style.animation = ''; t.focus(); return; }
+      champ.classList.remove('champ--erreur'); t.removeAttribute('aria-invalid'); err.hidden = true;
+      var b = fv.querySelector('[type=submit]');
+      occuper(b, 800).then(function () {
+        D.fermerModale('#modale-verrouiller');
+        document.querySelector('[data-demo-message-affiche]').textContent = t.value.trim();
+        var motif = document.getElementById('v-motif').value.trim();
+        document.querySelector('[data-demo-motif-affiche]').textContent = motif || 'Aucun motif saisi.';
+        document.querySelectorAll('[data-demo-duree]').forEach(function (d) { d.textContent = 'quelques secondes'; });
+        etatVerrou(true, true);
+        D.bulle({ message: 'Application verrouillée', detail: '212 sessions fermées. Vous restez connecté.', niveau: 'success' });
+      });
+    });
+    fd.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var b = fd.querySelector('[type=submit]');
+      occuper(b, 700).then(function () {
+        D.fermerModale('#modale-deverrouiller');
+        etatVerrou(false, true);
+        var motif = document.getElementById('d-motif').value.trim();
+        document.querySelector('[data-demo-historique]').insertAdjacentHTML('afterbegin', '<li class="apparait"><span class="point point--vert">' + ic('lock-open') + '</span><div><p><strong>Déverrouillée</strong> par vous</p><p class="meta">à l\'instant</p><p class="petit doux texte-saisi"></p></div></li>');
+        document.querySelector('[data-demo-historique] li .texte-saisi').textContent = motif ? 'Motif : ' + motif : 'Sans motif';
+        D.bulle({ message: 'Application déverrouillée', detail: 'Les comptes peuvent de nouveau se connecter.', niveau: 'success' });
+      });
+    });
+    /* Captures : ?modale=modale-verrouiller&remplir=1 (message saisi), &erreur=1 (message manquant) */
+    if (params.get('remplir')) {
+      var tm = document.getElementById('v-message');
+      tm.value = "Migration des données vers le nouveau serveur.\nL'application rouvre aujourd'hui à 12 h. Vos dossiers sont conservés : reprenez vos saisies à la réouverture.";
+      document.getElementById('v-motif').value = 'Bascule SQLite vers MySQL (lot 9). Sauvegarde faite à 07 h 30.';
+      [tm, document.getElementById('v-motif')].forEach(D.compterCaracteres);
+    }
+    if (params.get('erreur')) { setTimeout(function () { fv.requestSubmit(); }, 400); }
+  }
+
+  /* Connexion pendant le verrouillage : ?verrou=1 */
+  if (params.get('verrou')) { document.querySelectorAll('[data-demo-verrou-connexion]').forEach(function (el) { el.hidden = false; }); }
 
   /* Ouverture directe d'une modale (captures) : ?modale=modale-renvoi */
   if (params.get('modale')) { D.ouvrirModale('#' + params.get('modale')); }

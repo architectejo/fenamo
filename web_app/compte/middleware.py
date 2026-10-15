@@ -64,8 +64,9 @@ class VerrouApplicationMiddleware:
             else:
                 reponse = JsonResponse({'statut': 'suspendu', 'detail': 'Service suspendu.', 'message': message}, status=503)
         elif chemin.startswith('/mob/'):
-            for cle in ('mob_membre_id', 'mob_empreinte'):
+            for cle in ('mob_membre_id', 'mob_empreinte'):  # session mobile vidée ; flush : la ligne de session disparaît aussi
                 request.session.pop(cle, None)
+            request.session.flush()
             reponse = render(request, 'mob/suspendu.html', {'message': message}, status=503)
         elif getattr(request, 'htmx', False):
             reponse = HttpResponse(status=200)

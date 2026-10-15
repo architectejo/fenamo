@@ -975,6 +975,75 @@ select.champ-saisie { appearance: none; padding-right: 2.5rem; background-image:
 .section-titre .meta { font-weight: var(--graisse-normale); }
 
 /* =========================================================
+   16 quater. Verrouillage de l'application (F-07) : état du verrou, message du super-utilisateur,
+   bandeau de la barre haute, page « Application suspendue » (503) et espace mobile suspendu
+   ========================================================= */
+/* Texte saisi par un utilisateur : retours à la ligne conservés sans |linebreaks ni |safe, mots longs coupés */
+.texte-saisi { white-space: pre-line; overflow-wrap: anywhere; }
+
+/* Panneau d'état : un sceau (cadenas) + l'état en Barlow ; verrouillé = cadre d'encre et sceau en négatif */
+.verrou-tete { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--e-4); align-items: center; }
+.verrou-sceau { display: grid; place-items: center; width: 56px; height: 56px; border: 2px solid var(--trait-fort); border-radius: var(--r-plaque); color: var(--texte-doux); }
+.verrou-sceau .ic { width: 28px; height: 28px; }
+.verrou-etat { display: block; font-family: var(--police-chiffres); font-weight: var(--graisse-chiffres); font-size: var(--t-6); line-height: 1; }
+.verrou-depuis { margin: var(--e-1) 0 0; font-size: var(--t-2); color: var(--texte-doux); }
+.verrou--ferme { border: 2px solid var(--texte); }
+.verrou--ferme .verrou-sceau { background: var(--encre); border-color: var(--encre); color: var(--jaune); }
+:root[data-theme="sombre"] .verrou--ferme .verrou-sceau { background: var(--jaune); border-color: var(--jaune); color: var(--encre); }
+.verrou-sceau.change, .verrou-etat.change { animation: tampon var(--d-long) var(--courbe-sortie); }
+/* Effets du verrou : ce qui est ouvert ou suspendu, ligne par ligne */
+.verrou-effets { list-style: none; margin: 0; padding: 0; }
+.verrou-effets li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--e-1) var(--e-3); align-items: center; padding: var(--e-3) 0; border-top: 1px solid var(--trait); }
+.verrou-effets li > .ic { color: var(--texte-doux); }
+.verrou-effets .meta { display: block; }
+@media (max-width: 575.98px) { .verrou-effets li { grid-template-columns: auto minmax(0, 1fr); align-items: start; } .verrou-effets li > .ic { margin-top: 2px; } .verrou-effets li > .etat { grid-column: 2; justify-self: start; } }
+@media (max-width: 575.98px) { .bouton--bloc-mobile { width: 100%; min-height: var(--cible-confort); } }
+.verrou-intertitre { margin: 0 0 var(--e-2); font-size: var(--t-2); font-weight: var(--graisse-forte); color: var(--texte-doux); }
+
+/* Message du super-utilisateur, tel que les utilisateurs le lisent */
+.message-su { margin: 0; padding: var(--e-3) var(--e-4); border-left: 4px solid var(--texte); border-radius: 0 var(--r-champ) var(--r-champ) 0; background: var(--surface-2); }
+.message-su > p { margin: 0; }
+.message-su-auteur { display: block; margin-top: var(--e-2); font-size: var(--t-1); color: var(--texte-doux); }
+
+/* Compteur de caractères (design.js : [data-compte-caracteres]) : jaune foncé à 90 %, rouge à la limite */
+.compte-caracteres { font-variant-numeric: tabular-nums; text-align: right; }
+.compte-caracteres.est-proche { color: var(--jaune-texte); font-weight: var(--graisse-forte); }
+.compte-caracteres.est-plein { color: var(--rouge); font-weight: var(--graisse-forte); }
+
+/* Liste des conséquences dans la modale de verrouillage */
+.consequences { margin: var(--e-2) 0 0; padding-left: var(--e-5); }
+.consequences li + li { margin-top: var(--e-1); }
+
+/* Bandeau du super-utilisateur tant que l'application est verrouillée : sous la barre haute, collant avec elle, sur toutes les pages.
+   Sous la barre haute (z-index inférieur) pour ne pas masquer ses panneaux flottants. Jaune « gilet », texte encre (11:1). */
+.bandeau-verrou {
+  position: sticky; top: var(--haut); z-index: var(--z-menu);
+  display: flex; align-items: center; gap: var(--e-2); min-height: var(--cible); padding: var(--e-1) var(--e-2) var(--e-1) var(--e-4);
+  background: var(--jaune); color: var(--encre); font-size: var(--t-2); line-height: 1.25;
+  animation: deroule var(--d-moyen) var(--courbe-sortie); transform-origin: top;
+}
+.bandeau-verrou > .ic { width: 1.1rem; height: 1.1rem; }
+.bandeau-verrou-texte { min-width: 0; }
+.bandeau-verrou a { display: inline-flex; align-items: center; gap: var(--e-1); min-height: var(--cible); margin-left: auto; padding: 0 var(--e-2); border-radius: var(--r-champ); color: var(--encre); font-weight: var(--graisse-forte); white-space: nowrap; }
+.bandeau-verrou a:hover { background: color-mix(in srgb, var(--encre) 10%, transparent); }
+.bandeau-verrou a:focus-visible { box-shadow: 0 0 0 4px var(--papier); outline-color: var(--encre); }
+@media (min-width: 576px) { .bandeau-verrou { padding-inline: var(--e-6) var(--e-4); } }
+@media (max-width: 575.98px) { .bandeau-verrou .masque-mobile { display: none; } }
+/* Les intertitres collants du journal passent sous le bandeau */
+.corps:has(> .bandeau-verrou) .journal-jour { top: calc(var(--haut) + var(--cible)); }
+
+/* Page « Application suspendue » (503) et espace mobile suspendu : la bande du gilet traverse l'écran sur téléphone */
+.bande-gilet {
+  display: block; width: 100vw; height: 20px; margin: var(--e-5) 0 var(--e-6) calc(50% - 50vw);
+  background: linear-gradient(var(--jaune) 0 30%, var(--gilet-reflet) 30% 70%, var(--jaune) 70%);
+  transform-origin: left; animation: remplit var(--d-compteur) var(--courbe-sortie) 120ms both;
+}
+@media (min-width: 992px) { .porte .bande-gilet { display: none; } } /* sur ordinateur, la bande est dans le panneau de gauche */
+.porte--suspendue, .mob--suspendu { overflow-x: clip; }
+.porte--suspendue .porte-cadre { max-width: 440px; }
+.suspendu-pied { margin-top: var(--e-6); padding-top: var(--e-4); border-top: 1px solid var(--trait); font-size: var(--t-2); }
+
+/* =========================================================
    17. Animations (toutes neutralisées par prefers-reduced-motion via les jetons de durée)
    ========================================================= */
 @keyframes fondu { from { opacity: 0; } }

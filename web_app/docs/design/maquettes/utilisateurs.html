@@ -414,9 +414,9 @@
         <div class="alerte alerte--alerte"><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-triangle-alert"></use></svg><div><strong data-demo-nom-cible>Grâce Mbombo Tshala</strong> ne pourra plus se connecter. Ses dossiers, sa fiche et son historique sont conservés. Vous pourrez réactiver le compte.</div></div>
         <div class="champ" data-demo-champ-motif>
           <label class="champ-libelle" for="d-motif">Motif</label>
-          <textarea class="champ-saisie" id="d-motif" rows="3" maxlength="500" aria-describedby="d-motif-compte d-motif-erreur"></textarea>
+          <textarea class="champ-saisie" id="d-motif" rows="3" maxlength="500" aria-describedby="d-motif-compte d-motif-erreur" data-compte-caracteres="#d-motif-compte"></textarea>
           <div class="rangee"><button type="button" class="puce" data-demo-motif-puce>Fin de mandat</button><button type="button" class="puce" data-demo-motif-puce>A quitté l'association membre</button><button type="button" class="puce" data-demo-motif-puce>Démission</button></div>
-          <p class="champ-aide" id="d-motif-compte">0 / 500</p>
+          <p class="champ-aide compte-caracteres" id="d-motif-compte"><span data-compte-valeur>0 / 500</span><span class="lecteur" aria-live="polite" data-compte-annonce></span></p>
           <p class="champ-erreur" id="d-motif-erreur" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="../../../static/img/icons.svg#i-circle-alert"></use></svg>Indiquez le motif avant de désactiver le compte.</p>
         </div>
       </div>

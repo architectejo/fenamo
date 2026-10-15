@@ -35,7 +35,7 @@
   --drapeau-jaune: #f7d618;
   --drapeau-rouge: #ce1021;
 
-  /* Bande réfléchissante du gilet (page de connexion seulement) : tissu jaune, liseré argent */
+  /* Bande réfléchissante du gilet (pages hors coque : connexion, application suspendue, espace mobile suspendu) : tissu jaune, liseré argent */
   --gilet-reflet: #d9dde3;
 
   /* ---------- Rôles dérivés ---------- */
