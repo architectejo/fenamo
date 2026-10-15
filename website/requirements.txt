@@ -3,6 +3,7 @@ Django==5.2.17
 django-environ==0.14.0
 requests==2.32.3
 whitenoise==6.12.0
+segno==1.6.6  # QR code SVG de la page Application mobile (absent : le QR n'est simplement pas affiché)
 # Dépendances indirectes
 asgiref==3.8.1
 sqlparse==0.4.4

@@ -15,6 +15,8 @@ DEBUG = env.bool("DEBUG", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 SITE_URL = env("SITE_URL", default="http://localhost:8001").rstrip("/")
 SITE_NOINDEX = env.bool("SITE_NOINDEX", default=False)
+# Espace des utilisateurs (application web de gestion) : lien du pied de page et du menu
+APP_URL = env("APP_URL", default="https://app.fenamordc.cd/")
 
 INSTALLED_APPS = [
     "django.contrib.sessions",
@@ -25,6 +27,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "pages.middleware.SuiviApiMiddleware",
     "pages.middleware.LangueInactiveMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -33,6 +36,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "site_fenamo.urls"
+# Les anciennes adresses (annexe B) et /_purge/ sont hors préfixe de langue : pas de redirection automatique
+APPEND_SLASH = True
 WSGI_APPLICATION = "site_fenamo.wsgi.application"
 
 TEMPLATES = [
@@ -75,7 +80,12 @@ CACHES = {
 API_BASE_URL = env("API_BASE_URL", default="http://localhost:8000/api/v1/site/")
 SITE_API_KEY = env("SITE_API_KEY", default="")
 API_TIMEOUT = env.float("API_TIMEOUT", default=5)
+# Sonde du verrou F-07 : vide = dérivée de API_BASE_URL (…/api/v1/site/ -> …/api/v1/sante/)
+API_SANTE_URL = env("API_SANTE_URL", default="")
+API_SANTE_INTERVALLE = env.int("API_SANTE_INTERVALLE", default=30)  # secondes entre deux sondes
 PURGE_SECRET = env("PURGE_SECRET", default="")
+PURGE_TOLERANCE = 300  # secondes d'écart admis entre l'horodatage signé et l'heure du site
+PURGE_LIMITE_PAR_MINUTE = 10
 GOOGLE_MAPS_KEY = env("GOOGLE_MAPS_KEY", default="")
 
 # Durées de cache par point d'accès, en secondes (§ 6.1)
@@ -100,7 +110,9 @@ LANGUAGES = [
     ("lua", _("Tshiluba")),
     ("kg", _("Kikongo")),
 ]
-# Langues proposées dans le sélecteur (le français est toujours actif).
+# Repli seulement : les langues actives viennent de la configuration de l'API (config.langues_actives) et ne
+# sont proposées que si leur fichier .po est complet (services/langues.py). Ce réglage sert quand l'API ne
+# répond pas et qu'aucune copie de la configuration n'existe ; le français est toujours actif.
 ACTIVE_LANGUAGES = list(dict.fromkeys(["fr", *env.list("ACTIVE_LANGUAGES", default=["fr"])]))
 LOCALE_PATHS = [BASE_DIR / "locale"]
 USE_I18N = True
