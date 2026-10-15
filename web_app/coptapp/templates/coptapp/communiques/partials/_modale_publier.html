@@ -33,7 +33,7 @@ Le champ masqué est désactivé : il n'est pas envoyé. Une seule liste d'anten
     {% if erreurs.antenne %}<p class="champ-erreur" id="c-antenne-erreur" role="alert">{% icone "circle-alert" %}{{ erreurs.antenne }}</p>{% endif %}
   </div>
 
-  <div class="destinataires" aria-live="polite" hx-get="{{ action }}" hx-trigger="load, change from:[name=cible], change from:#c-coordination, change from:#c-antenne" hx-include="[name=cible], [name=coordination], [name=antenne]" hx-target="#apercu-nb" hx-select="#apercu-nb" hx-swap="outerHTML" hx-push-url="false" hx-disabled-elt="this">
+  <div class="destinataires" aria-live="polite" hx-get="{{ action }}" hx-trigger="{% if nb_destinataires is None and not apercu_erreur %}load, {% endif %}change from:[name=cible], change from:#c-coordination, change from:#c-antenne" hx-include="[name=cible], [name=coordination], [name=antenne]" hx-target="#apercu-nb" hx-select="#apercu-nb" hx-swap="outerHTML" hx-push-url="false">
     {% icone "users" %}
     <div>
       <div>

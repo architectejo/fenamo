@@ -14,8 +14,8 @@ def test_F40_communique_sans_message_422_puis_publication(acteurs):
     assert c.post(reverse('message'), {'titre': 'Titre', 'message': '  '}).status_code == 422
     assert c.post(reverse('message'), {'titre': '', 'message': 'Annonce'}).status_code == 422
     avant = Communique.objects.count()  # le jeu d'essai en contient déjà un
-    r = c.post(reverse('message'), {'titre': 'Annonce', 'message': 'Annonce détaillée'})
+    r = c.post(reverse('message'), {'titre': 'Annonce', 'message': 'Annonce détaillée', 'cible': 'national'})
     assert r.status_code == 302 and Communique.objects.count() == avant + 1 and Communique.objects.filter(titre='Annonce').count() == 1
     # nouvelle publication identique : un nouveau communiqué (plus de blocage « déjà envoyé » : chacun est horodaté et notifie)
-    assert c.post(reverse('message'), {'titre': 'Annonce', 'message': 'Annonce détaillée'}).status_code == 302
+    assert c.post(reverse('message'), {'titre': 'Annonce', 'message': 'Annonce détaillée', 'cible': 'national'}).status_code == 302
     assert Communique.objects.count() == avant + 2

@@ -7,7 +7,7 @@ Règles :
   l'affichage du formulaire (``ouvert_le``, horodatage fourni par le site) et l'envoi, limite par contact (e-mail ou téléphone) dans le
   cache ``limites`` ;
 - journal F-70 sans donnée personnelle (ni nom, ni e-mail, ni téléphone, ni texte) ;
-- notification des destinataires de F-62 (SU et président voient toutes les notifications ; les éditeurs ont le compteur « à traiter »).
+- notification des destinataires de F-62 (éditeurs et super-utilisateurs seulement ; le président ne la voit pas, ``notifications_du_perimetre`` la filtre ; les éditeurs ont aussi le compteur « à traiter »).
 """
 import hashlib
 import logging
@@ -37,6 +37,7 @@ DELAI_MAX = 24 * 3600  # un formulaire resté ouvert plus d'un jour doit être r
 LIMITE_PAR_CONTACT = 3  # messages par heure pour un même e-mail ou téléphone
 FENETRE_CONTACT = 3600
 CHAMP_PIEGE = 'site_web'
+TITRE_NOTIFICATION = 'Nouveau message du site'  # visible des seuls ED et SU (F-62) : voir compte.services.perimetre
 CHAMPS = ('nom', 'mail', 'telephone', 'objet', 'message')
 ACCUSE = 'Votre message a bien été reçu. La FENAMO-RDC vous répondra dès que possible.'
 
@@ -98,8 +99,9 @@ def _chaine(donnees, champ, erreurs):
 
 
 def valider(donnees, maintenant=None):
-    """(valeurs nettoyées, erreurs, piege). ``erreurs`` : ``{champ: [messages]}`` (clé ``non_field_errors`` hors champ) ; ``piege`` vrai si
-    le champ piège est rempli ou si l'horodatage est absurde de façon typique d'un robot (dans ce cas rien n'est enregistré)."""
+    """(valeurs nettoyées, erreurs, piege). ``erreurs`` : ``{champ: [messages]}`` (clé ``non_field_errors`` hors champ) ; ``piege`` vrai
+    seulement si le champ piège ``site_web`` est rempli (faux succès, rien n'est enregistré). Un ``ouvert_le`` absent, illisible ou
+    hors délai est une erreur de champ (400), pas un piège."""
     erreurs = {}
     maintenant = maintenant or time.time()
     piege = bool(str(donnees.get(CHAMP_PIEGE) or '').strip())
@@ -129,7 +131,6 @@ def valider(donnees, maintenant=None):
         erreurs['message'] = [f'Le message ne peut contenir plus de {LIENS_MAX} liens.']
 
     propres['mail'] = propres['mail'].lower()
-    propres['telephone'] = propres['telephone']
     if not propres['mail'] and not propres['telephone'] and not ({'mail', 'telephone'} & set(erreurs)):
         erreurs['non_field_errors'] = ['Indiquez un numéro de téléphone ou une adresse e-mail pour que nous puissions vous répondre.']
     if propres['mail'] and 'mail' not in erreurs:
@@ -196,7 +197,7 @@ def enregistrer(propres):
                        'taille_message': len(contact.description)},
                 libelle=f'Message du site n°{contact.pk}')
     Notification.objects.create(
-        titre='Nouveau message du site', description=f'Un message a été reçu par le formulaire de contact du site (n°{contact.pk}).')
+        titre=TITRE_NOTIFICATION, description=f'Un message a été reçu par le formulaire de contact du site (n°{contact.pk}).')
     return contact
 
 

@@ -76,31 +76,35 @@ def compteur(request):
 
 @require_http_methods(['GET', 'POST'])
 def addCommunique(request):
-    """Publication (ED, SU) dans la modale commune. 403 sans droit. POST : ``titre``, ``message``, ``cible`` (national, coordination, antenne ;
-    absent = déduit des listes), ``coordination`` et ``antenne`` (identifiants ; le contexte porte ``coordinations`` et ``antennes``, voir ``service.choix_ciblage``). Erreur : 422 (modale conservée ; contexte ``erreur`` générale,
+    """Publication (ED, SU) dans la modale commune. 403 sans droit. POST : ``titre``, ``message``, ``cible`` (obligatoire : national, coordination, antenne ;
+    absent = 422), ``coordination`` et ``antenne`` (identifiants ; le contexte porte ``coordinations`` et ``antennes``, voir ``service.choix_ciblage``). Erreur : 422 (modale conservée ; contexte ``erreur`` générale,
     ``erreurs`` = {champ: texte} pour les messages sous les champs, ``valeurs``) ; succès : HTMX 204 + toast + ``communiquesMaj``, sinon message et retour à la liste."""
     if not service.peut_publier(request.user):
         raise PermissionDenied
     contexte = {'action': request.path, **service.choix_ciblage(),
                 'titre_max': service.TITRE_MAX, 'message_max': service.MESSAGE_MAX}
     if request.method == 'GET':
-        if request.GET.get('cible'):  # résumé « Reçu par N comptes » pendant le choix (nb_destinataires, apercu_erreur)
-            try:
-                apercu = service.apercu_destinataires(
-                    request.user, request.GET['cible'].strip(), Province.objects.filter(pk=_entier(request.GET.get('coordination'))).first(),
-                    Antenne.objects.filter(pk=_entier(request.GET.get('antenne'))).first())
-                contexte['nb_destinataires'] = apercu['nombre']
-            except service.ErreurCommunique as erreur:
-                contexte['apercu_erreur'] = str(erreur)
+        # résumé « Reçu par N comptes » (nb_destinataires, apercu_erreur) ; sans ``cible`` : le choix par défaut de la modale, « national »,
+        # servi dès l'ouverture pour que la modale n'ait pas à se recharger au chargement
+        try:
+            apercu = service.apercu_destinataires(
+                request.user, (request.GET.get('cible') or 'national').strip(),
+                Province.objects.filter(pk=_entier(request.GET.get('coordination'))).first(),
+                Antenne.objects.filter(pk=_entier(request.GET.get('antenne'))).first())
+            contexte['nb_destinataires'] = apercu['nombre']
+        except service.ErreurCommunique as erreur:
+            contexte['apercu_erreur'] = str(erreur)
         return render(request, _modele(request), contexte)
     donnees = {cle: request.POST.get(cle, '') for cle in ('titre', 'message', 'cible', 'coordination', 'antenne')}
     coordination = Province.objects.filter(pk=_entier(donnees['coordination'])).first() if donnees['coordination'] else None
     antenne = Antenne.objects.filter(pk=_entier(donnees['antenne'])).first() if donnees['antenne'] else None
     try:
+        if not donnees['cible'].strip():  # jamais d'élargissement silencieux au national : le choix des destinataires est obligatoire
+            raise service.ErreurCommunique(_("Choisissez qui reçoit le communiqué."), 'cible')
         if (donnees['coordination'] and coordination is None) or (donnees['antenne'] and antenne is None):
             raise service.ErreurCommunique(_("Ciblage inconnu."), 'antenne' if donnees['antenne'] else 'coordination')
         communique = service.publier(request.user, donnees['titre'], donnees['message'], coordination, antenne,
-                        cible=donnees['cible'].strip() or None)
+                        cible=donnees['cible'].strip())
     except service.ErreurCommunique as erreur:
         erreurs = {erreur.champ: str(erreur)} if erreur.champ else {}
         return render(request, _modele(request), {**contexte, 'erreur': str(erreur), 'erreurs': erreurs, 'valeurs': donnees}, status=422)

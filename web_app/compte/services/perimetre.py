@@ -38,9 +38,10 @@ def voit_toutes_notifications(user):
 
 def notifications_du_perimetre(user):
     """Notifications visibles par `user` (matrice § 4.3, § 4.2) :
-    - SU et PR (et privilege5 hérité) : toutes ;
+    - SU : toutes ; PR (et privilege5 hérité) : toutes sauf « Nouveau message du site » ;
+    - ED : seulement « Nouveau message du site » (F-62) ;
     - VN, VP, VA : les siennes, celles des dossiers (membres) de leur périmètre et celles des comptes qu'ils ont nommés ;
-    - AT : les siennes (ses dossiers : renvois, demandes) ; VI et ED : aucune ;
+    - AT : les siennes (ses dossiers : renvois, demandes) ; VI : aucune ;
     - compte sans nomination : les siennes."""
     from django.db.models import Q
 
@@ -48,13 +49,19 @@ def notifications_du_perimetre(user):
     from compte.models import Nomination
     from compte.services.droits import membres_du_perimetre, profil_de
     from coptapp.models import Notification
-    if voit_toutes_notifications(user):
-        return Notification.objects.all()
+    from virtrine.services.contact import TITRE_NOTIFICATION
     profil = profil_de(user)
+    messages_site = Q(titre=TITRE_NOTIFICATION, user__isnull=True)  # « Nouveau message du site » : ED et SU seulement (F-62)
+    if profil.mode == 'su':
+        return Notification.objects.all()
+    if voit_toutes_notifications(user):  # PR, ou droits hérités (privilege5) : tout sauf les messages du site
+        return Notification.objects.exclude(messages_site)
     if profil.mode == 'aucun':
         return Notification.objects.none()
     if profil.mode == 'nomination':
-        if profil.role in (roles.VI, roles.ED):
+        if profil.role == roles.ED:
+            return Notification.objects.filter(messages_site)
+        if profil.role == roles.VI:
             return Notification.objects.none()
         if profil.role in (roles.VN, roles.VP, roles.VA):
             nommes = Nomination.objects.filter(nomme_par=user, active=True).values('compte_id')

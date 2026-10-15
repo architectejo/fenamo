@@ -200,11 +200,11 @@ def test_F40_vue_publier_403_csrf_422_et_succes(client, monde, equipe):
     protege.force_login(equipe['ED'])
     assert protege.post(url, {'titre': 't', 'message': 'm'}).status_code == 403 and not Communique.objects.filter(titre='t').exists()
     assert client.post(url, {'titre': '', 'message': 'm'}, HTTP_HX_REQUEST='true').status_code == 422
-    assert client.post(url, {'titre': 't', 'message': 'm', 'coordination': '999999'}).status_code == 422
-    ok = client.post(url, {'titre': 'Titre', 'message': 'Message', 'coordination': monde['P'].pk}, HTTP_HX_REQUEST='true')
+    assert client.post(url, {'titre': 't', 'message': 'm', 'cible': 'coordination', 'coordination': '999999'}).status_code == 422
+    ok = client.post(url, {'titre': 'Titre', 'message': 'Message', 'cible': 'coordination', 'coordination': monde['P'].pk}, HTTP_HX_REQUEST='true')
     assert ok.status_code == 204 and 'communiquesMaj' in ok['HX-Trigger'] and 'toast' in ok['HX-Trigger']
     assert Communique.objects.get(titre='Titre').province_id == monde['P'].pk
-    assert client.post(url, {'titre': 'Autre', 'message': 'M'}).status_code == 302  # page complète
+    assert client.post(url, {'titre': 'Autre', 'message': 'M', 'cible': 'national'}).status_code == 302  # page complète
 
 
 def test_F40_liste_lecture_get_sans_effet_page_et_fragment(client, monde, equipe):

@@ -2,7 +2,7 @@
 Interrupteur « Données du site public » (F-67, DR-01), super-utilisateur seul : carte d'état à gauche, changements récents à droite (maquette donnees-reelles.html).
 Rafraîchie sans rechargement par l'événement donneesReellesModifiees (vue donnees-reelles-etat, change=True : animation du tampon).
 Contexte : donnees_reelles (actif, depuis, par, motif ; facultatif : historique = liste de {actif, par, date, motif}, les plus récentes d'abord), change.
-Sans « historique », la dernière bascule (depuis, par, motif) tient lieu d'unique entrée. Le motif saisi est affiché échappé (aucun filtre de confiance).
+Sans « historique », la liste des changements affiche « Aucun changement enregistré ». Le motif saisi est affiché échappé (aucun filtre de confiance).
 {% endcomment %}
 <div class="grille grille--principale">
   <section class="panneau{% if donnees_reelles.actif %} verrou--ferme{% endif %}" aria-labelledby="dr-titre">
@@ -41,10 +41,6 @@ Sans « historique », la dernière bascule (depuis, par, motif) tient lieu d'un
         {% for e in donnees_reelles.historique %}
         <li><span class="point{% if e.actif %} point--vert{% endif %}">{% if e.actif %}{% icone "globe" %}{% else %}{% icone "circle-dashed" %}{% endif %}</span><div><p><strong>{% if e.actif %}{% translate "Données réelles" %}{% else %}{% translate "Données d'exemple" %}{% endif %}</strong>{% if e.par %} {% translate "par" %} {{ e.par }}{% endif %}</p><p class="meta">{{ e.date|date_heure_fr }}</p><p class="petit doux{% if e.motif %} texte-saisi{% endif %}">{% if e.motif %}{% translate "Motif" %}&nbsp;: {{ e.motif }}{% else %}{% translate "Sans motif" %}{% endif %}</p></div></li>
         {% endfor %}
-      </ol>
-      {% elif donnees_reelles.depuis %}
-      <ol class="historique">
-        <li><span class="point{% if donnees_reelles.actif %} point--vert{% endif %}">{% if donnees_reelles.actif %}{% icone "globe" %}{% else %}{% icone "circle-dashed" %}{% endif %}</span><div><p><strong>{% if donnees_reelles.actif %}{% translate "Données réelles" %}{% else %}{% translate "Données d'exemple" %}{% endif %}</strong>{% if donnees_reelles.par %} {% translate "par" %} {{ donnees_reelles.par }}{% endif %}</p><p class="meta">{{ donnees_reelles.depuis|date_heure_fr }}</p><p class="petit doux{% if donnees_reelles.motif %} texte-saisi{% endif %}">{% if donnees_reelles.motif %}{% translate "Motif" %}&nbsp;: {{ donnees_reelles.motif }}{% else %}{% translate "Sans motif" %}{% endif %}</p></div></li>
       </ol>
       {% else %}
       <p class="doux u-mb-0">{% translate "Aucun changement enregistré : le site est resté sur le réglage d'origine." %}</p>
