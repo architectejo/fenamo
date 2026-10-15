@@ -220,7 +220,10 @@ def test_F02_2e_mot_de_passe_temporaire_jamais_dans_journal_session_messages_en_
         r = client.post(url, donnees)
     assert r.status_code == 200, cle
     clair = _mdp_de(r)
-    assert len(clair) == 12 and not set('0O1lI') & set(clair)
+    if cle == 'nommer':  # dérogation F-02 : mot de passe initial = identifiant « prenom[nombre]@fenamordc.hub »
+        assert clair.endswith('@fenamordc.hub')
+    else:
+        assert len(clair) == 12 and not set('0O1lI') & set(clair)
     assert _fuites(client, r, clair) == []
     assert clair not in caplog.text
     assert 'no-store' in r['Cache-Control'] and 'private' in r['Cache-Control'] and 'hx-history="false"' in r.content.decode()

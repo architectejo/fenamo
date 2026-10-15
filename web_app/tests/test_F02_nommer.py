@@ -45,13 +45,13 @@ def test_F02_le_su_nomme_tout_sauf_un_su_et_les_comptes_sans_role_ne_nomment_rie
 
 # ---------------------------------------------------------------- nominal
 
-def test_F02_pr_nomme_un_vn_compte_cree_mot_de_passe_temporaire_a_lecture_unique(monde, chefs):
+def test_F02_pr_nomme_un_vn_compte_cree_avec_identifiant_et_mot_de_passe_initial_a_lecture_unique(monde, chefs):
     membre = actif(monde, 'Futur VN')
     nomination, mdp = N.nommer(chefs['PR'], membre, roles.VN)
     compte = nomination.compte
     assert nomination.role == 'VN' and nomination.membre == membre and nomination.nomme_par == chefs['PR'] and nomination.active
     assert nomination.duree_mandat_ans == 5 and nomination.fin.year == nomination.debut.year + 5
-    assert compte.membreId == membre.id and compte.doit_changer_mot_de_passe and check_password(mdp, compte.password) and len(mdp) == 12
+    assert compte.membreId == membre.id and compte.doit_changer_mot_de_passe and check_password(mdp, compte.password) and mdp == compte.username
     assert list(compte.groups.values_list('name', flat=True)) == ['role_VN']
     lignes = JournalAction.objects.filter(action=JournalAction.Action.NOMINATION, objet_id=compte.id)
     assert lignes.count() == 1 and lignes.get().auteur == chefs['PR'] and lignes.get().apres['role'] == 'VN'

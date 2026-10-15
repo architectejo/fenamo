@@ -56,7 +56,8 @@ def test_F05_nommer_creer_externe_et_reinitialiser_utilisent_le_meme_generateur(
     _n, mdp1 = N.nommer(equipe['VA'], membre, roles.AT, antenne=monde['antenne_p'])
     _c, _n, mdp2 = N.creer_compte_externe(equipe['PR'], 'externe-gen', roles.VI)
     mdp3 = N.reinitialiser_mot_de_passe(equipe['PR'], equipe['VN'])
-    assert len(appels) == 3 and all(len(m) == 12 and not set('0O1lI') & set(m) for m in (mdp1, mdp2, mdp3))
+    assert mdp1.endswith('@fenamordc.hub') and mdp1.startswith('nouveau')  # nomination : dérogation F-02 (identifiant = mot de passe initial)
+    assert len(appels) == 2 and all(len(m) == 12 and not set('0O1lI') & set(m) for m in (mdp2, mdp3))  # F-03 et F-05 : aléatoire
 
 
 # ---------------------------------------------------------------- 3. désactivation : motif obligatoire
